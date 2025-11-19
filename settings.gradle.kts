@@ -41,6 +41,8 @@ include(
     ":features:stock:data",
     ":features:stock:domain",
     ":features:stock:presentation",
+    ":features:game",
+    ":features:game:presentation",
     ":features:main:presentation",
     ":features:extra:presentation",
     ":features:object:presentation",
@@ -51,5 +53,3 @@ include(
     ":services:natives",
     ":services:settings"
 )
-include(":features:game")
-include(":features:game:presentation")
