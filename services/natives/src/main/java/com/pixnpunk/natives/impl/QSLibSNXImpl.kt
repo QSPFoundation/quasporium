@@ -10,13 +10,11 @@ import android.os.SystemClock
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import com.anggrayudi.storage.extension.toDocumentFile
-import com.anggrayudi.storage.file.DocumentFileCompat
 import com.anggrayudi.storage.file.DocumentFileCompat.fromUri
 import com.anggrayudi.storage.file.MimeType
 import com.anggrayudi.storage.file.child
 import com.anggrayudi.storage.file.getAbsolutePath
 import com.libsnxqs.jni.QSLibSNX
-import com.pixnpunk.natives.SupervisorViewModel.Companion.RECEIVE_FLOW_TIMEOUT
 import com.pixnpunk.dto.GameInterface
 import com.pixnpunk.dto.LibGameState
 import com.pixnpunk.dto.LibGenItem
@@ -26,6 +24,7 @@ import com.pixnpunk.dto.LibTypeDialog
 import com.pixnpunk.dto.LibTypePopup
 import com.pixnpunk.dto.LibTypeWindow
 import com.pixnpunk.dto.LibUIConfig
+import com.pixnpunk.natives.SupervisorViewModel.Companion.RECEIVE_FLOW_TIMEOUT
 import com.pixnpunk.utils.FileUtil.isWritableDir
 import com.pixnpunk.utils.FileUtil.isWritableFile
 import com.pixnpunk.utils.FileUtil.readFileContents
@@ -34,7 +33,6 @@ import com.pixnpunk.utils.HtmlUtil.getSrcDir
 import com.pixnpunk.utils.HtmlUtil.isContainsHtmlTags
 import com.pixnpunk.utils.PathUtil.getFilename
 import com.pixnpunk.utils.PathUtil.normalizeContentPath
-import com.pixnpunk.utils.ThreadUtil
 import com.pixnpunk.utils.ThreadUtil.isSameThread
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.CompletableFuture
@@ -381,21 +379,20 @@ class QSLibSNXImpl(
             gameInterface.showLibPopup(LibTypePopup.POPUP_SAVE)
         } else {
             gameInterface.requestCreateFile(filename, MimeType.BINARY_FILE)
-           // TODO RW THIS
-//            runCatching {
-//                returnValueFuture = CompletableFuture()
-//                gameInterface.requestCreateFile(filename, MimeType.BINARY_FILE)
-//                returnValueFuture.get(RECEIVE_FLOW_TIMEOUT, TimeUnit.MILLISECONDS).fileUri
-//            }.onSuccess {
-//                if (it != Uri.EMPTY) {
-//                    saveGameState(it)
-//                } else {
-//                    gameInterface.showLibDialog(
-//                        LibTypeDialog.DIALOG_ERROR,
-//                        "Error access dir"
-//                    )
-//                }
-//            }
+            runCatching {
+                returnValueFuture = CompletableFuture()
+                gameInterface.requestCreateFile(filename, MimeType.BINARY_FILE)
+                returnValueFuture.get(RECEIVE_FLOW_TIMEOUT, TimeUnit.MILLISECONDS).filePath
+            }.onSuccess {
+                if (it.isNotEmpty()) {
+                    saveGameState(it)
+                } else {
+                    gameInterface.showLibDialog(
+                        LibTypeDialog.DIALOG_ERROR,
+                        "Error access dir"
+                    )
+                }
+            }
         }
     }
 
@@ -451,6 +448,7 @@ class QSLibSNXImpl(
                 2 -> LibTypeWindow.VARS
                 3 -> LibTypeWindow.INPUT
                 else -> LibTypeWindow.MAIN
-            }, isShow)
+            }, isShow
+        )
     }
 }

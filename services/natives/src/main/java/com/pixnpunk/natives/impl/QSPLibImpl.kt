@@ -382,21 +382,20 @@ class QSPLibImpl(
             gameInterface.showLibPopup(LibTypePopup.POPUP_SAVE)
         } else {
             gameInterface.requestCreateFile(file, MimeType.BINARY_FILE)
-            // TODO: REWRITE THIS!
-//            runCatching {
-//                returnValueFuture = CompletableFuture()
-//                gameInterface.requestCreateFile(file, MimeType.BINARY_FILE)
-//                returnValueFuture.get(RECEIVE_FLOW_TIMEOUT, TimeUnit.MILLISECONDS)
-//            }.onSuccess {
-//                if (it != Uri.EMPTY) {
-//                    saveGameState(it)
-//                } else {
-//                    gameInterface.showLibDialog(
-//                        LibTypeDialog.DIALOG_ERROR,
-//                        "Error access dir"
-//                    )
-//                }
-//            }
+            runCatching {
+                returnValueFuture = CompletableFuture()
+                gameInterface.requestCreateFile(file, MimeType.BINARY_FILE)
+                returnValueFuture.get(RECEIVE_FLOW_TIMEOUT, TimeUnit.MILLISECONDS).filePath
+            }.onSuccess {
+                if (it.isNotEmpty()) {
+                    saveGameState(it)
+                } else {
+                    gameInterface.showLibDialog(
+                        LibTypeDialog.DIALOG_ERROR,
+                        "Error access dir"
+                    )
+                }
+            }
         }
     }
 
