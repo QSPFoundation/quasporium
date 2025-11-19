@@ -5,8 +5,9 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.compose.compiler)
-//    id("com.google.gms.google-services")
-//    id("com.google.firebase.crashlytics")
+    id("com.google.gms.google-services")
+    id("com.google.firebase.crashlytics")
+    id("com.google.firebase.firebase-perf")
 }
 
 android {
@@ -81,9 +82,13 @@ dependencies {
     implementation("com.google.android.material:material:1.13.0")
     implementation(libs.androidx.activity.compose)
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.5")
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
+
+    implementation(platform("com.google.firebase:firebase-bom:34.6.0"))
+    implementation("com.google.firebase:firebase-crashlytics")
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-perf")
 
     implementation(libs.storage)
 
