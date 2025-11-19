@@ -1,0 +1,82 @@
+package com.pixnpunk.stock.data.repository
+
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.map
+import com.pixnpunk.database.dao.GameDao
+import com.pixnpunk.dto.GameEntry
+import com.pixnpunk.dto.GameListType
+import com.pixnpunk.stock.data.mapper.toDomain
+import com.pixnpunk.stock.data.mapper.toEntity
+import com.pixnpunk.stock.domain.repository.LocalRepository
+import com.pixnpunk.utils.DirUtil.receiveGameFilesFromDir
+import com.pixnpunk.utils.DirUtil.tryReceiveDirSize
+import com.pixnpunk.utils.FileUtil.createSpecialFiles
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+
+class LocalRepositoryImpl : LocalRepository, KoinComponent {
+
+    private val gameDao: GameDao by inject()
+
+    override suspend fun deleteGameEntries(entriesDelete: Set<GameEntry>): Int =
+        gameDao.deleteAll(entriesDelete.map { entry -> entry.toEntity() })
+
+    override suspend fun getGameEntryById(entryId: Long): GameEntry =
+        gameDao.getById(entryId)?.toDomain() ?: GameEntry()
+
+    override suspend fun getAllPagedGameEntries(): Flow<PagingData<GameEntry>> =
+        Pager(
+            config = PagingConfig(
+                pageSize = 15,
+                initialLoadSize = 20,
+                enablePlaceholders = false
+            ),
+            pagingSourceFactory = { gameDao.getAllPaged() }
+        ).flow.map { data -> data.map { entry -> entry.toDomain() } }
+
+    override suspend fun searchGameEntriesByQuery(query: String): Flow<PagingData<GameEntry>> =
+        Pager(
+            config = PagingConfig(
+                pageSize = 15,
+                initialLoadSize = 20,
+                enablePlaceholders = false
+            ),
+            pagingSourceFactory = { gameDao.search(query) }
+        ).flow.map { data -> data.map { entry -> entry.toDomain() } }
+
+    override suspend fun updateEntry(entry: GameEntry) {
+        val nullEntry = gameDao.getById(entry.id)
+        if (nullEntry != null) {
+            gameDao.update(entry.toEntity())
+        }
+    }
+
+    override suspend fun updateOrInsertEntry(entry: GameEntry) {
+        val nullEntry = gameDao.getById(entry.id)
+        if (nullEntry != null) {
+            gameDao.update(entry.toEntity())
+        } else {
+            insertDefaultEntry(entry)
+        }
+    }
+
+    override suspend fun insertDefaultEntry(newEntry: GameEntry) {
+        gameDao.insert(newEntry.toEntity())
+    }
+
+    override suspend fun fillAndInsertEntry(entry: GameEntry) {
+        val gameDirPath = entry.gameDirPath
+        createSpecialFiles(gameDirPath)
+        insertDefaultEntry(
+            entry.copy(
+                listId = GameListType.Playable,
+                gameFilesPath = receiveGameFilesFromDir(gameDirPath),
+                fileSize = tryReceiveDirSize(gameDirPath)
+            )
+        )
+    }
+}

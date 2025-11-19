@@ -1,0 +1,172 @@
+package com.pixnpunk.stock.presentation
+
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material3.BottomAppBarDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateSetOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import com.arkivanov.decompose.extensions.compose.stack.Children
+import com.arkivanov.decompose.extensions.compose.subscribeAsState
+import com.pixnpunk.dto.BinaryPrefFormat
+import com.pixnpunk.dto.GameEntry
+import com.pixnpunk.dto.SettingsEntity
+import com.pixnpunk.stock.presentation.content.StockDeleteAppBar
+import com.pixnpunk.stock.presentation.content.StockFloatButton
+import com.pixnpunk.stock.presentation.content.StockInstalledChild
+import com.pixnpunk.stock.presentation.content.StockLibraryChild
+import com.pixnpunk.stock.presentation.content.StockSearchAppBar
+import kotlinx.coroutines.launch
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun StockContent(
+    component: StockComponent,
+    settings: SettingsEntity
+) {
+    val stack by component.childStack.subscribeAsState()
+    val activeComponent = stack.active.instance
+    val model by component.model.collectAsState()
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    val scrollBehavior = BottomAppBarDefaults.exitAlwaysScrollBehavior()
+
+    val gridState = rememberLazyGridState()
+    val listState = rememberLazyListState()
+
+    val setToDelete = rememberSaveable { mutableStateSetOf<GameEntry>() }
+    val setAllEntries = rememberSaveable { mutableStateSetOf<GameEntry>() }
+
+    val isAtTop by remember {
+        derivedStateOf {
+            gridState.firstVisibleItemIndex == 0 && gridState.firstVisibleItemScrollOffset == 0
+        }
+    }
+
+    val numCountInfo =
+        when (settings.binaryPref) {
+            BinaryPrefFormat.SI -> 1000
+            BinaryPrefFormat.ISO -> 1024
+        }
+
+    Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        topBar = {
+            if (!model.isDeleteModeActive) {
+                StockSearchAppBar(component)
+            } else {
+                StockDeleteAppBar(
+                    deleteSetSize = setToDelete.size,
+                    stopDeleteMode = {
+                        setToDelete.clear()
+                        setAllEntries.clear()
+                        component.stopDeleteMode()
+                    },
+                    selectAll = { setToDelete.addAll(setAllEntries) },
+                    deleteEntries = {
+                        setAllEntries.clear()
+                        component.deleteEntries(setToDelete.toSet())
+                        setToDelete.clear()
+                    },
+                )
+            }
+        },
+        floatingActionButton = {
+            AnimatedVisibility(
+                visible = isAtTop
+                        && activeComponent is StockComponent.Child.InstalledChild
+                        && !model.isDeleteModeActive,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                StockFloatButton(
+                    onClick = component.showDialogAdd,
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Filled.Add,
+                            contentDescription = "Add new game"
+                        )
+                    }
+                )
+            }
+            AnimatedVisibility(
+                visible = !isAtTop
+                        && activeComponent is StockComponent.Child.LibraryChild,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                StockFloatButton(
+                    onClick = {
+                        scope.launch {
+                            launch {
+                                gridState.animateScrollToItem(0)
+                            }
+                            launch {
+                                val currentOffset = scrollBehavior.state.heightOffset
+                                Animatable(currentOffset).animateTo(
+                                    targetValue = 0f,
+                                    animationSpec = tween(durationMillis = 200)
+                                ) {
+                                    scrollBehavior.state.heightOffset = value
+                                }
+                            }
+                        }
+                    },
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowUpward,
+                            contentDescription = "Scroll to top"
+                        )
+                    }
+                )
+            }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { paddingValues ->
+        Children(
+            modifier = Modifier.padding(paddingValues),
+            stack = stack
+        ) { child ->
+            when (child.instance) {
+                is StockComponent.Child.InstalledChild ->
+                    StockInstalledChild(
+                        component,
+                        numCountInfo,
+                        listState,
+                        setToDelete,
+                        setAllEntries,
+                        model.isDeleteModeActive
+                    )
+
+                is StockComponent.Child.LibraryChild ->
+                    StockLibraryChild(
+                        component,
+                        numCountInfo,
+                        gridState
+                    )
+            }
+        }
+    }
+}

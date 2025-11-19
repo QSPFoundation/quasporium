@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tab_extra">Extra</string>
+    <string name="tab_main">Main</string>
+    <string name="tab_object">Inventory</string>
+    <string name="tab_input">Input</string>
+
+    <string name="act_save">Save game to file</string>
+    <string name="act_load">Load game from file</string>
+    <string name="act_restart">Restart game</string>
+    <string name="act_exit">Exit the application</string>
+</resources>

@@ -1,0 +1,21 @@
+package com.pixnpunk.stock.domain.repository
+
+import androidx.paging.PagingData
+import com.pixnpunk.dto.GameEntry
+import kotlinx.coroutines.flow.Flow
+
+interface LocalRepository {
+    enum class SortedMethod {
+        ASCENDING,
+        DESCENDING
+    }
+
+    suspend fun deleteGameEntries(entriesDelete: Set<GameEntry>): Int
+    suspend fun getGameEntryById(entryId: Long): GameEntry
+    suspend fun getAllPagedGameEntries(): Flow<PagingData<GameEntry>>
+    suspend fun searchGameEntriesByQuery(query: String): Flow<PagingData<GameEntry>>
+    suspend fun updateEntry(entry: GameEntry)
+    suspend fun updateOrInsertEntry(entry: GameEntry)
+    suspend fun insertDefaultEntry(newEntry: GameEntry)
+    suspend fun fillAndInsertEntry(entry: GameEntry)
+}
