@@ -26,8 +26,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.pixnpunk.dto.GameEntry
+import com.pixnpunk.utils.FileUtil.receiveRelPath
 import kotlinx.io.files.Path
-import java.io.File
 
 @Composable
 fun DialogAddGameContent(
@@ -117,7 +117,7 @@ fun DialogAddGameContent(
             onClick = selectFolder
         ) {
             if (entry.gameDirPath.isNotEmpty()) {
-                Text(File(entry.gameDirPath).name)
+                Text(entry.gameDirPath.receiveRelPath())
             } else {
                 Text("Select game folder")
             }

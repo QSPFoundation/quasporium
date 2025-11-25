@@ -4,10 +4,10 @@ import android.content.Context
 import android.os.Build
 import android.provider.DocumentsContract
 import android.provider.DocumentsContract.getDocumentMetadata
-import com.anggrayudi.storage.file.DocumentFileCompat.fromFullPath
+import androidx.core.net.toUri
+import com.anggrayudi.storage.file.DocumentFileCompat.fromUri
 import com.anggrayudi.storage.file.DocumentFileType
 import com.anggrayudi.storage.file.MimeType
-import com.anggrayudi.storage.file.getAbsolutePath
 import com.anggrayudi.storage.file.search
 import com.pixnpunk.utils.FileUtil.isWritableDir
 import org.koin.core.component.KoinComponent
@@ -18,15 +18,11 @@ import kotlin.contracts.ExperimentalContracts
 object DirUtil : KoinComponent {
     @OptIn(ExperimentalContracts::class)
     suspend fun receiveGameFilesFromDir(rootDirPath: String): List<String> {
-        val gameDir = fromFullPath(
-            context = get(),
-            fullPath = rootDirPath,
-            requiresWriteAccess = true
-        )
+        val gameDir = fromUri(get(), rootDirPath.toUri())
         if (!gameDir.isWritableDir()) return listOf()
 
         val files = gameDir.listFiles()
-        if (files.size == 0) return listOf()
+        if (files.size <= 0) return listOf()
 
         val gameFilesPath = mutableListOf<String>()
         for (file in files) {
@@ -34,7 +30,7 @@ object DirUtil : KoinComponent {
             if (fileName.endsWith(suffix = "qsp", ignoreCase = true)
                 || fileName.endsWith(suffix = "gam", ignoreCase = true)
             ) {
-                gameFilesPath.add(file.getAbsolutePath(get()))
+                gameFilesPath.add(file.uri.toString())
             }
         }
 
@@ -49,7 +45,7 @@ object DirUtil : KoinComponent {
                     if (fileName.endsWith(suffix = ".qsp", ignoreCase = true)
                         || fileName.endsWith(suffix = ".gam", ignoreCase = true)
                     ) {
-                        gameFilesPath.add(file.getAbsolutePath(get()))
+                        gameFilesPath.add(file.uri.toString())
                     }
                 }
             }
@@ -59,9 +55,9 @@ object DirUtil : KoinComponent {
     }
 
     @OptIn(ExperimentalContracts::class)
-    suspend fun tryReceiveDirSize(rootDirPath: String): Long {
+    fun tryReceiveDirSize(rootDirPath: String): Long {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val dir = fromFullPath(get(), rootDirPath)
+            val dir = fromUri(get(), rootDirPath.toUri())
             if (dir.isWritableDir()) {
                 try {
                     val dirMetadata = getDocumentMetadata(get<Context>().contentResolver, dir.uri)

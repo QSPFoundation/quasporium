@@ -60,7 +60,7 @@ class MainActivity : ComponentActivity() {
                 is FolderPickerResult.Picked -> {
                     var newGameDir = it.folder
                     if (newGameDir.isWritableDir()) {
-                        val path = newGameDir.getAbsolutePath(this)
+                        val path = newGameDir.uri.toString()
                         val dirName = newGameDir.name
 
                         if (path.isNotEmpty() && dirName != null) {

@@ -2,11 +2,14 @@ package com.pixnpunk.utils
 
 import android.content.Context
 import android.net.Uri
+import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import com.anggrayudi.storage.extension.openInputStream
 import com.anggrayudi.storage.file.CreateMode
 import com.anggrayudi.storage.file.DocumentFileCompat.fromFullPath
+import com.anggrayudi.storage.file.DocumentFileCompat.fromUri
 import com.anggrayudi.storage.file.MimeType
+import com.anggrayudi.storage.file.getRelativePath
 import com.anggrayudi.storage.file.isWritable
 import com.anggrayudi.storage.file.makeFile
 import com.anggrayudi.storage.file.openOutputStream
@@ -40,6 +43,9 @@ object FileUtil : KoinComponent {
         return this.exists() && this.isDirectory && this.isWritable(get())
     }
 
+    fun String.receiveRelPath() =
+        fromUri(get(), this.toUri())?.getRelativePath(get()) ?: ""
+
     fun formatFileSize(size: Long, numCountInfo: Int): String {
         if (size <= 0) {
             return "0"
@@ -60,12 +66,8 @@ object FileUtil : KoinComponent {
     const val NOSEARCH_FILENAME: String = ".nosearch"
 
     @OptIn(ExperimentalContracts::class)
-    fun createSpecialFiles(path: String) {
-        val gameDir = fromFullPath(
-            context = get(),
-            fullPath = path,
-            requiresWriteAccess = true
-        )
+    fun createSpecialFiles(dirPath: String) {
+        val gameDir = fromUri(get(), dirPath.toUri())
         if (!gameDir.isWritableDir()) return
 
         gameDir.makeFile(get(), NOMEDIA_FILENAME, MimeType.TEXT, CreateMode.SKIP_IF_EXISTS)
