@@ -49,7 +49,7 @@ class RemoteRepositoryImpl : RemoteRepository, KoinComponent {
         ).flow
 
     override suspend fun downloadGameArch(downloadLink: String, destDirPath: String) {
-        try {
+        runCatching {
             get<HttpClient>().prepareGet(
                 urlString = downloadLink,
                 block = {
@@ -86,8 +86,6 @@ class RemoteRepositoryImpl : RemoteRepository, KoinComponent {
                     println("Failed to download file. HTTP Status: ${response.status.value}")
                 }
             }
-        } catch (e: Exception) {
-            println("Error: $e")
         }
     }
 }
