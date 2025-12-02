@@ -59,14 +59,14 @@ class SettingsRepository : ViewModel() {
                         ),
                         fontSize = prefMap["fontSizePref"] as? Int ?: defValue.fontSize,
 
-                        isUseGameTextColor = prefMap["useGameTextColorPref"] as? Boolean
-                            ?: defValue.isUseGameTextColor,
+                        isTextColorOverride = prefMap["customTextColorPref"] as? Boolean
+                            ?: defValue.isTextColorOverride,
                         textColor = prefMap["textColor"] as? Int ?: defValue.textColor,
-                        isUseGameBackgroundColor = prefMap["useGameBackColorPref"] as? Boolean
-                            ?: defValue.isUseGameBackgroundColor,
+                        isBackColorOverride = prefMap["customBackColorPref"] as? Boolean
+                            ?: defValue.isBackColorOverride,
                         backColor = prefMap["backColor"] as? Int ?: defValue.backColor,
-                        isUseGameLinkColor = prefMap["useGameLinkColorPref"] as? Boolean
-                            ?: defValue.isUseGameLinkColor,
+                        isLinkColorOverride = prefMap["customLinkColorPref"] as? Boolean
+                            ?: defValue.isLinkColorOverride,
                         linkColor = prefMap["linkColor"] as? Int ?: defValue.linkColor,
 
                         isImgLoadDis = prefMap["useGameImagesPref"] as? Boolean

@@ -152,17 +152,17 @@ class SupervisorViewModel(
             settingsRepo.settingsFlow.combine(gameUIConfFlow) { appSet, libSet ->
                 appSet.copy(
                     isUseHtml = libSet.useHtml,
-                    textColor = if (appSet.isUseGameTextColor && libSet.fontColor != 0) {
+                    textColor = if (!appSet.isTextColorOverride && libSet.fontColor != 0) {
                         libSet.fontColor
                     } else {
                         appSet.textColor
                     },
-                    backColor = if (appSet.isUseGameBackgroundColor && libSet.backColor != 0) {
+                    backColor = if (!appSet.isBackColorOverride && libSet.backColor != 0) {
                         libSet.backColor
                     } else {
                         appSet.backColor
                     },
-                    linkColor = if (appSet.isUseGameLinkColor && libSet.linkColor != 0) {
+                    linkColor = if (!appSet.isLinkColorOverride && libSet.linkColor != 0) {
                         libSet.linkColor
                     } else {
                         appSet.linkColor

@@ -42,7 +42,7 @@ fun SettingsTextContent(
                     }
                 )
             },
-            title = { Text("Font style") }
+            title = { Text("Game font style") }
         )
         listPreference(
             key = "fontSizePref",
@@ -54,46 +54,46 @@ fun SettingsTextContent(
             },
             defaultValue = 16,
             values = listOf(12, 14, 16, 18, 20, 22),
-            title = { Text("Font size") }
+            title = { Text("Game font size") }
         )
         twoTargetSwitchPreference(
-            key = "useGameTextColorPref",
+            key = "customTextColorPref",
             icon = {
                 Icon(
                     imageVector = Icons.Default.BorderColor,
                     contentDescription = null
                 )
             },
-            defaultValue = true,
-            title = { Text("Text color ${if (it) "from game" else "from user"}") },
-            summary = { if (!it) { Text("Specify text color") } },
-            onClick = { if (!it) { showColorDialog(ColorPickerState.COLOR_TEXT) } }
+            defaultValue = false,
+            title = { Text("Custom game text color") },
+            summary = { if (it) { Text("Specify text color") } },
+            onClick = { if (it) { showColorDialog(ColorPickerState.COLOR_TEXT) } }
         )
         twoTargetSwitchPreference(
-            key = "useGameBackColorPref",
+            key = "customBackColorPref",
             icon = {
                 Icon(
                     imageVector = Icons.Default.FormatColorFill,
                     contentDescription = null
                 )
             },
-            defaultValue = true,
-            title = { Text("Background color ${if (it) "from game" else "from user"}") },
-            summary = { if (!it) { Text("Specify background color") } },
-            onClick = { if (!it) { showColorDialog(ColorPickerState.COLOR_BACK) } }
+            defaultValue = false,
+            title = { Text("Custom game background color") },
+            summary = { if (it) { Text("Specify background color") } },
+            onClick = { if (it) { showColorDialog(ColorPickerState.COLOR_BACK) } }
         )
         twoTargetSwitchPreference(
-            key = "useGameLinkColorPref",
+            key = "customLinkColorPref",
             icon = {
 //                Icon(
 //                    imageVector = Icons.Default.FormatHi,
 //                    contentDescription = null
 //                )
             },
-            defaultValue = true,
-            title = { Text("Link color from ${if (it) "from game" else "from user"}") },
-            summary = { if (!it) { Text("Specify link color") } },
-            onClick = { if (!it) { showColorDialog(ColorPickerState.COLOR_LINK) } }
+            defaultValue = false,
+            title = { Text("Custom game link color") },
+            summary = { if (it) { Text("Specify link color") } },
+            onClick = { if (it) { showColorDialog(ColorPickerState.COLOR_LINK) } }
         )
         switchPreference(
             key = "useGameExecStringPref",
@@ -104,7 +104,7 @@ fun SettingsTextContent(
                 )
             },
             defaultValue = false,
-            title = { Text("Use command line") }
+            title = { Text("Use input field for debugging") }
         )
     }
 }
