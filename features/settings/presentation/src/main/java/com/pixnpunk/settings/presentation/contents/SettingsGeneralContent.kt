@@ -40,27 +40,27 @@ fun SettingsGeneralContent(
             },
             title = { Text("Application theme") }
         )
-        listPreference(
-            key = "appLangPref",
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.Language,
-                    contentDescription = null
-                )
-            },
-            defaultValue = "en",
-            values = listOf("en", "ru"),
-            valueToText = {
-                AnnotatedString(
-                    when (it) {
-                        "en" -> "English"
-                        "ru" -> "Russian"
-                        else -> it
-                    }
-                )
-            },
-            title = { Text("Application language") }
-        )
+//        listPreference(
+//            key = "appLangPref",
+//            icon = {
+//                Icon(
+//                    imageVector = Icons.Default.Language,
+//                    contentDescription = null
+//                )
+//            },
+//            defaultValue = "en",
+//            values = listOf("en", "ru"),
+//            valueToText = {
+//                AnnotatedString(
+//                    when (it) {
+//                        "en" -> "English"
+//                        "ru" -> "Russian"
+//                        else -> it
+//                    }
+//                )
+//            },
+//            title = { Text("Application language") }
+//        )
         listPreference(
             key = "appLibVerPref",
             icon = {
