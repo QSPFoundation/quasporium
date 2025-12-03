@@ -9,12 +9,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 sealed interface StockComponent {
-    val childStack: Value<ChildStack<*, Child>>
-
     val model: StateFlow<StockStore.State>
 
     val showDialogAdd: () -> Unit
     val navigateToSettings: () -> Unit
+    val navigateToDetails: (GameEntry) -> Unit
 
     val gameLocalPageFlow: Flow<PagingData<GameEntry>>
     val gameRemotePageFlow: Flow<PagingData<GameEntry>>
@@ -23,12 +22,4 @@ sealed interface StockComponent {
     fun stopDeleteMode()
     fun deleteEntries(entries: Set<GameEntry>)
     fun searchEntries(query: String)
-
-    fun navigateTo(config: RealStockComponent.ChildConfig)
-    fun navigateToDetails(entry: GameEntry)
-
-    sealed class Child {
-        class InstalledChild() : Child()
-        class LibraryChild() : Child()
-    }
 }

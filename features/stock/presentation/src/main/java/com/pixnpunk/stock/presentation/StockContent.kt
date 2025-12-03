@@ -5,9 +5,12 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowUpward
@@ -25,6 +28,7 @@ import androidx.compose.runtime.mutableStateSetOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import com.arkivanov.decompose.extensions.compose.stack.Children
@@ -45,8 +49,6 @@ fun StockContent(
     component: StockComponent,
     settings: SettingsEntity
 ) {
-    val stack by component.childStack.subscribeAsState()
-    val activeComponent = stack.active.instance
     val model by component.model.collectAsState()
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -65,6 +67,8 @@ fun StockContent(
         }
     }
 
+    val pagerState = rememberPagerState { TabState.entries.size }
+
     val numCountInfo =
         when (settings.binaryPref) {
             BinaryPrefFormat.SI -> 1000
@@ -75,7 +79,11 @@ fun StockContent(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             if (!model.isDeleteModeActive) {
-                StockSearchAppBar(component)
+                StockSearchAppBar(
+                    pagerState = pagerState,
+                    searchEntries = component::searchEntries,
+                    navigateToSettings = component.navigateToSettings
+                )
             } else {
                 StockDeleteAppBar(
                     deleteSetSize = setToDelete.size,
@@ -96,7 +104,7 @@ fun StockContent(
         floatingActionButton = {
             AnimatedVisibility(
                 visible = isAtTop
-                        && activeComponent is StockComponent.Child.InstalledChild
+                        && pagerState.currentPage == TabState.INSTALLED.ordinal
                         && !model.isDeleteModeActive,
                 enter = fadeIn(),
                 exit = fadeOut()
@@ -113,7 +121,7 @@ fun StockContent(
             }
             AnimatedVisibility(
                 visible = !isAtTop
-                        && activeComponent is StockComponent.Child.LibraryChild,
+                        && pagerState.currentPage == TabState.LIBRARY.ordinal,
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
@@ -145,12 +153,13 @@ fun StockContent(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
-        Children(
-            modifier = Modifier.padding(paddingValues),
-            stack = stack
-        ) { child ->
-            when (child.instance) {
-                is StockComponent.Child.InstalledChild ->
+        HorizontalPager(
+            modifier = Modifier.padding(paddingValues).fillMaxHeight(),
+            verticalAlignment = Alignment.Top,
+            state = pagerState
+        ) {
+            when (it) {
+                TabState.INSTALLED.ordinal ->
                     StockInstalledChild(
                         component,
                         numCountInfo,
@@ -160,7 +169,7 @@ fun StockContent(
                         model.isDeleteModeActive
                     )
 
-                is StockComponent.Child.LibraryChild ->
+                TabState.LIBRARY.ordinal ->
                     StockLibraryChild(
                         component,
                         numCountInfo,

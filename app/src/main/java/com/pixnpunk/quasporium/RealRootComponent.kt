@@ -29,19 +29,26 @@ import com.pixnpunk.dialogs.presentation.DialogsConfig
 import com.pixnpunk.dialogs.presentation.DialogsState
 import com.pixnpunk.dialogs.presentation.RealDialogsComponent
 import com.pixnpunk.dto.GameEntry
+import com.pixnpunk.dto.GameListType
 import com.pixnpunk.dto.OutputState
 import com.pixnpunk.quasporium.mvi.RealRootStore
 import com.pixnpunk.quasporium.mvi.RootStore
 import com.pixnpunk.settings.presentation.RealSettingsComponent
 import com.pixnpunk.settings.presentation.SettingsComponent
+import com.pixnpunk.stock.domain.usecase.FetchRemoteDescUseCase
 import com.pixnpunk.stock.presentation.RealStockComponent
 import com.pixnpunk.stock.presentation.StockComponent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.serializer
 import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
 
 class RealRootComponent(
     private val componentContext: ComponentContext,
@@ -229,7 +236,17 @@ class RealRootComponent(
                         )
                     },
                     navigateToDetails = { entryShow ->
-                        panelNavigation.activateDetails(details = DetailsConfig(entryShow))
+                        if (entryShow.listId == GameListType.Playable) {
+                            panelNavigation.activateDetails(details = DetailsConfig(entryShow))
+                        } else {
+                            CoroutineScope(Dispatchers.IO).launch {
+                                val desc = get<FetchRemoteDescUseCase>().execute(entryShow.descUrl)
+
+                                withContext(Dispatchers.Main) {
+                                    panelNavigation.activateDetails(details = DetailsConfig(entryShow.copy(descUrl = desc)))
+                                }
+                            }
+                        }
                     },
                     navigateToSettings = {
                         panelNavigation.activateExtra(Unit)
