@@ -6,5 +6,5 @@ class DownloadGameArchUseCase(
     private val remoteRepository: RemoteRepository
 ) {
     suspend fun execute(downloadLink: String, destDirPath: String) =
-        remoteRepository.downloadGameArch(downloadLink, destDirPath)
+        remoteRepository.downloadUnpackGame(downloadLink, destDirPath)
 }

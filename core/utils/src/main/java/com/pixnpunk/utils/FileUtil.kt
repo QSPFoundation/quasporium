@@ -5,19 +5,32 @@ import android.net.Uri
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import com.anggrayudi.storage.extension.openInputStream
+import com.anggrayudi.storage.extension.toDocumentFile
 import com.anggrayudi.storage.file.CreateMode
-import com.anggrayudi.storage.file.DocumentFileCompat.fromFullPath
 import com.anggrayudi.storage.file.DocumentFileCompat.fromUri
 import com.anggrayudi.storage.file.MimeType
+import com.anggrayudi.storage.file.MimeType.getExtensionFromFileName
 import com.anggrayudi.storage.file.getRelativePath
 import com.anggrayudi.storage.file.isWritable
 import com.anggrayudi.storage.file.makeFile
 import com.anggrayudi.storage.file.openOutputStream
+import com.pixnpunk.dto.DownloadStatus
+import com.pixnpunk.dto.ProgressState
 import io.ktor.utils.io.*
 import io.ktor.utils.io.jvm.javaio.*
+import kotlinx.coroutines.flow.FlowCollector
+import net.sf.sevenzipjbinding.ExtractAskMode
+import net.sf.sevenzipjbinding.ExtractOperationResult
+import net.sf.sevenzipjbinding.IArchiveExtractCallback
+import net.sf.sevenzipjbinding.IInArchive
+import net.sf.sevenzipjbinding.ISequentialOutStream
+import net.sf.sevenzipjbinding.PropID
+import net.sf.sevenzipjbinding.SevenZip
+import net.sf.sevenzipjbinding.SevenZipException
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import java.io.IOException
+import java.io.OutputStream
 import java.text.DecimalFormat
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
@@ -78,17 +91,29 @@ object FileUtil : KoinComponent {
     suspend fun writeFileToDir(
         fileChannel: ByteReadChannel,
         fileName: String,
-        destDirPath: String
-    ) {
-        val gameDir = fromFullPath(
-            context = get(),
-            fullPath = destDirPath,
-            requiresWriteAccess = true
+        destDirPath: String,
+        progress: FlowCollector<ProgressState>
+    ): Result<String> = runCatching {
+        progress.emit(
+            ProgressState(
+                progress = 0F,
+                status = DownloadStatus.WRITE_FILE,
+                time = ""
+            )
         )
-        if (!gameDir.isWritableDir()) return
+        val gameDir = fromUri(get(), destDirPath.toUri())
+        if (!gameDir.isWritableDir()) return Result.failure(NullPointerException())
         val destFile = gameDir.makeFile(get(), fileName, mode = CreateMode.SKIP_IF_EXISTS)
-        if (!destFile.isWritableFile()) return
+        if (!destFile.isWritableFile()) return Result.failure(NullPointerException())
         fileChannel.copyTo(destFile.openOutputStream(get())!!)
+        progress.emit(
+            ProgressState(
+                progress = 1.0F,
+                status = DownloadStatus.WRITE_FILE,
+                time = ""
+            )
+        )
+        return Result.success(destFile.uri.toString())
     }
 
     fun Uri.readFileContents(): ByteArray? {
@@ -110,5 +135,97 @@ object FileUtil : KoinComponent {
             .onFailure {
 //                Firebase.crashlytics.log("Error writing in file: $this | Throwable: $it")
             }
+    }
+
+    suspend fun unpackFileToDir(
+        filePath: String,
+        destDirPath: String,
+        progress: FlowCollector<ProgressState>
+    ) = runCatching {
+        val fileUri = filePath.toUri()
+        DocumentFileRandomInStream(fileUri).use {
+            SevenZip.openInArchive(null, it).use { inArchive ->
+                inArchive.extract(
+                    null,
+                    false,
+                    ArchiveExtractCallback(
+                        destDirPath.toUri().toDocumentFile(get())!!,
+                        inArchive,
+                        progress
+                    )
+                )
+            }
+        }
+        fileUri.toDocumentFile(get())?.delete()
+        Unit
+    }
+
+    private class ArchiveExtractCallback(
+        private val targetDir: DocumentFile,
+        private val inArchive: IInArchive,
+        private val progress: FlowCollector<ProgressState>
+    ) : IArchiveExtractCallback {
+        private var stream: SequentialOutStream? = null
+
+        override fun getStream(
+            index: Int,
+            extractAskMode: ExtractAskMode?
+        ): ISequentialOutStream? {
+            val isFolder = inArchive.getProperty(index, PropID.IS_FOLDER) as? Boolean ?: false
+            val pathString = inArchive.getProperty(index, PropID.PATH) as? String ?: return null
+
+            if (isFolder) { return null }
+
+            val file = targetDir.makeFile(
+                get(),
+                pathString,
+                getExtensionFromFileName(pathString)
+            )
+
+            stream = SequentialOutStream(file!!.openOutputStream(get())!!)
+            return stream
+        }
+
+        override fun prepareOperation(extractAskMode: ExtractAskMode?) {
+            //
+        }
+
+        override fun setOperationResult(extractOperationResult: ExtractOperationResult?) {
+            try {
+                stream?.close()
+                stream = null
+            } catch (e: IOException) {
+                throw SevenZipException(e)
+            }
+
+            if (extractOperationResult != ExtractOperationResult.OK) {
+                throw SevenZipException(extractOperationResult.toString())
+            }
+        }
+
+        override fun setTotal(total: Long) {
+            //
+        }
+
+        override fun setCompleted(complete: Long) {
+            //
+        }
+    }
+
+    private class SequentialOutStream(private val out: OutputStream) : ISequentialOutStream {
+        @Throws(SevenZipException::class)
+        override fun write(data: ByteArray): Int {
+            try {
+                out.write(data)
+            } catch (e: IOException) {
+                throw SevenZipException(e)
+            }
+            return data.size
+        }
+
+        @Throws(IOException::class)
+        fun close() {
+            out.close()
+        }
     }
 }
