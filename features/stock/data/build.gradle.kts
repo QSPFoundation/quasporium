@@ -41,5 +41,5 @@ dependencies {
     implementation(project.dependencies.platform(libs.koin.bom))
     implementation(libs.koin.android)
 
-    implementation("org.jsoup:jsoup:1.21.2")
+    implementation(libs.jsoup)
 }

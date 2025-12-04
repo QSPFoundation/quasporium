@@ -40,7 +40,7 @@ dependencies {
 
     implementation(libs.storage)
 
-    implementation("org.jsoup:jsoup:1.21.2")
+    implementation(libs.jsoup)
 
-    implementation("com.github.omicronapps:7-Zip-JBinding-4Android:Release-16.02-2.03")
+    implementation(libs.sevenzip.jbinding.android)
 }

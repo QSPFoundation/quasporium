@@ -31,17 +31,16 @@ dependencies {
 
     implementation(project(":services:settings"))
 
-    val composeBom = platform("androidx.compose:compose-bom:2025.10.01")
-    implementation(composeBom)
-    androidTestImplementation(composeBom)
+    implementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(platform(libs.androidx.compose.bom))
 
-    implementation("androidx.compose.material3:material3")
-    implementation("androidx.compose.material:material-icons-extended")
-    debugImplementation("androidx.compose.ui:ui-tooling")
-    implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.material.icons.extended)
+    debugImplementation(libs.androidx.compose.ui.tooling)
+    implementation(libs.androidx.compose.ui.tooling.preview)
 
     implementation(libs.androidx.activity.compose)
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.4")
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
 
     implementation(project.dependencies.platform(libs.koin.bom))
     implementation(libs.koin.android)
@@ -50,8 +49,7 @@ dependencies {
     implementation(libs.coil.gif)
     implementation(libs.coil.network.ktor3)
 
-    implementation("com.github.skydoves:colorpicker-compose:1.1.2")
-//    implementation(libs.kotlinx.io.core)
+    implementation(libs.colorpicker.compose)
 
     implementation(libs.essenty.lifecycle)
     implementation(libs.decompose.core)
