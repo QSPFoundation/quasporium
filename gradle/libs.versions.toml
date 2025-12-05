@@ -30,6 +30,7 @@ material = "1.13.0"
 xZipJbindingXandroid = "Release-16.02-2.03"
 
 [libraries]
+androidx-compose-adaptive = { module = "androidx.compose.material3.adaptive:adaptive" }
 androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
 androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
 androidx-compose-material3 = { module = "androidx.compose.material3:material3" }
