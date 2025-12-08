@@ -17,7 +17,6 @@ import com.anggrayudi.storage.contract.StoragePermissionDeniedException
 import com.anggrayudi.storage.extension.startActivitySafely
 import com.anggrayudi.storage.extension.toDocumentFile
 import com.anggrayudi.storage.file.MimeType
-import com.anggrayudi.storage.file.getAbsolutePath
 import com.arkivanov.decompose.defaultComponentContext
 import com.pixnpunk.dto.OutputState
 import com.pixnpunk.game.presentation.GameActivity
