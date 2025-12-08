@@ -3,13 +3,10 @@ package com.pixnpunk.audio
 import android.content.Context
 import android.media.MediaPlayer
 import android.net.Uri
-import android.util.Log
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.Firebase
-import com.google.firebase.crashlytics.crashlytics
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -73,7 +70,6 @@ class AudioPlayerViewModel: ViewModel(), DefaultLifecycleObserver {
                     player.start()
                 }
             }.onFailure {
-                Firebase.crashlytics.log("Failed to prepare MediaPlayer for $soundFileUri | Cause: $it")
                 mediaPlayers.remove(soundFileUri)
             }
         }
