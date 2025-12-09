@@ -8,6 +8,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
@@ -32,6 +34,7 @@ fun DialogsMainContent(
     settingsRepository: SettingsRepository
 ) {
     val config = component.dialogsConfig
+    val settings by settingsRepository.settingsFlow.collectAsState()
 
     BasicAlertDialog(
         onDismissRequest = component.onDismissed
@@ -41,6 +44,9 @@ fun DialogsMainContent(
             tonalElevation = AlertDialogDefaults.TonalElevation
         ) {
             when (config.dialogsState) {
+                DialogsState.DIALOG_SELECT_RUN_GAME ->
+                    DialogSelectGameContent(component)
+
                 DialogsState.DIALOG_ADD_GAME ->
                     DialogAddGameContent(
                         entry = config.unfilledEntry,
@@ -77,16 +83,14 @@ fun DialogsMainContent(
                         }
                     )
 
-                DialogsState.DIALOG_SELECT_RUN_GAME -> DialogSelectGameContent(component)
-
-                DialogsState.DIALOG_SELECT_COLOR -> {
-                    val state = config.colorPickerState
-                    if (state != null) {
-                        val settings = settingsRepository.settingsFlow.value
+                DialogsState.DIALOG_SELECT_COLOR -> config.colorPickerState.let {
+                    if (it == null) {
+                        component.onDismissed()
+                    } else {
                         DialogSelectColorContent(
-                            selectColor = { component.selectColor(Pair(state, it)) },
+                            selectColor = { c -> component.selectColor(it to c) },
                             initialColor = Color(
-                                when (state) {
+                                when (it) {
                                     ColorPickerState.COLOR_TEXT -> settings.textColor
                                     ColorPickerState.COLOR_BACK -> settings.backColor
                                     ColorPickerState.COLOR_LINK -> settings.linkColor
@@ -97,15 +101,13 @@ fun DialogsMainContent(
                     }
                 }
 
-                DialogsState.DIALOG_INPUT_VALUE -> {
-                    val state = config.inputState
-                    if (state == null) {
+                DialogsState.DIALOG_INPUT_VALUE -> config.inputState.let {
+                    if (it == null) {
                         component.onDismissed()
                     } else {
-                        val settings = settingsRepository.settingsFlow.value
                         DialogInputValueContent(
                             initialValue = "${
-                                when (state) {
+                                when (it) {
                                     InputState.INPUT_IMAGE_WIDTH -> settings.imageWidth
                                     InputState.INPUT_IMAGE_HEIGHT -> settings.imageHeight
                                     InputState.INPUT_WITH_MESSAGE -> ""
@@ -113,16 +115,16 @@ fun DialogsMainContent(
                             }",
                             label = {
                                 Text(
-                                    when (state) {
+                                    when (it) {
                                         InputState.INPUT_IMAGE_WIDTH -> "Image width"
                                         InputState.INPUT_IMAGE_HEIGHT -> "Image height"
                                         InputState.INPUT_WITH_MESSAGE -> config.outputValue
                                     }
                                 )
                             },
-                            inputValue = { component.inputValue(state to it) },
+                            inputValue = { s -> component.inputValue(it to s) },
                             keyboardOptions =
-                                when (state) {
+                                when (it) {
                                     InputState.INPUT_IMAGE_WIDTH, InputState.INPUT_IMAGE_HEIGHT ->
                                         KeyboardOptions(keyboardType = KeyboardType.Number)
 
@@ -134,20 +136,18 @@ fun DialogsMainContent(
                     }
                 }
 
-                DialogsState.DIALOG_OUTPUT_VALUE -> {
-                    val state = config.outputState
-                    if (state == null || !config.outputValue.isBlank()) {
+                DialogsState.DIALOG_OUTPUT_VALUE -> config.outputState.let {
+                    if (it == null || !config.outputValue.isBlank()) {
                         component.onDismissed()
                     } else {
-                        if (state != OutputState.OUTPUT_LIST) {
+                        if (it != OutputState.OUTPUT_LIST) {
                             DialogOutputValueContent(
                                 message = config.outputValue,
-                                isImage = state == OutputState.OUTPUT_IMAGE,
-                                onConfirm = { component.confirmMessage(state) },
+                                isImage = it == OutputState.OUTPUT_IMAGE,
+                                onConfirm = { component.confirmMessage(it) },
                                 onDismiss = component.onDismissed
                             )
                         } else {
-                            val settings = settingsRepository.settingsFlow.value
                             DialogOutputListValueContent(
                                 listItems = config.menuItems,
                                 backColor = Color(settings.backColor),
@@ -155,7 +155,7 @@ fun DialogsMainContent(
                                 linkColor = Color(settings.linkColor),
                                 fontSize = settings.fontSize.sp,
                                 fontFamily = FontFamily(settings.typeface.toTypeface()),
-                                onConfirm = { component.confirmMessage(state) },
+                                onConfirm = { _ -> component.confirmMessage(it) },
                                 onDismiss = component.onDismissed
                             )
                         }
