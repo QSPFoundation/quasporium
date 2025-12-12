@@ -34,7 +34,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.pixnpunk.dto.GameEntry
-import com.pixnpunk.utils.FileUtil.receiveRelPath
+import com.pixnpunk.utils.FileUtil.receiveDirName
+import com.pixnpunk.utils.FileUtil.receiveDirRelPath
+import com.pixnpunk.utils.FileUtil.receiveFileRelPath
 
 @Composable
 fun DialogAddGameContent(
@@ -49,7 +51,7 @@ fun DialogAddGameContent(
     isAddLocalGame: Boolean,
     buttonText: String
 ) {
-    var gameName = entry.title.ifBlank { entry.gameDirPath.receiveRelPath() }
+    var gameName = entry.title.ifBlank { entry.gameDirPath.receiveDirName() }
     var gameAuthor = entry.author
     var gameVersion = entry.version
 
@@ -136,7 +138,7 @@ fun DialogAddGameContent(
                     if (entry.gameDirPath.isNotEmpty()) { deselectDir } else { selectDir },
                 label = {
                     if (entry.gameDirPath.isNotEmpty()) {
-                        Text(entry.gameDirPath.receiveRelPath())
+                        Text(entry.gameDirPath.receiveDirRelPath())
                     } else {
                         Text("Select game folder")
                     }
@@ -157,7 +159,7 @@ fun DialogAddGameContent(
                         entry.gameFilesPath.forEach {
                             FilterChip(
                                 onClick = { deselectFile(it) },
-                                label = { Text(it.receiveRelPath()) },
+                                label = { Text(it.receiveFileRelPath()) },
                                 selected = true,
                                 trailingIcon = {
                                     Icon(

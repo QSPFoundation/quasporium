@@ -10,6 +10,8 @@ import com.anggrayudi.storage.file.CreateMode
 import com.anggrayudi.storage.file.DocumentFileCompat.fromUri
 import com.anggrayudi.storage.file.MimeType
 import com.anggrayudi.storage.file.MimeType.getExtensionFromFileName
+import com.anggrayudi.storage.file.baseName
+import com.anggrayudi.storage.file.fullName
 import com.anggrayudi.storage.file.getRelativePath
 import com.anggrayudi.storage.file.isWritable
 import com.anggrayudi.storage.file.makeFile
@@ -56,8 +58,18 @@ object FileUtil : KoinComponent {
         return this.exists() && this.isDirectory && this.isWritable(get())
     }
 
-    fun String.receiveRelPath() =
-        fromUri(get(), this.toUri())?.getRelativePath(get()) ?: ""
+    fun String.receiveDirName() =
+        fromUri(get(), this.toUri())?.baseName ?: ""
+
+    fun String.receiveDirRelPath() =
+        fromUri(get(), this.toUri())?.let {
+            "${it.getRelativePath(get())}/${it.baseName}"
+        } ?: ""
+
+    fun String.receiveFileRelPath() =
+        fromUri(get(), this.toUri())?.let {
+            "${it.getRelativePath(get())}/${it.fullName}"
+        } ?: ""
 
     fun formatFileSize(size: Long, numCountInfo: Int): String {
         if (size <= 0) {
