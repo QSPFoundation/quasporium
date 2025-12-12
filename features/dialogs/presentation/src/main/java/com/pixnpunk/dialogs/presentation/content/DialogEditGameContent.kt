@@ -30,7 +30,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.pixnpunk.dto.GameEntry
-import com.pixnpunk.utils.FileUtil.receiveRelPath
+import com.pixnpunk.utils.FileUtil.receiveFileRelPath
 
 @Composable
 fun DialogEditGameContent(
@@ -125,7 +125,7 @@ fun DialogEditGameContent(
                     entry.gameFilesPath.forEach {
                         FilterChip(
                             onClick = { deselectFile(it) },
-                            label = { Text(it.receiveRelPath()) },
+                            label = { Text(it.receiveFileRelPath()) },
                             selected = true,
                             trailingIcon = {
                                 Icon(
