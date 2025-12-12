@@ -1,6 +1,7 @@
 package com.pixnpunk.quasporium
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -8,12 +9,12 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.launch
 import com.anggrayudi.storage.SimpleStorage.Companion.cleanupRedundantUriPermissions
+import com.anggrayudi.storage.SimpleStorage.Companion.hasStoragePermission
 import com.anggrayudi.storage.contract.FolderPickerResult
 import com.anggrayudi.storage.contract.OpenFolderPickerContract
 import com.anggrayudi.storage.contract.RequestStorageAccessContract
 import com.anggrayudi.storage.contract.RequestStorageAccessResult
 import com.anggrayudi.storage.contract.StoragePermissionContract
-import com.anggrayudi.storage.contract.StoragePermissionDeniedException
 import com.anggrayudi.storage.extension.startActivitySafely
 import com.anggrayudi.storage.extension.toDocumentFile
 import com.anggrayudi.storage.file.MimeType
@@ -72,7 +73,7 @@ class MainActivity : ComponentActivity() {
     }
 
     @OptIn(ExperimentalContracts::class)
-    private val filePickerLauncher = runCatching {
+    private val filePickerLauncher =
         registerForActivityResult(ActivityResultContracts.OpenDocument()) {
             if (it != null) {
                 val contentResolver = applicationContext.contentResolver
@@ -93,7 +94,33 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-    }
+
+
+    @OptIn(ExperimentalContracts::class)
+    private val filesPickerLauncher =
+        registerForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) {
+            if (it.isNotEmpty()) {
+                var docGameFilesList = mutableListOf<String>()
+                it.forEach { uri ->
+                    val contentResolver = applicationContext.contentResolver
+                    contentResolver.takePersistableUriPermission(
+                        uri,
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION
+                                or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                    )
+                    val file = uri.toDocumentFile(this)
+                    if (file.isWritableFile()) {
+                        docGameFilesList.add(file.uri.toString())
+                    }
+                }
+
+                thread { cleanupRedundantUriPermissions(applicationContext) }
+
+                if (docGameFilesList.isNotEmpty()) {
+                    root.processPickedFiles(docGameFilesList)
+                }
+            }
+        }
 
     private val storageAccessLauncher = runCatching {
         registerForActivityResult(RequestStorageAccessContract(get())) { result ->
@@ -128,32 +155,14 @@ class MainActivity : ComponentActivity() {
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q
+            && !hasStoragePermission(this)
+        ) {
+            storagePermissionLauncher.launch()
+        }
+
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-
-        dirPickerLauncher.onFailure {
-            when (it) {
-                is StoragePermissionDeniedException -> {
-                    storagePermissionLauncher.launch()
-                }
-            }
-        }
-
-        filePickerLauncher.onFailure {
-            when (it) {
-                is StoragePermissionDeniedException -> {
-                    storagePermissionLauncher.launch()
-                }
-            }
-        }
-
-        storageAccessLauncher.onFailure {
-            when (it) {
-                is StoragePermissionDeniedException -> {
-                    storagePermissionLauncher.launch()
-                }
-            }
-        }
 
         root = RealRootComponent(
             componentContext = defaultComponentContext(),
@@ -161,7 +170,10 @@ class MainActivity : ComponentActivity() {
                 dirPickerLauncher.getOrNull()?.launch(OpenFolderPickerContract.Options())
             },
             launchFilePicker = {
-                filePickerLauncher.getOrNull()?.launch(arrayOf(MimeType.IMAGE))
+                filePickerLauncher.launch(arrayOf(MimeType.IMAGE))
+            },
+            launchFilesPicker = {
+                filesPickerLauncher.launch(arrayOf(MimeType.BINARY_FILE))
             },
             launchStorageAccess = {
                 storageAccessLauncher.getOrNull()?.launch(RequestStorageAccessContract.Options())
