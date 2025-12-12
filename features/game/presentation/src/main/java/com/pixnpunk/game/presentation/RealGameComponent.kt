@@ -106,7 +106,9 @@ class RealGameComponent(
                 selectColor = { },
                 confirmMessage = { },
                 inputValue = { },
-                doPlayGame = { _, _ -> }
+                doPlayGame = { _, _ -> },
+                deselectDir = { },
+                selectFiles = { }
             )
         }
 

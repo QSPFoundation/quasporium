@@ -1,18 +1,26 @@
 package com.pixnpunk.dialogs.presentation.content
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddAPhoto
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -27,18 +35,21 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.utils.FileUtil.receiveRelPath
-import kotlinx.io.files.Path
 
 @Composable
 fun DialogAddGameContent(
     entry: GameEntry,
     selectFile: () -> Unit,
-    deselectFile: () -> Unit,
-    selectFolder: () -> Unit,
+    deselectFile: (String) -> Unit,
+    selectDir: () -> Unit,
+    deselectDir: () -> Unit,
+    selectFiles: () -> Unit,
     addGame: (GameEntry) -> Unit,
+    onDismiss: () -> Unit,
+    isAddLocalGame: Boolean,
     buttonText: String
 ) {
-    var gameName = entry.title.ifBlank { Path(entry.gameDirPath).name }
+    var gameName = entry.title.ifBlank { entry.gameDirPath.receiveRelPath() }
     var gameAuthor = entry.author
     var gameVersion = entry.version
 
@@ -47,8 +58,12 @@ fun DialogAddGameContent(
     val contentColor = MaterialTheme.colorScheme.onSurfaceVariant
     val backgroundColor = MaterialTheme.colorScheme.surfaceContainerHigh
 
+    val scrollState = rememberScrollState()
+
     Column(
-        modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
+        modifier = Modifier
+            .padding(horizontal = 24.dp, vertical = 16.dp)
+            .verticalScroll(scrollState),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Box(
@@ -80,7 +95,7 @@ fun DialogAddGameContent(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .size(24.dp),
-                        onClick = deselectFile,
+                        onClick = { deselectFile("") },
                     ) {
                         Icon(
                             modifier = Modifier.background(backgroundColor),
@@ -112,30 +127,105 @@ fun DialogAddGameContent(
             singleLine = true,
             label = { Text("Game version") }
         )
-        OutlinedButton(
+        FlowRow(
             modifier = Modifier.fillMaxWidth(),
-            onClick = selectFolder
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            if (entry.gameDirPath.isNotEmpty()) {
-                Text(entry.gameDirPath.receiveRelPath())
-            } else {
-                Text("Select game folder")
+            FilterChip(
+                onClick =
+                    if (entry.gameDirPath.isNotEmpty()) { deselectDir } else { selectDir },
+                label = {
+                    if (entry.gameDirPath.isNotEmpty()) {
+                        Text(entry.gameDirPath.receiveRelPath())
+                    } else {
+                        Text("Select game folder")
+                    }
+                },
+                selected = entry.gameDirPath.isNotEmpty(),
+                trailingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Clear,
+                        contentDescription = null
+                    )
+                }
+            )
+            if (isAddLocalGame) {
+                AnimatedVisibility(
+                    visible = entry.gameDirPath.isNotEmpty()
+                ) {
+                    if (entry.gameFilesPath.isNotEmpty()) {
+                        entry.gameFilesPath.forEach {
+                            FilterChip(
+                                onClick = { deselectFile(it) },
+                                label = { Text(it.receiveRelPath()) },
+                                selected = true,
+                                trailingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Clear,
+                                        contentDescription = null
+                                    )
+                                }
+                            )
+                        }
+                    }
+                }
+                AnimatedVisibility(
+                    visible = entry.gameDirPath.isNotEmpty()
+                ) {
+                    FilterChip(
+                        onClick = selectFiles,
+                        label = { Text("Select game files") },
+                        selected = false,
+                        trailingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = null
+                            )
+                        }
+                    )
+                }
             }
         }
-        FilledTonalButton(
-            modifier = Modifier.fillMaxWidth(),
-            onClick = {
-                addGame(
-                    entry.copy(
-                        title = gameName,
-                        author = gameAuthor,
-                        version = gameVersion
+        if (!isAddLocalGame) {
+            FilledTonalButton(
+                onClick = {
+                    addGame(
+                        entry.copy(
+                            title = gameName,
+                            author = gameAuthor,
+                            version = gameVersion
+                        )
                     )
-                )
-            },
-            enabled = isButtonEnabled
-        ) {
-            Text(buttonText)
+                },
+                enabled = isButtonEnabled
+            ) {
+                Text(buttonText)
+            }
+        } else {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                FilledTonalButton(
+                    onClick = {
+                        addGame(
+                            entry.copy(
+                                title = gameName,
+                                author = gameAuthor,
+                                version = gameVersion
+                            )
+                        )
+                    },
+                    enabled = isButtonEnabled
+                ) {
+                    Text(buttonText)
+                }
+                OutlinedButton(
+                    onClick = onDismiss
+                ) {
+                    Text("Cancel")
+                }
+            }
         }
     }
 }
