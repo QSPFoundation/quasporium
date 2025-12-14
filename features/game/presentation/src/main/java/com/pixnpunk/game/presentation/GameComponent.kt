@@ -32,7 +32,7 @@ sealed interface GameComponent {
 
     fun doShowDialog()
     fun doShowDialog(
-        inputString: String,
+        inputString: String = "",
         dialogState: LibTypeDialog,
         inputListItems: List<LibGenItem>? = null
     )

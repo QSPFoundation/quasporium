@@ -131,22 +131,15 @@ object FileUtil : KoinComponent {
     fun Uri.readFileContents(): ByteArray? {
         return runCatching {
             this.openInputStream(get()).use { it?.readBytes() ?: throw NullPointerException() }
-        }.getOrElse {
-//            Firebase.crashlytics.log("Error reading file: $this | Throwable: $it")
-            null
-        }
+        }.getOrElse { null }
     }
 
     fun Uri.writeFileContents(dataToWrite: ByteArray) {
-        get<Context>().contentResolver
-            .runCatching {
-                openOutputStream(this@writeFileContents).use { out ->
-                    out?.write(dataToWrite) ?: throw IOException("Input is NULL!")
-                }
+        get<Context>().contentResolver.runCatching {
+            openOutputStream(this@writeFileContents).use { out ->
+                out?.write(dataToWrite) ?: throw IOException("Input is NULL!")
             }
-            .onFailure {
-//                Firebase.crashlytics.log("Error writing in file: $this | Throwable: $it")
-            }
+        }
     }
 
     suspend fun unpackFileToDir(

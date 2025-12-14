@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -15,21 +16,28 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun DialogInputValueContent(
+    isError: Boolean,
     initialValue: String,
+    supportValue: String,
+    supportErrorValue: String,
+    keyboardOptions: KeyboardOptions,
     label: @Composable () -> Unit,
     inputValue: (String) -> Unit,
-    keyboardOptions: KeyboardOptions,
+    cleanError: () -> Unit,
     onDismiss: () -> Unit
 ) {
     var enterValue by remember { mutableStateOf(initialValue) }
 
     val isEnable = when (keyboardOptions.keyboardType) {
         KeyboardType.Number -> enterValue.toIntOrNull() != null
+        KeyboardType.Unspecified -> true
         else -> false
     }
 
@@ -40,10 +48,25 @@ fun DialogInputValueContent(
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
             value = enterValue,
-            onValueChange = { enterValue = it },
+            onValueChange = { enterValue = it; if (isError) cleanError() },
             label = label,
             singleLine = true,
-            keyboardOptions = keyboardOptions
+            isError = isError,
+            keyboardOptions = keyboardOptions,
+            supportingText = {
+                if (isError) {
+                    Text(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = AnnotatedString.fromHtml(supportErrorValue),
+                        color = MaterialTheme.colorScheme.error
+                    )
+                } else if (supportValue.isNotBlank()) {
+                    Text(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = AnnotatedString.fromHtml(supportValue)
+                    )
+                }
+            }
         )
         Row(
             modifier = Modifier.fillMaxWidth(),

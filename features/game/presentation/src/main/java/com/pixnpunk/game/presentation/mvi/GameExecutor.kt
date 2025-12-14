@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import com.anggrayudi.storage.file.MimeType.BINARY_FILE
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
+import com.pixnpunk.dto.InputState
 import com.pixnpunk.dto.LibReturnValue
 import com.pixnpunk.dto.LibTypeDialog
 import com.pixnpunk.dto.LibTypePopup
@@ -13,9 +14,6 @@ import com.pixnpunk.natives.SupervisorViewModel
 import com.pixnpunk.settings.SettingsRepository
 import com.pixnpunk.utils.PathUtil.getImageUriFromPath
 import com.pixnpunk.utils.PathUtil.normalizeContentPath
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.launch
@@ -25,11 +23,21 @@ internal class GameExecutor(
     private val service: SupervisorViewModel,
     private val settingsRepo: SettingsRepository
 ) : CoroutineExecutor<GameStore.Intent, GameStore.Action, GameStore.State, GameStore.Message, GameStore.Label>() {
-    private val outScope = CoroutineScope(Dispatchers.Default)
 
     override fun executeIntent(intent: GameStore.Intent) {
         when (intent) {
-            is GameStore.Intent.CreateLoadIntent -> {
+            is GameStore.Intent.OnLoadFile -> scope.launch { service.onLoadFile(intent.fileUri) }
+
+            is GameStore.Intent.OnSaveFile -> scope.launch { service.onSaveFile(intent.fileUri) }
+
+            is GameStore.Intent.OnExecCode -> scope.launch { service.onCodeExec(intent.codeToExec) }
+
+            is GameStore.Intent.OnSelectMenuItem ->
+                service.putReturnValue(
+                    LibReturnValue(dialogNumValue = intent.index)
+                )
+
+            is GameStore.Intent.CreateLoadIntent ->
                 publish(
                     GameStore.Label.ShowLoadFilePicker(
                         Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
@@ -37,10 +45,10 @@ internal class GameExecutor(
                             putExtra(Intent.ACTION_GET_CONTENT, true)
                             setType(BINARY_FILE)
                         }
-                    ))
-            }
+                    )
+                )
 
-            is GameStore.Intent.CreateSaveIntent -> {
+            is GameStore.Intent.CreateSaveIntent ->
                 publish(
                     GameStore.Label.ShowSaveFilePicker(
                         Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
@@ -51,45 +59,24 @@ internal class GameExecutor(
                             )
                             setType(BINARY_FILE)
                         }
-                    ))
-            }
-
-            is GameStore.Intent.OnLoadFile -> {
-                outScope.launch {
-                    service.onLoadFile(intent.fileUri)
-                }
-            }
-
-            is GameStore.Intent.OnSaveFile -> {
-                outScope.launch {
-                    service.onSaveFile(intent.fileUri)
-                }
-            }
-
-            is GameStore.Intent.OnExecCode -> {
-                outScope.launch {
-                    service.onCodeExec(intent.codeToExec)
-                }
-            }
-
-            is GameStore.Intent.OnSelectMenuItem -> {
-                service.putReturnValue(
-                    LibReturnValue(dialogNumValue = intent.index)
-                )
-            }
-
-            is GameStore.Intent.OnEnterValue -> {
-                if (intent.isBox) {
-                    service.putReturnValue(
-                        LibReturnValue(dialogTextValue = intent.inputString)
                     )
-                } else {
-                    service.onUseInputArea(inputString = intent.inputString)
-                }
-            }
+                )
 
-            is GameStore.Intent.StartGameDialogFlow -> {
-                outScope.launch {
+            is GameStore.Intent.OnInputValue ->
+                when (intent.state) {
+                    InputState.INPUT_WITH_MESSAGE_AREA ->
+                        service.onUseInputArea(intent.inputString)
+
+                    InputState.INPUT_WITH_MESSAGE_BOX ->
+                        service.putReturnValue(
+                            LibReturnValue(dialogTextValue = intent.inputString)
+                        )
+
+                    else -> service.onCodeExec(intent.inputString)
+                }
+
+            is GameStore.Intent.StartGameDialogFlow ->
+                scope.launch {
                     service.gameDialogFlow.collect { items ->
                         val payload = if (items.first == LibTypeDialog.DIALOG_PICTURE) {
                             items.second
@@ -110,24 +97,52 @@ internal class GameExecutor(
                         }
                     }
                 }
-            }
         }
     }
 
     override fun executeAction(action: GameStore.Action) {
         when (action) {
-            is GameStore.Action.StartGameStateFlow -> {
-                outScope.launch {
+            is GameStore.Action.StartGameStateFlow ->
+                scope.launch {
                     service.gameStateFlow.collect { state ->
-                        scope.launch {
-                            dispatch(GameStore.Message.UpdateGameStatus(state.gameRunning))
-                        }
+                        dispatch(GameStore.Message.UpdateGameStatus(state.gameRunning))
                     }
                 }
-            }
 
-            is GameStore.Action.StartGamePopupFlow -> {
-                outScope.launch {
+            is GameStore.Action.StartGameSettingsFlow ->
+                scope.launch {
+                    settingsRepo.settingsFlow
+                        .filter { it.isUseExecString }
+                        .collect { dispatch(GameStore.Message.UpdateExecutorStatus(it.isUseExecString)) }
+                }
+
+            is GameStore.Action.StartGameElementVisFlow ->
+                scope.launch {
+                    service.gameElementVis
+                        .filterNot { (window, _) -> window == LibTypeWindow.ACTS }
+                        .collect { (window, bool) ->
+                            when (window) {
+                                LibTypeWindow.OBJS -> {
+                                    dispatch(GameStore.Message.UpdateVisObjElement(bool))
+                                }
+
+                                LibTypeWindow.VARS -> {
+                                    dispatch(GameStore.Message.UpdateVisExtraElement(bool))
+                                }
+
+                                LibTypeWindow.INPUT -> {
+                                    dispatch(GameStore.Message.UpdateVisInputElement(bool))
+                                }
+
+                                else -> {
+                                    // do nothing
+                                }
+                            }
+                        }
+                }
+
+            is GameStore.Action.StartGamePopupFlow ->
+                scope.launch {
                     service.gamePopupFlow.collect { type ->
                         when (type) {
                             LibTypePopup.POPUP_SAVE -> {
@@ -161,52 +176,6 @@ internal class GameExecutor(
                         }
                     }
                 }
-            }
-
-            is GameStore.Action.StartGameElementVisFlow -> {
-                outScope.launch {
-                    service.gameElementVis
-                        .filterNot { (window, _) -> window == LibTypeWindow.ACTS }
-                        .collect { (window, bool) ->
-                            when (window) {
-                                LibTypeWindow.OBJS -> {
-                                    scope.launch {
-                                        dispatch(GameStore.Message.UpdateVisObjElement(bool))
-                                    }
-                                }
-
-                                LibTypeWindow.VARS -> {
-                                    scope.launch {
-                                        dispatch(GameStore.Message.UpdateVisExtraElement(bool))
-                                    }
-                                }
-
-                                LibTypeWindow.INPUT -> {
-                                    scope.launch {
-                                        dispatch(GameStore.Message.UpdateVisInputElement(bool))
-                                    }
-                                }
-
-                                else -> {
-                                    // do nothing
-                                }
-                            }
-                        }
-                }
-            }
-
-            is GameStore.Action.StartGameSettingsFlow -> {
-                outScope.launch {
-                    settingsRepo.settingsFlow
-                        .filter { it.isUseExecString }
-                        .collect { dispatch(GameStore.Message.UpdateExecutorStatus(it.isUseExecString)) }
-                }
-            }
         }
-    }
-
-    override fun dispose() {
-        super.dispose()
-        outScope.cancel()
     }
 }

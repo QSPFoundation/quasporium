@@ -88,6 +88,11 @@ object HtmlUtil {
         return HTML_PATTERN.matcher(this).find()
     }
 
+    fun String.removeImgTags(): String =
+        Jsoup.parse(this).apply {
+            select("img").remove()
+        }.html()
+
     /**
      * Remove HTML tags from the `html` string and return the resulting string.
      */

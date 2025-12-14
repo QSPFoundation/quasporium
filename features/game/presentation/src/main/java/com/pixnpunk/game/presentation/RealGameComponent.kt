@@ -93,22 +93,9 @@ class RealGameComponent(
                 componentContext = context,
                 dialogsConfig = config,
                 onCleanError = ::onCleanError,
-                onEnterValue = { onEnterValue(it.first, it.second) },
-                onExecValue = { onExecValue(it) },
-                onSelMenuItem = { onSelMenuItem(it) },
-                onDismissed = dialogNavigation::dismiss,
-                addNewEntry = { },
-                editEntry = { },
-                downloadNewEntry = { },
-                selectFolder = { },
-                selectFile = { },
-                deselectFile = { },
-                selectColor = { },
-                confirmMessage = { },
-                inputValue = { },
-                doPlayGame = { _, _ -> },
-                deselectDir = { },
-                selectFiles = { }
+                inputValue = ::onInputValue,
+                confirmMessage = ::onConfirmMessage,
+                onDismissed = dialogNavigation::dismiss
             )
         }
 
@@ -128,12 +115,18 @@ class RealGameComponent(
         store.accept(GameStore.Intent.CreateLoadIntent)
     }
 
-    private fun onSelMenuItem(index: Int) {
-        store.accept(GameStore.Intent.OnSelectMenuItem(index))
+    private fun onConfirmMessage(msg: Pair<OutputState, Int>) {
+        when (msg.first) {
+            OutputState.OUTPUT_LIST ->
+                store.accept(GameStore.Intent.OnSelectMenuItem(msg.second))
+            else -> {}
+        }
     }
 
-    private fun onEnterValue(inputString: String, isBox: Boolean) {
-        store.accept(GameStore.Intent.OnEnterValue(inputString, isBox))
+    private fun onInputValue(msg: Pair<InputState, String>) {
+        store.accept(
+            GameStore.Intent.OnInputValue(msg.first, msg.second)
+        )
     }
 
     private fun onExecValue(inputString: String) {
@@ -144,8 +137,8 @@ class RealGameComponent(
         val oldConfig = dialogSlot.child?.configuration as DialogsConfig
         dialogNavigation.activate(
             configuration = oldConfig.copy(
-                isDialogInputError = false,
-                dialogInputErrorString = ""
+                isError = false,
+                supportErrorValue = ""
             )
         )
     }
@@ -159,13 +152,11 @@ class RealGameComponent(
         val currentState = store.state
         if (currentState.isInputEnabled) {
             doShowDialog(
-                inputString = "Input something",
-                dialogState = LibTypeDialog.DIALOG_INPUT
+                dialogState = LibTypeDialog.DIALOG_INPUT_AREA
             )
         } else if (currentState.isExecutorEnabled) {
             doShowDialog(
-                inputString = "QSP Terminal",
-                dialogState = LibTypeDialog.DIALOG_INPUT
+                dialogState = LibTypeDialog.DIALOG_INPUT_EXEC
             )
         }
     }
@@ -181,8 +172,8 @@ class RealGameComponent(
                 if (oldConfig != null && oldConfig.dialogsState == DialogsState.DIALOG_OUTPUT_VALUE) {
                     dialogNavigation.activate(
                         configuration = oldConfig.copy(
-                            isDialogInputError = true,
-                            dialogInputErrorString = inputString
+                            isError = true,
+                            supportErrorValue = inputString
                         )
                     )
                 } else {
@@ -206,15 +197,21 @@ class RealGameComponent(
                 )
             }
 
-            LibTypeDialog.DIALOG_INPUT ->
+            LibTypeDialog.DIALOG_INPUT_BOX,
+            LibTypeDialog.DIALOG_INPUT_AREA,
+            LibTypeDialog.DIALOG_INPUT_EXEC ->
                 dialogNavigation.activate(
                     configuration = DialogsConfig(
                         dialogsState = DialogsState.DIALOG_INPUT_VALUE,
-                        inputState = InputState.INPUT_WITH_MESSAGE,
-                        outputValue = inputString
+                        inputState =
+                            when (dialogState) {
+                                LibTypeDialog.DIALOG_INPUT_BOX -> InputState.INPUT_WITH_MESSAGE_BOX
+                                LibTypeDialog.DIALOG_INPUT_AREA -> InputState.INPUT_WITH_MESSAGE_AREA
+                                else -> InputState.INPUT_WITH_MESSAGE_EXEC
+                            },
+                        supportValue = inputString
                     )
                 )
-
 
             LibTypeDialog.DIALOG_PICTURE -> {
                 dialogNavigation.activate(
@@ -225,6 +222,7 @@ class RealGameComponent(
                     )
                 )
             }
+
             LibTypeDialog.DIALOG_MENU ->
                 dialogNavigation.activate(
                     configuration = DialogsConfig(
@@ -287,8 +285,8 @@ class RealGameComponent(
                     ).apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK }.also {
                         try {
                             onStartActivity(it)
-                        } catch (e: ActivityNotFoundException) {
-//                            Firebase.crashlytics.log("shouldOverrideUrlLoading: $e")
+                        } catch (_: ActivityNotFoundException) {
+
                         }
                     }
 
@@ -299,8 +297,8 @@ class RealGameComponent(
                     ).apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK }.also {
                         try {
                             onStartActivity(it)
-                        } catch (e: ActivityNotFoundException) {
-//                            Firebase.crashlytics.log("shouldOverrideUrlLoading: $e")
+                        } catch (_: ActivityNotFoundException) {
+
                         }
                     }
             }
@@ -329,13 +327,7 @@ class RealGameComponent(
                 } else {
                     throw FileNotFoundException()
                 }
-            }.getOrElse {
-//                if (getSettingsController().isUseImageDebug) {
-//                    doShowErrorDialog(uri.getPath(), ErrorType.IMAGE_ERROR)
-//                }
-//                Firebase.crashlytics.log("shouldOverrideUrlLoading: ERROR! | Cause: $it")
-                super.shouldInterceptRequest(view, request)
-            }
+            }.getOrElse { super.shouldInterceptRequest(view, request) }
         }
     }
 

@@ -168,15 +168,15 @@ class RealRootComponent(
                 editEntry = { store.accept(RootStore.Intent.EditGame(it)) },
                 downloadNewEntry = { store.accept(RootStore.Intent.DownloadNewGame(it)) },
                 selectFolder = launchDirPicker,
-                deselectDir = this::remDirSelect,
+                deselectDir = ::remDirSelect,
                 selectFile = launchFilePicker,
                 selectFiles = launchFilesPicker,
-                deselectFile = this::remFileSelect,
+                deselectFile = ::remFileSelect,
                 selectColor = {
                     store.accept(RootStore.Intent.UpdateColorConfig(it.first, it.second))
                 },
                 confirmMessage = {
-                    when (it) {
+                    when (it.first) {
                         OutputState.OUTPUT_REQUEST_PERM -> launchStorageAccess()
                         OutputState.OUTPUT_SIMPLE_MSG -> {}
                         OutputState.OUTPUT_IMAGE -> {}
@@ -188,10 +188,6 @@ class RealRootComponent(
                 },
                 doPlayGame = { entry, value -> launchEngineIntent(entry to value) },
                 onDismissed = dialogsNavigation::dismiss,
-                onCleanError = { },
-                onEnterValue = { },
-                onExecValue = { },
-                onSelMenuItem = { },
             )
         }
 
