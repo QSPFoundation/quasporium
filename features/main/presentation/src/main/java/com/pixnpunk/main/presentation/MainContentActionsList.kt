@@ -30,6 +30,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.AsyncImage
 import com.pixnpunk.dto.LibGenItem
 import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.utils.ViewUtil.toTypeface
@@ -73,6 +74,14 @@ fun MainContentActionsList(
                     colors = ListItemDefaults.colors(
                         containerColor = Color(settings.backColor)
                     ),
+                    leadingContent = {
+                        if (act.imagePath.isNotBlank()) {
+                            AsyncImage(
+                                model = act.imagePath,
+                                contentDescription = ""
+                            )
+                        }
+                    },
                     headlineContent = {
                         Text(
                             text = AnnotatedString.fromHtml(
