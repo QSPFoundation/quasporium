@@ -30,7 +30,7 @@ else ()
 
     FetchContent_Declare(qslibsdh-external
             GIT_REPOSITORY https://github.com/l3ger0j/QSLibSDH.git
-            GIT_TAG 800ac9c4e034a35f4a79fd3fd6b3e0bf3d902a48
+            GIT_TAG 641c49201e029dff59c2a8f8325f2fe9c5ff5c77
             GIT_PROGRESS true
             SUBBUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/qslibsdh-download"
             SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/qslibsdh-src"
