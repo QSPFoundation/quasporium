@@ -7,10 +7,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.arkivanov.decompose.extensions.compose.experimental.panels.ChildPanels
 import com.arkivanov.decompose.extensions.compose.experimental.panels.ChildPanelsAnimators
+import com.arkivanov.decompose.extensions.compose.experimental.panels.HorizontalChildPanelsLayout
 import com.arkivanov.decompose.extensions.compose.experimental.stack.animation.fade
 import com.arkivanov.decompose.extensions.compose.experimental.stack.animation.plus
 import com.arkivanov.decompose.extensions.compose.experimental.stack.animation.scale
@@ -33,7 +35,10 @@ fun RootContent(
     component: RootComponent,
     settingsRepository: SettingsRepository
 ) {
+    ChildPanelsModeChangedEffect(component::setMode)
+
     val dialogSlot by component.dialogSlot.subscribeAsState()
+    val settings by settingsRepository.settingsFlow.collectAsState()
 
     ProvidePreferenceLocals {
         val pref by LocalPreferenceFlow.current.collectAsState()
@@ -72,8 +77,6 @@ fun RootContent(
         settingsRepository.emitMap(pref.asMap())
     }
 
-    val settings by settingsRepository.settingsFlow.collectAsState()
-
     QuasporiumTheme(
         darkTheme =
             when {
@@ -94,13 +97,7 @@ fun RootContent(
             detailsChild = { DetailsContent(it.instance, settings) },
             extraChild = { SettingsContent(it.instance, settingsRepository) },
             animators = ChildPanelsAnimators(single = fade() + scale(), dual = fade() to fade()),
-//            predictiveBackParams = { // See the docs below
-//                PredictiveBackParams(
-//                    backHandler = component.backHandler,
-//                    onBack = component::onBackClicked,
-//                    animatable = ::materialPredictiveBackAnimatable,
-//                )
-//            },
+            layout = remember { HorizontalChildPanelsLayout(dualWeights = Pair(2F, 1F)) }
         )
     }
 }

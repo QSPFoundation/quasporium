@@ -9,16 +9,16 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import com.pixnpunk.game.presentation.GameComponent
 import com.pixnpunk.game.presentation.R
 
 @Composable
 fun RootAppBarMenu(
-    component: GameComponent
+    doCreateSaveIntent: () -> Unit,
+    doCreateLoadIntent: () -> Unit
 ) {
     Row {
         Box {
-            IconButton(onClick = component::doCreateSaveIntent) {
+            IconButton(onClick = doCreateSaveIntent) {
                 Icon(
                     imageVector = Icons.Default.Download,
                     contentDescription = stringResource(R.string.act_save)
@@ -26,7 +26,7 @@ fun RootAppBarMenu(
             }
         }
         Box {
-            IconButton(onClick = component::doCreateLoadIntent) {
+            IconButton(onClick = doCreateLoadIntent) {
                 Icon(
                     imageVector = Icons.Default.Upload,
                     contentDescription = stringResource(R.string.act_load)

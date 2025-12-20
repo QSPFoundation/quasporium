@@ -14,7 +14,6 @@ import com.anggrayudi.storage.extension.toDocumentFile
 import com.anggrayudi.storage.file.MimeType
 import com.anggrayudi.storage.file.child
 import com.arkivanov.decompose.ComponentContext
-import com.arkivanov.decompose.DelicateDecomposeApi
 import com.arkivanov.decompose.router.slot.ChildSlot
 import com.arkivanov.decompose.router.slot.SlotNavigation
 import com.arkivanov.decompose.router.slot.activate
@@ -69,7 +68,9 @@ class RealGameComponent(
 
     private var rootDir: DocumentFile? = null
 
-    private val navigation = StackNavigation<ChildConfig>()
+    private val standardNavigation = StackNavigation<StandardChildConfig>()
+    private val expandNavigation = StackNavigation<ExpandChildConfig>()
+
     private val dialogNavigation = SlotNavigation<DialogsConfig>()
     private val store = instanceKeeper.getStore {
         RealGameStore(DefaultStoreFactory()).create()
@@ -78,12 +79,24 @@ class RealGameComponent(
     @OptIn(ExperimentalCoroutinesApi::class)
     override val model: StateFlow<GameStore.State> = store.stateFlow
     override val label = store.labels
-    override val childStack: Value<ChildStack<*, GameComponent.Child>> = childStack(
-        source = navigation,
-        serializer = serializer(),
-        initialConfiguration = ChildConfig.Main,
-        childFactory = ::createChild
-    )
+
+    override val childStandardStack: Value<ChildStack<*, GameComponent.StandardChild>> =
+        childStack(
+            key = "StandardChildStack",
+            source = standardNavigation,
+            serializer = serializer(),
+            initialConfiguration = StandardChildConfig.Main,
+            childFactory = ::createStandardChild
+        )
+    override val childExpandStack: Value<ChildStack<*, GameComponent.ExpandChild>> =
+        childStack(
+            key = "ExpandChildStack",
+            source = expandNavigation,
+            serializer = serializer(),
+            initialConfiguration = ExpandChildConfig.MainActions,
+            childFactory = ::createExpandedChild
+        )
+
     override val dialogSlot: Value<ChildSlot<*, DialogsComponent>> =
         childSlot(
             source = dialogNavigation,
@@ -119,6 +132,7 @@ class RealGameComponent(
         when (msg.first) {
             OutputState.OUTPUT_LIST ->
                 store.accept(GameStore.Intent.OnSelectMenuItem(msg.second))
+
             else -> {}
         }
     }
@@ -143,9 +157,12 @@ class RealGameComponent(
         )
     }
 
-    @OptIn(DelicateDecomposeApi::class)
-    override fun navigation(child: ChildConfig) {
-        navigation.bringToFront(child)
+    override fun standardNavigation(child: StandardChildConfig) {
+        standardNavigation.bringToFront(child)
+    }
+
+    override fun expandNavigation(child: ExpandChildConfig) {
+        expandNavigation.bringToFront(child)
     }
 
     override fun doShowDialog() {
@@ -331,13 +348,12 @@ class RealGameComponent(
         }
     }
 
-
-    private fun createChild(
-        config: ChildConfig,
+    private fun createStandardChild(
+        config: StandardChildConfig,
         componentContext: ComponentContext
-    ): GameComponent.Child = when (config) {
-        is ChildConfig.Main -> {
-            GameComponent.Child.MainChild(
+    ): GameComponent.StandardChild = when (config) {
+        is StandardChildConfig.Main -> {
+            GameComponent.StandardChild.MainChild(
                 RealMainComponent(
                     componentContext = componentContext,
                     gameWebViewClient = GameWebViewClient(),
@@ -345,8 +361,8 @@ class RealGameComponent(
             )
         }
 
-        is ChildConfig.Extra -> {
-            GameComponent.Child.ExtraChild(
+        is StandardChildConfig.Extra -> {
+            GameComponent.StandardChild.ExtraChild(
                 RealExtraComponent(
                     componentContext = componentContext,
                     gameWebViewClient = GameWebViewClient(),
@@ -354,8 +370,39 @@ class RealGameComponent(
             )
         }
 
-        is ChildConfig.Object -> {
-            GameComponent.Child.ObjectChild(
+        is StandardChildConfig.Object -> {
+            GameComponent.StandardChild.ObjectChild(
+                RealObjectComponent(
+                    componentContext = componentContext
+                )
+            )
+        }
+    }
+
+    private fun createExpandedChild(
+        config: ExpandChildConfig,
+        componentContext: ComponentContext
+    ): GameComponent.ExpandChild = when (config) {
+        is ExpandChildConfig.MainActions -> {
+            GameComponent.ExpandChild.MainActionsChild(
+                RealMainComponent(
+                    componentContext = componentContext,
+                    gameWebViewClient = GameWebViewClient(),
+                )
+            )
+        }
+
+        is ExpandChildConfig.Extra -> {
+            GameComponent.ExpandChild.ExtraChild(
+                RealExtraComponent(
+                    componentContext = componentContext,
+                    gameWebViewClient = GameWebViewClient(),
+                )
+            )
+        }
+
+        is ExpandChildConfig.Object -> {
+            GameComponent.ExpandChild.ObjectChild(
                 RealObjectComponent(
                     componentContext = componentContext
                 )
@@ -364,14 +411,26 @@ class RealGameComponent(
     }
 
     @Serializable
-    sealed class ChildConfig {
+    sealed class StandardChildConfig {
         @Serializable
-        data object Main : ChildConfig()
+        data object Main : StandardChildConfig()
 
         @Serializable
-        data object Extra : ChildConfig()
+        data object Extra : StandardChildConfig()
 
         @Serializable
-        data object Object : ChildConfig()
+        data object Object : StandardChildConfig()
+    }
+
+    @Serializable
+    sealed class ExpandChildConfig {
+        @Serializable
+        data object MainActions : ExpandChildConfig()
+
+        @Serializable
+        data object Extra : ExpandChildConfig()
+
+        @Serializable
+        data object Object : ExpandChildConfig()
     }
 }
