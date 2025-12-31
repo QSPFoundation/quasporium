@@ -1,44 +1,52 @@
 package com.pixnpunk.quasporium
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
+import androidx.compose.material3.adaptive.layout.AnimatedPane
+import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
+import androidx.compose.material3.adaptive.navigation.NavigableListDetailPaneScaffold
+import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalFocusManager
 import com.arkivanov.decompose.ExperimentalDecomposeApi
-import com.arkivanov.decompose.extensions.compose.experimental.panels.ChildPanels
-import com.arkivanov.decompose.extensions.compose.experimental.panels.ChildPanelsAnimators
-import com.arkivanov.decompose.extensions.compose.experimental.panels.HorizontalChildPanelsLayout
-import com.arkivanov.decompose.extensions.compose.experimental.stack.animation.fade
-import com.arkivanov.decompose.extensions.compose.experimental.stack.animation.plus
-import com.arkivanov.decompose.extensions.compose.experimental.stack.animation.scale
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.pixnpunk.details.presentation.DetailsContent
+import com.pixnpunk.details.presentation.RealDetailsComponent
 import com.pixnpunk.dialogs.presentation.DialogsMainContent
+import com.pixnpunk.dialogs.presentation.DialogsState
 import com.pixnpunk.dto.ColorPickerState
 import com.pixnpunk.dto.InputState
+import com.pixnpunk.dto.asString
+import com.pixnpunk.dto.stringToEntry
 import com.pixnpunk.quasporium.mvi.RootStore
 import com.pixnpunk.quasporium.theme.QuasporiumTheme
 import com.pixnpunk.settings.SettingsRepository
+import com.pixnpunk.settings.presentation.RealSettingsComponent
 import com.pixnpunk.settings.presentation.SettingsContent
+import com.pixnpunk.stock.presentation.RealStockComponent
 import com.pixnpunk.stock.presentation.StockContent
+import kotlinx.coroutines.launch
 import me.zhanghai.compose.preference.LocalPreferenceFlow
 import me.zhanghai.compose.preference.ProvidePreferenceLocals
 
-@OptIn(ExperimentalDecomposeApi::class)
+@OptIn(ExperimentalDecomposeApi::class, ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 fun RootContent(
     component: RootComponent,
     settingsRepository: SettingsRepository
 ) {
-    ChildPanelsModeChangedEffect(component::setMode)
-
     val dialogSlot by component.dialogSlot.subscribeAsState()
     val settings by settingsRepository.settingsFlow.collectAsState()
+
+    val scope = rememberCoroutineScope()
+
+    val scaffoldNavigator = rememberListDetailPaneScaffoldNavigator<String>()
+
+    val focusManager = LocalFocusManager.current
 
     ProvidePreferenceLocals {
         val pref by LocalPreferenceFlow.current.collectAsState()
@@ -90,14 +98,107 @@ fun RootContent(
             DialogsMainContent(it, settingsRepository)
         }
 
-        ChildPanels(
-            modifier = Modifier.background(MaterialTheme.colorScheme.surface),
-            panels = component.childPanel,
-            mainChild = { StockContent(it.instance, settings) },
-            detailsChild = { DetailsContent(it.instance, settings) },
-            extraChild = { SettingsContent(it.instance, settingsRepository) },
-            animators = ChildPanelsAnimators(single = fade() + scale(), dual = fade() to fade()),
-            layout = remember { HorizontalChildPanelsLayout(dualWeights = Pair(2F, 1F)) }
+        NavigableListDetailPaneScaffold(
+            navigator = scaffoldNavigator,
+            listPane = {
+                val stockComponent = rememberRetainedComponent(key = "StockComponent") {
+                    RealStockComponent(
+                        componentContext = it,
+                        showDialogAdd = component::doShowDialog,
+                        navigateToSettings = {
+                            scope.launch {
+                                scaffoldNavigator.navigateTo(
+                                    ListDetailPaneScaffoldRole.Extra
+                                )
+                                focusManager.clearFocus(force = true)
+                            }
+                        },
+                        navigateToDetails = { inEntry ->
+                            component.replaceLinkToDesk(
+                                entry = inEntry,
+                                completeScope = { entry ->
+                                    scope.launch {
+                                        scaffoldNavigator.navigateTo(
+                                            ListDetailPaneScaffoldRole.Detail,
+                                            entry.asString()
+                                        )
+                                        focusManager.clearFocus(force = true)
+                                    }
+                                }
+                            )
+                        }
+                    )
+                }
+                AnimatedPane {
+                    StockContent(stockComponent, settings)
+                }
+            },
+            detailPane = {
+                scaffoldNavigator.currentDestination?.contentKey?.let { entry ->
+                    val detailsContent = rememberRetainedComponent(key = "DetailsComponent") {
+                        RealDetailsComponent(
+                            componentContext = it,
+                            showSelectGameDialog = { e ->
+                                component.doShowDialog(
+                                    state = DialogsState.DIALOG_SELECT_RUN_GAME,
+                                    entry = e
+                                )
+                            },
+                            showEditGameDialog = { e ->
+                                component.doShowDialog(
+                                    state = DialogsState.DIALOG_EDIT_GAME,
+                                    entry = e
+                                )
+                            },
+                            showDownloadGameDialog = { e ->
+                                component.doShowDialog(
+                                    state = DialogsState.DIALOG_DOWNLOAD_GAME,
+                                    entry = e
+                                )
+                            },
+                            onDismissed = {
+                                scope.launch {
+                                    focusManager.clearFocus(force = true)
+                                    if (scaffoldNavigator.canNavigateBack()) {
+                                        scaffoldNavigator.navigateBack()
+                                    } else {
+                                        scaffoldNavigator.navigateTo(
+                                            ListDetailPaneScaffoldRole.List
+                                        )
+                                    }
+                                }
+                            },
+                        )
+                    }
+                    AnimatedPane {
+                        DetailsContent(detailsContent, settings, entry.stringToEntry())
+                    }
+                }
+            },
+            extraPane = {
+                val settingsContent = rememberRetainedComponent(key = "SettingsComponent") {
+                    RealSettingsComponent(
+                        componentContext = it,
+                        showColorDialog = component::doShowDialog,
+                        showInputDialog = component::doShowDialog,
+                        onDismissed = {
+                            scope.launch {
+                                focusManager.clearFocus(force = true)
+                                if (scaffoldNavigator.canNavigateBack()) {
+                                    scaffoldNavigator.navigateBack()
+                                } else {
+                                    scaffoldNavigator.navigateTo(
+                                        ListDetailPaneScaffoldRole.List
+                                    )
+                                }
+                            }
+                        }
+                    )
+                }
+                AnimatedPane {
+                    SettingsContent(settingsContent, settingsRepository)
+                }
+            }
         )
     }
 }

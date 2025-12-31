@@ -5,7 +5,6 @@ import com.pixnpunk.dto.GameEntry
 
 class RealDetailsComponent(
     private val componentContext: ComponentContext,
-    override val entryShow: GameEntry,
     override val showSelectGameDialog: (GameEntry) -> Unit,
     override val showEditGameDialog: (GameEntry) -> Unit,
     override val showDownloadGameDialog: (GameEntry) -> Unit,

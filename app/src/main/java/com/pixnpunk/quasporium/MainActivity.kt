@@ -40,8 +40,8 @@ class MainActivity : ComponentActivity() {
         registerForActivityResult(OpenFolderPickerContract(get())) {
             when (it) {
                 is FolderPickerResult.AccessDenied -> {
-                    root.showMessageDialog(
-                        message = """
+                    root.doShowDialog(
+                        outputValue = """
                             We require full access to your device storage so that you can easily select and add games from any folder where they are stored.
                             This permission ensures stable file management on older Android versions (8, 9 and 10).
                             <br><br>
