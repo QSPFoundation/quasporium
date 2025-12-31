@@ -9,6 +9,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.pixnpunk.settings.SettingsRepository
@@ -51,7 +52,10 @@ fun SettingsContent(
             }
         ) { paddingValues ->
             Children(
-                modifier = Modifier.padding(paddingValues),
+                modifier = Modifier
+                    .padding(paddingValues)
+                    .padding(top = 16.dp)
+                    .padding(horizontal = 16.dp),
                 stack = stack
             ) { child ->
                 when (child.instance) {
