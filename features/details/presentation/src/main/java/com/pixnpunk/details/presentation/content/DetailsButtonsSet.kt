@@ -41,7 +41,7 @@ fun DetailsButtonsSet(
                 ) {
                     Text(
                         style = MaterialTheme.typography.titleMedium,
-                        text = "Modify entry"
+                        text = "Modify"
                     )
                 }
             }
@@ -53,7 +53,7 @@ fun DetailsButtonsSet(
                 ) {
                     Text(
                         style = MaterialTheme.typography.titleMedium,
-                        text = "Download game"
+                        text = "Download"
                     )
                 }
             }
