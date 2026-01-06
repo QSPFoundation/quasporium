@@ -29,6 +29,8 @@ dependencies {
     implementation(project(":core:dto"))
     implementation(project(":core:network"))
 
+    implementation(project(":services:notification"))
+
     implementation(project(":features:stock:domain"))
 
     implementation(libs.bundles.roomEcosystem)

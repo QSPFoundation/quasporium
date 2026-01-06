@@ -57,8 +57,10 @@ dependencies {
 
     implementation(project(":services:audio"))
     implementation(project(":services:natives"))
+    implementation(project(":services:notification"))
     implementation(project(":services:settings"))
 
+    implementation(project(":features:stock:data"))
     implementation(project(":features:stock:domain"))
     implementation(project(":features:stock:presentation"))
 

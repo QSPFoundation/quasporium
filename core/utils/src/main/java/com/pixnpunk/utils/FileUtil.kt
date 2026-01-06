@@ -104,27 +104,51 @@ object FileUtil : KoinComponent {
         fileChannel: ByteReadChannel,
         fileName: String,
         destDirPath: String,
+        totalSize: Long,
         progress: FlowCollector<ProgressState>
     ): Result<String> = runCatching {
-        progress.emit(
-            ProgressState(
-                progress = 0F,
-                status = DownloadStatus.WRITE_FILE,
-                time = ""
-            )
-        )
         val gameDir = fromUri(get(), destDirPath.toUri())
         if (!gameDir.isWritableDir()) return Result.failure(NullPointerException())
+
         val destFile = gameDir.makeFile(get(), fileName, mode = CreateMode.SKIP_IF_EXISTS)
         if (!destFile.isWritableFile()) return Result.failure(NullPointerException())
-        fileChannel.copyTo(destFile.openOutputStream(get())!!)
-        progress.emit(
-            ProgressState(
-                progress = 1.0F,
-                status = DownloadStatus.WRITE_FILE,
-                time = ""
-            )
-        )
+
+        val startTime = System.currentTimeMillis()
+        var lastEmitTime = 0L
+
+        destFile.openOutputStream(get())!!.use { output ->
+            val buffer = ByteArray(8 * 1024)
+            var bytesCopied = 0L
+
+            while (!fileChannel.isClosedForRead) {
+                val bytesRead = fileChannel.readAvailable(buffer)
+                if (bytesRead == -1) break
+                output.write(buffer, 0, bytesRead)
+                bytesCopied += bytesRead
+
+                val currentTime = System.currentTimeMillis()
+                if (totalSize > 0 && currentTime - lastEmitTime >= 500) {
+                    val timeElapsed = currentTime - startTime
+                    val speed = if (timeElapsed > 0) bytesCopied.toDouble() / timeElapsed else 0.0
+                    val remainingBytes = totalSize - bytesCopied
+                    val remainingMs = if (speed > 0) (remainingBytes / speed).toLong() else 0L
+
+                    val seconds = (remainingMs / 1000) % 60
+                    val minutes = (remainingMs / (1000 * 60)) % 60
+
+                    progress.emit(
+                        ProgressState(
+                            progress = bytesCopied.toFloat() / totalSize,
+                            status = DownloadStatus.WRITE_FILE,
+                            time = "%02d:%02d".format(minutes, seconds)
+                        )
+                    )
+
+                    lastEmitTime = currentTime
+                }
+            }
+        }
+
         return Result.success(destFile.uri.toString())
     }
 

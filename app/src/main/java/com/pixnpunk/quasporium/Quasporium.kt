@@ -5,6 +5,7 @@ import com.pixnpunk.audio.audioModule
 import com.pixnpunk.database.di.databaseModule
 import com.pixnpunk.natives.di.supervisorModule
 import com.pixnpunk.network.networkModule
+import com.pixnpunk.notification.notificationModule
 import com.pixnpunk.settings.settingsModule
 import com.pixnpunk.stock.presentation.di.featureStockModules
 import org.koin.android.ext.koin.androidContext
@@ -16,7 +17,7 @@ class Quasporium : Application() {
         startKoin {
             androidContext(this@Quasporium)
             modules(databaseModule, networkModule, settingsModule)
-            modules(audioModule, supervisorModule)
+            modules(audioModule, supervisorModule, notificationModule)
             modules(featureStockModules)
         }
     }

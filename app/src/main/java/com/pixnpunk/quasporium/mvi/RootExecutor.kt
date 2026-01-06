@@ -4,9 +4,7 @@ import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
 import com.pixnpunk.stock.domain.usecase.DownloadGameArchUseCase
 import com.pixnpunk.stock.domain.usecase.FillAndInsertEntryUseCase
 import com.pixnpunk.stock.domain.usecase.UpsertEntryUseCase
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
 class RootExecutor(
@@ -14,20 +12,18 @@ class RootExecutor(
     private val upsertEntryUseCase: UpsertEntryUseCase,
     private val downloadGameArchUseCase: DownloadGameArchUseCase,
 ) : CoroutineExecutor<RootStore.Intent, RootStore.Action, RootStore.State, RootStore.Message, RootStore.Label>() {
-    private val outScope = CoroutineScope(Dispatchers.Default)
-
     override fun executeIntent(intent: RootStore.Intent) {
         when (intent) {
             is RootStore.Intent.AddNewGame -> {
-                outScope.launch { fillAndInsertEntryUseCase.execute(intent.entry) }
+                scope.launch(Dispatchers.IO) { fillAndInsertEntryUseCase.execute(intent.entry) }
             }
 
             is RootStore.Intent.EditGame -> {
-                outScope.launch { upsertEntryUseCase.execute(intent.entry) }
+                scope.launch(Dispatchers.IO) { upsertEntryUseCase.execute(intent.entry) }
             }
 
             is RootStore.Intent.DownloadNewGame -> {
-                outScope.launch {
+                scope.launch(Dispatchers.IO) {
                     downloadGameArchUseCase.execute(
                         downloadLink = intent.entry.fileUrl,
                         destDirPath = intent.entry.gameDirPath
@@ -45,10 +41,5 @@ class RootExecutor(
                 publish(RootStore.Label.ImageConfig(intent.state, intent.input))
             }
         }
-    }
-
-    override fun dispose() {
-        super.dispose()
-        outScope.cancel()
     }
 }

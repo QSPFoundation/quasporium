@@ -15,18 +15,24 @@ import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import org.jsoup.Jsoup
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
+import java.util.LinkedList
 import kotlin.time.Duration.Companion.minutes
 
 class RemoteRepositoryImpl : RemoteRepository, KoinComponent {
 
-    private val _progressDownloadFlow: MutableSharedFlow<ProgressState> = MutableSharedFlow()
-    override val progressDownloadFlow: SharedFlow<ProgressState> = _progressDownloadFlow
+    private val _progressDownloadFlow: MutableSharedFlow<ProgressState> = MutableSharedFlow(
+        replay = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
+    override val progressDownloadFlow: SharedFlow<ProgressState> = _progressDownloadFlow.asSharedFlow()
 
     internal companion object {
         const val INITIAL_PAGE_INDEX = 0
@@ -55,6 +61,10 @@ class RemoteRepositoryImpl : RemoteRepository, KoinComponent {
         get<HttpClient>().prepareGet(
             urlString = downloadLink,
             block = {
+                var lastTime = System.currentTimeMillis()
+                var lastBytesSent = 0L
+                val speedSamples = LinkedList<Double>()
+
                 val timeout = 30.minutes.inWholeMilliseconds
                 timeout {
                     requestTimeoutMillis = timeout
@@ -64,13 +74,33 @@ class RemoteRepositoryImpl : RemoteRepository, KoinComponent {
 
                 onDownload { bytesSentTotal, contentLength ->
                     if (contentLength != null) {
-                        _progressDownloadFlow.emit(
-                            ProgressState(
-                                progress = bytesSentTotal.toFloat() / contentLength.toFloat(),
-                                status = DownloadStatus.DOWNLOAD_FILE,
-                                time = "NaN"
+                        val currentTime = System.currentTimeMillis()
+                        val timeDelta = (currentTime - lastTime) / 1000.0
+
+                        if (timeDelta > 0.5) {
+                            val instantSpeed = (bytesSentTotal - lastBytesSent) / timeDelta
+
+                            speedSamples.add(instantSpeed)
+                            if (speedSamples.size > 5) {
+                                speedSamples.removeFirst()
+                            }
+
+                            lastTime = currentTime
+                            lastBytesSent = bytesSentTotal
+
+                            val averageSpeed = speedSamples.average()
+                            val etaSeconds =
+                                if (averageSpeed > 0) (contentLength - bytesSentTotal) / averageSpeed
+                                else Double.POSITIVE_INFINITY
+
+                            _progressDownloadFlow.emit(
+                                ProgressState(
+                                    progress = bytesSentTotal.toFloat() / contentLength.toFloat(),
+                                    status = DownloadStatus.DOWNLOAD_FILE,
+                                    time = etaSeconds.toString()
+                                )
                             )
-                        )
+                        }
                     }
                 }
             }
@@ -85,6 +115,7 @@ class RemoteRepositoryImpl : RemoteRepository, KoinComponent {
                     fileChannel = response.bodyAsChannel(),
                     fileName = fileName,
                     destDirPath = destDirPath,
+                    totalSize = response.contentLength() ?: -1L,
                     progress = _progressDownloadFlow
                 ).onSuccess {
                     unpackFileToDir(

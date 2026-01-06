@@ -54,5 +54,6 @@ include(
     ":services",
     ":services:audio",
     ":services:natives",
+    ":services:notification",
     ":services:settings"
 )
