@@ -1,6 +1,8 @@
 package com.pixnpunk.quasporium
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -8,6 +10,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.launch
+import androidx.core.app.ActivityCompat
 import com.anggrayudi.storage.SimpleStorage.Companion.cleanupRedundantUriPermissions
 import com.anggrayudi.storage.SimpleStorage.Companion.hasStoragePermission
 import com.anggrayudi.storage.contract.FolderPickerResult
@@ -40,8 +43,8 @@ class MainActivity : ComponentActivity() {
         registerForActivityResult(OpenFolderPickerContract(get())) {
             when (it) {
                 is FolderPickerResult.AccessDenied -> {
-                    root.showMessageDialog(
-                        message = """
+                    root.doShowDialog(
+                        outputValue = """
                             We require full access to your device storage so that you can easily select and add games from any folder where they are stored.
                             This permission ensures stable file management on older Android versions (8, 9 and 10).
                             <br><br>
@@ -159,6 +162,18 @@ class MainActivity : ComponentActivity() {
             && !hasStoragePermission(this)
         ) {
             storagePermissionLauncher.launch()
+        }
+
+        val postNotification = ActivityCompat.checkSelfPermission(
+            this,
+            Manifest.permission.POST_NOTIFICATIONS
+        )
+        if (postNotification != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                200
+            )
         }
 
         enableEdgeToEdge()

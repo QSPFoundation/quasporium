@@ -9,8 +9,6 @@ import com.anggrayudi.storage.extension.toDocumentFile
 import com.anggrayudi.storage.file.CreateMode
 import com.anggrayudi.storage.file.DocumentFileCompat.doesExist
 import com.anggrayudi.storage.file.makeFile
-import com.google.firebase.Firebase
-import com.google.firebase.crashlytics.crashlytics
 import com.pixnpunk.audio.AudioPlayerViewModel
 import com.pixnpunk.dto.GameInterface
 import com.pixnpunk.dto.LibGameState
@@ -309,8 +307,6 @@ class SupervisorViewModel(
             val docFile = filePath.pathToFile(context, gameDir)
             if (docFile.isWritableFile()) {
                 return docFile.uri.toString()
-            } else {
-                Firebase.crashlytics.log("requestReceiveFile: ERROR!")
             }
         }
         return Uri.EMPTY.toString()
@@ -331,7 +327,6 @@ class SupervisorViewModel(
                 if (it.isWritableFile()) {
                     return@thenApply it.uri.toString()
                 } else {
-                    Firebase.crashlytics.log("requestCreateFile: ERROR!")
                     return@thenApply Uri.EMPTY.toString()
                 }
             }
@@ -347,9 +342,6 @@ class SupervisorViewModel(
                 .pathToFile(context, gameDir)
             if (docFile.isWritableFile()) {
                 return audioPlayer.isPlayingFile(docFile.uri)
-            } else {
-                val errorMsg = RuntimeException("Sound file by path: $filePath not writable")
-                Firebase.crashlytics.log("isPlayingFile: ERROR! | Cause: $errorMsg")
             }
         }
         return false
@@ -358,8 +350,7 @@ class SupervisorViewModel(
     override fun closeAllFiles() {
         try {
             audioPlayer.closeAllFiles()
-        } catch (e: Exception) {
-            Firebase.crashlytics.log("closeAllFiles: ERROR! | Cause: $e")
+        } catch (_: Exception) {
         }
     }
 
@@ -372,9 +363,6 @@ class SupervisorViewModel(
                 .pathToFile(context, gameDir)
             if (docFile.isWritableFile()) {
                 audioPlayer.closeFile(docFile.uri)
-            } else {
-                val errorMsg = RuntimeException("Sound file by path: $filePath not writable")
-                Firebase.crashlytics.log("closeFile: ERROR! | Cause: $errorMsg")
             }
         }
     }
@@ -388,9 +376,6 @@ class SupervisorViewModel(
                 .pathToFile(context, gameDir)
             if (docFile.isWritableFile()) {
                 audioPlayer.playFile(context, docFile.uri, volume)
-            } else {
-                val errorMsg = RuntimeException("Sound file by path: $path not writable")
-                Firebase.crashlytics.log("playFile: ERROR! | Cause: $errorMsg")
             }
         }
     }

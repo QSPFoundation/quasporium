@@ -3,30 +3,25 @@ package com.pixnpunk.stock.data.repository
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import com.pixnpunk.dto.DownloadStatus
+import androidx.work.Constraints
+import androidx.work.ExistingWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.pixnpunk.dto.GameEntry
-import com.pixnpunk.dto.ProgressState
+import com.pixnpunk.dto.asString
 import com.pixnpunk.network.fetchForGet
+import com.pixnpunk.stock.data.workers.DownloadGameWorker
+import com.pixnpunk.stock.data.workers.UnpackGameWorker
 import com.pixnpunk.stock.domain.repository.RemoteRepository
-import com.pixnpunk.utils.FileUtil.writeFileToDir
-import com.pixnpunk.utils.FileUtil.unpackFileToDir
 import io.ktor.client.*
-import io.ktor.client.plugins.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
 import org.jsoup.Jsoup
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
-import kotlin.time.Duration.Companion.minutes
 
 class RemoteRepositoryImpl : RemoteRepository, KoinComponent {
-
-    private val _progressDownloadFlow: MutableSharedFlow<ProgressState> = MutableSharedFlow()
-    override val progressDownloadFlow: SharedFlow<ProgressState> = _progressDownloadFlow
 
     internal companion object {
         const val INITIAL_PAGE_INDEX = 0
@@ -51,52 +46,36 @@ class RemoteRepositoryImpl : RemoteRepository, KoinComponent {
             pagingSourceFactory = { RemotePagingSource(get()) }
         ).flow
 
-    override suspend fun downloadUnpackGame(downloadLink: String, destDirPath: String): Result<String> =
-        get<HttpClient>().prepareGet(
-            urlString = downloadLink,
-            block = {
-                val timeout = 30.minutes.inWholeMilliseconds
-                timeout {
-                    requestTimeoutMillis = timeout
-                    connectTimeoutMillis = timeout
-                    socketTimeoutMillis = timeout
-                }
+    override suspend fun downloadGame(downloadEntry: GameEntry) {
+        val downloadRequest = OneTimeWorkRequestBuilder<DownloadGameWorker>()
+            .setInputData(
+                workDataOf(
+                    "url" to downloadEntry.fileUrl,
+                    "destDir" to downloadEntry.gameDirPath
+                )
+            )
+            .setConstraints(
+                Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    .build()
+            )
+            .build()
 
-                onDownload { bytesSentTotal, contentLength ->
-                    if (contentLength != null) {
-                        _progressDownloadFlow.emit(
-                            ProgressState(
-                                progress = bytesSentTotal.toFloat() / contentLength.toFloat(),
-                                status = DownloadStatus.DOWNLOAD_FILE,
-                                time = "NaN"
-                            )
-                        )
-                    }
-                }
-            }
-        ).execute { response ->
-            if (response.status.isSuccess()) {
-                val contentDisposition = response.headers[HttpHeaders.ContentDisposition]
-                val headerValues = parseHeaderValue(contentDisposition)
-                val fileName = headerValues.firstOrNull()?.params?.firstOrNull()?.value
-                    ?: "#${(0..Int.MAX_VALUE).random()}Game"
+        val unpackRequest = OneTimeWorkRequestBuilder<UnpackGameWorker>()
+            .setInputData(
+                workDataOf(
+                    "gameDataJson" to downloadEntry.asString()
+                )
+            )
+            .build()
 
-                writeFileToDir(
-                    fileChannel = response.bodyAsChannel(),
-                    fileName = fileName,
-                    destDirPath = destDirPath,
-                    progress = _progressDownloadFlow
-                ).onSuccess {
-                    unpackFileToDir(
-                        filePath = it,
-                        destDirPath = destDirPath,
-                        progress = _progressDownloadFlow
-                    ).onSuccess { return@execute Result.success(destDirPath) }
-                }.onFailure {
-                    _progressDownloadFlow.emit(ProgressState(progress = 1.0F))
-                }
-            } else {
-                return@execute Result.failure(RuntimeException("Failed to download file. HTTP Status: ${response.status.value}"))
-            }
-        }
+        get<WorkManager>()
+            .beginUniqueWork(
+                "GameDownload_${downloadEntry.fileUrl}",
+                ExistingWorkPolicy.KEEP,
+                downloadRequest
+            )
+            .then(unpackRequest)
+            .enqueue()
+    }
 }

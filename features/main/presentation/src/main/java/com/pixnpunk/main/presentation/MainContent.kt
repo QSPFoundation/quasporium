@@ -30,7 +30,7 @@ fun MainContent(
             mainDesc = state.mainDesc,
             backColor = settings.backColor,
             paddingValues = PaddingValues(),
-            setupWebClient = { component.getDefaultWebClient(it) }
+            setupWebClient = component::getDefaultWebClient
         )
     } else {
         BottomSheetScaffold(

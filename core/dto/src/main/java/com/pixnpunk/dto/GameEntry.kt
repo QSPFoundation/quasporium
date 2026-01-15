@@ -1,6 +1,7 @@
 package com.pixnpunk.dto
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 
 @Serializable
 data class GameEntry(
@@ -22,3 +23,7 @@ data class GameEntry(
     val gameDirPath: String = "",
     val gameFilesPath: List<String> = emptyList()
 )
+
+fun GameEntry.asString() = Json.encodeToString(this)
+
+fun String.stringToEntry() = Json.decodeFromString<GameEntry>(this)

@@ -132,36 +132,40 @@ fun DialogsMainContent(
                         }
                     }
 
-                DialogsState.DIALOG_INPUT_VALUE -> config.inputState.let {
-                    if (it == null) {
-                        component.onDismissed()
-                    } else {
-                        DialogInputValueContent(
-                            initialValue = "${
-                                when (it) {
-                                    InputState.INPUT_IMAGE_WIDTH -> settings.imageWidth
-                                    InputState.INPUT_IMAGE_HEIGHT -> settings.imageHeight
-                                    InputState.INPUT_WITH_MESSAGE -> ""
-                                }
-                            }",
-                            label = {
-                                Text(
+                    DialogsState.DIALOG_INPUT_VALUE -> config.inputState.let {
+                        if (it == null) {
+                            component.onDismissed()
+                        } else {
+                            DialogInputValueContent(
+                                isError = config.isError,
+                                initialValue = "${
                                     when (it) {
-                                        InputState.INPUT_IMAGE_WIDTH -> "Image width"
-                                        InputState.INPUT_IMAGE_HEIGHT -> "Image height"
-                                        InputState.INPUT_WITH_MESSAGE -> config.outputValue
+                                        InputState.INPUT_IMAGE_WIDTH -> settings.imageWidth
+                                        InputState.INPUT_IMAGE_HEIGHT -> settings.imageHeight
+                                        else -> ""
                                     }
-                                )
-                            },
-                            inputValue = { s -> component.inputValue(it to s) },
-                            keyboardOptions =
-                                when (it) {
-                                    InputState.INPUT_IMAGE_WIDTH, InputState.INPUT_IMAGE_HEIGHT ->
-                                        KeyboardOptions(keyboardType = KeyboardType.Number)
+                                }",
+                                supportValue = config.supportValue,
+                                supportErrorValue = config.supportErrorValue,
+                                label = {
+                                    Text(
+                                        when (it) {
+                                            InputState.INPUT_IMAGE_WIDTH -> "Image width"
+                                            InputState.INPUT_IMAGE_HEIGHT -> "Image height"
+                                            InputState.INPUT_WITH_MESSAGE_EXEC -> "QSP Terminal"
+                                            else -> "Enter something"
+                                        }
+                                    )
+                                },
+                                inputValue = { s -> component.inputValue(it to s) },
+                                keyboardOptions =
+                                    when (it) {
+                                        InputState.INPUT_IMAGE_WIDTH, InputState.INPUT_IMAGE_HEIGHT ->
+                                            KeyboardOptions(keyboardType = KeyboardType.Number)
 
-                                        InputState.INPUT_WITH_MESSAGE ->
+                                        else ->
                                             KeyboardOptions()
-                                    },
+                                    },cleanError = component.onCleanError,
                                 onDismiss = component.onDismissed
                             )
                         }
@@ -175,7 +179,7 @@ fun DialogsMainContent(
                                 DialogOutputValueContent(
                                     message = config.outputValue,
                                     isImage = it == OutputState.OUTPUT_IMAGE,
-                                    onConfirm = { component.confirmMessage(it) },
+                                    onConfirm = { component.confirmMessage(it to 0) },
                                     onDismiss = component.onDismissed
                                 )
                             } else {
@@ -186,14 +190,12 @@ fun DialogsMainContent(
                                     linkColor = Color(settings.linkColor),
                                     fontSize = settings.fontSize.sp,
                                     fontFamily = FontFamily(settings.typeface.toTypeface()),
-                                    onConfirm = { _ -> component.confirmMessage(it) },
+                                    onConfirm = { i -> component.confirmMessage(it to i) },
                                     onDismiss = component.onDismissed
                                 )
                             }
                         }
                     }
-
-                    else -> {}
                 }
             }
         }

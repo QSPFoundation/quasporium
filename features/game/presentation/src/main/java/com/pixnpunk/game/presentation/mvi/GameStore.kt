@@ -3,6 +3,7 @@ package com.pixnpunk.game.presentation.mvi
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import com.arkivanov.mvikotlin.core.store.Store
+import com.pixnpunk.dto.InputState
 import com.pixnpunk.dto.LibGenItem
 import com.pixnpunk.dto.LibTypeDialog
 import kotlinx.serialization.Serializable
@@ -23,7 +24,7 @@ sealed interface GameStore : Store<GameStore.Intent, GameStore.State, GameStore.
         data class OnLoadFile(val fileUri: Uri) : Intent
         data class OnExecCode(val codeToExec: String) : Intent
         data class OnSelectMenuItem(val index: Int) : Intent
-        data class OnEnterValue(val inputString: String, val isBox: Boolean) : Intent
+        data class OnInputValue(val state: InputState, val inputString: String) : Intent
         data object CreateSaveIntent : Intent
         data object CreateLoadIntent : Intent
     }

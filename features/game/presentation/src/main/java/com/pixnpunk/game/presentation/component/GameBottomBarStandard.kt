@@ -12,28 +12,26 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.res.stringResource
 import com.pixnpunk.game.presentation.GameComponent
 import com.pixnpunk.game.presentation.R
 import com.pixnpunk.game.presentation.RealGameComponent
 
 @Composable
-fun GameNavBar(
-    component: GameComponent,
-    activeComponent: GameComponent.Child
+fun GameBottomBarStandard(
+    isExtraEnabled: Boolean,
+    isObjectsEnabled: Boolean,
+    activeComponent: GameComponent.StandardChild,
+    navigationTo: (RealGameComponent.StandardChildConfig) -> Unit
 ) {
-    val state by component.model.collectAsState()
-
     BottomAppBar {
         NavigationBarItem(
-            enabled = state.isExtraEnabled,
+            enabled = isExtraEnabled,
             icon = {
                 BadgedBox(
                     badge = { }
                 ) {
-                    if (activeComponent is GameComponent.Child.ExtraChild) {
+                    if (activeComponent is GameComponent.StandardChild.ExtraChild) {
                         Icon(Icons.Filled.Sell, contentDescription = "")
                     } else {
                         Icon(Icons.Outlined.Sell, contentDescription = "")
@@ -43,8 +41,8 @@ fun GameNavBar(
             },
             label = { Text(stringResource(R.string.tab_extra)) },
             alwaysShowLabel = false,
-            onClick = { component.navigation(RealGameComponent.ChildConfig.Extra) },
-            selected = activeComponent is GameComponent.Child.ExtraChild,
+            onClick = { navigationTo(RealGameComponent.StandardChildConfig.Extra) },
+            selected = activeComponent is GameComponent.StandardChild.ExtraChild,
         )
         NavigationBarItem(
             icon = {
@@ -56,16 +54,16 @@ fun GameNavBar(
             },
             label = { Text(stringResource(R.string.tab_main)) },
             alwaysShowLabel = false,
-            onClick = { component.navigation(RealGameComponent.ChildConfig.Main) },
-            selected = activeComponent is GameComponent.Child.MainChild,
+            onClick = { navigationTo(RealGameComponent.StandardChildConfig.Main) },
+            selected = activeComponent is GameComponent.StandardChild.MainChild,
         )
         NavigationBarItem(
-            enabled = state.isObjectsEnabled,
+            enabled = isObjectsEnabled,
             icon = {
                 BadgedBox(
                     badge = { }
                 ) {
-                    if (activeComponent is GameComponent.Child.ObjectChild) {
+                    if (activeComponent is GameComponent.StandardChild.ObjectChild) {
                         Icon(Icons.Filled.Work, contentDescription = "")
                     } else {
                         Icon(Icons.Outlined.WorkOutline, contentDescription = "")
@@ -74,8 +72,8 @@ fun GameNavBar(
             },
             label = { Text(stringResource(R.string.tab_object)) },
             alwaysShowLabel = false,
-            onClick = { component.navigation(RealGameComponent.ChildConfig.Object) },
-            selected = activeComponent is GameComponent.Child.ObjectChild,
+            onClick = { navigationTo(RealGameComponent.StandardChildConfig.Object) },
+            selected = activeComponent is GameComponent.StandardChild.ObjectChild,
         )
     }
 }

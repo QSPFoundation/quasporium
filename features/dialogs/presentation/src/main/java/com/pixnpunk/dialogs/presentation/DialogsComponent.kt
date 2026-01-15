@@ -17,12 +17,9 @@ sealed interface DialogsComponent {
     val deselectFile: (String) -> Unit
     val selectFile: () -> Unit
     val selectColor: (Pair<ColorPickerState, Color>) -> Unit
-    val confirmMessage: (OutputState) -> Unit
+    val confirmMessage: (Pair<OutputState, Int>) -> Unit
     val inputValue: (Pair<InputState, String>) -> Unit
     val doPlayGame: (GameEntry, Int) -> Unit
     val onCleanError: () -> Unit
-    val onEnterValue: (Pair<String, Boolean>) -> Unit
-    val onExecValue: (String) -> Unit
-    val onSelMenuItem: (Int) -> Unit
     val onDismissed: () -> Unit
 }

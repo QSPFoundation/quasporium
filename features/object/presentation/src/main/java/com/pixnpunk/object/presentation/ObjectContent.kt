@@ -21,6 +21,7 @@ import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.unit.sp
+import coil3.compose.AsyncImage
 import com.pixnpunk.utils.ViewUtil.toTypeface
 
 @Composable
@@ -42,6 +43,14 @@ fun ObjectContent(
                     colors = ListItemDefaults.colors(
                         containerColor = Color(settings.backColor)
                     ),
+                    leadingContent = {
+                        if (obj.imagePath.isNotBlank()) {
+                            AsyncImage(
+                                model = obj.imagePath,
+                                contentDescription = ""
+                            )
+                        }
+                    },
                     headlineContent = {
                         Text(
                             text = AnnotatedString.fromHtml(

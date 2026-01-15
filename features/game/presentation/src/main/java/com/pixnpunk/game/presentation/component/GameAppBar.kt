@@ -19,25 +19,19 @@ import com.pixnpunk.game.presentation.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GameAppBar(
+    titleText: String,
     component: GameComponent,
     showDialog: () -> Unit,
-    activeComponent: GameComponent.Child,
-    onFinishActivity: () -> Unit
+    onFinishActivity: () -> Unit,
+    doCreateSaveIntent: () -> Unit,
+    doCreateLoadIntent: () -> Unit
 ) {
     val state by component.model.collectAsState()
 
     val isInputExecutorVis = state.isInputEnabled || state.isExecutorEnabled
 
     TopAppBar(
-        title = {
-            Text(
-                when (activeComponent) {
-                    is GameComponent.Child.MainChild -> stringResource(R.string.tab_main)
-                    is GameComponent.Child.ExtraChild -> stringResource(R.string.tab_extra)
-                    is GameComponent.Child.ObjectChild -> stringResource(R.string.tab_object)
-                }
-            )
-        },
+        title = { Text(titleText) },
         navigationIcon = {
             IconButton(onClick = onFinishActivity) {
                 Icon(
@@ -64,7 +58,10 @@ fun GameAppBar(
                 }
             }
             if (state.isGameRunning) {
-                RootAppBarMenu(component)
+                RootAppBarMenu(
+                    doCreateSaveIntent = doCreateSaveIntent,
+                    doCreateLoadIntent = doCreateLoadIntent
+                )
             }
         }
     )

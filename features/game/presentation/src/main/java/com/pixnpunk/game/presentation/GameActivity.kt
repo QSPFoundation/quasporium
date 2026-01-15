@@ -118,14 +118,7 @@ class GameActivity : ComponentActivity() {
         }
 
         setContent {
-            val settings = settingsRepo.settingsFlow.value
             GameContent(
-                isDarkTheme = when {
-                    settings.theme.contains("auto") -> isSystemInDarkTheme()
-                    settings.theme.contains("dark") -> true
-                    settings.theme.contains("light") -> false
-                    else -> false
-                },
                 component = root,
                 settingsRepository = settingsRepo,
                 onFinish = { killProcess(myPid()) }

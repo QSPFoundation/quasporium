@@ -5,7 +5,6 @@ import com.arkivanov.decompose.router.slot.ChildSlot
 import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.value.Value
 import com.pixnpunk.dialogs.presentation.DialogsComponent
-import com.pixnpunk.dialogs.presentation.DialogsState
 import com.pixnpunk.dto.LibGenItem
 import com.pixnpunk.dto.LibTypeDialog
 import com.pixnpunk.extra.presentation.ExtraComponent
@@ -16,12 +15,15 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 sealed interface GameComponent {
-    val childStack: Value<ChildStack<*, Child>>
+    val childStandardStack: Value<ChildStack<*, StandardChild>>
+    val childExpandStack: Value<ChildStack<*, ExpandChild>>
+
     val dialogSlot: Value<ChildSlot<*, DialogsComponent>>
     val model: StateFlow<GameStore.State>
     val label: Flow<GameStore.Label>
 
-    fun navigation(child: RealGameComponent.ChildConfig)
+    fun standardNavigation(child: RealGameComponent.StandardChildConfig)
+    fun expandNavigation(child: RealGameComponent.ExpandChildConfig)
 
     fun runGame(
         gameId: Long,
@@ -32,7 +34,7 @@ sealed interface GameComponent {
 
     fun doShowDialog()
     fun doShowDialog(
-        inputString: String,
+        inputString: String = "",
         dialogState: LibTypeDialog,
         inputListItems: List<LibGenItem>? = null
     )
@@ -41,9 +43,15 @@ sealed interface GameComponent {
     fun doCreateLoadIntent()
     fun restartGame()
 
-    sealed class Child {
-        class MainChild(val component: MainComponent) : Child()
-        class ExtraChild(val component: ExtraComponent) : Child()
-        class ObjectChild(val component: ObjectComponent) : Child()
+    sealed class StandardChild {
+        class MainChild(val component: MainComponent) : StandardChild()
+        class ExtraChild(val component: ExtraComponent) : StandardChild()
+        class ObjectChild(val component: ObjectComponent) : StandardChild()
+    }
+
+    sealed class ExpandChild {
+        class MainActionsChild(val component: MainComponent) : ExpandChild()
+        class ExtraChild(val component: ExtraComponent) : ExpandChild()
+        class ObjectChild(val component: ObjectComponent) : ExpandChild()
     }
 }

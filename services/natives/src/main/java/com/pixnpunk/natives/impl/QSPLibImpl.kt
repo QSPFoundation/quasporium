@@ -29,6 +29,7 @@ import com.pixnpunk.utils.FileUtil.readFileContents
 import com.pixnpunk.utils.FileUtil.writeFileContents
 import com.pixnpunk.utils.HtmlUtil.getSrcDir
 import com.pixnpunk.utils.HtmlUtil.isContainsHtmlTags
+import com.pixnpunk.utils.HtmlUtil.removeImgTags
 import com.pixnpunk.utils.PathUtil.getFilename
 import com.pixnpunk.utils.PathUtil.normalizeContentPath
 import com.pixnpunk.utils.ThreadUtil.isSameThread
@@ -135,7 +136,7 @@ class QSPLibImpl(
             for (element in getActions()) {
                 if (element == null) continue
                 var tempImagePath = element.image ?: ""
-                val tempText = element.name ?: ""
+                var tempText = element.name ?: ""
 
                 if (tempImagePath.isNotBlank()) {
                     val tempPath = tempImagePath.getFilename().normalizeContentPath()
@@ -143,6 +144,22 @@ class QSPLibImpl(
                     if (fileFromPath.isWritableFile()) {
                         tempImagePath = fileFromPath.uri.toString()
                     }
+                }
+
+                if (tempText.contains("<img")) {
+                    if (!tempText.isContainsHtmlTags()) {
+                        val fileFromPath = gameDir.child(context, tempText)
+                        if (fileFromPath.isWritableFile()) {
+                            tempImagePath = fileFromPath.uri.toString()
+                        }
+                    } else {
+                        val tempPath = tempText.getSrcDir()
+                        val fileFromPath = gameDir.child(context, tempPath)
+                        if (fileFromPath.isWritableFile()) {
+                            tempImagePath = fileFromPath.uri.toString()
+                        }
+                    }
+                    tempText = tempText.removeImgTags()
                 }
 
                 actions.add(LibGenItem(tempText, tempImagePath))
@@ -160,7 +177,15 @@ class QSPLibImpl(
             for (element in getObjects()) {
                 if (element == null) continue
                 var tempImagePath = element.image ?: ""
-                val tempText = element.name ?: ""
+                var tempText = element.name ?: ""
+
+                if (tempImagePath.isNotBlank()) {
+                    val tempPath = tempImagePath.getFilename().normalizeContentPath()
+                    val fileFromPath = gameDir.child(context, tempPath)
+                    if (fileFromPath.isWritableFile()) {
+                        tempImagePath = fileFromPath.uri.toString()
+                    }
+                }
 
                 if (tempText.contains("<img")) {
                     if (!tempText.isContainsHtmlTags()) {
@@ -175,6 +200,7 @@ class QSPLibImpl(
                             tempImagePath = fileFromPath.uri.toString()
                         }
                     }
+                    tempText = tempText.removeImgTags()
                 }
 
                 objects.add(LibGenItem(tempText, tempImagePath))
@@ -403,7 +429,7 @@ class QSPLibImpl(
         return runCatching {
             returnValueFuture = CompletableFuture()
             gameInterface.showLibDialog(
-                dialogType = LibTypeDialog.DIALOG_INPUT,
+                dialogType = LibTypeDialog.DIALOG_INPUT_BOX,
                 inputString = text
             )
             returnValueFuture.get().dialogTextValue

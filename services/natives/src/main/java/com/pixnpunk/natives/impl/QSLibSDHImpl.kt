@@ -15,8 +15,6 @@ import com.anggrayudi.storage.file.MimeType
 import com.anggrayudi.storage.file.child
 import com.anggrayudi.storage.file.getAbsolutePath
 import com.libsdhqs.jni.QSLibSDH
-import com.pixnpunk.natives.SupervisorViewModel.Companion.RECEIVE_FLOW_TIMEOUT
-import kotlinx.coroutines.Runnable
 import com.pixnpunk.dto.GameInterface
 import com.pixnpunk.dto.LibGameState
 import com.pixnpunk.dto.LibGenItem
@@ -26,15 +24,18 @@ import com.pixnpunk.dto.LibTypeDialog
 import com.pixnpunk.dto.LibTypePopup
 import com.pixnpunk.dto.LibTypeWindow
 import com.pixnpunk.dto.LibUIConfig
+import com.pixnpunk.natives.SupervisorViewModel.Companion.RECEIVE_FLOW_TIMEOUT
 import com.pixnpunk.utils.FileUtil.isWritableDir
 import com.pixnpunk.utils.FileUtil.isWritableFile
 import com.pixnpunk.utils.FileUtil.readFileContents
 import com.pixnpunk.utils.FileUtil.writeFileContents
 import com.pixnpunk.utils.HtmlUtil.getSrcDir
 import com.pixnpunk.utils.HtmlUtil.isContainsHtmlTags
+import com.pixnpunk.utils.HtmlUtil.removeImgTags
 import com.pixnpunk.utils.PathUtil.getFilename
 import com.pixnpunk.utils.PathUtil.normalizeContentPath
 import com.pixnpunk.utils.ThreadUtil.isSameThread
+import kotlinx.coroutines.Runnable
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
@@ -134,7 +135,7 @@ class QSLibSDHImpl(
             for (element in getActions() ?: return emptyList()) {
                 if (element == null) continue
                 var tempImagePath = element.image ?: ""
-                val tempText = element.text ?: ""
+                var tempText = element.text ?: ""
 
                 if (tempImagePath.isEmpty() && tempText.isEmpty()) continue
 
@@ -144,6 +145,22 @@ class QSLibSDHImpl(
                     if (fileFromPath.isWritableFile()) {
                         tempImagePath = fileFromPath.uri.toString()
                     }
+                }
+
+                if (tempText.contains("<img")) {
+                    if (!tempText.isContainsHtmlTags()) {
+                        val fileFromPath = gameDir.child(context, tempText)
+                        if (fileFromPath.isWritableFile()) {
+                            tempImagePath = fileFromPath.uri.toString()
+                        }
+                    } else {
+                        val tempPath = tempText.getSrcDir()
+                        val fileFromPath = gameDir.child(context, tempPath)
+                        if (fileFromPath.isWritableFile()) {
+                            tempImagePath = fileFromPath.uri.toString()
+                        }
+                    }
+                    tempText = tempText.removeImgTags()
                 }
 
                 actions.add(LibGenItem(tempText, tempImagePath))
@@ -161,9 +178,17 @@ class QSLibSDHImpl(
             for (element in getObjects() ?: return emptyList()) {
                 if (element == null) continue
                 var tempImagePath = element.image ?: ""
-                val tempText = element.text ?: ""
+                var tempText = element.text ?: ""
 
                 if (tempImagePath.isEmpty() && tempText.isEmpty()) continue
+
+                if (tempImagePath.isNotBlank()) {
+                    val tempPath = tempImagePath.getFilename().normalizeContentPath()
+                    val fileFromPath = gameDir.child(context, tempPath)
+                    if (fileFromPath.isWritableFile()) {
+                        tempImagePath = fileFromPath.uri.toString()
+                    }
+                }
 
                 if (tempText.contains("<img")) {
                     if (!tempText.isContainsHtmlTags()) {
@@ -178,6 +203,7 @@ class QSLibSDHImpl(
                             tempImagePath = fileFromPath.uri.toString()
                         }
                     }
+                    tempText = tempText.removeImgTags()
                 }
 
                 objects.add(LibGenItem(tempText, tempImagePath))
@@ -410,7 +436,7 @@ class QSLibSDHImpl(
         return runCatching {
             returnValueFuture = CompletableFuture()
             gameInterface.showLibDialog(
-                dialogType = LibTypeDialog.DIALOG_INPUT,
+                dialogType = LibTypeDialog.DIALOG_INPUT_BOX,
                 inputString = prompt ?: ""
             )
             returnValueFuture.get().dialogTextValue

@@ -18,8 +18,10 @@ android {
         externalNativeBuild {
             cmake {
                 arguments += listOf(
-                    "-DBUILD_JAVA=1", "-DBUILD_JVM=1",
-                    "-DBUILD_PRIVATE_CONTENT=1", "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
+                    "-DBUILD_JAVA=1",
+                    "-DBUILD_JVM=1",
+                    "-DBUILD_PRIVATE_CONTENT=0",
+                    "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
                 )
             }
         }
@@ -57,10 +59,6 @@ dependencies {
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
-
-    implementation(platform("com.google.firebase:firebase-bom:34.4.0"))
-    implementation("com.google.firebase:firebase-crashlytics-ndk")
-    implementation("com.google.firebase:firebase-analytics")
 
     implementation(libs.kotlinx.coroutines.android)
 

@@ -21,6 +21,7 @@ import com.pixnpunk.dto.ProgressState
 import io.ktor.utils.io.*
 import io.ktor.utils.io.jvm.javaio.*
 import kotlinx.coroutines.flow.FlowCollector
+import kotlinx.coroutines.runBlocking
 import net.sf.sevenzipjbinding.ExtractAskMode
 import net.sf.sevenzipjbinding.ExtractOperationResult
 import net.sf.sevenzipjbinding.IArchiveExtractCallback
@@ -104,55 +105,72 @@ object FileUtil : KoinComponent {
         fileChannel: ByteReadChannel,
         fileName: String,
         destDirPath: String,
-        progress: FlowCollector<ProgressState>
+        totalSize: Long,
+        onProgressUpdate: suspend (state: ProgressState) -> Unit
     ): Result<String> = runCatching {
-        progress.emit(
-            ProgressState(
-                progress = 0F,
-                status = DownloadStatus.WRITE_FILE,
-                time = ""
-            )
-        )
         val gameDir = fromUri(get(), destDirPath.toUri())
         if (!gameDir.isWritableDir()) return Result.failure(NullPointerException())
+
         val destFile = gameDir.makeFile(get(), fileName, mode = CreateMode.SKIP_IF_EXISTS)
         if (!destFile.isWritableFile()) return Result.failure(NullPointerException())
-        fileChannel.copyTo(destFile.openOutputStream(get())!!)
-        progress.emit(
-            ProgressState(
-                progress = 1.0F,
-                status = DownloadStatus.WRITE_FILE,
-                time = ""
-            )
-        )
+
+        val startTime = System.currentTimeMillis()
+        var lastEmitTime = 0L
+
+        destFile.openOutputStream(get())!!.use { output ->
+            val buffer = ByteArray(8 * 1024)
+            var bytesCopied = 0L
+
+            while (!fileChannel.isClosedForRead) {
+                val bytesRead = fileChannel.readAvailable(buffer)
+                if (bytesRead == -1) break
+                output.write(buffer, 0, bytesRead)
+                bytesCopied += bytesRead
+
+                val currentTime = System.currentTimeMillis()
+                if (totalSize > 0 && currentTime - lastEmitTime >= 500) {
+                    val timeElapsed = currentTime - startTime
+                    val speed = if (timeElapsed > 0) bytesCopied.toDouble() / timeElapsed else 0.0
+                    val remainingBytes = totalSize - bytesCopied
+                    val remainingMs = if (speed > 0) (remainingBytes / speed).toLong() else 0L
+
+                    val seconds = (remainingMs / 1000) % 60
+                    val minutes = (remainingMs / (1000 * 60)) % 60
+
+                    onProgressUpdate(
+                        ProgressState(
+                            progress = bytesCopied.toFloat() / totalSize,
+                            status = DownloadStatus.WRITE_FILE,
+                            time = "%02d:%02d".format(minutes, seconds)
+                        )
+                    )
+
+                    lastEmitTime = currentTime
+                }
+            }
+        }
+
         return Result.success(destFile.uri.toString())
     }
 
     fun Uri.readFileContents(): ByteArray? {
         return runCatching {
             this.openInputStream(get()).use { it?.readBytes() ?: throw NullPointerException() }
-        }.getOrElse {
-//            Firebase.crashlytics.log("Error reading file: $this | Throwable: $it")
-            null
-        }
+        }.getOrElse { null }
     }
 
     fun Uri.writeFileContents(dataToWrite: ByteArray) {
-        get<Context>().contentResolver
-            .runCatching {
-                openOutputStream(this@writeFileContents).use { out ->
-                    out?.write(dataToWrite) ?: throw IOException("Input is NULL!")
-                }
+        get<Context>().contentResolver.runCatching {
+            openOutputStream(this@writeFileContents).use { out ->
+                out?.write(dataToWrite) ?: throw IOException("Input is NULL!")
             }
-            .onFailure {
-//                Firebase.crashlytics.log("Error writing in file: $this | Throwable: $it")
-            }
+        }
     }
 
-    suspend fun unpackFileToDir(
+    fun unpackFileToDir(
         filePath: String,
         destDirPath: String,
-        progress: FlowCollector<ProgressState>
+        onProgressUpdate: suspend (state: ProgressState) -> Unit
     ) = runCatching {
         val fileUri = filePath.toUri()
         DocumentFileRandomInStream(fileUri).use {
@@ -163,7 +181,7 @@ object FileUtil : KoinComponent {
                     ArchiveExtractCallback(
                         destDirPath.toUri().toDocumentFile(get())!!,
                         inArchive,
-                        progress
+                        onProgressUpdate
                     )
                 )
             }
@@ -175,18 +193,24 @@ object FileUtil : KoinComponent {
     private class ArchiveExtractCallback(
         private val targetDir: DocumentFile,
         private val inArchive: IInArchive,
-        private val progress: FlowCollector<ProgressState>
+        private val onProgressUpdate: suspend (state: ProgressState) -> Unit
     ) : IArchiveExtractCallback {
         private var stream: SequentialOutStream? = null
+        private var totalSize: Long = 0L
+        private var lastUpdateTime: Long = 0L
+
+        private companion object {
+            const val UPDATE_INTERVAL_MS = 500L
+        }
 
         override fun getStream(
             index: Int,
             extractAskMode: ExtractAskMode?
         ): ISequentialOutStream? {
             val isFolder = inArchive.getProperty(index, PropID.IS_FOLDER) as? Boolean ?: false
-            val pathString = inArchive.getProperty(index, PropID.PATH) as? String ?: return null
+            if (isFolder) return null
 
-            if (isFolder) { return null }
+            val pathString = inArchive.getProperty(index, PropID.PATH) as? String ?: return null
 
             val file = targetDir.makeFile(
                 get(),
@@ -217,11 +241,25 @@ object FileUtil : KoinComponent {
         }
 
         override fun setTotal(total: Long) {
-            //
+            this.totalSize = total
         }
 
         override fun setCompleted(complete: Long) {
-            //
+            val currentTime = System.currentTimeMillis()
+            if (currentTime - lastUpdateTime > UPDATE_INTERVAL_MS) {
+                lastUpdateTime = currentTime
+
+                runBlocking {
+                    onProgressUpdate(
+                        ProgressState(
+                            progress =
+                                if (totalSize > 0) complete.toFloat() / totalSize.toFloat() else 0f,
+                            status = DownloadStatus.UNPACK_FILE,
+                            time = ""
+                        )
+                    )
+                }
+            }
         }
     }
 
