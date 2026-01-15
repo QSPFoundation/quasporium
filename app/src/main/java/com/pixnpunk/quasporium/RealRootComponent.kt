@@ -96,19 +96,6 @@ class RealRootComponent(
         }
     }
 
-    fun processPickedFiles(filePaths: List<String>) {
-        val oldConfig = dialogSlot.child?.configuration as? DialogsConfig
-        if (oldConfig != null) {
-            dialogsNavigation.activate(
-                oldConfig.copy(
-                    unfilledEntry = oldConfig.unfilledEntry.copy(
-                        gameFilesPath = filePaths
-                    )
-                )
-            )
-        }
-    }
-
     private fun selGameDialog(entry: GameEntry) {
         when (entry.gameFilesPath.size) {
             0 -> {
