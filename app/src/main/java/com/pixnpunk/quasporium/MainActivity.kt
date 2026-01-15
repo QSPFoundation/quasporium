@@ -164,16 +164,18 @@ class MainActivity : ComponentActivity() {
             storagePermissionLauncher.launch()
         }
 
-        val postNotification = ActivityCompat.checkSelfPermission(
-            this,
-            Manifest.permission.POST_NOTIFICATIONS
-        )
-        if (postNotification != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val postNotification = ActivityCompat.checkSelfPermission(
                 this,
-                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-                200
+                Manifest.permission.POST_NOTIFICATIONS
             )
+            if (postNotification != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    200
+                )
+            }
         }
 
         enableEdgeToEdge()
