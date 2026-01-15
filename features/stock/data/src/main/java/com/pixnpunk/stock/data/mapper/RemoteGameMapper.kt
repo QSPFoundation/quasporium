@@ -4,8 +4,8 @@ import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.dto.GameListType
 import com.pixnpunk.stock.domain.model.RemoteGameData
 
-fun List<RemoteGameData>.toDomain(): List<GameEntry> {
-    return map { remoteGameData ->
+fun List<RemoteGameData>.toDomain(): List<GameEntry> =
+    map { remoteGameData ->
         GameEntry(
             id = remoteGameData.id,
             listId = GameListType.Downloadable,
@@ -24,4 +24,3 @@ fun List<RemoteGameData>.toDomain(): List<GameEntry> {
             modDate = remoteGameData.modDate
         )
     }
-}

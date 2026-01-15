@@ -21,6 +21,7 @@ import com.pixnpunk.dto.ProgressState
 import io.ktor.utils.io.*
 import io.ktor.utils.io.jvm.javaio.*
 import kotlinx.coroutines.flow.FlowCollector
+import kotlinx.coroutines.runBlocking
 import net.sf.sevenzipjbinding.ExtractAskMode
 import net.sf.sevenzipjbinding.ExtractOperationResult
 import net.sf.sevenzipjbinding.IArchiveExtractCallback
@@ -105,7 +106,7 @@ object FileUtil : KoinComponent {
         fileName: String,
         destDirPath: String,
         totalSize: Long,
-        progress: FlowCollector<ProgressState>
+        onProgressUpdate: suspend (state: ProgressState) -> Unit
     ): Result<String> = runCatching {
         val gameDir = fromUri(get(), destDirPath.toUri())
         if (!gameDir.isWritableDir()) return Result.failure(NullPointerException())
@@ -136,7 +137,7 @@ object FileUtil : KoinComponent {
                     val seconds = (remainingMs / 1000) % 60
                     val minutes = (remainingMs / (1000 * 60)) % 60
 
-                    progress.emit(
+                    onProgressUpdate(
                         ProgressState(
                             progress = bytesCopied.toFloat() / totalSize,
                             status = DownloadStatus.WRITE_FILE,
@@ -166,10 +167,10 @@ object FileUtil : KoinComponent {
         }
     }
 
-    suspend fun unpackFileToDir(
+    fun unpackFileToDir(
         filePath: String,
         destDirPath: String,
-        progress: FlowCollector<ProgressState>
+        onProgressUpdate: suspend (state: ProgressState) -> Unit
     ) = runCatching {
         val fileUri = filePath.toUri()
         DocumentFileRandomInStream(fileUri).use {
@@ -180,7 +181,7 @@ object FileUtil : KoinComponent {
                     ArchiveExtractCallback(
                         destDirPath.toUri().toDocumentFile(get())!!,
                         inArchive,
-                        progress
+                        onProgressUpdate
                     )
                 )
             }
@@ -192,18 +193,24 @@ object FileUtil : KoinComponent {
     private class ArchiveExtractCallback(
         private val targetDir: DocumentFile,
         private val inArchive: IInArchive,
-        private val progress: FlowCollector<ProgressState>
+        private val onProgressUpdate: suspend (state: ProgressState) -> Unit
     ) : IArchiveExtractCallback {
         private var stream: SequentialOutStream? = null
+        private var totalSize: Long = 0L
+        private var lastUpdateTime: Long = 0L
+
+        private companion object {
+            const val UPDATE_INTERVAL_MS = 500L
+        }
 
         override fun getStream(
             index: Int,
             extractAskMode: ExtractAskMode?
         ): ISequentialOutStream? {
             val isFolder = inArchive.getProperty(index, PropID.IS_FOLDER) as? Boolean ?: false
-            val pathString = inArchive.getProperty(index, PropID.PATH) as? String ?: return null
+            if (isFolder) return null
 
-            if (isFolder) { return null }
+            val pathString = inArchive.getProperty(index, PropID.PATH) as? String ?: return null
 
             val file = targetDir.makeFile(
                 get(),
@@ -234,11 +241,25 @@ object FileUtil : KoinComponent {
         }
 
         override fun setTotal(total: Long) {
-            //
+            this.totalSize = total
         }
 
         override fun setCompleted(complete: Long) {
-            //
+            val currentTime = System.currentTimeMillis()
+            if (currentTime - lastUpdateTime > UPDATE_INTERVAL_MS) {
+                lastUpdateTime = currentTime
+
+                runBlocking {
+                    onProgressUpdate(
+                        ProgressState(
+                            progress =
+                                if (totalSize > 0) complete.toFloat() / totalSize.toFloat() else 0f,
+                            status = DownloadStatus.UNPACK_FILE,
+                            time = ""
+                        )
+                    )
+                }
+            }
         }
     }
 

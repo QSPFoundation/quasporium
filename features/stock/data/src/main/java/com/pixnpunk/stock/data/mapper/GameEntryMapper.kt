@@ -3,8 +3,8 @@ package com.pixnpunk.stock.data.mapper
 import com.pixnpunk.database.model.GameEntity
 import com.pixnpunk.dto.GameEntry
 
-fun GameEntry.toEntity(): GameEntity {
-    return GameEntity(
+fun GameEntry.toEntity(): GameEntity =
+    GameEntity(
         id = id,
         listId = listId,
         author = author,
@@ -23,10 +23,9 @@ fun GameEntry.toEntity(): GameEntity {
         gameDirPath = gameDirPath,
         gameFilesPath = gameFilesPath
     )
-}
 
-fun GameEntity.toDomain(): GameEntry {
-    return GameEntry(
+fun GameEntity.toDomain(): GameEntry =
+    GameEntry(
         id = id,
         listId = listId,
         author = author,
@@ -45,8 +44,5 @@ fun GameEntity.toDomain(): GameEntry {
         gameDirPath = gameDirPath,
         gameFilesPath = gameFilesPath
     )
-}
 
-fun List<GameEntity>.toDomain(): List<GameEntry> {
-    return map { value -> value.toDomain() }
-}
+fun List<GameEntity>.toDomain(): List<GameEntry> = map { value -> value.toDomain() }

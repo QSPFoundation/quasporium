@@ -25,11 +25,8 @@ class RootExecutor(
             is RootStore.Intent.DownloadNewGame -> {
                 scope.launch(Dispatchers.IO) {
                     downloadGameArchUseCase.execute(
-                        downloadLink = intent.entry.fileUrl,
-                        destDirPath = intent.entry.gameDirPath
-                    ).onSuccess {
-                        fillAndInsertEntryUseCase.execute(intent.entry.copy(gameDirPath = it))
-                    }
+                        downloadEntry = intent.entry
+                    )
                 }
             }
 

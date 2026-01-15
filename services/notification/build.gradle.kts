@@ -42,6 +42,7 @@ dependencies {
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.work)
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin.core)
