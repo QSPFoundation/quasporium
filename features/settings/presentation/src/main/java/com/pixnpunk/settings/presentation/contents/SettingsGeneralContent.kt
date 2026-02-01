@@ -11,9 +11,11 @@ import androidx.compose.material.icons.filled.Language
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import com.pixnpunk.dto.BinaryPrefFormat
 import com.pixnpunk.dto.NativeLibAuthors
+import com.pixnpunk.settings.presentation.R
 import me.zhanghai.compose.preference.listPreference
 import me.zhanghai.compose.preference.switchPreference
 
@@ -38,7 +40,7 @@ fun SettingsGeneralContent(
                     }
                 )
             },
-            title = { Text("Application theme") }
+            title = { Text(stringResource(R.string.theme_list_title)) }
         )
 //        listPreference(
 //            key = "appLangPref",
@@ -80,7 +82,7 @@ fun SettingsGeneralContent(
                     }
                 )
             },
-            title = { Text("Application library version") }
+            title = { Text(stringResource(R.string.library_version_list_title)) }
         )
         listPreference(
             key = "appBinPref",
@@ -100,7 +102,7 @@ fun SettingsGeneralContent(
                     }
                 )
             },
-            title = { Text("Byte prefixes") }
+            title = { Text(stringResource(R.string.prefixes_list_title)) }
         )
         listPreference(
             key = "countActsPref",
@@ -112,7 +114,7 @@ fun SettingsGeneralContent(
             },
             defaultValue = 3,
             values = listOf(3, 4, 5, 6),
-            title = { Text("Count visible action") }
+            title = { Text(stringResource(R.string.count_action_list_title)) }
         )
         switchPreference(
             key = "appImmersiveModePref",
@@ -123,7 +125,7 @@ fun SettingsGeneralContent(
                 )
             },
             defaultValue = true,
-            title = { Text("Immersive mode") }
+            title = { Text(stringResource(R.string.immersive_switch_title)) }
         )
     }
 }

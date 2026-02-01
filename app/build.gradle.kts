@@ -94,6 +94,8 @@ dependencies {
     implementation(libs.koin.android)
     implementation(libs.koin.workmanager)
 
+    implementation(libs.prettytime)
+
     implementation(libs.essenty.lifecycle)
     implementation(libs.decompose.core)
     implementation(libs.decompose.ext)

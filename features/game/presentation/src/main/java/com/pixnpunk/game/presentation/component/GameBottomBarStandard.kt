@@ -32,14 +32,13 @@ fun GameBottomBarStandard(
                     badge = { }
                 ) {
                     if (activeComponent is GameComponent.StandardChild.ExtraChild) {
-                        Icon(Icons.Filled.Sell, contentDescription = "")
+                        Icon(Icons.Filled.Sell, contentDescription = null)
                     } else {
-                        Icon(Icons.Outlined.Sell, contentDescription = "")
+                        Icon(Icons.Outlined.Sell, contentDescription = null)
                     }
-
                 }
             },
-            label = { Text(stringResource(R.string.tab_extra)) },
+            label = { Text(stringResource(R.string.extra_tab_title)) },
             alwaysShowLabel = false,
             onClick = { navigationTo(RealGameComponent.StandardChildConfig.Extra) },
             selected = activeComponent is GameComponent.StandardChild.ExtraChild,
@@ -49,10 +48,10 @@ fun GameBottomBarStandard(
                 BadgedBox(
                     badge = { }
                 ) {
-                    Icon(Icons.Filled.Menu, contentDescription = "")
+                    Icon(Icons.Filled.Menu, contentDescription = null)
                 }
             },
-            label = { Text(stringResource(R.string.tab_main)) },
+            label = { Text(stringResource(R.string.main_tab_title)) },
             alwaysShowLabel = false,
             onClick = { navigationTo(RealGameComponent.StandardChildConfig.Main) },
             selected = activeComponent is GameComponent.StandardChild.MainChild,
@@ -64,13 +63,13 @@ fun GameBottomBarStandard(
                     badge = { }
                 ) {
                     if (activeComponent is GameComponent.StandardChild.ObjectChild) {
-                        Icon(Icons.Filled.Work, contentDescription = "")
+                        Icon(Icons.Filled.Work, contentDescription = null)
                     } else {
-                        Icon(Icons.Outlined.WorkOutline, contentDescription = "")
+                        Icon(Icons.Outlined.WorkOutline, contentDescription = null)
                     }
                 }
             },
-            label = { Text(stringResource(R.string.tab_object)) },
+            label = { Text(stringResource(R.string.object_tab_title)) },
             alwaysShowLabel = false,
             onClick = { navigationTo(RealGameComponent.StandardChildConfig.Object) },
             selected = activeComponent is GameComponent.StandardChild.ObjectChild,

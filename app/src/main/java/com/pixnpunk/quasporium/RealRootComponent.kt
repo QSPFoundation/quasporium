@@ -29,6 +29,9 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.serializer
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
+import org.ocpsoft.prettytime.PrettyTime
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class RealRootComponent(
     private val componentContext: ComponentContext,
@@ -196,13 +199,25 @@ class RealRootComponent(
         }
     }
 
-    override fun replaceLinkToDesk(
+    override fun fetchDescConvData(
         entry: GameEntry,
         completeScope: (GameEntry) -> Unit
     ) {
         CoroutineScope(Dispatchers.IO).launch {
-            val desc = get<FetchRemoteDescUseCase>().execute(entry.descUrl)
-            completeScope(entry.copy(descUrl = desc))
+            val dataFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+            completeScope(
+                entry.copy(
+                    descUrl = get<FetchRemoteDescUseCase>().execute(entry.descUrl),
+                    pubDate =
+                        if (entry.pubDate.isNotEmpty())
+                            PrettyTime().format(dataFormat.parse(entry.pubDate))
+                        else entry.pubDate,
+                    modDate =
+                        if (entry.modDate.isNotEmpty())
+                            PrettyTime().format(dataFormat.parse(entry.modDate))
+                        else entry.modDate
+                )
+            )
         }
     }
 

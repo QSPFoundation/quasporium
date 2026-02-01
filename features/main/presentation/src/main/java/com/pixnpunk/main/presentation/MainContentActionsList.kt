@@ -78,7 +78,7 @@ fun MainContentActionsList(
                         if (act.imagePath.isNotBlank()) {
                             AsyncImage(
                                 model = act.imagePath,
-                                contentDescription = ""
+                                contentDescription = null
                             )
                         }
                     },

@@ -114,7 +114,7 @@ fun StockContent(
                     icon = {
                         Icon(
                             imageVector = Icons.Filled.Add,
-                            contentDescription = "Add new game"
+                            contentDescription = null
                         )
                     }
                 )
@@ -145,7 +145,7 @@ fun StockContent(
                     icon = {
                         Icon(
                             imageVector = Icons.Filled.ArrowUpward,
-                            contentDescription = "Scroll to top"
+                            contentDescription = null
                         )
                     }
                 )
@@ -159,6 +159,13 @@ fun StockContent(
             state = pagerState
         ) {
             when (it) {
+                TabState.LIBRARY.ordinal ->
+                    StockLibraryChild(
+                        component,
+                        numCountInfo,
+                        gridState
+                    )
+
                 TabState.INSTALLED.ordinal ->
                     StockInstalledChild(
                         component,
@@ -167,13 +174,6 @@ fun StockContent(
                         setToDelete,
                         setAllEntries,
                         model.isDeleteModeActive
-                    )
-
-                TabState.LIBRARY.ordinal ->
-                    StockLibraryChild(
-                        component,
-                        numCountInfo,
-                        gridState
                     )
             }
         }

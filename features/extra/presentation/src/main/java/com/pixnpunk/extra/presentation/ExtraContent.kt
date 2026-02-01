@@ -21,11 +21,9 @@ fun ExtraContent(
         modifier = Modifier.fillMaxSize(),
         update = { webView ->
             webView.loadDataWithBaseURL(
-                "file:///",
+                "https://appassets.androidplatform.net/game_files/",
                 state.extraDesc,
-                "text/html",
-                "UTF-8",
-                null
+                "text/html", "UTF-8", null
             )
         },
         factory = { ctx ->
@@ -34,11 +32,9 @@ fun ExtraContent(
                     setBackgroundColor(settings.backColor)
                     layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
                     loadDataWithBaseURL(
-                        "file:///",
+                        "https://appassets.androidplatform.net/game_files/",
                         state.extraDesc,
-                        "text/html",
-                        "UTF-8",
-                        null
+                        "text/html", "UTF-8", null
                     )
                 }
             )

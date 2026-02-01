@@ -47,7 +47,7 @@ fun ObjectContent(
                         if (obj.imagePath.isNotBlank()) {
                             AsyncImage(
                                 model = obj.imagePath,
-                                contentDescription = ""
+                                contentDescription = null
                             )
                         }
                     },

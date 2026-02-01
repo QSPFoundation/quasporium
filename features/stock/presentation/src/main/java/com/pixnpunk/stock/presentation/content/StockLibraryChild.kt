@@ -10,11 +10,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_EXPANDED_LOWER_BOUND
 import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_MEDIUM_LOWER_BOUND
+import com.pixnpunk.stock.presentation.R
 import com.pixnpunk.stock.presentation.StockComponent
 import com.pixnpunk.stock.presentation.content.paging.AppendErrorItem
 import com.pixnpunk.stock.presentation.content.paging.StockAppendLoadingItem
@@ -63,7 +65,7 @@ fun StockLibraryChild(
                     is LoadState.Error -> {
                         item {
                             AppendErrorItem(
-                                message = "Failed to load more games.",
+                                message = stringResource(R.string.games_list_error_append),
                                 onRetry = { lazyPagingItems.retry() }
                             )
                         }
@@ -77,14 +79,17 @@ fun StockLibraryChild(
         }
     }
 
-    when (lazyPagingItems.loadState.refresh) {
+    when (val refreshState = lazyPagingItems.loadState.refresh) {
         is LoadState.Loading -> {
             StockFullScreenLoading()
         }
 
         is LoadState.Error -> {
             StockFullScreenError(
-                message = "No Internet Connection",
+                message = stringResource(
+                    R.string.games_list_error_template,
+                    refreshState.error.message ?: "Unknown error"
+                ),
                 onRetry = { lazyPagingItems.retry() }
             )
         }
@@ -95,7 +100,7 @@ fun StockLibraryChild(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("No Games Found")
+                    Text(stringResource(R.string.games_list_empty))
                 }
             }
         }

@@ -21,7 +21,7 @@ fun RootAppBarMenu(
             IconButton(onClick = doCreateSaveIntent) {
                 Icon(
                     imageVector = Icons.Default.Download,
-                    contentDescription = stringResource(R.string.act_save)
+                    contentDescription = stringResource(R.string.save_button_description)
                 )
             }
         }
@@ -29,7 +29,7 @@ fun RootAppBarMenu(
             IconButton(onClick = doCreateLoadIntent) {
                 Icon(
                     imageVector = Icons.Default.Upload,
-                    contentDescription = stringResource(R.string.act_load)
+                    contentDescription = stringResource(R.string.load_button_description)
                 )
             }
         }

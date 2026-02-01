@@ -16,7 +16,7 @@ sealed interface RootComponent {
 
     val label: Flow<RootStore.Label>
 
-    fun replaceLinkToDesk(
+    fun fetchDescConvData(
         entry: GameEntry,
         completeScope: (GameEntry) -> Unit
     )

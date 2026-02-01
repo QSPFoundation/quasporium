@@ -23,8 +23,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.pixnpunk.stock.presentation.R
 import com.pixnpunk.stock.presentation.TabState
 import kotlinx.coroutines.launch
 
@@ -50,13 +52,13 @@ fun StockSearchAppBar(
                     onSearch = { searchEntries(it) },
                     expanded = false,
                     onExpandedChange = { },
-                    placeholder = { Text("Search") },
+                    placeholder = { Text(stringResource(R.string.placeholder_searchbar)) },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                     trailingIcon = {
                         IconButton(onClick = navigateToSettings) {
                             Icon(
                                 imageVector = Icons.Default.Settings,
-                                contentDescription = ""
+                                contentDescription = null
                             )
                         }
                     }
@@ -80,7 +82,11 @@ fun StockSearchAppBar(
                     },
                     text = {
                         Text(
-                            text = state.name,
+                            text = when (state.ordinal) {
+                                TabState.INSTALLED.ordinal -> stringResource(R.string.first_tab_text)
+                                TabState.LIBRARY.ordinal  -> stringResource(R.string.second_tab_text)
+                                else -> ""
+                            },
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis
                         )

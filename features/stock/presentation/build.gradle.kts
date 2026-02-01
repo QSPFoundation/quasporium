@@ -52,15 +52,13 @@ dependencies {
 
     implementation(libs.storage)
 
-    implementation(project.dependencies.platform(libs.koin.bom))
-    implementation(libs.koin.android)
-
     implementation(libs.coil.gif)
 
     implementation(libs.kotlinx.serialization.json)
 
     implementation(project.dependencies.platform(libs.koin.bom))
     implementation(libs.koin.core)
+    implementation(libs.koin.android)
 
     implementation(libs.coil.compose)
     implementation(libs.coil.network.ktor3)

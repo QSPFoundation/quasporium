@@ -31,8 +31,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.pixnpunk.dialogs.presentation.R
 import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.utils.FileUtil.receiveDirName
 import com.pixnpunk.utils.FileUtil.receiveDirRelPath
@@ -113,21 +115,21 @@ fun DialogAddGameContent(
             value = gameName,
             onValueChange = { gameName = it },
             singleLine = true,
-            label = { Text("Game name") }
+            label = { Text(stringResource(R.string.title_field)) }
         )
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
             value = gameAuthor,
             onValueChange = { gameAuthor = it },
             singleLine = true,
-            label = { Text("Game author") }
+            label = { Text(stringResource(R.string.author_field)) }
         )
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
             value = gameVersion,
             onValueChange = { gameVersion = it },
             singleLine = true,
-            label = { Text("Game version") }
+            label = { Text(stringResource(R.string.version_field)) }
         )
         FlowRow(
             modifier = Modifier.fillMaxWidth(),
@@ -140,7 +142,7 @@ fun DialogAddGameContent(
                     if (entry.gameDirPath.isNotEmpty()) {
                         Text(entry.gameDirPath.receiveDirRelPath())
                     } else {
-                        Text("Select game folder")
+                        Text(stringResource(R.string.folder_selector_title))
                     }
                 },
                 selected = entry.gameDirPath.isNotEmpty(),
@@ -176,7 +178,7 @@ fun DialogAddGameContent(
                 ) {
                     FilterChip(
                         onClick = selectFiles,
-                        label = { Text("Select game files") },
+                        label = { Text(stringResource(R.string.file_selector_title)) },
                         selected = false,
                         trailingIcon = {
                             Icon(
@@ -225,7 +227,7 @@ fun DialogAddGameContent(
                 OutlinedButton(
                     onClick = onDismiss
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel_button_description))
                 }
             }
         }

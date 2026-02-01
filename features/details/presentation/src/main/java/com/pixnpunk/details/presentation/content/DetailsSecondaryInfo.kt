@@ -12,12 +12,11 @@ import androidx.compose.material.icons.filled.Language
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.pixnpunk.details.presentation.R
 import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.utils.FileUtil.formatFileSize
-import org.ocpsoft.prettytime.PrettyTime
-import java.text.SimpleDateFormat
-import java.util.*
 
 @Composable
 fun DetailsSecondaryInfo(
@@ -64,13 +63,12 @@ fun DetailsSecondaryInfo(
                     text = formatFileSize(entry.fileSize, numCountInfo)
                 )
 
-                val dataFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
                 AnimatedVisibility(visible = entry.pubDate.isNotEmpty()) {
-                    InfoTag(text = "Published: ${PrettyTime().format(dataFormat.parse(entry.pubDate))}")
+                    InfoTag(text = stringResource(R.string.published_title, entry.pubDate))
                 }
 
                 AnimatedVisibility(visible = entry.modDate.isNotEmpty()) {
-                    InfoTag(text = "Updated: ${PrettyTime().format(dataFormat.parse(entry.modDate))}")
+                    InfoTag(text = stringResource(R.string.updated_title, entry.modDate))
                 }
             }
         }

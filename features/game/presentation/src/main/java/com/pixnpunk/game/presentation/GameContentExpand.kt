@@ -50,9 +50,9 @@ fun GameContentExpand(
                 GameAppBar(
                     titleText =
                         when (activeComponent) {
-                            is GameComponent.ExpandChild.MainActionsChild -> stringResource(R.string.tab_main)
-                            is GameComponent.ExpandChild.ExtraChild -> stringResource(R.string.tab_extra)
-                            is GameComponent.ExpandChild.ObjectChild -> stringResource(R.string.tab_object)
+                            is GameComponent.ExpandChild.MainActionsChild -> stringResource(R.string.main_tab_title)
+                            is GameComponent.ExpandChild.ExtraChild -> stringResource(R.string.extra_tab_title)
+                            is GameComponent.ExpandChild.ObjectChild -> stringResource(R.string.object_tab_title)
                         },
                     component = component,
                     showDialog = component::doShowDialog,

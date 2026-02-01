@@ -114,7 +114,7 @@ fun RootContent(
                             }
                         },
                         navigateToDetails = { inEntry ->
-                            component.replaceLinkToDesk(
+                            component.fetchDescConvData(
                                 entry = inEntry,
                                 completeScope = { entry ->
                                     scope.launch {

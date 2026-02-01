@@ -8,6 +8,8 @@ import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.pixnpunk.settings.presentation.R
 import me.zhanghai.compose.preference.switchPreference
 
 @Composable
@@ -23,7 +25,7 @@ fun SettingsAudioContent(
                 )
             },
             defaultValue = true,
-            title = { Text("Play game audio") }
+            title = { Text(stringResource(R.string.audio_play_switch_title)) }
         )
         switchPreference(
             key = "useMuteGameVideoPref",
@@ -34,7 +36,7 @@ fun SettingsAudioContent(
                 )
             },
             defaultValue = false,
-            title = { Text("Mute game video") }
+            title = { Text(stringResource(R.string.mute_video_switch_title)) }
         )
         switchPreference(
             key = "useGameAudioDebug",
@@ -45,7 +47,7 @@ fun SettingsAudioContent(
                 )
             },
             defaultValue = false,
-            title = { Text("Audio path debugger") }
+            title = { Text(stringResource(R.string.audio_path_switch_title)) }
         )
     }
 }

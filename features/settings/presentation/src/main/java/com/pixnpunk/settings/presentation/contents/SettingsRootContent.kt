@@ -10,6 +10,8 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.pixnpunk.settings.presentation.R
 import com.pixnpunk.settings.presentation.RealSettingsComponent
 import me.zhanghai.compose.preference.preference
 
@@ -26,7 +28,7 @@ fun SettingsRootContent(
                     contentDescription = null
                 )
             },
-            title = { Text("Basic") },
+            title = { Text(stringResource(R.string.general_button_title)) },
             onClick = { moveToChild(RealSettingsComponent.ChildConfig.General) }
         )
         preference(
@@ -37,7 +39,7 @@ fun SettingsRootContent(
                     contentDescription = null
                 )
             },
-            title = { Text("Text") },
+            title = { Text(stringResource(R.string.text_button_title)) },
             onClick = { moveToChild(RealSettingsComponent.ChildConfig.Text) }
         )
         preference(
@@ -48,7 +50,7 @@ fun SettingsRootContent(
                     contentDescription = null
                 )
             },
-            title = { Text("Pictures") },
+            title = { Text(stringResource(R.string.pictures_button_title)) },
             onClick = { moveToChild(RealSettingsComponent.ChildConfig.Pictures) }
         )
         preference(
@@ -59,7 +61,7 @@ fun SettingsRootContent(
                     contentDescription = null
                 )
             },
-            title = { Text("Audio") },
+            title = { Text(stringResource(R.string.audio_button_title)) },
             onClick = { moveToChild(RealSettingsComponent.ChildConfig.Audio) }
         )
         preference(
@@ -70,7 +72,7 @@ fun SettingsRootContent(
                     contentDescription = null
                 )
             },
-            title = { Text("About app") },
+            title = { Text(stringResource(R.string.about_button_title)) },
             onClick = {}
         )
     }

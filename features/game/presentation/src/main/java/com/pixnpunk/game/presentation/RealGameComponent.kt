@@ -10,6 +10,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
+import androidx.webkit.WebViewAssetLoader
 import com.anggrayudi.storage.extension.toDocumentFile
 import com.anggrayudi.storage.file.MimeType
 import com.anggrayudi.storage.file.child
@@ -75,6 +76,10 @@ class RealGameComponent(
     private val store = instanceKeeper.getStore {
         RealGameStore(DefaultStoreFactory()).create()
     }
+
+    private val assetLoader = WebViewAssetLoader.Builder()
+        .addPathHandler("/game_files/", ExternalStoragePathHandler())
+        .build()
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override val model: StateFlow<GameStore.State> = store.stateFlow
@@ -326,25 +331,35 @@ class RealGameComponent(
         override fun shouldInterceptRequest(
             view: WebView,
             request: WebResourceRequest
-        ): WebResourceResponse? {
-            val uriScheme = request.url.scheme ?: return super.shouldInterceptRequest(view, request)
-            if (!uriScheme.startsWith("file")) return super.shouldInterceptRequest(view, request)
-            val mRootDir = rootDir
-            if (!mRootDir.isWritableDir()) return super.shouldInterceptRequest(view, request)
+        ) = runCatching {
+            val uriPath = request.url ?: throw NullPointerException()
+            assetLoader.shouldInterceptRequest(uriPath)
+        }.getOrElse { super.shouldInterceptRequest(view, request) }
+    }
 
+    private inner class ExternalStoragePathHandler() : WebViewAssetLoader.PathHandler {
+        @OptIn(ExperimentalContracts::class)
+        override fun handle(path: String): WebResourceResponse? {
+            val mRootDir = rootDir
+            if (!mRootDir.isWritableDir()) return null
             return runCatching {
-                val uriPath = request.url.path ?: throw NullPointerException()
-                val mediaFile = mRootDir.child(get(), uriPath)
-                if (mediaFile.isWritableFile()) {
+                val mediaFile = mRootDir.child(get(), path)
+                if (!mediaFile.isWritableFile()) {
+                    throw FileNotFoundException()
+                } else {
                     WebResourceResponse(
                         MimeType.getMimeTypeFromFileName(mediaFile.name),
                         null,
+                        200,
+                        "OK",
+                        mapOf(
+                            "Cache-Control" to "public, max-age=3600, immutable",
+                            "Access-Control-Allow-Origin" to "*"
+                        ),
                         get<Context>().contentResolver.openInputStream(mediaFile.uri)
                     )
-                } else {
-                    throw FileNotFoundException()
                 }
-            }.getOrElse { super.shouldInterceptRequest(view, request) }
+            }.getOrElse { null }
         }
     }
 

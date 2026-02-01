@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="back_button_description">Navigate back</string>
+    <string name="play_button_description">Play</string>
+    <string name="modify_button_description">Modify</string>
+    <string name="download_button_description">Download</string>
+    <string name="expand_button_description">Expand</string>
+    <string name="collapse_button_description">Collapse</string>
+    <string name="icon_description">Game icon %1$s</string>
+    <string name="description_title">Description</string>
+    <string name="author_title">By: %1$s</string>
+    <string name="ported_by_title">Ported by: %1$s</string>
+    <string name="published_title">Published: %1$s</string>
+    <string name="updated_title">Updated: %1$s</string>
+</resources>

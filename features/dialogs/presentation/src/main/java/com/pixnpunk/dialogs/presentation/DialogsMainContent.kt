@@ -13,6 +13,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.sp
@@ -69,7 +70,7 @@ fun DialogsMainContent(
                             },
                             onDismiss = component.onDismissed,
                             isAddLocalGame = true,
-                            buttonText = "Add game"
+                            buttonText = stringResource(R.string.add_button_description)
                         )
 
                     DialogsState.DIALOG_EDIT_GAME ->
@@ -113,7 +114,7 @@ fun DialogsMainContent(
                             },
                             onDismiss = component.onDismissed,
                             isAddLocalGame = false,
-                            buttonText = "Download game"
+                            buttonText = stringResource(R.string.download_button_description)
                         )
 
                     DialogsState.DIALOG_SELECT_COLOR -> config.colorPickerState.let {
@@ -152,10 +153,10 @@ fun DialogsMainContent(
                                 label = {
                                     Text(
                                         when (it) {
-                                            InputState.INPUT_IMAGE_WIDTH -> "Image width"
-                                            InputState.INPUT_IMAGE_HEIGHT -> "Image height"
-                                            InputState.INPUT_WITH_MESSAGE_EXEC -> "QSP Terminal"
-                                            else -> "Enter something"
+                                            InputState.INPUT_IMAGE_WIDTH -> stringResource(R.string.input_width_title)
+                                            InputState.INPUT_IMAGE_HEIGHT -> stringResource(R.string.input_height_title)
+                                            InputState.INPUT_WITH_MESSAGE_EXEC -> stringResource(R.string.input_msg_exec_title)
+                                            else -> stringResource(R.string.input_generic_title)
                                         }
                                     )
                                 },
@@ -174,7 +175,7 @@ fun DialogsMainContent(
                     }
 
                     DialogsState.DIALOG_OUTPUT_VALUE -> config.outputState.let {
-                        if (it == null || !config.outputValue.isBlank()) {
+                        if (it == null || config.outputValue.isBlank()) {
                             component.onDismissed()
                         } else {
                             if (it != OutputState.OUTPUT_LIST) {
@@ -198,8 +199,6 @@ fun DialogsMainContent(
                             }
                         }
                     }
-
-                    else -> {}
                 }
             }
         }

@@ -32,9 +32,9 @@ fun GameContentStandard(
             GameAppBar(
                 titleText =
                     when (activeComponent) {
-                        is GameComponent.StandardChild.MainChild -> stringResource(R.string.tab_main)
-                        is GameComponent.StandardChild.ExtraChild -> stringResource(R.string.tab_extra)
-                        is GameComponent.StandardChild.ObjectChild -> stringResource(R.string.tab_object)
+                        is GameComponent.StandardChild.MainChild -> stringResource(R.string.main_tab_title)
+                        is GameComponent.StandardChild.ExtraChild -> stringResource(R.string.extra_tab_title)
+                        is GameComponent.StandardChild.ObjectChild -> stringResource(R.string.object_tab_title)
                     },
                 component = component,
                 showDialog = component::doShowDialog,

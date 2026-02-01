@@ -48,8 +48,6 @@ fun StockInstalledGameListItem(
         supportingContent = {
             if (gameEntry.fileSize != 0L) {
                 Text(formatFileSize(gameEntry.fileSize, numCountInfo))
-            } else {
-                null
             }
         },
         leadingContent = {
@@ -57,8 +55,8 @@ fun StockInstalledGameListItem(
                 modifier = Modifier.size(50.dp),
                 model = gameEntry.gameIconPath,
                 error = rememberVectorPainter(Icons.Outlined.BrokenImage),
-                contentDescription = "${gameEntry.title} icon",
-                contentScale = ContentScale.Crop
+                contentScale = ContentScale.Crop,
+                contentDescription = null
             )
         },
         colors = ListItemDefaults.colors(

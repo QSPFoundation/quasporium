@@ -48,11 +48,13 @@ class RealMainComponent(
     @SuppressLint("SetJavaScriptEnabled")
     override fun getDefaultWebClient(view: WebView): WebView =
         view.apply {
-            getSettings().allowFileAccess = true
-            getSettings().javaScriptEnabled = true
-            getSettings().useWideViewPort = true
-            getSettings().blockNetworkLoads = true
-            getSettings().cacheMode = WebSettings.LOAD_CACHE_ONLY
+            settings.allowFileAccess = false
+            settings.javaScriptEnabled = true
+            settings.blockNetworkLoads = true
+            settings.domStorageEnabled = true
+            if (settingsFlow.value.isVideoMute) {
+                settings.mediaPlaybackRequiresUserGesture = false
+            }
             setOverScrollMode(View.OVER_SCROLL_NEVER)
             setWebViewClient(gameWebViewClient)
         }

@@ -44,8 +44,8 @@ fun StockLibraryGameGridItem(
                     .size(rememberConstraintsSizeResolver())
                     .build(),
             error = rememberVectorPainter(Icons.Outlined.BrokenImage),
-            contentDescription = "${gameEntry.title} icon",
-            contentScale = ContentScale.FillBounds
+            contentScale = ContentScale.FillBounds,
+            contentDescription = null
         )
         Column(
             modifier = Modifier.padding(16.dp)
@@ -58,7 +58,7 @@ fun StockLibraryGameGridItem(
             )
             if (gameEntry.fileSize != 0L) {
                 Text(
-                    text = "Size: ${formatFileSize(gameEntry.fileSize, numCountInfo)}",
+                    text = formatFileSize(gameEntry.fileSize, numCountInfo),
                     style = MaterialTheme.typography.bodyMedium
                 )
             }

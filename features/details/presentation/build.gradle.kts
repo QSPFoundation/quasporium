@@ -43,8 +43,6 @@ dependencies {
     implementation(project.dependencies.platform(libs.koin.bom))
     implementation(libs.koin.android)
 
-    implementation(libs.prettytime)
-
     implementation(libs.coil.compose)
     implementation(libs.coil.gif)
     implementation(libs.coil.network.ktor3)
