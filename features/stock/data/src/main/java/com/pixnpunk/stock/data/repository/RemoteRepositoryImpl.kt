@@ -18,6 +18,7 @@ import com.pixnpunk.stock.domain.repository.RemoteRepository
 import io.ktor.client.*
 import kotlinx.coroutines.flow.Flow
 import org.jsoup.Jsoup
+import org.jsoup.safety.Safelist
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 
@@ -32,9 +33,12 @@ class RemoteRepositoryImpl : RemoteRepository, KoinComponent {
     }
 
     override suspend fun fetchDescription(descUrl: String): String =
-        Jsoup.parse(
-            get<HttpClient>().fetchForGet<String>(descUrl).getOrDefault("")
-        ).getElementById("sobi2Details_field_description")?.html() ?: ""
+        Jsoup.clean(
+            Jsoup.parse(
+                get<HttpClient>().fetchForGet<String>(descUrl).getOrDefault("")
+            ).getElementById("sobi2Details_field_description")?.html() ?: "",
+            Safelist.relaxed()
+        )
 
     override suspend fun fetchRemoteSource(): Flow<PagingData<GameEntry>> =
         Pager(
