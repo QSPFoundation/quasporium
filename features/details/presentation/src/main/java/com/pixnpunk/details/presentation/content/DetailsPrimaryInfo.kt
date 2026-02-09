@@ -13,6 +13,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -32,7 +33,9 @@ fun DetailsPrimaryInfo(
                 colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                 leadingContent = {
                     AsyncImage(
-                        modifier = Modifier.size(50.dp),
+                        modifier = Modifier
+                            .size(56.dp)
+                            .clip(MaterialTheme.shapes.medium),
                         model = entry.gameIconPath,
                         error = rememberVectorPainter(Icons.Outlined.BrokenImage),
                         contentDescription = stringResource(R.string.icon_description, entry.title),
