@@ -9,7 +9,6 @@ import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.mvikotlin.core.instancekeeper.getStore
-import com.arkivanov.mvikotlin.extensions.coroutines.labels
 import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
 import com.pixnpunk.dialogs.presentation.DialogsComponent
 import com.pixnpunk.dialogs.presentation.DialogsConfig
@@ -19,19 +18,24 @@ import com.pixnpunk.dto.ColorPickerState
 import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.dto.InputState
 import com.pixnpunk.dto.OutputState
+import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.quasporium.mvi.RealRootStore
 import com.pixnpunk.quasporium.mvi.RootStore
+import com.pixnpunk.settings.SettingsRepository
 import com.pixnpunk.stock.domain.usecase.FetchRemoteDescUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.serialization.serializer
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
+import org.koin.core.component.inject
 import org.ocpsoft.prettytime.PrettyTime
 import java.text.SimpleDateFormat
-import java.util.Locale
+import java.util.*
 
 class RealRootComponent(
     private val componentContext: ComponentContext,
@@ -48,7 +52,12 @@ class RealRootComponent(
         RealRootStore(DefaultStoreFactory()).create()
     }
 
-    override val label: Flow<RootStore.Label> = store.labels
+    override val settingsState: StateFlow<SettingsEntity> =
+        get<SettingsRepository>().settingsFlow.stateIn(
+            scope = CoroutineScope(Dispatchers.Main),
+            started = SharingStarted.Eagerly,
+            initialValue = get<SettingsRepository>().currentSettings
+        )
 
     fun processPickedDir(dirName: String, dirPath: String) {
         val oldConfig = dialogSlot.child?.configuration as? DialogsConfig
@@ -211,11 +220,15 @@ class RealRootComponent(
                     pubDate =
                         try {
                             PrettyTime().format(dataFormat.parse(entry.pubDate))
-                        } catch (_: Exception) { entry.pubDate },
+                        } catch (_: Exception) {
+                            entry.pubDate
+                        },
                     modDate =
                         try {
                             PrettyTime().format(dataFormat.parse(entry.modDate))
-                        } catch (_: Exception) { entry.modDate }
+                        } catch (_: Exception) {
+                            entry.modDate
+                        }
                 )
             )
         }

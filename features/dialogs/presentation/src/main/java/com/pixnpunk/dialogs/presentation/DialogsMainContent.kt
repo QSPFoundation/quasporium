@@ -9,8 +9,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -28,18 +26,17 @@ import com.pixnpunk.dialogs.presentation.content.DialogSelectGameContent
 import com.pixnpunk.dto.ColorPickerState
 import com.pixnpunk.dto.InputState
 import com.pixnpunk.dto.OutputState
-import com.pixnpunk.settings.SettingsRepository
+import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.utils.ViewUtil.toTypeface
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DialogsMainContent(
     component: DialogsComponent,
-    settingsRepository: SettingsRepository
+    settings: SettingsEntity
 ) {
     val config = component.dialogsConfig
     val state = config.dialogsState
-    val settings by settingsRepository.settingsFlow.collectAsState()
 
     if (state == DialogsState.DIALOG_ADD_GAME
         || state == DialogsState.DIALOG_EDIT_GAME

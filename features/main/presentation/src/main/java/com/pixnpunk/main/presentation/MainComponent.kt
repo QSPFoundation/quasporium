@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 sealed interface MainComponent {
     val model: StateFlow<MainStore.State>
-    val settingsFlow: StateFlow<SettingsEntity>
+    val settingsState: StateFlow<SettingsEntity>
 
     val onActionClicked: (Int) -> Unit
     fun getDefaultWebClient(view: WebView): WebView

@@ -262,7 +262,6 @@ class RealGameComponent(
         gameDirUri: Uri,
         gameFileUri: Uri
     ) {
-        println(gameDirUri)
         supervisorService.startService(gameId, gameTitle, gameDirUri, gameFileUri)
 
         rootDir = gameDirUri.toDocumentFile(get())

@@ -24,7 +24,6 @@ import com.anggrayudi.storage.file.MimeType
 import com.arkivanov.decompose.defaultComponentContext
 import com.pixnpunk.dto.OutputState
 import com.pixnpunk.game.presentation.GameActivity
-import com.pixnpunk.settings.SettingsRepository
 import com.pixnpunk.utils.AddonsUtils
 import com.pixnpunk.utils.FileUtil.isWritableDir
 import com.pixnpunk.utils.FileUtil.isWritableFile
@@ -33,8 +32,6 @@ import kotlin.concurrent.thread
 import kotlin.contracts.ExperimentalContracts
 
 class MainActivity : ComponentActivity() {
-
-    private val settingsRepository: SettingsRepository = get()
 
     private lateinit var root: RealRootComponent
 
@@ -206,6 +203,6 @@ class MainActivity : ComponentActivity() {
             }
         )
 
-        setContent { RootContent(root, settingsRepository) }
+        setContent { RootContent(root) }
     }
 }

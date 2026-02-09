@@ -21,10 +21,7 @@ sealed interface RootStore : Store<RootStore.Intent, RootStore.State, RootStore.
 
     sealed interface Message
 
-    sealed interface Label {
-        data class ColorConfig(val state: ColorPickerState, val color: Color) : Label
-        data class ImageConfig(val state: InputState, val config: String) : Label
-    }
+    sealed interface Label
 
     sealed interface Action
 }

@@ -14,7 +14,7 @@ fun MainContentActionsListHolder(
     component: MainComponent
 ) {
     val state by component.model.collectAsState()
-    val settings by component.settingsFlow.collectAsState()
+    val settings by component.settingsState.collectAsState()
 
     Surface(
         modifier = Modifier.fillMaxSize(),

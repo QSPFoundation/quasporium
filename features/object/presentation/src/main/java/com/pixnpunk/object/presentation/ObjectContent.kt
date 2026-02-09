@@ -29,7 +29,7 @@ fun ObjectContent(
     component: ObjectComponent
 ) {
     val state by component.model.collectAsState()
-    val settings by component.settingsFlow.collectAsState()
+    val settings by component.settingsState.collectAsState()
 
     Surface(
         color = Color(settings.backColor)

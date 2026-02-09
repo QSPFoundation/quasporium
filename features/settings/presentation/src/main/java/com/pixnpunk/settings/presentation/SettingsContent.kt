@@ -5,36 +5,29 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
-import com.pixnpunk.settings.SettingsRepository
 import com.pixnpunk.settings.presentation.contents.SettingsAudioContent
 import com.pixnpunk.settings.presentation.contents.SettingsGeneralContent
 import com.pixnpunk.settings.presentation.contents.SettingsImageContent
 import com.pixnpunk.settings.presentation.contents.SettingsRootContent
 import com.pixnpunk.settings.presentation.contents.SettingsTextContent
-import me.zhanghai.compose.preference.LocalPreferenceFlow
 import me.zhanghai.compose.preference.ProvidePreferenceLocals
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsContent(
-    component: SettingsComponent,
-    settingsRepository: SettingsRepository
+    component: SettingsComponent
 ) {
     val stack by component.childStack.subscribeAsState()
     val activeComponent = stack.active.instance
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     ProvidePreferenceLocals {
-        val pref by LocalPreferenceFlow.current.collectAsState()
-        settingsRepository.emitMap(prefMap = pref.asMap())
-
         Scaffold(
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             topBar = {

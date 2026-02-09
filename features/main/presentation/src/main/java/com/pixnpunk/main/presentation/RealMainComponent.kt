@@ -2,27 +2,30 @@ package com.pixnpunk.main.presentation
 
 import android.annotation.SuppressLint
 import android.view.View
-import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.mvikotlin.core.instancekeeper.getStore
 import com.arkivanov.mvikotlin.extensions.coroutines.stateFlow
 import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
+import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.main.presentation.mvi.MainStore
 import com.pixnpunk.main.presentation.mvi.RealMainStore
 import com.pixnpunk.settings.SettingsRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
+import org.koin.core.component.get
 
 class RealMainComponent(
     private val componentContext: ComponentContext,
     private val gameWebViewClient: WebViewClient
 ) : ComponentContext by componentContext, MainComponent, KoinComponent {
 
-    private val settingsRepo: SettingsRepository by inject()
     private val store = instanceKeeper.getStore {
         RealMainStore(
             storeFactory = DefaultStoreFactory(),
@@ -40,7 +43,12 @@ class RealMainComponent(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override val model: StateFlow<MainStore.State> = store.stateFlow
-    override val settingsFlow = settingsRepo.settingsFlow
+    override val settingsState: StateFlow<SettingsEntity> =
+        get<SettingsRepository>().settingsFlow.stateIn(
+            scope = CoroutineScope(Dispatchers.Main),
+            started = SharingStarted.Eagerly,
+            initialValue = get<SettingsRepository>().currentSettings
+        )
     override val onActionClicked: (Int) -> Unit = { index ->
         store.accept(MainStore.Intent.ActionClick(index))
     }
@@ -52,7 +60,7 @@ class RealMainComponent(
             settings.javaScriptEnabled = true
             settings.blockNetworkLoads = true
             settings.domStorageEnabled = true
-            if (settingsFlow.value.isVideoMute) {
+            if (settingsState.value.isVideoMute) {
                 settings.mediaPlaybackRequiresUserGesture = false
             }
             setOverScrollMode(View.OVER_SCROLL_NEVER)

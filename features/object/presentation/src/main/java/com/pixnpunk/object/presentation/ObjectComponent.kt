@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface ObjectComponent {
     val model: StateFlow<ObjectStore.State>
-    val settingsFlow: StateFlow<SettingsEntity>
+    val settingsState: StateFlow<SettingsEntity>
 
     val onObjectSelected: (Int) -> Unit
 }

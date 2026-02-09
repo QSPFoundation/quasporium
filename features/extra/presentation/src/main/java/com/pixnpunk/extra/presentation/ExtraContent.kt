@@ -15,7 +15,7 @@ fun ExtraContent(
     component: ExtraComponent
 ) {
     val state by component.model.collectAsState()
-    val settings by component.settingsFlow.collectAsState()
+    val settings by component.settingsState.collectAsState()
 
     AndroidView(
         modifier = Modifier.fillMaxSize(),

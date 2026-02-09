@@ -8,13 +8,12 @@ import com.pixnpunk.dto.ColorPickerState
 import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.dto.InputState
 import com.pixnpunk.dto.OutputState
-import com.pixnpunk.quasporium.mvi.RootStore
-import kotlinx.coroutines.flow.Flow
+import com.pixnpunk.dto.SettingsEntity
+import kotlinx.coroutines.flow.StateFlow
 
 sealed interface RootComponent {
     val dialogSlot: Value<ChildSlot<*, DialogsComponent>>
-
-    val label: Flow<RootStore.Label>
+    val settingsState: StateFlow<SettingsEntity>
 
     fun fetchDescConvData(
         entry: GameEntry,

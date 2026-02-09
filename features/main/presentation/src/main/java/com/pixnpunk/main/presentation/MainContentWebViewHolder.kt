@@ -10,7 +10,7 @@ fun MainContentWebViewHolder(
     component: MainComponent
 ) {
     val state by component.model.collectAsState()
-    val settings by component.settingsFlow.collectAsState()
+    val settings by component.settingsState.collectAsState()
 
     MainContentWebView(
         mainDesc = state.mainDesc,

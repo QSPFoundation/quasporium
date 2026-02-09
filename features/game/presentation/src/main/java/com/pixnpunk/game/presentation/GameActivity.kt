@@ -10,7 +10,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
@@ -19,19 +18,30 @@ import androidx.core.view.WindowInsetsControllerCompat
 import com.anggrayudi.storage.extension.toDocumentFile
 import com.arkivanov.decompose.defaultComponentContext
 import com.pixnpunk.audio.AudioPlayerViewModel
+import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.game.presentation.mvi.GameStore
 import com.pixnpunk.settings.SettingsRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
+import androidx.compose.runtime.collectAsState
 
 class GameActivity : ComponentActivity() {
     private lateinit var root: RealGameComponent
 
     private val audioPlayer: AudioPlayerViewModel by inject()
     private val settingsRepo: SettingsRepository by inject()
+    private val settingsState: StateFlow<SettingsEntity> =
+        settingsRepo.settingsFlow.stateIn(
+            scope = CoroutineScope(Dispatchers.Main),
+            started = SharingStarted.Eagerly,
+            initialValue = settingsRepo.currentSettings
+        )
 
     private val mainScope: CoroutineScope = CoroutineScope(Dispatchers.Main)
 
@@ -59,7 +69,7 @@ class GameActivity : ComponentActivity() {
 
         lifecycle.addObserver(audioPlayer)
 
-        if (settingsRepo.settingsFlow.value.isImmersModeEnabled) {
+        if (settingsState.value.isImmersModeEnabled) {
             val windowInsetsController =
                 WindowCompat.getInsetsController(window, window.decorView)
             windowInsetsController.systemBarsBehavior =
@@ -120,7 +130,7 @@ class GameActivity : ComponentActivity() {
         setContent {
             GameContent(
                 component = root,
-                settingsRepository = settingsRepo,
+                settings = settingsState.collectAsState().value,
                 onFinish = { killProcess(myPid()) }
             )
         }

@@ -16,7 +16,7 @@ fun MainContent(
     component: MainComponent
 ) {
     val state by component.model.collectAsState()
-    val settings by component.settingsFlow.collectAsState()
+    val settings by component.settingsState.collectAsState()
 
     val lazyListState = rememberLazyListState()
     val isLazyColumnAtTop by remember {
