@@ -14,6 +14,7 @@ import com.pixnpunk.utils.DirUtil.receiveGameFilesFromDir
 import com.pixnpunk.utils.DirUtil.tryReceiveDirSize
 import com.pixnpunk.utils.FileUtil.createSpecialFiles
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -21,6 +22,9 @@ import org.koin.core.component.inject
 class LocalRepositoryImpl : LocalRepository, KoinComponent {
 
     private val gameDao: GameDao by inject()
+
+    override fun observeEntryUrls(): Flow<List<String>> =
+        gameDao.getByUrl().distinctUntilChanged()
 
     override suspend fun deleteGameEntries(entriesDelete: Set<GameEntry>): Int =
         gameDao.deleteAll(entriesDelete.map { entry -> entry.toEntity() })

@@ -8,6 +8,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.pixnpunk.database.model.GameEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface GameDao {
@@ -28,6 +29,9 @@ interface GameDao {
 
     @Query("SELECT * FROM game WHERE title LIKE :name LIMIT 1")
     suspend fun getByName(name: String?): GameEntity
+
+    @Query("SELECT fileUrl FROM game")
+    fun getByUrl(): Flow<List<String>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(game: GameEntity)

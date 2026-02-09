@@ -31,9 +31,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import com.arkivanov.decompose.extensions.compose.stack.Children
-import com.arkivanov.decompose.extensions.compose.subscribeAsState
-import com.pixnpunk.dto.BinaryPrefFormat
 import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.stock.presentation.content.StockDeleteAppBar
@@ -68,12 +65,6 @@ fun StockContent(
     }
 
     val pagerState = rememberPagerState { TabState.entries.size }
-
-    val numCountInfo =
-        when (settings.binaryPref) {
-            BinaryPrefFormat.SI -> 1000
-            BinaryPrefFormat.ISO -> 1024
-        }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -161,19 +152,19 @@ fun StockContent(
             when (it) {
                 TabState.LIBRARY.ordinal ->
                     StockLibraryChild(
-                        component,
-                        numCountInfo,
-                        gridState
+                        component = component,
+                        prefFormat = settings.binaryPref,
+                        gridState = gridState
                     )
 
                 TabState.INSTALLED.ordinal ->
                     StockInstalledChild(
-                        component,
-                        numCountInfo,
-                        listState,
-                        setToDelete,
-                        setAllEntries,
-                        model.isDeleteModeActive
+                        component = component,
+                        prefFormat = settings.binaryPref,
+                        listState = listState,
+                        setToDelete = setToDelete,
+                        allEntries = setAllEntries,
+                        deleteModeActive = model.isDeleteModeActive
                     )
             }
         }

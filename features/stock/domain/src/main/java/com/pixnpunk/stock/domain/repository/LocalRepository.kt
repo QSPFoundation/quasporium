@@ -5,11 +5,7 @@ import com.pixnpunk.dto.GameEntry
 import kotlinx.coroutines.flow.Flow
 
 interface LocalRepository {
-    enum class SortedMethod {
-        ASCENDING,
-        DESCENDING
-    }
-
+    fun observeEntryUrls(): Flow<List<String>>
     suspend fun deleteGameEntries(entriesDelete: Set<GameEntry>): Int
     suspend fun getGameEntryById(entryId: Long): GameEntry
     suspend fun getAllPagedGameEntries(): Flow<PagingData<GameEntry>>

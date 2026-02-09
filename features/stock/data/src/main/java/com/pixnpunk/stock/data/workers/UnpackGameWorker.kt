@@ -3,10 +3,10 @@ package com.pixnpunk.stock.data.workers
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import androidx.work.workDataOf
 import com.pixnpunk.dto.stringToEntry
 import com.pixnpunk.notification.NotificationProvider
 import com.pixnpunk.stock.domain.repository.LocalRepository
+import com.pixnpunk.utils.FileUtil.removeFileByPath
 import com.pixnpunk.utils.FileUtil.unpackFileToDir
 import org.koin.core.component.KoinComponent
 
@@ -20,6 +20,7 @@ class UnpackGameWorker(
         val archivePath = inputData.getString("filePath") ?: return Result.failure()
         val destDirPath = inputData.getString("destDirPath") ?: return Result.failure()
         val dataJson = inputData.getString("gameDataJson") ?: return Result.failure()
+        val gameEntry = dataJson.stringToEntry()
 
         setForeground(
             notificationProvider.createForegroundInfo(
@@ -43,8 +44,13 @@ class UnpackGameWorker(
                     )
                 }
             ).getOrThrow()
+            archivePath.removeFileByPath()
             localRepository.fillAndInsertEntry(
-                dataJson.stringToEntry().copy(gameDirPath = destDirPath)
+                gameEntry.copy(gameDirPath = destDirPath)
+            )
+            notificationProvider.showNotification(
+                "Installation complete",
+                "${gameEntry.title} is ready to play!"
             )
             Result.success()
         } catch (_: Exception) {

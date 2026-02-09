@@ -6,7 +6,7 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.stock.domain.usecase.FetchLocalSourceUseCase
-import com.pixnpunk.stock.domain.usecase.FetchRemoteSourceUseCase
+import com.pixnpunk.stock.domain.usecase.FetchRemoteGamesExcludingLocalUseCase
 import com.pixnpunk.stock.domain.usecase.SearchGameEntryUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 
 class SourceViewModel(
-    private val fetchRemoteSourceUseCase: FetchRemoteSourceUseCase,
+    private val fetchRemoteSourceUseCase: FetchRemoteGamesExcludingLocalUseCase,
     private val fetchLocalSourceUseCase: FetchLocalSourceUseCase,
     private val searchGameEntryUseCase: SearchGameEntryUseCase
 ) : ViewModel(), KoinComponent {

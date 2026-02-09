@@ -15,13 +15,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.pixnpunk.details.presentation.R
+import com.pixnpunk.dto.BinaryPrefFormat
 import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.utils.FileUtil.formatFileSize
 
 @Composable
 fun DetailsSecondaryInfo(
     entry: GameEntry,
-    numCountInfo: Int
+    prefFormat: BinaryPrefFormat
 ) {
     Column(
         modifier = Modifier.padding(4.dp),
@@ -60,7 +61,7 @@ fun DetailsSecondaryInfo(
                             contentDescription = null
                         )
                     },
-                    text = formatFileSize(entry.fileSize, numCountInfo)
+                    text = formatFileSize(entry.fileSize, prefFormat)
                 )
 
                 AnimatedVisibility(visible = entry.pubDate.isNotEmpty()) {

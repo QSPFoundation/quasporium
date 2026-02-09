@@ -13,6 +13,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
+import com.pixnpunk.dto.BinaryPrefFormat
 import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.stock.presentation.R
 import com.pixnpunk.stock.presentation.StockComponent
@@ -24,7 +25,7 @@ import com.pixnpunk.stock.presentation.content.paging.StockFullScreenLoading
 @Composable
 fun StockInstalledChild(
     component: StockComponent,
-    numCountInfo: Int,
+    prefFormat: BinaryPrefFormat,
     listState: LazyListState,
     setToDelete: SnapshotStateSet<GameEntry>,
     allEntries: SnapshotStateSet<GameEntry>,
@@ -44,7 +45,7 @@ fun StockInstalledChild(
             lazyPagingItems[index]?.let { gameEntry ->
                 StockInstalledGameListItem(
                     gameEntry = gameEntry,
-                    numCountInfo = numCountInfo,
+                    prefFormat = prefFormat,
                     isSelected = setToDelete.contains(gameEntry),
                     deleteModeActive = deleteModeActive,
                     onToggleSelection = {

@@ -209,13 +209,13 @@ class RealRootComponent(
                 entry.copy(
                     descUrl = get<FetchRemoteDescUseCase>().execute(entry.descUrl),
                     pubDate =
-                        if (entry.pubDate.isNotEmpty())
+                        try {
                             PrettyTime().format(dataFormat.parse(entry.pubDate))
-                        else entry.pubDate,
+                        } catch (_: Exception) { entry.pubDate },
                     modDate =
-                        if (entry.modDate.isNotEmpty())
+                        try {
                             PrettyTime().format(dataFormat.parse(entry.modDate))
-                        else entry.modDate
+                        } catch (_: Exception) { entry.modDate }
                 )
             )
         }

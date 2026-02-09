@@ -107,15 +107,15 @@ object HtmlUtil {
         }.html()
     }
 
-    fun String.getSrcDir(): String {
-        val document = Jsoup.parse(this)
-        val imageElement = document.select("img").first() ?: return ""
-        return imageElement.attr("src")
-    }
+    fun String.getSrcDir(): String =
+        Jsoup.parse(this)
+            .select("img")
+            .first()
+            ?.attr("src")
+            ?: ""
 
-    fun String.isContainsHtmlTags(): Boolean {
-        return HTML_PATTERN.matcher(this).find()
-    }
+    fun String.isContainsHtmlTags(): Boolean =
+        HTML_PATTERN.matcher(this).find()
 
     fun String.removeImgTags(): String =
         Jsoup.parse(this).apply {
@@ -127,10 +127,9 @@ object HtmlUtil {
      */
     fun String.removeHtmlTags(): String {
         val result = StringBuilder()
-        val len = this.length
         var fromIdx = 0
 
-        while (fromIdx < len) {
+        while (fromIdx < this.length) {
             val idx = this.indexOf('<', fromIdx)
             if (idx == -1) {
                 result.append(this.substring(fromIdx))

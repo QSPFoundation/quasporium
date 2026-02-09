@@ -12,7 +12,6 @@ import com.pixnpunk.details.presentation.content.DetailsButtonsSet
 import com.pixnpunk.details.presentation.content.DetailsDescription
 import com.pixnpunk.details.presentation.content.DetailsPrimaryInfo
 import com.pixnpunk.details.presentation.content.DetailsSecondaryInfo
-import com.pixnpunk.dto.BinaryPrefFormat
 import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.dto.GameListType
 import com.pixnpunk.dto.SettingsEntity
@@ -36,11 +35,7 @@ fun DetailsContent(
             DetailsPrimaryInfo(entry)
             DetailsSecondaryInfo(
                 entry = entry,
-                numCountInfo =
-                    when (settings.binaryPref) {
-                        BinaryPrefFormat.SI -> 1000
-                        BinaryPrefFormat.ISO -> 1024
-                    }
+                prefFormat = settings.binaryPref
             )
             DetailsButtonsSet(
                 gameType = entry.listId,

@@ -15,13 +15,14 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.pixnpunk.dto.BinaryPrefFormat
 import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.utils.FileUtil.formatFileSize
 
 @Composable
 fun StockInstalledGameListItem(
     gameEntry: GameEntry,
-    numCountInfo: Int,
+    prefFormat: BinaryPrefFormat,
     isSelected: Boolean,
     deleteModeActive: Boolean,
     onToggleSelection: () -> Unit,
@@ -47,7 +48,7 @@ fun StockInstalledGameListItem(
         headlineContent = { Text(gameEntry.title) },
         supportingContent = {
             if (gameEntry.fileSize != 0L) {
-                Text(formatFileSize(gameEntry.fileSize, numCountInfo))
+                Text(formatFileSize(gameEntry.fileSize, prefFormat))
             }
         },
         leadingContent = {

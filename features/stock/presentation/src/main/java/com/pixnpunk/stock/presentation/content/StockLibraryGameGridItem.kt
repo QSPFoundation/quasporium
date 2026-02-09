@@ -20,13 +20,14 @@ import coil3.compose.LocalPlatformContext
 import coil3.compose.rememberConstraintsSizeResolver
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import com.pixnpunk.dto.BinaryPrefFormat
 import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.utils.FileUtil.formatFileSize
 
 @Composable
 fun StockLibraryGameGridItem(
     gameEntry: GameEntry,
-    numCountInfo: Int,
+    prefFormat: BinaryPrefFormat,
     onClick: () -> Unit
 ) {
     Card(
@@ -58,7 +59,7 @@ fun StockLibraryGameGridItem(
             )
             if (gameEntry.fileSize != 0L) {
                 Text(
-                    text = formatFileSize(gameEntry.fileSize, numCountInfo),
+                    text = formatFileSize(gameEntry.fileSize, prefFormat),
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
