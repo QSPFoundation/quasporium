@@ -79,7 +79,9 @@ class LocalRepositoryImpl : LocalRepository, KoinComponent {
             entry.copy(
                 listId = GameListType.Playable,
                 gameFilesPath = receiveGameFilesFromDir(gameDirPath),
-                fileSize = tryReceiveDirSize(gameDirPath)
+                fileSize =
+                    if (entry.fileSize != 0L) entry.fileSize
+                    else tryReceiveDirSize(gameDirPath)
             )
         )
     }
