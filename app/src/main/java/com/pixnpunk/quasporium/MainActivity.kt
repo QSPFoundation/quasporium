@@ -11,8 +11,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.launch
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.anggrayudi.storage.SimpleStorage.Companion.cleanupRedundantUriPermissions
-import com.anggrayudi.storage.SimpleStorage.Companion.hasStoragePermission
 import com.anggrayudi.storage.contract.FolderPickerResult
 import com.anggrayudi.storage.contract.OpenFolderPickerContract
 import com.anggrayudi.storage.contract.RequestStorageAccessContract
@@ -153,14 +153,20 @@ class MainActivity : ComponentActivity() {
 
         }
 
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q
-            && !hasStoragePermission(this)
-        ) {
-            storagePermissionLauncher.launch()
+    private fun checkAndRequestPermissions() {
+        if (Build.VERSION.SDK_INT <= 29) {
+            val hasWrite = ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) == PackageManager.PERMISSION_GRANTED
+            val hasRead = ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            ) == PackageManager.PERMISSION_GRANTED
+            if (!hasWrite || !hasRead) {
+                storagePermissionLauncher.launch()
+            }
         }
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             val postNotification = ActivityCompat.checkSelfPermission(
                 this,
@@ -174,9 +180,13 @@ class MainActivity : ComponentActivity() {
                 )
             }
         }
+    }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+
+        checkAndRequestPermissions()
 
         root = RealRootComponent(
             componentContext = defaultComponentContext(),
