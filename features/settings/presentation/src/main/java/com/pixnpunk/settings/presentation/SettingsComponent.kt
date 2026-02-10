@@ -14,6 +14,7 @@ sealed interface SettingsComponent {
 
     fun moveToChild(config: RealSettingsComponent.ChildConfig)
     fun backToRoot()
+    fun writeDefault(state: ColorPickerState)
 
     sealed class Child {
         class AudioChild() : Child()
