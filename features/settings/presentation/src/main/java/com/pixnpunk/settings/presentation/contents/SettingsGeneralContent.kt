@@ -7,12 +7,12 @@ import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.Height
-import androidx.compose.material.icons.filled.Language
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
+import com.pixnpunk.dto.AppThemeMode
 import com.pixnpunk.dto.BinaryPrefFormat
 import com.pixnpunk.dto.NativeLibAuthors
 import com.pixnpunk.settings.presentation.R
@@ -31,12 +31,14 @@ fun SettingsGeneralContent(
                     contentDescription = null
                 )
             },
-            defaultValue = "auto",
-            values = listOf("auto", "light", "dark"),
+            defaultValue = AppThemeMode.SYSTEM.toString(),
+            values = AppThemeMode.entries.map { it.toString() },
             valueToText = {
                 AnnotatedString(
-                    it.replaceFirstChar { txt ->
-                        if (txt.isLowerCase()) txt.titlecase() else it
+                    when (AppThemeMode.valueOf(it)) {
+                        AppThemeMode.SYSTEM -> "System"
+                        AppThemeMode.LIGHT -> "Light"
+                        AppThemeMode.DARK -> "Dark"
                     }
                 )
             },
