@@ -27,11 +27,6 @@ class RealStockComponent(
         RealStockStore(DefaultStoreFactory()).create()
     }
 
-    init {
-        sourceViewModel.loadLocalData()
-        sourceViewModel.loadRemoteData()
-    }
-
     @OptIn(ExperimentalCoroutinesApi::class)
     override val model: StateFlow<StockStore.State> = store.stateFlow
     override val gameRemotePageFlow: Flow<PagingData<GameEntry>> = sourceViewModel.remotePagingFlow

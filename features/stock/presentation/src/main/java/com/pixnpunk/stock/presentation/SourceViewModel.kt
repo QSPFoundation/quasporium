@@ -8,10 +8,12 @@ import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.stock.domain.usecase.FetchLocalSourceUseCase
 import com.pixnpunk.stock.domain.usecase.FetchRemoteGamesExcludingLocalUseCase
 import com.pixnpunk.stock.domain.usecase.SearchGameEntryUseCase
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import org.koin.core.component.KoinComponent
 
 class SourceViewModel(
@@ -19,33 +21,27 @@ class SourceViewModel(
     private val fetchLocalSourceUseCase: FetchLocalSourceUseCase,
     private val searchGameEntryUseCase: SearchGameEntryUseCase
 ) : ViewModel(), KoinComponent {
-    private val _remotePagingFlow = MutableSharedFlow<PagingData<GameEntry>>(replay = 1)
-    val remotePagingFlow: Flow<PagingData<GameEntry>> = _remotePagingFlow.asSharedFlow()
+    private val _searchQuery = MutableStateFlow("")
 
-    private val _localPagingFlow = MutableSharedFlow<PagingData<GameEntry>>(replay = 1)
-    val localPagingFlow: Flow<PagingData<GameEntry>> = _localPagingFlow.asSharedFlow()
+    val remotePagingFlow: Flow<PagingData<GameEntry>> = flow {
+        emitAll(fetchRemoteSourceUseCase.execute())
+    }.cachedIn(viewModelScope)
 
-    fun loadLocalData() {
-        viewModelScope.launch {
-            fetchLocalSourceUseCase.execute()
-                .cachedIn(viewModelScope)
-                .collect { _localPagingFlow.emit(it) }
-        }
-    }
-
-    fun loadRemoteData() {
-        viewModelScope.launch {
-            fetchRemoteSourceUseCase.execute()
-                .cachedIn(viewModelScope)
-                .collect { _remotePagingFlow.emit(it) }
-        }
-    }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val localPagingFlow: Flow<PagingData<GameEntry>> =
+        _searchQuery.flatMapLatest { query ->
+            flow {
+                emitAll(
+                    if (query.isBlank()) {
+                        fetchLocalSourceUseCase.execute()
+                    } else {
+                        searchGameEntryUseCase.execute(query)
+                    }
+                )
+            }
+        }.cachedIn(viewModelScope)
 
     fun searchGameEntry(query: String) {
-        viewModelScope.launch {
-            searchGameEntryUseCase.execute(query)
-                .cachedIn(viewModelScope)
-                .collect { _localPagingFlow.emit(it) }
-        }
+        _searchQuery.value = query
     }
 }
