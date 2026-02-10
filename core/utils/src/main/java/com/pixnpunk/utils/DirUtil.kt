@@ -57,14 +57,10 @@ object DirUtil : KoinComponent {
     @OptIn(ExperimentalContracts::class)
     fun tryReceiveDirSize(rootDirPath: String): Long {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val dir = fromUri(get(), rootDirPath.toUri())
-            if (dir.isWritableDir()) {
-                try {
-                    val dirMetadata = getDocumentMetadata(get<Context>().contentResolver, dir.uri)
-                    if (dirMetadata != null && dirMetadata.containsKey(DocumentsContract.METADATA_TREE_SIZE)) {
-                        return dirMetadata.getLong(DocumentsContract.METADATA_TREE_SIZE, 0)
-                    }
-                } catch (_: FileNotFoundException) {
+            runCatching {
+                val dirMetadata = getDocumentMetadata(get<Context>().contentResolver, rootDirPath.toUri())
+                if (dirMetadata != null && dirMetadata.containsKey(DocumentsContract.METADATA_TREE_SIZE)) {
+                    return dirMetadata.getLong(DocumentsContract.METADATA_TREE_SIZE, 0)
                 }
             }
         }
