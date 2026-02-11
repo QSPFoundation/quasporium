@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="title_field">Game name</string>
-    <string name="author_field">Game author</string>
-    <string name="version_field">Game version</string>
+    <string name="title_field">Title</string>
+    <string name="author_field">Author</string>
+    <string name="version_field">Version</string>
     <string name="cancel_button_description">Cancel</string>
     <string name="folder_selector_title">Select game folder</string>
     <string name="file_selector_title">Select game files</string>
