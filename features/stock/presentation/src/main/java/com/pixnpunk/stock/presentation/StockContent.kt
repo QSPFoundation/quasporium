@@ -94,8 +94,7 @@ fun StockContent(
         },
         floatingActionButton = {
             AnimatedVisibility(
-                visible = isAtTop
-                        && pagerState.currentPage == TabState.INSTALLED.ordinal
+                visible = pagerState.currentPage == TabState.INSTALLED.ordinal
                         && !model.isDeleteModeActive,
                 enter = fadeIn(),
                 exit = fadeOut()
