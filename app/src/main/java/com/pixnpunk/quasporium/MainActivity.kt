@@ -154,7 +154,7 @@ class MainActivity : ComponentActivity() {
         }
 
     private fun checkAndRequestPermissions() {
-        if (Build.VERSION.SDK_INT <= 29) {
+        if (Build.VERSION.SDK_INT <= 28) {
             val hasWrite = ContextCompat.checkSelfPermission(
                 this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
