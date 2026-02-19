@@ -16,8 +16,6 @@ import com.pixnpunk.details.presentation.DetailsContent
 import com.pixnpunk.details.presentation.RealDetailsComponent
 import com.pixnpunk.dialogs.presentation.DialogsMainContent
 import com.pixnpunk.dialogs.presentation.DialogsState
-import com.pixnpunk.dto.asString
-import com.pixnpunk.dto.stringToEntry
 import com.pixnpunk.quasporium.theme.QuasporiumTheme
 import com.pixnpunk.settings.presentation.RealSettingsComponent
 import com.pixnpunk.settings.presentation.SettingsContent
@@ -35,7 +33,7 @@ fun RootContent(
 
     val scope = rememberCoroutineScope()
 
-    val scaffoldNavigator = rememberListDetailPaneScaffoldNavigator<String>()
+    val scaffoldNavigator = rememberListDetailPaneScaffoldNavigator<Long>()
 
     val focusManager = LocalFocusManager.current
 
@@ -68,7 +66,7 @@ fun RootContent(
                                     scope.launch {
                                         scaffoldNavigator.navigateTo(
                                             ListDetailPaneScaffoldRole.Detail,
-                                            entry.asString()
+                                            entry.id
                                         )
                                         focusManager.clearFocus(force = true)
                                     }
@@ -82,7 +80,7 @@ fun RootContent(
                 }
             },
             detailPane = {
-                scaffoldNavigator.currentDestination?.contentKey?.let { entry ->
+                scaffoldNavigator.currentDestination?.contentKey?.let { entryId ->
                     val detailsContent = rememberRetainedComponent(key = "DetailsComponent") {
                         RealDetailsComponent(
                             componentContext = it,
@@ -119,7 +117,7 @@ fun RootContent(
                         )
                     }
                     AnimatedPane {
-                        DetailsContent(detailsContent, settings, entry.stringToEntry())
+                        DetailsContent(detailsContent, settings, entryId)
                     }
                 }
             },

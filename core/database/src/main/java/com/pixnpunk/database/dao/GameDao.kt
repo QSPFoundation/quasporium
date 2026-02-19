@@ -33,6 +33,9 @@ interface GameDao {
     @Query("SELECT fileUrl FROM game")
     fun getByUrl(): Flow<List<String>>
 
+    @Query("SELECT * FROM game WHERE id LIKE :id")
+    fun subscribeById(id: Long): Flow<GameEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(game: GameEntity)
 

@@ -28,6 +28,8 @@ dependencies {
     implementation(project(":core:dto"))
     implementation(project(":core:utils"))
 
+    implementation(project(":features:stock:domain"))
+
     implementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(platform(libs.androidx.compose.bom))
 

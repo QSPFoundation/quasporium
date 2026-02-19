@@ -26,6 +26,9 @@ class LocalRepositoryImpl : LocalRepository, KoinComponent {
     override fun observeEntryUrls(): Flow<List<String>> =
         gameDao.getByUrl().distinctUntilChanged()
 
+    override fun observeEntryById(entryId: Long): Flow<GameEntry> =
+        gameDao.subscribeById(entryId).distinctUntilChanged().map { it.toDomain() }
+
     override suspend fun deleteGameEntries(entriesDelete: Set<GameEntry>): Int =
         gameDao.deleteAll(entriesDelete.map { entry -> entry.toEntity() })
 

@@ -16,13 +16,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
-import org.koin.core.component.inject
 
 class RealObjectComponent(
     private val componentContext: ComponentContext
 ) : ComponentContext by componentContext, ObjectComponent, KoinComponent {
 
-    private val settingsRepo: SettingsRepository by inject()
     private val store = instanceKeeper.getStore {
         RealObjectStore(DefaultStoreFactory()).create()
     }

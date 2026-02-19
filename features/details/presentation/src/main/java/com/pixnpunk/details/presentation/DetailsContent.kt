@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.pixnpunk.details.presentation.content.DetailsAppBar
@@ -12,7 +14,6 @@ import com.pixnpunk.details.presentation.content.DetailsButtonsSet
 import com.pixnpunk.details.presentation.content.DetailsDescription
 import com.pixnpunk.details.presentation.content.DetailsPrimaryInfo
 import com.pixnpunk.details.presentation.content.DetailsSecondaryInfo
-import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.dto.GameListType
 import com.pixnpunk.dto.SettingsEntity
 
@@ -20,8 +21,13 @@ import com.pixnpunk.dto.SettingsEntity
 fun DetailsContent(
     component: DetailsComponent,
     settings: SettingsEntity,
-    entry: GameEntry
+    entryId: Long
 ) {
+    val state by component.model.collectAsState()
+    val entry = state.gameEntry
+
+    component.subscribeEntry(entryId)
+
     Scaffold(
         topBar = { DetailsAppBar(component) }
     ) { paddingValues ->
