@@ -70,8 +70,11 @@ object FileUtil : KoinComponent {
         return this.exists() && this.isDirectory && this.isWritable(get())
     }
 
-    fun String.receiveDirName() =
+    fun String.receiveBaseName() =
         fromUri(get(), this.toUri())?.baseName ?: ""
+
+    fun String.receiveFullName() =
+        fromUri(get(), this.toUri())?.fullName ?: ""
 
     fun String.receiveDirRelPath() =
         fromUri(get(), this.toUri())?.let {
