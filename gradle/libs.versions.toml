@@ -1,5 +1,5 @@
 [versions]
-agp = "9.0.0"
+agp = "9.0.1"
 androidx-activity = "1.12.4"
 androidx-room = "2.8.4"
 androidx-worker = "2.11.1"
