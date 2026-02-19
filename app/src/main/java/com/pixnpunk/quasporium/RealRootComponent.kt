@@ -98,10 +98,12 @@ class RealRootComponent(
     fun processPickedFiles(filePaths: List<String>) {
         val oldConfig = dialogSlot.child?.configuration as? DialogsConfig
         if (oldConfig != null) {
+            val oldEntry = oldConfig.unfilledEntry
+            val newFilesPath = oldEntry.gameFilesPath.plus(filePaths)
             dialogsNavigation.activate(
                 oldConfig.copy(
-                    unfilledEntry = oldConfig.unfilledEntry.copy(
-                        gameFilesPath = filePaths
+                    unfilledEntry = oldEntry.copy(
+                        gameFilesPath = newFilesPath
                     )
                 )
             )
