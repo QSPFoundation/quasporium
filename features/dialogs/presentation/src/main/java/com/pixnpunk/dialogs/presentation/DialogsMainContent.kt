@@ -79,10 +79,9 @@ fun DialogsMainContent(
                             editGame = {
                                 component.editEntry(it)
                                 component.onDismissed()
-                            }
+                            },
+                            onDismiss = component.onDismissed
                         )
-
-                    else -> {}
                 }
             }
         }

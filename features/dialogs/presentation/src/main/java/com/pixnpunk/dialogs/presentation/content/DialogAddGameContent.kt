@@ -1,20 +1,12 @@
 package com.pixnpunk.dialogs.presentation.content
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -23,30 +15,27 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
-import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
 import com.pixnpunk.dialogs.presentation.R
 import com.pixnpunk.dto.GameEntry
-import com.pixnpunk.utils.FileUtil.receiveDirName
+import com.pixnpunk.utils.FileUtil.receiveBaseName
 import com.pixnpunk.utils.FileUtil.receiveDirRelPath
 import com.pixnpunk.utils.FileUtil.receiveFileRelPath
 
@@ -63,9 +52,13 @@ fun DialogAddGameContent(
     isAddLocalGame: Boolean,
     buttonText: String
 ) {
-    var gameName = entry.title.ifBlank { entry.gameDirPath.receiveDirName() }
-    var gameAuthor = entry.author
-    var gameVersion = entry.version
+    var gameName by remember { mutableStateOf(entry.title) }
+    var gameAuthor by remember { mutableStateOf(entry.author) }
+    var gameVersion by remember { mutableStateOf(entry.version) }
+
+    if (gameName.isBlank() && entry.gameDirPath.isNotBlank()) {
+        gameName = entry.gameDirPath.receiveBaseName()
+    }
 
     val isButtonEnabled = gameName.isNotBlank() && entry.gameDirPath.isNotEmpty()
 
@@ -126,7 +119,11 @@ fun DialogAddGameContent(
                     )
                 },
                 leadingIcon = {
-                    Icon(Icons.Default.FolderOpen, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Icon(
+                        Icons.Default.FolderOpen,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
                 },
                 trailingIcon = if (entry.gameDirPath.isNotEmpty()) {
                     { Icon(Icons.Default.Close, contentDescription = "Clear") }
@@ -139,7 +136,12 @@ fun DialogAddGameContent(
                         selected = true,
                         onClick = { deselectFile(filePath) },
                         label = { Text(filePath.receiveFileRelPath()) },
-                        leadingIcon = { Icon(Icons.AutoMirrored.Filled.InsertDriveFile, contentDescription = null)},
+                        leadingIcon = {
+                            Icon(
+                                Icons.AutoMirrored.Filled.InsertDriveFile,
+                                contentDescription = null
+                            )
+                        },
                         trailingIcon = { Icon(Icons.Default.Close, contentDescription = null) },
                     )
                 }
@@ -166,78 +168,17 @@ fun DialogAddGameContent(
 
             Button(
                 onClick = {
-                    addGame(entry.copy(title = gameName, author = gameAuthor, version = gameVersion))
+                    addGame(
+                        entry.copy(
+                            title = gameName,
+                            author = gameAuthor,
+                            version = gameVersion
+                        )
+                    )
                 },
                 enabled = isButtonEnabled
             ) {
                 Text(buttonText)
-            }
-        }
-    }
-}
-
-@Composable
-fun GameCoverSelector(
-    imagePath: String,
-    onClick: () -> Unit,
-    onClear: () -> Unit
-) {
-    val imageSize = 120.dp
-    val buttonSize = 32.dp
-    val badgeOffset = buttonSize / 3
-
-    Box(
-        modifier = Modifier.padding(top = badgeOffset, end = badgeOffset),
-        contentAlignment = Alignment.TopEnd
-    ) {
-        Surface(
-            onClick = onClick,
-            shape = MaterialTheme.shapes.extraLarge,
-            color = MaterialTheme.colorScheme.surfaceContainerHigh,
-            modifier = Modifier.size(imageSize)
-        ) {
-            if (imagePath.isNotEmpty()) {
-                AsyncImage(
-                    model = imagePath,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
-            } else {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.AddAPhoto,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        }
-
-        AnimatedVisibility(
-            visible = imagePath.isNotEmpty(),
-            enter = scaleIn() + fadeIn(),
-            exit = scaleOut() + fadeOut()
-        ) {
-            FilledIconButton(
-                onClick = onClear,
-                modifier = Modifier
-                    .size(buttonSize)
-                    .offset(x = badgeOffset, y = -badgeOffset),
-                colors = IconButtonDefaults.filledIconButtonColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = "Remove cover",
-                    modifier = Modifier.size(16.dp)
-                )
             }
         }
     }

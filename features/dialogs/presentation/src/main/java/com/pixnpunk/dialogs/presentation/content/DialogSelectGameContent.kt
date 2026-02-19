@@ -21,7 +21,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.pixnpunk.dialogs.presentation.DialogsComponent
 import com.pixnpunk.dialogs.presentation.R
-import kotlinx.io.files.Path
+import com.pixnpunk.utils.FileUtil.receiveFullName
 
 @Composable
 fun DialogSelectGameContent(
@@ -50,7 +50,7 @@ fun DialogSelectGameContent(
                             component.doPlayGame(entry, index)
                             component.onDismissed
                         },
-                    headlineContent = { Text(text = Path(item).name) }
+                    headlineContent = { Text(text = item.receiveFullName()) }
                 )
             }
         }
