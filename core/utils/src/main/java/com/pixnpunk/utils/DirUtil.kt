@@ -12,7 +12,6 @@ import com.anggrayudi.storage.file.search
 import com.pixnpunk.utils.FileUtil.isWritableDir
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
-import java.io.FileNotFoundException
 import kotlin.contracts.ExperimentalContracts
 
 object DirUtil : KoinComponent {
@@ -51,7 +50,7 @@ object DirUtil : KoinComponent {
             }
         }
 
-        return gameFilesPath
+        return gameFilesPath.distinct()
     }
 
     @OptIn(ExperimentalContracts::class)
