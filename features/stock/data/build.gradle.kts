@@ -45,4 +45,5 @@ dependencies {
     implementation(libs.koin.workmanager)
 
     implementation(libs.jsoup)
+    implementation(libs.storage)
 }
