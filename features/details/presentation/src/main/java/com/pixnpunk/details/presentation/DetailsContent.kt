@@ -15,18 +15,15 @@ import com.pixnpunk.details.presentation.content.DetailsDescription
 import com.pixnpunk.details.presentation.content.DetailsPrimaryInfo
 import com.pixnpunk.details.presentation.content.DetailsSecondaryInfo
 import com.pixnpunk.dto.GameListType
-import com.pixnpunk.dto.SettingsEntity
 
 @Composable
 fun DetailsContent(
-    component: DetailsComponent,
-    settings: SettingsEntity,
-    entryId: Long
+    component: DetailsComponent
 ) {
     val state by component.model.collectAsState()
-    val entry = state.gameEntry
+    val settings by component.settingsState.collectAsState()
 
-    component.subscribeEntry(entryId)
+    val entry = state.gameEntry
 
     Scaffold(
         topBar = { DetailsAppBar(component) }

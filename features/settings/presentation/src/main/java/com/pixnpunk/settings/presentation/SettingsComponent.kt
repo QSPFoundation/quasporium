@@ -14,13 +14,12 @@ sealed interface SettingsComponent {
 
     fun moveToChild(config: RealSettingsComponent.ChildConfig)
     fun backToRoot()
-    fun writeDefault(state: ColorPickerState)
 
     sealed class Child {
-        class AudioChild() : Child()
-        class GeneralChild() : Child()
-        class PicturesChild() : Child()
-        class RootChild() : Child()
-        class TextChild() : Child()
+        class AudioChild : Child()
+        class GeneralChild : Child()
+        class PicturesChild : Child()
+        class RootChild : Child()
+        class TextChild : Child()
     }
 }

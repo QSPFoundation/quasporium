@@ -1,6 +1,7 @@
 package com.pixnpunk.quasporium
 
 import com.arkivanov.decompose.ComponentContext
+import com.arkivanov.decompose.childContext
 import com.arkivanov.decompose.router.slot.ChildSlot
 import com.arkivanov.decompose.router.slot.SlotNavigation
 import com.arkivanov.decompose.router.slot.activate
@@ -10,6 +11,7 @@ import com.arkivanov.decompose.router.slot.dismiss
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.mvikotlin.core.instancekeeper.getStore
 import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
+import com.pixnpunk.details.presentation.RealDetailsComponent
 import com.pixnpunk.dialogs.presentation.DialogsComponent
 import com.pixnpunk.dialogs.presentation.DialogsConfig
 import com.pixnpunk.dialogs.presentation.DialogsState
@@ -22,17 +24,19 @@ import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.quasporium.mvi.RealRootStore
 import com.pixnpunk.quasporium.mvi.RootStore
 import com.pixnpunk.settings.SettingsRepository
+import com.pixnpunk.settings.presentation.RealSettingsComponent
 import com.pixnpunk.stock.domain.usecase.FetchRemoteDescUseCase
+import com.pixnpunk.stock.presentation.RealStockComponent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
-import org.koin.core.component.inject
 import org.ocpsoft.prettytime.PrettyTime
 import java.text.SimpleDateFormat
 import java.util.*
@@ -47,6 +51,8 @@ class RealRootComponent(
 ) : ComponentContext by componentContext, RootComponent, KoinComponent {
 
     private val dialogsNavigation = SlotNavigation<DialogsConfig>()
+    private val detailsNavigation = SlotNavigation<DetailsConfig>()
+    private val settingsNavigation = SlotNavigation<Unit>()
 
     private val store = instanceKeeper.getStore {
         RealRootStore(DefaultStoreFactory()).create()
@@ -169,6 +175,73 @@ class RealRootComponent(
                 onDismissed = dialogsNavigation::dismiss,
             )
         }
+
+    override val detailsSlot =
+        childSlot(
+            source = detailsNavigation,
+            key = "DetailsChildStack",
+            serializer = serializer(),
+            handleBackButton = true
+        ) { config, ctx ->
+            RealDetailsComponent(
+                componentContext = ctx,
+                defEntry = config.entry,
+                showSelectGameDialog = {
+                    doShowDialog(
+                        state = DialogsState.DIALOG_SELECT_RUN_GAME,
+                        entry = it
+                    )
+                },
+                showEditGameDialog = {
+                    doShowDialog(
+                        state = DialogsState.DIALOG_EDIT_GAME,
+                        entry = it
+                    )
+                },
+                showDownloadGameDialog = {
+                    doShowDialog(
+                        state = DialogsState.DIALOG_DOWNLOAD_GAME,
+                        entry = it
+                    )
+                },
+                onDismissed = { detailsNavigation.dismiss() },
+            )
+        }
+
+    override val settingsSlot: Value<ChildSlot<Unit, RealSettingsComponent>> =
+        childSlot(
+            source = settingsNavigation,
+            key = "SettingsChildStack",
+            serializer = serializer(),
+            handleBackButton = true
+        ) { _, ctx ->
+            RealSettingsComponent(
+                componentContext = ctx,
+                showColorDialog = ::doShowDialog,
+                showInputDialog = ::doShowDialog,
+                onDismissed = { settingsNavigation.dismiss() }
+            )
+        }
+
+    override val stockComponent = RealStockComponent(
+        componentContext = childContext(key = "StockComponent"),
+        showDialogAdd = ::doShowDialog,
+        navigateToSettings = {
+            CoroutineScope(Dispatchers.Main).launch {
+                settingsNavigation.activate(Unit)
+            }
+        },
+        navigateToDetails = { inEntry ->
+            fetchDescConvData(
+                entry = inEntry,
+                completeScope = { entry ->
+                    CoroutineScope(Dispatchers.Main).launch {
+                        detailsNavigation.activate(DetailsConfig(entry))
+                    }
+                }
+            )
+        }
+    )
 
     private fun remDirSelect() {
         val oldConfig = dialogSlot.child?.configuration as? DialogsConfig
@@ -303,4 +376,7 @@ class RealRootComponent(
                 outputState = outputState
             )
         )
+
+    @Serializable
+    data class DetailsConfig(val entry: GameEntry)
 }

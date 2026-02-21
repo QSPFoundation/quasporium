@@ -22,8 +22,7 @@ import me.zhanghai.compose.preference.twoTargetSwitchPreference
 
 @Composable
 fun SettingsTextContent(
-    showColorDialog: (ColorPickerState) -> Unit,
-    writeDefault: (ColorPickerState) -> Unit
+    showColorDialog: (ColorPickerState) -> Unit
 ) {
     LazyColumn {
         listPreference(
@@ -70,10 +69,15 @@ fun SettingsTextContent(
             },
             defaultValue = false,
             title = { Text(stringResource(R.string.font_color_switch_title)) },
-            summary = { if (it) { Text(stringResource(R.string.font_color_switch_summary)) } },
+            summary = {
+                if (it) {
+                    Text(stringResource(R.string.font_color_switch_summary))
+                }
+            },
             onClick = {
-                if (it) { showColorDialog(ColorPickerState.COLOR_TEXT) }
-                else { writeDefault(ColorPickerState.COLOR_TEXT) }
+                if (it) {
+                    showColorDialog(ColorPickerState.COLOR_TEXT)
+                }
             }
         )
         twoTargetSwitchPreference(
@@ -86,10 +90,15 @@ fun SettingsTextContent(
             },
             defaultValue = false,
             title = { Text(stringResource(R.string.back_color_switch_title)) },
-            summary = { if (it) { Text(stringResource(R.string.back_color_switch_summary)) } },
+            summary = {
+                if (it) {
+                    Text(stringResource(R.string.back_color_switch_summary))
+                }
+            },
             onClick = {
-                if (it) { showColorDialog(ColorPickerState.COLOR_BACK) }
-                else { writeDefault(ColorPickerState.COLOR_BACK) }
+                if (it) {
+                    showColorDialog(ColorPickerState.COLOR_BACK)
+                }
             }
         )
         twoTargetSwitchPreference(
@@ -102,10 +111,15 @@ fun SettingsTextContent(
             },
             defaultValue = false,
             title = { Text(stringResource(R.string.link_color_switch_title)) },
-            summary = { if (it) { Text(stringResource(R.string.link_color_switch_summary)) } },
+            summary = {
+                if (it) {
+                    Text(stringResource(R.string.link_color_switch_summary))
+                }
+            },
             onClick = {
-                if (it) { showColorDialog(ColorPickerState.COLOR_LINK) }
-                else { writeDefault(ColorPickerState.COLOR_LINK) }
+                if (it) {
+                    showColorDialog(ColorPickerState.COLOR_LINK)
+                }
             }
         )
         switchPreference(

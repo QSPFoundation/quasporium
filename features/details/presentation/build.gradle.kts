@@ -30,6 +30,8 @@ dependencies {
 
     implementation(project(":features:stock:domain"))
 
+    implementation(project(":services:settings"))
+
     implementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(platform(libs.androidx.compose.bom))
 

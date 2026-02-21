@@ -32,7 +32,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import com.pixnpunk.dto.GameEntry
-import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.stock.presentation.content.StockDeleteAppBar
 import com.pixnpunk.stock.presentation.content.StockFloatButton
 import com.pixnpunk.stock.presentation.content.StockInstalledChild
@@ -43,10 +42,11 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StockContent(
-    component: StockComponent,
-    settings: SettingsEntity
+    component: StockComponent
 ) {
     val model by component.model.collectAsState()
+    val settings by component.settingsState.collectAsState()
+
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
