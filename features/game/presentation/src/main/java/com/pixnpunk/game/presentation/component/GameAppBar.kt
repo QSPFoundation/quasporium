@@ -53,7 +53,7 @@ fun GameAppBar(
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Terminal,
-                        contentDescription = ""
+                        contentDescription = null
                     )
                 }
             }

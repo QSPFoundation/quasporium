@@ -15,16 +15,13 @@ import com.anggrayudi.storage.extension.toDocumentFile
 import com.anggrayudi.storage.file.MimeType
 import com.anggrayudi.storage.file.child
 import com.arkivanov.decompose.ComponentContext
+import com.arkivanov.decompose.childContext
 import com.arkivanov.decompose.router.slot.ChildSlot
 import com.arkivanov.decompose.router.slot.SlotNavigation
 import com.arkivanov.decompose.router.slot.activate
 import com.arkivanov.decompose.router.slot.child
 import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
-import com.arkivanov.decompose.router.stack.ChildStack
-import com.arkivanov.decompose.router.stack.StackNavigation
-import com.arkivanov.decompose.router.stack.bringToFront
-import com.arkivanov.decompose.router.stack.childStack
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.mvikotlin.core.instancekeeper.getStore
 import com.arkivanov.mvikotlin.extensions.coroutines.labels
@@ -41,6 +38,7 @@ import com.pixnpunk.dto.OutputState
 import com.pixnpunk.extra.presentation.RealExtraComponent
 import com.pixnpunk.game.presentation.mvi.GameStore
 import com.pixnpunk.game.presentation.mvi.RealGameStore
+import com.pixnpunk.main.presentation.MainComponent
 import com.pixnpunk.main.presentation.RealMainComponent
 import com.pixnpunk.natives.SupervisorViewModel
 import com.pixnpunk.`object`.presentation.RealObjectComponent
@@ -52,7 +50,6 @@ import com.pixnpunk.utils.HtmlUtil.isContainsHtmlTags
 import com.pixnpunk.utils.HtmlUtil.removeHtmlTags
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
@@ -69,10 +66,10 @@ class RealGameComponent(
 
     private var rootDir: DocumentFile? = null
 
-    private val standardNavigation = StackNavigation<StandardChildConfig>()
-    private val expandNavigation = StackNavigation<ExpandChildConfig>()
-
     private val dialogNavigation = SlotNavigation<DialogsConfig>()
+    private val extraNavigation = SlotNavigation<Unit>()
+    private val objectNavigation = SlotNavigation<Unit>()
+
     private val store = instanceKeeper.getStore {
         RealGameStore(DefaultStoreFactory()).create()
     }
@@ -84,23 +81,6 @@ class RealGameComponent(
     @OptIn(ExperimentalCoroutinesApi::class)
     override val model: StateFlow<GameStore.State> = store.stateFlow
     override val label = store.labels
-
-    override val childStandardStack: Value<ChildStack<*, GameComponent.StandardChild>> =
-        childStack(
-            key = "StandardChildStack",
-            source = standardNavigation,
-            serializer = serializer(),
-            initialConfiguration = StandardChildConfig.Main,
-            childFactory = ::createStandardChild
-        )
-    override val childExpandStack: Value<ChildStack<*, GameComponent.ExpandChild>> =
-        childStack(
-            key = "ExpandChildStack",
-            source = expandNavigation,
-            serializer = serializer(),
-            initialConfiguration = ExpandChildConfig.MainActions,
-            childFactory = ::createExpandedChild
-        )
 
     override val dialogSlot: Value<ChildSlot<*, DialogsComponent>> =
         childSlot(
@@ -116,6 +96,36 @@ class RealGameComponent(
                 onDismissed = dialogNavigation::dismiss
             )
         }
+
+    override val extraSlot: Value<ChildSlot<*, RealExtraComponent>> =
+        childSlot(
+            key = "ExtraChildStack",
+            source = extraNavigation,
+            serializer = serializer(),
+            handleBackButton = true
+        ) { _, ctx ->
+            RealExtraComponent(
+                componentContext = ctx,
+                gameWebViewClient = GameWebViewClient()
+            )
+        }
+
+    override val objectSlot: Value<ChildSlot<*, RealObjectComponent>> =
+        childSlot(
+            key = "ObjectChildStack",
+            source = objectNavigation,
+            serializer = serializer(),
+            handleBackButton = true
+        ) { _, ctx ->
+            RealObjectComponent(
+                componentContext = ctx
+            )
+        }
+
+    override val mainComponent: MainComponent = RealMainComponent(
+        componentContext = childContext("MainComponent"),
+        gameWebViewClient = GameWebViewClient()
+    )
 
     fun onSaveFileResult(fileUri: Uri) {
         store.accept(GameStore.Intent.OnSaveFile(fileUri))
@@ -160,14 +170,6 @@ class RealGameComponent(
                 supportErrorValue = ""
             )
         )
-    }
-
-    override fun standardNavigation(child: StandardChildConfig) {
-        standardNavigation.bringToFront(child)
-    }
-
-    override fun expandNavigation(child: ExpandChildConfig) {
-        expandNavigation.bringToFront(child)
     }
 
     override fun doShowDialog() {
@@ -254,6 +256,21 @@ class RealGameComponent(
                     )
                 )
         }
+    }
+
+    override fun stateSwitchExtraSlot() {
+        clearAllSlot()
+        extraNavigation.activate(Unit)
+    }
+
+    override fun stateSwitchObjectSlot() {
+        clearAllSlot()
+        objectNavigation.activate(Unit)
+    }
+
+    override fun clearAllSlot() {
+        extraNavigation.dismiss()
+        objectNavigation.dismiss()
     }
 
     override fun runGame(
@@ -360,91 +377,5 @@ class RealGameComponent(
                 }
             }.getOrElse { null }
         }
-    }
-
-    private fun createStandardChild(
-        config: StandardChildConfig,
-        componentContext: ComponentContext
-    ): GameComponent.StandardChild = when (config) {
-        is StandardChildConfig.Main -> {
-            GameComponent.StandardChild.MainChild(
-                RealMainComponent(
-                    componentContext = componentContext,
-                    gameWebViewClient = GameWebViewClient(),
-                )
-            )
-        }
-
-        is StandardChildConfig.Extra -> {
-            GameComponent.StandardChild.ExtraChild(
-                RealExtraComponent(
-                    componentContext = componentContext,
-                    gameWebViewClient = GameWebViewClient(),
-                )
-            )
-        }
-
-        is StandardChildConfig.Object -> {
-            GameComponent.StandardChild.ObjectChild(
-                RealObjectComponent(
-                    componentContext = componentContext
-                )
-            )
-        }
-    }
-
-    private fun createExpandedChild(
-        config: ExpandChildConfig,
-        componentContext: ComponentContext
-    ): GameComponent.ExpandChild = when (config) {
-        is ExpandChildConfig.MainActions -> {
-            GameComponent.ExpandChild.MainActionsChild(
-                RealMainComponent(
-                    componentContext = componentContext,
-                    gameWebViewClient = GameWebViewClient(),
-                )
-            )
-        }
-
-        is ExpandChildConfig.Extra -> {
-            GameComponent.ExpandChild.ExtraChild(
-                RealExtraComponent(
-                    componentContext = componentContext,
-                    gameWebViewClient = GameWebViewClient(),
-                )
-            )
-        }
-
-        is ExpandChildConfig.Object -> {
-            GameComponent.ExpandChild.ObjectChild(
-                RealObjectComponent(
-                    componentContext = componentContext
-                )
-            )
-        }
-    }
-
-    @Serializable
-    sealed class StandardChildConfig {
-        @Serializable
-        data object Main : StandardChildConfig()
-
-        @Serializable
-        data object Extra : StandardChildConfig()
-
-        @Serializable
-        data object Object : StandardChildConfig()
-    }
-
-    @Serializable
-    sealed class ExpandChildConfig {
-        @Serializable
-        data object MainActions : ExpandChildConfig()
-
-        @Serializable
-        data object Extra : ExpandChildConfig()
-
-        @Serializable
-        data object Object : ExpandChildConfig()
     }
 }

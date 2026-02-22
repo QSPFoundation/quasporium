@@ -1,5 +1,6 @@
 package com.pixnpunk.game.presentation.component
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Sell
@@ -9,31 +10,34 @@ import androidx.compose.material.icons.outlined.WorkOutline
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteItem
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import com.pixnpunk.game.presentation.GameComponent
 import com.pixnpunk.game.presentation.R
-import com.pixnpunk.game.presentation.RealGameComponent
 
 @Composable
 fun GameBottomBarExpand(
     isExtraEnabled: Boolean,
     isObjectsEnabled: Boolean,
-    activeComponent: GameComponent.ExpandChild,
-    navigationTo: (RealGameComponent.ExpandChildConfig) -> Unit,
+    extraSlotIsNotEmpty: Boolean,
+    activateExtraSlot: () -> Unit,
+    objectSlotIsNotEmpty: Boolean,
+    activateObjectSlot: () -> Unit,
+    cleanAllSlot: () -> Unit,
     content: @Composable (() -> Unit)
 ) {
     NavigationSuiteScaffold(
         content = content,
-        navigationSuiteItems = {
-            item(
+        navigationItemVerticalArrangement = Arrangement.Center,
+        navigationItems = {
+            NavigationSuiteItem(
                 enabled = isExtraEnabled,
                 icon = {
                     BadgedBox(
                         badge = { }
                     ) {
-                        if (activeComponent is GameComponent.ExpandChild.ExtraChild) {
+                        if (extraSlotIsNotEmpty) {
                             Icon(Icons.Filled.Sell, contentDescription = null)
                         } else {
                             Icon(Icons.Outlined.Sell, contentDescription = null)
@@ -41,11 +45,10 @@ fun GameBottomBarExpand(
                     }
                 },
                 label = { Text(stringResource(R.string.extra_tab_title)) },
-                alwaysShowLabel = false,
-                onClick = { navigationTo(RealGameComponent.ExpandChildConfig.Extra) },
-                selected = activeComponent is GameComponent.ExpandChild.ExtraChild
+                onClick = activateExtraSlot,
+                selected = extraSlotIsNotEmpty,
             )
-            item(
+            NavigationSuiteItem(
                 icon = {
                     BadgedBox(
                         badge = { }
@@ -54,17 +57,16 @@ fun GameBottomBarExpand(
                     }
                 },
                 label = { Text(stringResource(R.string.main_tab_title)) },
-                alwaysShowLabel = false,
-                onClick = { navigationTo(RealGameComponent.ExpandChildConfig.MainActions) },
-                selected = activeComponent is GameComponent.ExpandChild.MainActionsChild
+                onClick = cleanAllSlot,
+                selected = !extraSlotIsNotEmpty && !objectSlotIsNotEmpty
             )
-            item(
+            NavigationSuiteItem(
                 enabled = isObjectsEnabled,
                 icon = {
                     BadgedBox(
                         badge = { }
                     ) {
-                        if (activeComponent is GameComponent.ExpandChild.ObjectChild) {
+                        if (objectSlotIsNotEmpty) {
                             Icon(Icons.Filled.Work, contentDescription = null)
                         } else {
                             Icon(Icons.Outlined.WorkOutline, contentDescription = null)
@@ -72,9 +74,8 @@ fun GameBottomBarExpand(
                     }
                 },
                 label = { Text(stringResource(R.string.object_tab_title)) },
-                alwaysShowLabel = false,
-                onClick = { navigationTo(RealGameComponent.ExpandChildConfig.Object) },
-                selected = activeComponent is GameComponent.ExpandChild.ObjectChild
+                onClick = activateObjectSlot,
+                selected = objectSlotIsNotEmpty
             )
         }
     )

@@ -12,13 +12,14 @@ import androidx.compose.ui.viewinterop.AndroidView
 
 @Composable
 fun MainContentWebView(
+    modifier: Modifier = Modifier,
     mainDesc: String,
     backColor: Int,
     paddingValues: PaddingValues,
     setupWebClient: (WebView) -> WebView
 ) {
     AndroidView(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .padding(paddingValues),
         update = { webView ->
