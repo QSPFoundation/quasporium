@@ -218,6 +218,7 @@ class RealRootComponent(
             RealSettingsComponent(
                 componentContext = ctx,
                 showColorDialog = ::doShowDialog,
+                resetToDefault = { store.accept(RootStore.Intent.RestoreColorConfig(state = it)) },
                 showInputDialog = ::doShowDialog,
                 onDismissed = { settingsNavigation.dismiss() }
             )

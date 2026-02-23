@@ -15,6 +15,7 @@ import org.koin.core.component.KoinComponent
 class RealSettingsComponent(
     private val componentContext: ComponentContext,
     override val showColorDialog: (ColorPickerState) -> Unit,
+    override val resetToDefault: (ColorPickerState) -> Unit,
     override val showInputDialog: (InputState) -> Unit,
     override val onDismissed: () -> Unit
 ) : ComponentContext by componentContext, SettingsComponent, KoinComponent {

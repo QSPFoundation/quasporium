@@ -22,7 +22,8 @@ import me.zhanghai.compose.preference.twoTargetSwitchPreference
 
 @Composable
 fun SettingsTextContent(
-    showColorDialog: (ColorPickerState) -> Unit
+    showColorDialog: (ColorPickerState) -> Unit,
+    resetToDefault: (ColorPickerState) -> Unit
 ) {
     LazyColumn {
         listPreference(
@@ -72,6 +73,8 @@ fun SettingsTextContent(
             summary = {
                 if (it) {
                     Text(stringResource(R.string.font_color_switch_summary))
+                } else {
+                    resetToDefault(ColorPickerState.COLOR_TEXT)
                 }
             },
             onClick = {
@@ -93,6 +96,8 @@ fun SettingsTextContent(
             summary = {
                 if (it) {
                     Text(stringResource(R.string.back_color_switch_summary))
+                } else {
+                    resetToDefault(ColorPickerState.COLOR_BACK)
                 }
             },
             onClick = {
@@ -114,6 +119,8 @@ fun SettingsTextContent(
             summary = {
                 if (it) {
                     Text(stringResource(R.string.link_color_switch_summary))
+                } else {
+                    resetToDefault(ColorPickerState.COLOR_LINK)
                 }
             },
             onClick = {

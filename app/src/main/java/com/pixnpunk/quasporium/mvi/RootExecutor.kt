@@ -32,6 +32,9 @@ class RootExecutor(
                 }
             }
 
+            is RootStore.Intent.RestoreColorConfig ->
+                settingsRepository.restoreColorValue(intent.state)
+
             is RootStore.Intent.UpdateColorConfig ->
                 settingsRepository.updateColorValue(intent.state, intent.color)
 

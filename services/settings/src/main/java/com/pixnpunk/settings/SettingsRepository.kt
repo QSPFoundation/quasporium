@@ -4,21 +4,21 @@ import android.content.SharedPreferences
 import android.preference.PreferenceManager
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.lifecycle.ViewModel
-import com.pixnpunk.dto.ColorPickerState
-import com.pixnpunk.dto.InputState
-import com.pixnpunk.dto.SettingsEntity
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.get
 import androidx.core.content.edit
+import androidx.lifecycle.ViewModel
 import com.pixnpunk.dto.AppThemeMode
 import com.pixnpunk.dto.BinaryPrefFormat
+import com.pixnpunk.dto.ColorPickerState
 import com.pixnpunk.dto.FontTypeface
+import com.pixnpunk.dto.InputState
 import com.pixnpunk.dto.NativeLibAuthors
 import com.pixnpunk.dto.PrefKeys
+import com.pixnpunk.dto.SettingsEntity
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
 
 class SettingsRepository : ViewModel(), KoinComponent {
     private val prefs = PreferenceManager.getDefaultSharedPreferences(get())
@@ -27,18 +27,20 @@ class SettingsRepository : ViewModel(), KoinComponent {
     val currentSettings: SettingsEntity
         get() = readSettings()
 
-    val settingsFlow: Flow<SettingsEntity> = callbackFlow {
-        trySend(readSettings())
+    private val _settingsFlow = MutableStateFlow(readSettings())
+    val settingsFlow: StateFlow<SettingsEntity> = _settingsFlow.asStateFlow()
 
-        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
-            trySend(readSettings())
-        }
+    private val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
+        _settingsFlow.value = readSettings()
+    }
 
+    init {
         prefs.registerOnSharedPreferenceChangeListener(listener)
+    }
 
-        awaitClose {
-            prefs.unregisterOnSharedPreferenceChangeListener(listener)
-        }
+    override fun onCleared() {
+        super.onCleared()
+        prefs.unregisterOnSharedPreferenceChangeListener(null)
     }
 
     private fun readSettings() = SettingsEntity(
@@ -97,37 +99,20 @@ class SettingsRepository : ViewModel(), KoinComponent {
     )
 
     fun emitValue(newSettings: SettingsEntity) {
-        prefs.edit {
-            putString(PrefKeys.FONT_STYLE, newSettings.typeface.name)
-            putInt(PrefKeys.FONT_SIZE, newSettings.fontSize)
+        _settingsFlow.value = newSettings
+    }
 
-            putBoolean(PrefKeys.TEXT_COLOR_OVERRIDE, newSettings.isTextColorOverride)
-            putInt(PrefKeys.TEXT_COLOR, newSettings.textColor)
-            putBoolean(PrefKeys.BACK_COLOR_OVERRIDE, newSettings.isBackColorOverride)
-            putInt(PrefKeys.BACK_COLOR, newSettings.backColor)
-            putBoolean(PrefKeys.LINK_COLOR_OVERRIDE, newSettings.isLinkColorOverride)
-            putInt(PrefKeys.LINK_COLOR, newSettings.linkColor)
-
-            putBoolean(PrefKeys.IMG_LOAD_DISABLE, newSettings.isImgLoadDis)
-            putBoolean(PrefKeys.IMG_AUTO_WIDTH, newSettings.isAutoWidthImage)
-            putInt(PrefKeys.IMG_MANUAL_WIDTH, newSettings.imageWidth)
-            putBoolean(PrefKeys.IMG_AUTO_HEIGHT, newSettings.isAutoHeightImage)
-            putInt(PrefKeys.IMG_MANUAL_HEIGHT, newSettings.imageHeight)
-            putBoolean(PrefKeys.IMG_IMMERSIVE, newSettings.isUseFullscreenImages)
-            putBoolean(PrefKeys.IMG_DEBUG, newSettings.isUseImageDebug)
-
-            putBoolean(PrefKeys.AUDIO_ENABLED, newSettings.isSoundEnabled)
-            putBoolean(PrefKeys.VIDEO_MUTE, newSettings.isVideoMute)
-            putBoolean(PrefKeys.AUDIO_DEBUG, newSettings.isUseMusicDebug)
-
-            putBoolean(PrefKeys.EXEC_STRING, newSettings.isUseExecString)
-            putBoolean(PrefKeys.IMMERSIVE_MODE, newSettings.isImmersModeEnabled)
-            putString(PrefKeys.LIB_VERSION, newSettings.nativeLibFrom.name)
-            putInt(PrefKeys.ACTS_COUNT, newSettings.visActsCount)
-            putString(PrefKeys.APP_LANG, newSettings.language)
-            putString(PrefKeys.APP_THEME, newSettings.appThemeMode.name)
-            putString(PrefKeys.BINARY_PREF, newSettings.binaryPref.name)
-        }
+    fun restoreColorValue(state: ColorPickerState) {
+        updateColorValue(
+            state = state,
+            color = Color(
+                when (state) {
+                    ColorPickerState.COLOR_TEXT -> defValue.textColor
+                    ColorPickerState.COLOR_BACK -> defValue.backColor
+                    ColorPickerState.COLOR_LINK -> defValue.linkColor
+                }
+            )
+        )
     }
 
     fun updateColorValue(state: ColorPickerState, color: Color) {

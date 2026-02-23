@@ -62,7 +62,10 @@ fun SettingsContent(
                         SettingsImageContent(showInputDialog = component.showInputDialog)
 
                     is SettingsComponent.Child.TextChild ->
-                        SettingsTextContent(showColorDialog = component.showColorDialog)
+                        SettingsTextContent(
+                            showColorDialog = component.showColorDialog,
+                            resetToDefault = component.resetToDefault
+                        )
 
                     is SettingsComponent.Child.RootChild ->
                         SettingsRootContent(moveToChild = { component.moveToChild(it) })
