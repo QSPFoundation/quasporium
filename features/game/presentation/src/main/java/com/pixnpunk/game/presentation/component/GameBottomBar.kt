@@ -7,7 +7,6 @@ import androidx.compose.material.icons.filled.Sell
 import androidx.compose.material.icons.filled.Work
 import androidx.compose.material.icons.outlined.Sell
 import androidx.compose.material.icons.outlined.WorkOutline
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteItem
@@ -17,7 +16,7 @@ import androidx.compose.ui.res.stringResource
 import com.pixnpunk.game.presentation.R
 
 @Composable
-fun GameBottomBarExpand(
+fun GameBottomBar(
     isExtraEnabled: Boolean,
     isObjectsEnabled: Boolean,
     extraSlotIsNotEmpty: Boolean,
@@ -34,14 +33,10 @@ fun GameBottomBarExpand(
             NavigationSuiteItem(
                 enabled = isExtraEnabled,
                 icon = {
-                    BadgedBox(
-                        badge = { }
-                    ) {
-                        if (extraSlotIsNotEmpty) {
-                            Icon(Icons.Filled.Sell, contentDescription = null)
-                        } else {
-                            Icon(Icons.Outlined.Sell, contentDescription = null)
-                        }
+                    if (extraSlotIsNotEmpty) {
+                        Icon(Icons.Filled.Sell, contentDescription = null)
+                    } else {
+                        Icon(Icons.Outlined.Sell, contentDescription = null)
                     }
                 },
                 label = { Text(stringResource(R.string.extra_tab_title)) },
@@ -50,11 +45,7 @@ fun GameBottomBarExpand(
             )
             NavigationSuiteItem(
                 icon = {
-                    BadgedBox(
-                        badge = { }
-                    ) {
-                        Icon(Icons.Filled.Menu, contentDescription = null)
-                    }
+                    Icon(Icons.Filled.Menu, contentDescription = null)
                 },
                 label = { Text(stringResource(R.string.main_tab_title)) },
                 onClick = cleanAllSlot,
@@ -63,14 +54,10 @@ fun GameBottomBarExpand(
             NavigationSuiteItem(
                 enabled = isObjectsEnabled,
                 icon = {
-                    BadgedBox(
-                        badge = { }
-                    ) {
-                        if (objectSlotIsNotEmpty) {
-                            Icon(Icons.Filled.Work, contentDescription = null)
-                        } else {
-                            Icon(Icons.Outlined.WorkOutline, contentDescription = null)
-                        }
+                    if (objectSlotIsNotEmpty) {
+                        Icon(Icons.Filled.Work, contentDescription = null)
+                    } else {
+                        Icon(Icons.Outlined.WorkOutline, contentDescription = null)
                     }
                 },
                 label = { Text(stringResource(R.string.object_tab_title)) },

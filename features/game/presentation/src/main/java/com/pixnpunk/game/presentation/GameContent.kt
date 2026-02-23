@@ -24,7 +24,7 @@ import com.pixnpunk.dialogs.presentation.DialogsMainContent
 import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.extra.presentation.ExtraContent
 import com.pixnpunk.game.presentation.component.GameAppBar
-import com.pixnpunk.game.presentation.component.GameBottomBarExpand
+import com.pixnpunk.game.presentation.component.GameBottomBar
 import com.pixnpunk.game.presentation.theme.QuasporiumTheme
 import com.pixnpunk.main.presentation.MainContent
 import com.pixnpunk.`object`.presentation.ObjectContent
@@ -54,7 +54,7 @@ fun GameContent(
             DialogsMainContent(it, settings)
         }
 
-        GameBottomBarExpand(
+        GameBottomBar(
             isExtraEnabled = state.isExtraEnabled,
             isObjectsEnabled = state.isObjectsEnabled,
             extraSlotIsNotEmpty = extraSlotIsNotEmpty,
