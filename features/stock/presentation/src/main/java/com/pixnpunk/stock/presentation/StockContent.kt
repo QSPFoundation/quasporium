@@ -21,6 +21,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -31,6 +32,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalFocusManager
 import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.stock.presentation.content.StockDeleteAppBar
 import com.pixnpunk.stock.presentation.content.StockFloatButton
@@ -44,6 +46,8 @@ import kotlinx.coroutines.launch
 fun StockContent(
     component: StockComponent
 ) {
+    val focusManager = LocalFocusManager.current
+
     val model by component.model.collectAsState()
     val settings by component.settingsState.collectAsState()
 
@@ -65,6 +69,24 @@ fun StockContent(
     }
 
     val pagerState = rememberPagerState { TabState.entries.size }
+
+    LaunchedEffect(gridState.isScrollInProgress) {
+        if (gridState.isScrollInProgress) {
+            focusManager.clearFocus()
+        }
+    }
+
+    LaunchedEffect(listState.isScrollInProgress) {
+        if (listState.isScrollInProgress) {
+            focusManager.clearFocus()
+        }
+    }
+
+    LaunchedEffect(pagerState.isScrollInProgress) {
+        if (pagerState.isScrollInProgress) {
+            focusManager.clearFocus()
+        }
+    }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
