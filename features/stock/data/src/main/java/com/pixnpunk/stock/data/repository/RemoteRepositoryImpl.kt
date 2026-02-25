@@ -11,34 +11,22 @@ import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.dto.asString
-import com.pixnpunk.network.fetchForGet
 import com.pixnpunk.stock.data.workers.DownloadGameWorker
 import com.pixnpunk.stock.data.workers.UnpackGameWorker
 import com.pixnpunk.stock.domain.repository.RemoteRepository
-import io.ktor.client.*
 import kotlinx.coroutines.flow.Flow
-import org.jsoup.Jsoup
-import org.jsoup.safety.Safelist
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 
 class RemoteRepositoryImpl : RemoteRepository, KoinComponent {
 
     internal companion object {
-        const val INITIAL_PAGE_INDEX = 0
+        const val INITIAL_PAGE_INDEX = 1
         const val PAGE_SIZE = 15
         const val API_QUERY_PAGE = "page"
         const val API_QUERY_PER_PAGE = "per_page"
-        const val REMOTE_URL = "https://qsp.org/gamestock/gamestock2.php"
+        const val REMOTE_URL = "https://qsp.org/api/v1/games"
     }
-
-    override suspend fun fetchDescription(descUrl: String): String =
-        Jsoup.clean(
-            Jsoup.parse(
-                get<HttpClient>().fetchForGet<String>(descUrl).getOrDefault("")
-            ).getElementById("sobi2Details_field_description")?.html() ?: "",
-            Safelist.relaxed()
-        )
 
     override suspend fun fetchRemoteSource(): Flow<PagingData<GameEntry>> =
         Pager(

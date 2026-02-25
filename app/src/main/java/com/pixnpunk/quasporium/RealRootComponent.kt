@@ -25,7 +25,6 @@ import com.pixnpunk.quasporium.mvi.RealRootStore
 import com.pixnpunk.quasporium.mvi.RootStore
 import com.pixnpunk.settings.SettingsRepository
 import com.pixnpunk.settings.presentation.RealSettingsComponent
-import com.pixnpunk.stock.domain.usecase.FetchRemoteDescUseCase
 import com.pixnpunk.stock.presentation.RealStockComponent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -37,9 +36,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
-import org.ocpsoft.prettytime.PrettyTime
-import java.text.SimpleDateFormat
-import java.util.*
 
 class RealRootComponent(
     private val componentContext: ComponentContext,
@@ -232,16 +228,7 @@ class RealRootComponent(
                 settingsNavigation.activate(Unit)
             }
         },
-        navigateToDetails = { inEntry ->
-            fetchDescConvData(
-                entry = inEntry,
-                completeScope = { entry ->
-                    CoroutineScope(Dispatchers.Main).launch {
-                        detailsNavigation.activate(DetailsConfig(entry))
-                    }
-                }
-            )
-        }
+        navigateToDetails = { detailsNavigation.activate(DetailsConfig(it)) }
     )
 
     private fun remDirSelect() {
@@ -281,32 +268,6 @@ class RealRootComponent(
                     )
                 )
             }
-        }
-    }
-
-    override fun fetchDescConvData(
-        entry: GameEntry,
-        completeScope: (GameEntry) -> Unit
-    ) {
-        CoroutineScope(Dispatchers.IO).launch {
-            val dataFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-            completeScope(
-                entry.copy(
-                    descUrl = get<FetchRemoteDescUseCase>().execute(entry.descUrl),
-                    pubDate =
-                        try {
-                            PrettyTime().format(dataFormat.parse(entry.pubDate))
-                        } catch (_: Exception) {
-                            entry.pubDate
-                        },
-                    modDate =
-                        try {
-                            PrettyTime().format(dataFormat.parse(entry.modDate))
-                        } catch (_: Exception) {
-                            entry.modDate
-                        }
-                )
-            )
         }
     }
 

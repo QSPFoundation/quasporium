@@ -50,6 +50,8 @@ dependencies {
     implementation(libs.coil.gif)
     implementation(libs.coil.network.ktor3)
 
+    implementation(libs.prettytime)
+
     implementation(libs.essenty.lifecycle)
     implementation(libs.decompose.core)
     implementation(libs.decompose.ext)

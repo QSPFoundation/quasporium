@@ -64,7 +64,7 @@ koin-workmanager = { module = "io.insert-koin:koin-androidx-workmanager" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
-ktor-serialization-kotlinx-xml = { module = "io.ktor:ktor-serialization-kotlinx-xml", version.ref = "ktor" }
+ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coil-gif = { module = "io.coil-kt.coil3:coil-gif", version.ref = "coil" }
 coil-network-ktor3 = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
@@ -77,7 +77,6 @@ decompose-ext-exp = { module = "com.arkivanov.decompose:extensions-compose-exper
 essenty-lifecycle = { module = "com.arkivanov.essenty:lifecycle", version.ref = "essenty" }
 preference = { module = "me.zhanghai.compose.preference:preference", version.ref = "preference" }
 sevenzip-jbinding-android = { module = "com.github.omicronapps:7-Zip-JBinding-4Android", version.ref = "xZipJbindingXandroid" }
-xml-serialization = { module = "io.github.pdvrieze.xmlutil:serialization", version.ref = "xml" }
 storage = { module = "com.anggrayudi:storage", version.ref = "storage" }
 prettytime = { module = "org.ocpsoft.prettytime:prettytime", version.ref = "prettytime" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -86,7 +85,7 @@ androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-co
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 
 [bundles]
-ktorClientEcosystem = ["ktor-client-core", "ktor-client-okhttp", "ktor-client-content-negotiation", "ktor-serialization-kotlinx-xml"]
+ktorClientEcosystem = ["ktor-client-core", "ktor-client-okhttp", "ktor-client-content-negotiation", "ktor-serialization-kotlinx-json"]
 roomEcosystem = ["androidx-room-runtime", "androidx-room-paging"]
 
 [plugins]

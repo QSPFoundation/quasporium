@@ -22,11 +22,6 @@ sealed interface RootComponent {
     val detailsSlot: Value<ChildSlot<RealRootComponent.DetailsConfig, RealDetailsComponent>>
     val settingsSlot: Value<ChildSlot<*, RealSettingsComponent>>
 
-    fun fetchDescConvData(
-        entry: GameEntry,
-        completeScope: (GameEntry) -> Unit
-    )
-
     fun doShowDialog()
     fun doShowDialog(state: DialogsState, entry: GameEntry)
     fun doShowDialog(pickerState: ColorPickerState)

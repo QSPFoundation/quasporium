@@ -25,13 +25,13 @@ class RemotePagingSource(
                 parameter(API_QUERY_PAGE, currentPage)
                 parameter(API_QUERY_PER_PAGE, PAGE_SIZE)
             }.body<RemoteGamesList>()
-            val boxGameEntries = responseResult.gameList.toSet()
+            val boxGameEntries = responseResult.data.toSet()
             val gameEntries = boxGameEntries.toList().toDomain()
 
             LoadResult.Page(
                 data = gameEntries,
                 prevKey = if (currentPage == INITIAL_PAGE_INDEX) null else currentPage - 1,
-                nextKey = if (currentPage == responseResult.maxPages) null else currentPage + 1
+                nextKey = if (currentPage == responseResult.meta.total) null else currentPage + 1
             )
         } catch (e: Exception) {
             LoadResult.Error(e)

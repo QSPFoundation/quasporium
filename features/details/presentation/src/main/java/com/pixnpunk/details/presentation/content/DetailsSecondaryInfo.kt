@@ -29,7 +29,7 @@ fun DetailsSecondaryInfo(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         AnimatedVisibility(
-            visible = entry.fileSize != 0L && entry.fileExt.isNotEmpty() && entry.version.isNotEmpty()
+            visible = entry.fileSize != 0L && entry.version.isNotEmpty()
         ) {
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
