@@ -13,4 +13,6 @@ interface DetailsComponent {
     val showEditGameDialog: (GameEntry) -> Unit
     val showDownloadGameDialog: (GameEntry) -> Unit
     val onDismissed: () -> Unit
+
+    fun convEntryData(entry: GameEntry): GameEntry
 }

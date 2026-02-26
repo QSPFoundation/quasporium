@@ -37,7 +37,7 @@ fun DetailsContent(
         ) {
             DetailsPrimaryInfo(entry)
             DetailsSecondaryInfo(
-                entry = entry,
+                entry = component.convEntryData(entry),
                 prefFormat = settings.binaryPref
             )
             DetailsButtonsSet(
