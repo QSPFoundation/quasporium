@@ -6,6 +6,7 @@ import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.stock.data.mapper.toDomain
 import com.pixnpunk.stock.data.repository.RemoteRepositoryImpl.Companion.API_QUERY_PAGE
 import com.pixnpunk.stock.data.repository.RemoteRepositoryImpl.Companion.API_QUERY_PER_PAGE
+import com.pixnpunk.stock.data.repository.RemoteRepositoryImpl.Companion.API_SEARCH_NAME
 import com.pixnpunk.stock.data.repository.RemoteRepositoryImpl.Companion.INITIAL_PAGE_INDEX
 import com.pixnpunk.stock.data.repository.RemoteRepositoryImpl.Companion.PAGE_SIZE
 import com.pixnpunk.stock.data.repository.RemoteRepositoryImpl.Companion.REMOTE_URL
@@ -16,6 +17,7 @@ import io.ktor.client.request.*
 
 class RemotePagingSource(
     private val ktorClient: HttpClient,
+    private val searchQuery: String = "",
 ) : PagingSource<Int, GameEntry>() {
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, GameEntry> {
         return try {
@@ -24,6 +26,7 @@ class RemotePagingSource(
             val responseResult = ktorClient.get(REMOTE_URL) {
                 parameter(API_QUERY_PAGE, currentPage)
                 parameter(API_QUERY_PER_PAGE, PAGE_SIZE)
+                parameter(API_SEARCH_NAME, searchQuery)
             }.body<RemoteGamesList>()
             val boxGameEntries = responseResult.data.toSet()
             val gameEntries = boxGameEntries.toList().toDomain()

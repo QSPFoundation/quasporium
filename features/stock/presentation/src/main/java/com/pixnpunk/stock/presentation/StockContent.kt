@@ -94,7 +94,12 @@ fun StockContent(
             if (!model.isDeleteModeActive) {
                 StockSearchAppBar(
                     pagerState = pagerState,
-                    searchEntries = component::searchEntries,
+                    searchEntries = {
+                        when (pagerState.currentPage) {
+                            TabState.LIBRARY.ordinal -> component.searchRemoteEntries(it)
+                            TabState.INSTALLED.ordinal -> component.searchLocalEntries(it)
+                        }
+                    },
                     navigateToSettings = component.navigateToSettings
                 )
             } else {
@@ -166,7 +171,9 @@ fun StockContent(
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         HorizontalPager(
-            modifier = Modifier.padding(paddingValues).fillMaxHeight(),
+            modifier = Modifier
+                .padding(paddingValues)
+                .fillMaxHeight(),
             verticalAlignment = Alignment.Top,
             state = pagerState
         ) {

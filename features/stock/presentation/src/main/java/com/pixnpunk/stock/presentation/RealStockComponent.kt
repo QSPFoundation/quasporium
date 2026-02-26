@@ -57,7 +57,11 @@ class RealStockComponent(
         store.accept(StockStore.Intent.DeleteEntries(entries))
     }
 
-    override fun searchEntries(query: String) {
-        sourceViewModel.searchGameEntry(query)
+    override fun searchLocalEntries(query: String) {
+        sourceViewModel.localSearchGameEntry(query)
+    }
+
+    override fun searchRemoteEntries(query: String) {
+        sourceViewModel.remoteSearchGameEntry(query)
     }
 }
