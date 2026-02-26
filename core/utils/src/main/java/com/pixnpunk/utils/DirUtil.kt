@@ -12,7 +12,6 @@ import com.anggrayudi.storage.file.search
 import com.pixnpunk.utils.FileUtil.isWritableDir
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
-import java.io.FileNotFoundException
 import kotlin.contracts.ExperimentalContracts
 
 object DirUtil : KoinComponent {
@@ -51,20 +50,16 @@ object DirUtil : KoinComponent {
             }
         }
 
-        return gameFilesPath
+        return gameFilesPath.distinct()
     }
 
     @OptIn(ExperimentalContracts::class)
     fun tryReceiveDirSize(rootDirPath: String): Long {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val dir = fromUri(get(), rootDirPath.toUri())
-            if (dir.isWritableDir()) {
-                try {
-                    val dirMetadata = getDocumentMetadata(get<Context>().contentResolver, dir.uri)
-                    if (dirMetadata != null && dirMetadata.containsKey(DocumentsContract.METADATA_TREE_SIZE)) {
-                        return dirMetadata.getLong(DocumentsContract.METADATA_TREE_SIZE, 0)
-                    }
-                } catch (_: FileNotFoundException) {
+            runCatching {
+                val dirMetadata = getDocumentMetadata(get<Context>().contentResolver, rootDirPath.toUri())
+                if (dirMetadata != null && dirMetadata.containsKey(DocumentsContract.METADATA_TREE_SIZE)) {
+                    return dirMetadata.getLong(DocumentsContract.METADATA_TREE_SIZE, 0)
                 }
             }
         }

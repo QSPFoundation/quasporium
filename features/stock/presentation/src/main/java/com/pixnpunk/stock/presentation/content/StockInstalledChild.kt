@@ -9,10 +9,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.snapshots.SnapshotStateSet
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
+import com.pixnpunk.dto.BinaryPrefFormat
 import com.pixnpunk.dto.GameEntry
+import com.pixnpunk.stock.presentation.R
 import com.pixnpunk.stock.presentation.StockComponent
 import com.pixnpunk.stock.presentation.content.paging.AppendErrorItem
 import com.pixnpunk.stock.presentation.content.paging.StockAppendLoadingItem
@@ -22,7 +25,7 @@ import com.pixnpunk.stock.presentation.content.paging.StockFullScreenLoading
 @Composable
 fun StockInstalledChild(
     component: StockComponent,
-    numCountInfo: Int,
+    prefFormat: BinaryPrefFormat,
     listState: LazyListState,
     setToDelete: SnapshotStateSet<GameEntry>,
     allEntries: SnapshotStateSet<GameEntry>,
@@ -42,7 +45,7 @@ fun StockInstalledChild(
             lazyPagingItems[index]?.let { gameEntry ->
                 StockInstalledGameListItem(
                     gameEntry = gameEntry,
-                    numCountInfo = numCountInfo,
+                    prefFormat = prefFormat,
                     isSelected = setToDelete.contains(gameEntry),
                     deleteModeActive = deleteModeActive,
                     onToggleSelection = {
@@ -69,7 +72,7 @@ fun StockInstalledChild(
                 is LoadState.Error -> {
                     item {
                         AppendErrorItem(
-                            message = "Failed to load more games.",
+                            message = stringResource(R.string.games_list_error_append),
                             onRetry = { lazyPagingItems.retry() }
                         )
                     }
@@ -89,7 +92,10 @@ fun StockInstalledChild(
 
         is LoadState.Error -> {
             StockFullScreenError(
-                message = "An error occurred: ${refreshState.error.message}",
+                message = stringResource(
+                    R.string.games_list_error_template,
+                    refreshState.error.message ?: "Unknown error"
+                ),
                 onRetry = { lazyPagingItems.retry() }
             )
         }
@@ -100,7 +106,7 @@ fun StockInstalledChild(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("No Games Found")
+                    Text(stringResource(R.string.games_list_empty))
                 }
             }
         }

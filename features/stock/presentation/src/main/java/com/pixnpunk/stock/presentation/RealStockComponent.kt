@@ -6,11 +6,17 @@ import com.arkivanov.mvikotlin.core.instancekeeper.getStore
 import com.arkivanov.mvikotlin.extensions.coroutines.stateFlow
 import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
 import com.pixnpunk.dto.GameEntry
+import com.pixnpunk.dto.SettingsEntity
+import com.pixnpunk.settings.SettingsRepository
 import com.pixnpunk.stock.presentation.mvi.RealStockStore
 import com.pixnpunk.stock.presentation.mvi.StockStore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 
@@ -27,10 +33,12 @@ class RealStockComponent(
         RealStockStore(DefaultStoreFactory()).create()
     }
 
-    init {
-        sourceViewModel.loadLocalData()
-        sourceViewModel.loadRemoteData()
-    }
+    override val settingsState: StateFlow<SettingsEntity> =
+        get<SettingsRepository>().settingsFlow.stateIn(
+            scope = CoroutineScope(Dispatchers.Main),
+            started = SharingStarted.Eagerly,
+            initialValue = get<SettingsRepository>().currentSettings
+        )
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override val model: StateFlow<StockStore.State> = store.stateFlow
@@ -49,7 +57,11 @@ class RealStockComponent(
         store.accept(StockStore.Intent.DeleteEntries(entries))
     }
 
-    override fun searchEntries(query: String) {
-        sourceViewModel.searchGameEntry(query)
+    override fun searchLocalEntries(query: String) {
+        sourceViewModel.localSearchGameEntry(query)
+    }
+
+    override fun searchRemoteEntries(query: String) {
+        sourceViewModel.remoteSearchGameEntry(query)
     }
 }

@@ -23,3 +23,8 @@
 -keep class com.libqsp.jni.** { *; }
 -keep class com.libsdhqs.jni.** { *; }
 -keep class com.libsnxqs.jni.** { *; }
+
+-keep class net.sf.sevenzipjbinding.** { *; }
+
+-dontwarn com.google.re2j.Matcher
+-dontwarn com.google.re2j.Pattern

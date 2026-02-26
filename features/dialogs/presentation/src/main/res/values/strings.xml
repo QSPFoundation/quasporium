@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title_field">Title</string>
+    <string name="author_field">Author</string>
+    <string name="version_field">Version</string>
+    <string name="cancel_button_description">Cancel</string>
+    <string name="folder_selector_title">Select game folder</string>
+    <string name="file_selector_title">Select game files</string>
+    <string name="edit_button_description">Edit a game entry</string>
+    <string name="input_button_description">Enter</string>
+    <string name="confirm_button_description">Confirm</string>
+    <string name="select_button_description">Select</string>
+    <string name="file_run_title">Select a game file to run</string>
+    <string name="add_button_description">Add game</string>
+    <string name="download_button_description">Download game</string>
+    <string name="input_width_title">Image width</string>
+    <string name="input_height_title">Image height</string>
+    <string name="input_msg_exec_title">QSP Terminal</string>
+    <string name="input_generic_title">Enter something</string>
+</resources>

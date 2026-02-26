@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface ExtraComponent {
     val model: StateFlow<ExtraStore.State>
-    val settingsFlow: StateFlow<SettingsEntity>
+    val settingsState: StateFlow<SettingsEntity>
 
     fun getDefaultWebClient(view: WebView): WebView
 }

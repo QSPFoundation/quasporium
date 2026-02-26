@@ -9,10 +9,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.sp
@@ -27,18 +26,17 @@ import com.pixnpunk.dialogs.presentation.content.DialogSelectGameContent
 import com.pixnpunk.dto.ColorPickerState
 import com.pixnpunk.dto.InputState
 import com.pixnpunk.dto.OutputState
-import com.pixnpunk.settings.SettingsRepository
+import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.utils.ViewUtil.toTypeface
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DialogsMainContent(
     component: DialogsComponent,
-    settingsRepository: SettingsRepository
+    settings: SettingsEntity
 ) {
     val config = component.dialogsConfig
     val state = config.dialogsState
-    val settings by settingsRepository.settingsFlow.collectAsState()
 
     if (state == DialogsState.DIALOG_ADD_GAME
         || state == DialogsState.DIALOG_EDIT_GAME) {
@@ -68,7 +66,7 @@ fun DialogsMainContent(
                             },
                             onDismiss = component.onDismissed,
                             isAddLocalGame = true,
-                            buttonText = "Add game"
+                            buttonText = stringResource(R.string.add_button_description)
                         )
 
                     DialogsState.DIALOG_EDIT_GAME ->
@@ -80,9 +78,9 @@ fun DialogsMainContent(
                             editGame = {
                                 component.editEntry(it)
                                 component.onDismissed()
-                            }
+                            },
+                            onDismiss = component.onDismissed
                         )
-                    else -> {}
                 }
             }
         }
@@ -111,7 +109,7 @@ fun DialogsMainContent(
                             },
                             onDismiss = component.onDismissed,
                             isAddLocalGame = false,
-                            buttonText = "Download game"
+                            buttonText = stringResource(R.string.download_button_description)
                         )
 
                     DialogsState.DIALOG_SELECT_COLOR -> config.colorPickerState.let {
@@ -150,10 +148,10 @@ fun DialogsMainContent(
                                 label = {
                                     Text(
                                         when (it) {
-                                            InputState.INPUT_IMAGE_WIDTH -> "Image width"
-                                            InputState.INPUT_IMAGE_HEIGHT -> "Image height"
-                                            InputState.INPUT_WITH_MESSAGE_EXEC -> "QSP Terminal"
-                                            else -> "Enter something"
+                                            InputState.INPUT_IMAGE_WIDTH -> stringResource(R.string.input_width_title)
+                                            InputState.INPUT_IMAGE_HEIGHT -> stringResource(R.string.input_height_title)
+                                            InputState.INPUT_WITH_MESSAGE_EXEC -> stringResource(R.string.input_msg_exec_title)
+                                            else -> stringResource(R.string.input_generic_title)
                                         }
                                     )
                                 },
@@ -172,7 +170,7 @@ fun DialogsMainContent(
                     }
 
                     DialogsState.DIALOG_OUTPUT_VALUE -> config.outputState.let {
-                        if (it == null || !config.outputValue.isBlank()) {
+                        if (it == null || config.outputValue.isBlank()) {
                             component.onDismissed()
                         } else {
                             if (it != OutputState.OUTPUT_LIST) {

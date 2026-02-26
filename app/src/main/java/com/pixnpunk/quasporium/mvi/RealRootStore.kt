@@ -20,7 +20,8 @@ class RealRootStore(
             ),
             executorFactory = {
                 RootExecutor(
-                    get(), get(), get()
+                    get(), get(),
+                    get(), get()
                 )
             }
         )

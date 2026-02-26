@@ -21,6 +21,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -31,11 +32,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import com.arkivanov.decompose.extensions.compose.stack.Children
-import com.arkivanov.decompose.extensions.compose.subscribeAsState
-import com.pixnpunk.dto.BinaryPrefFormat
+import androidx.compose.ui.platform.LocalFocusManager
 import com.pixnpunk.dto.GameEntry
-import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.stock.presentation.content.StockDeleteAppBar
 import com.pixnpunk.stock.presentation.content.StockFloatButton
 import com.pixnpunk.stock.presentation.content.StockInstalledChild
@@ -46,10 +44,13 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StockContent(
-    component: StockComponent,
-    settings: SettingsEntity
+    component: StockComponent
 ) {
+    val focusManager = LocalFocusManager.current
+
     val model by component.model.collectAsState()
+    val settings by component.settingsState.collectAsState()
+
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -69,11 +70,23 @@ fun StockContent(
 
     val pagerState = rememberPagerState { TabState.entries.size }
 
-    val numCountInfo =
-        when (settings.binaryPref) {
-            BinaryPrefFormat.SI -> 1000
-            BinaryPrefFormat.ISO -> 1024
+    LaunchedEffect(gridState.isScrollInProgress) {
+        if (gridState.isScrollInProgress) {
+            focusManager.clearFocus()
         }
+    }
+
+    LaunchedEffect(listState.isScrollInProgress) {
+        if (listState.isScrollInProgress) {
+            focusManager.clearFocus()
+        }
+    }
+
+    LaunchedEffect(pagerState.isScrollInProgress) {
+        if (pagerState.isScrollInProgress) {
+            focusManager.clearFocus()
+        }
+    }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -81,7 +94,12 @@ fun StockContent(
             if (!model.isDeleteModeActive) {
                 StockSearchAppBar(
                     pagerState = pagerState,
-                    searchEntries = component::searchEntries,
+                    searchEntries = {
+                        when (pagerState.currentPage) {
+                            TabState.LIBRARY.ordinal -> component.searchRemoteEntries(it)
+                            TabState.INSTALLED.ordinal -> component.searchLocalEntries(it)
+                        }
+                    },
                     navigateToSettings = component.navigateToSettings
                 )
             } else {
@@ -103,8 +121,7 @@ fun StockContent(
         },
         floatingActionButton = {
             AnimatedVisibility(
-                visible = isAtTop
-                        && pagerState.currentPage == TabState.INSTALLED.ordinal
+                visible = pagerState.currentPage == TabState.INSTALLED.ordinal
                         && !model.isDeleteModeActive,
                 enter = fadeIn(),
                 exit = fadeOut()
@@ -114,7 +131,7 @@ fun StockContent(
                     icon = {
                         Icon(
                             imageVector = Icons.Filled.Add,
-                            contentDescription = "Add new game"
+                            contentDescription = null
                         )
                     }
                 )
@@ -145,7 +162,7 @@ fun StockContent(
                     icon = {
                         Icon(
                             imageVector = Icons.Filled.ArrowUpward,
-                            contentDescription = "Scroll to top"
+                            contentDescription = null
                         )
                     }
                 )
@@ -154,26 +171,28 @@ fun StockContent(
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         HorizontalPager(
-            modifier = Modifier.padding(paddingValues).fillMaxHeight(),
+            modifier = Modifier
+                .padding(paddingValues)
+                .fillMaxHeight(),
             verticalAlignment = Alignment.Top,
             state = pagerState
         ) {
             when (it) {
-                TabState.INSTALLED.ordinal ->
-                    StockInstalledChild(
-                        component,
-                        numCountInfo,
-                        listState,
-                        setToDelete,
-                        setAllEntries,
-                        model.isDeleteModeActive
-                    )
-
                 TabState.LIBRARY.ordinal ->
                     StockLibraryChild(
-                        component,
-                        numCountInfo,
-                        gridState
+                        component = component,
+                        prefFormat = settings.binaryPref,
+                        gridState = gridState
+                    )
+
+                TabState.INSTALLED.ordinal ->
+                    StockInstalledChild(
+                        component = component,
+                        prefFormat = settings.binaryPref,
+                        listState = listState,
+                        setToDelete = setToDelete,
+                        allEntries = setAllEntries,
+                        deleteModeActive = model.isDeleteModeActive
                     )
             }
         }

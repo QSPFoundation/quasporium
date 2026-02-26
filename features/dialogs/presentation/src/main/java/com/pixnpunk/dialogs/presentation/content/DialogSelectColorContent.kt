@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -28,6 +29,7 @@ import com.github.skydoves.colorpicker.compose.AlphaTile
 import com.github.skydoves.colorpicker.compose.BrightnessSlider
 import com.github.skydoves.colorpicker.compose.HsvColorPicker
 import com.github.skydoves.colorpicker.compose.rememberColorPickerController
+import com.pixnpunk.dialogs.presentation.R
 
 @Composable
 fun DialogSelectColorContent(
@@ -100,7 +102,7 @@ fun DialogSelectColorContent(
                     onDismiss()
                 }
             ) {
-                Text("Cancel")
+                Text(stringResource(R.string.cancel_button_description))
             }
             TextButton(
                 onClick = {
@@ -108,7 +110,7 @@ fun DialogSelectColorContent(
                     onDismiss()
                 }
             ) {
-                Text("Select")
+                Text(stringResource(R.string.select_button_description))
             }
         }
     }

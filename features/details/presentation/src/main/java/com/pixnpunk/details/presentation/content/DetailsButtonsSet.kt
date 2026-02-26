@@ -10,7 +10,9 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.pixnpunk.details.presentation.R
 import com.pixnpunk.dto.GameListType
 
 @Composable
@@ -32,7 +34,7 @@ fun DetailsButtonsSet(
                 ) {
                     Text(
                         style = MaterialTheme.typography.titleMedium,
-                        text = "Play"
+                        text = stringResource(R.string.play_button_description)
                     )
                 }
                 OutlinedButton(
@@ -41,7 +43,7 @@ fun DetailsButtonsSet(
                 ) {
                     Text(
                         style = MaterialTheme.typography.titleMedium,
-                        text = "Modify"
+                        text = stringResource(R.string.modify_button_description)
                     )
                 }
             }
@@ -53,7 +55,7 @@ fun DetailsButtonsSet(
                 ) {
                     Text(
                         style = MaterialTheme.typography.titleMedium,
-                        text = "Download"
+                        text = stringResource(R.string.download_button_description)
                     )
                 }
             }

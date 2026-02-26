@@ -24,10 +24,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.pixnpunk.details.presentation.R
 
 @Composable
 fun DetailsDescription(
@@ -38,6 +40,10 @@ fun DetailsDescription(
     ) {
         var isExpanded by remember { mutableStateOf(false) }
         var isOverflowed by remember { mutableStateOf(false) }
+
+        val text = remember(descriptionHtml) {
+            AnnotatedString.fromHtml(descriptionHtml)
+        }
 
         Column(
             modifier = Modifier
@@ -50,7 +56,7 @@ fun DetailsDescription(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Description",
+                    text = stringResource(R.string.description_title),
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.weight(1f)
                 )
@@ -66,8 +72,8 @@ fun DetailsDescription(
                                 if (isExpanded) Icons.Default.KeyboardArrowUp
                                 else Icons.Default.KeyboardArrowDown,
                             contentDescription =
-                                if (isExpanded) "Collapse"
-                                else "Expand"
+                                if (isExpanded) stringResource(R.string.collapse_button_description)
+                                else stringResource(R.string.expand_button_description)
                         )
                     }
                 }
@@ -77,7 +83,7 @@ fun DetailsDescription(
                 modifier =
                     if (isExpanded) Modifier.verticalScroll(rememberScrollState())
                     else Modifier,
-                text = AnnotatedString.fromHtml(descriptionHtml),
+                text = text,
                 maxLines = if (isExpanded) Int.MAX_VALUE else 3,
                 overflow = if (isExpanded) TextOverflow.Clip else TextOverflow.Ellipsis,
                 onTextLayout = { textLayoutResult ->

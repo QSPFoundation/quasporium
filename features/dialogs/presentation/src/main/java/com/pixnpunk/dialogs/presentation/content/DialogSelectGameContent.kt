@@ -17,9 +17,11 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.pixnpunk.dialogs.presentation.DialogsComponent
-import kotlinx.io.files.Path
+import com.pixnpunk.dialogs.presentation.R
+import com.pixnpunk.utils.FileUtil.receiveFullName
 
 @Composable
 fun DialogSelectGameContent(
@@ -32,7 +34,7 @@ fun DialogSelectGameContent(
             modifier = Modifier
                 .align(CenterHorizontally)
                 .padding(bottom = 16.dp),
-            text = "Select a game file to run",
+            text = stringResource(R.string.file_run_title),
             style = MaterialTheme.typography.headlineSmall
         )
         LazyColumn(
@@ -48,7 +50,7 @@ fun DialogSelectGameContent(
                             component.doPlayGame(entry, index)
                             component.onDismissed
                         },
-                    headlineContent = { Text(text = Path(item).name) }
+                    headlineContent = { Text(text = item.receiveFullName()) }
                 )
             }
         }
@@ -58,7 +60,7 @@ fun DialogSelectGameContent(
             horizontalArrangement = Arrangement.End
         ) {
             TextButton(onClick = component.onDismissed) {
-                Text("Dismiss")
+                Text(stringResource(R.string.cancel_button_description))
             }
         }
     }

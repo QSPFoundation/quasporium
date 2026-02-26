@@ -20,16 +20,45 @@ object HtmlUtil {
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
             <style type="text/css">
-              body {
-                margin: 0;
-                padding: 0.5em;
-                color: QSPTEXTCOLOR;
-                background-color: QSPBACKCOLOR;
-                font-size: QSPFONTSIZE;
-                font-family: QSPFONTSTYLE;
-              }
-              a { color: QSPLINKCOLOR; }
-              a:link { color: QSPLINKCOLOR; }
+                body {
+                  margin: 0;
+                  padding: 0.5em;
+                  color: QSPTEXTCOLOR;
+                  background-color: QSPBACKCOLOR;
+                  font-size: QSPFONTSIZE;
+                  font-family: QSPFONTSTYLE;
+                  overflow-wrap: break-word;
+                  word-wrap: break-word;
+                }
+        
+                a { color: QSPLINKCOLOR; }
+                a:link { color: QSPLINKCOLOR; }
+                
+                img {
+                  max-width: 100%;
+                  height: auto;
+                  content-visibility: auto;
+                }
+        
+                video, iframe {
+                    max-width: 100%;
+                }
+        
+                table {
+                    max-width: 100%;
+                }
+                
+                ::-webkit-scrollbar {
+                    width: 6px;
+                    height: 6px;
+                }
+                ::-webkit-scrollbar-track {
+                    background: transparent;
+                }
+                ::-webkit-scrollbar-thumb {
+                   background: rgba(128, 128, 128, 0.4);
+                   border-radius: 3px;
+                }
             </style>
             </head>
         """
@@ -78,15 +107,15 @@ object HtmlUtil {
         }.html()
     }
 
-    fun String.getSrcDir(): String {
-        val document = Jsoup.parse(this)
-        val imageElement = document.select("img").first() ?: return ""
-        return imageElement.attr("src")
-    }
+    fun String.getSrcDir(): String =
+        Jsoup.parse(this)
+            .select("img")
+            .first()
+            ?.attr("src")
+            ?: ""
 
-    fun String.isContainsHtmlTags(): Boolean {
-        return HTML_PATTERN.matcher(this).find()
-    }
+    fun String.isContainsHtmlTags(): Boolean =
+        HTML_PATTERN.matcher(this).find()
 
     fun String.removeImgTags(): String =
         Jsoup.parse(this).apply {
@@ -98,10 +127,9 @@ object HtmlUtil {
      */
     fun String.removeHtmlTags(): String {
         val result = StringBuilder()
-        val len = this.length
         var fromIdx = 0
 
-        while (fromIdx < len) {
+        while (fromIdx < this.length) {
             val idx = this.indexOf('<', fromIdx)
             if (idx == -1) {
                 result.append(this.substring(fromIdx))
@@ -137,43 +165,57 @@ object HtmlUtil {
     }
 
     private fun Element.handleImagesInHtml(settings: SettingsEntity) {
-        if (settings.isUseFullscreenImages) {
-            val dynBlackList = mutableListOf<String>()
-            this.select("a").forEach {
-                if (it.attr("href").contains("exec:")) {
-                    dynBlackList.add(it.select("img").attr("src"))
-                }
-            }
-            this.select("img").forEach {
-                if (!dynBlackList.contains(it.attr("src"))) {
-                    it.attr("onclick", "img.onClickImage(this.src);")
-                }
-            }
-        }
+        this.select("img").forEach { img ->
+            img.attr("loading", "lazy")
 
-        this.select("img").forEach { img: Element ->
+            if (settings.isUseFullscreenImages) {
+                val parent = img.parent()
+                val isInsideLink = parent != null && parent.tagName() == "a"
+                if (!isInsideLink && !img.hasAttr("onclick")) {
+                    img.attr("onclick", "img.onClickImage(this.src);")
+                }
+            }
+
+            val styleBuilder = StringBuilder()
+            val oldStyle = img.attr("style")
+            if (oldStyle.isNotBlank()) {
+                styleBuilder.append(oldStyle)
+                if (!oldStyle.trim().endsWith(";")) styleBuilder.append(";")
+            }
+
             if (settings.isAutoWidthImage && settings.isAutoHeightImage) {
-                img.attr("style", "display: inline; height: auto; max-width: 100%;")
+                styleBuilder.append(" display: inline; height: auto; max-width: 100%;")
             } else {
                 if (!settings.isAutoWidthImage) {
-                    img.attr("style", "max-width: ${settings.imageWidth};")
+                    styleBuilder.append(" max-width: ${settings.imageWidth}px;")
                 }
                 if (!settings.isAutoHeightImage) {
-                    img.attr("style", "max-height: ${settings.imageHeight};")
+                    styleBuilder.append(" max-height: ${settings.imageHeight}px;")
                 }
             }
+
+            img.attr("style", styleBuilder.toString())
         }
     }
 
     private fun Element.handleVideosInHtml(settings: SettingsEntity) {
-        this.select("video").apply {
-            attr("style", "max-width:100%;")
-            if (settings.isVideoMute) {
-                attr("muted", "true")
-                removeAttr("controls")
+        this.select("video").forEach { video ->
+            val oldStyle = video.attr("style")
+            if (!oldStyle.contains("max-width")) {
+                video.attr("style", "$oldStyle max-width: 100%; height: auto;")
+            }
+
+            video.attr("loop", "")
+            video.attr("playsinline", "")
+            video.attr("webkit-playsinline", "")
+
+            if (!settings.isVideoMute) {
+                video.removeAttr("muted")
+                video.attr("controls", "")
             } else {
-                attr("controls", "true")
-                removeAttr("muted")
+                video.attr("autoplay", "")
+                video.attr("muted", "")
+                video.removeAttr("controls")
             }
         }
     }

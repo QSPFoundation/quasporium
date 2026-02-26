@@ -9,6 +9,7 @@ import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -21,11 +22,11 @@ fun SettingsAppBar(
         title = {
             Text(
                 when (activeComponent) {
-                    is SettingsComponent.Child.AudioChild -> "Audio"
-                    is SettingsComponent.Child.GeneralChild -> "Basic"
-                    is SettingsComponent.Child.PicturesChild -> "Pictures"
-                    is SettingsComponent.Child.RootChild -> "Settings"
-                    is SettingsComponent.Child.TextChild -> "Text"
+                    is SettingsComponent.Child.AudioChild -> stringResource(R.string.audio_button_title)
+                    is SettingsComponent.Child.GeneralChild -> stringResource(R.string.general_button_title)
+                    is SettingsComponent.Child.PicturesChild -> stringResource(R.string.pictures_button_title)
+                    is SettingsComponent.Child.RootChild -> stringResource(R.string.root_button_title)
+                    is SettingsComponent.Child.TextChild -> stringResource(R.string.text_button_title)
                 }
             )
         },
@@ -35,7 +36,7 @@ fun SettingsAppBar(
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                    contentDescription = ""
+                    contentDescription = null
                 )
             }
         },

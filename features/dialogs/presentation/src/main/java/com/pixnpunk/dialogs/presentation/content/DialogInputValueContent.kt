@@ -18,8 +18,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.pixnpunk.dialogs.presentation.R
 
 @Composable
 fun DialogInputValueContent(
@@ -75,7 +79,7 @@ fun DialogInputValueContent(
             TextButton(
                 onClick = onDismiss
             ) {
-                Text("Cancel")
+                Text(stringResource(R.string.cancel_button_description))
             }
             TextButton(
                 onClick = {
@@ -84,7 +88,7 @@ fun DialogInputValueContent(
                 },
                 enabled = isEnable
             ) {
-                Text("Enter")
+                Text(stringResource(R.string.input_button_description))
             }
         }
     }

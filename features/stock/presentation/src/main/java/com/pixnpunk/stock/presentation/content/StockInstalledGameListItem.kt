@@ -2,7 +2,6 @@ package com.pixnpunk.stock.presentation.content
 
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.BrokenImage
 import androidx.compose.material3.ListItem
@@ -11,17 +10,23 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.pixnpunk.dto.BinaryPrefFormat
 import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.utils.FileUtil.formatFileSize
 
 @Composable
 fun StockInstalledGameListItem(
     gameEntry: GameEntry,
-    numCountInfo: Int,
+    prefFormat: BinaryPrefFormat,
     isSelected: Boolean,
     deleteModeActive: Boolean,
     onToggleSelection: () -> Unit,
@@ -30,10 +35,7 @@ fun StockInstalledGameListItem(
 ) {
     ListItem(
         modifier = Modifier
-            .selectable(
-                selected = isSelected,
-                onClick = onToggleSelection
-            )
+            .clip(MaterialTheme.shapes.small)
             .combinedClickable(
                 onClick = {
                     if (deleteModeActive) {
@@ -43,29 +45,42 @@ fun StockInstalledGameListItem(
                     }
                 },
                 onLongClick = onLongClick
-            ),
-        headlineContent = { Text(gameEntry.title) },
+            )
+            .semantics {
+                selected = isSelected
+            },
+        headlineContent = {
+            Text(
+                text = gameEntry.title,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        },
         supportingContent = {
             if (gameEntry.fileSize != 0L) {
-                Text(formatFileSize(gameEntry.fileSize, numCountInfo))
-            } else {
-                null
+                Text(
+                    text = formatFileSize(gameEntry.fileSize, prefFormat),
+                    maxLines = 1,
+                    style = MaterialTheme.typography.bodySmall
+                )
             }
         },
         leadingContent = {
             AsyncImage(
-                modifier = Modifier.size(50.dp),
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(MaterialTheme.shapes.medium),
                 model = gameEntry.gameIconPath,
                 error = rememberVectorPainter(Icons.Outlined.BrokenImage),
-                contentDescription = "${gameEntry.title} icon",
-                contentScale = ContentScale.Crop
+                contentScale = ContentScale.Crop,
+                contentDescription = null
             )
         },
         colors = ListItemDefaults.colors(
             containerColor = if (isSelected) {
                 MaterialTheme.colorScheme.primaryContainer
             } else {
-                MaterialTheme.colorScheme.background
+                Color.Transparent
             }
         )
     )

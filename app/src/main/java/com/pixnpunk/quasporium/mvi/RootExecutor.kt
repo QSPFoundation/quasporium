@@ -1,6 +1,7 @@
 package com.pixnpunk.quasporium.mvi
 
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
+import com.pixnpunk.settings.SettingsRepository
 import com.pixnpunk.stock.domain.usecase.DownloadGameArchUseCase
 import com.pixnpunk.stock.domain.usecase.FillAndInsertEntryUseCase
 import com.pixnpunk.stock.domain.usecase.UpsertEntryUseCase
@@ -11,6 +12,7 @@ class RootExecutor(
     private val fillAndInsertEntryUseCase: FillAndInsertEntryUseCase,
     private val upsertEntryUseCase: UpsertEntryUseCase,
     private val downloadGameArchUseCase: DownloadGameArchUseCase,
+    private val settingsRepository: SettingsRepository
 ) : CoroutineExecutor<RootStore.Intent, RootStore.Action, RootStore.State, RootStore.Message, RootStore.Label>() {
     override fun executeIntent(intent: RootStore.Intent) {
         when (intent) {
@@ -30,13 +32,14 @@ class RootExecutor(
                 }
             }
 
-            is RootStore.Intent.UpdateColorConfig -> {
-                publish(RootStore.Label.ColorConfig(intent.state, intent.color))
-            }
+            is RootStore.Intent.RestoreColorConfig ->
+                settingsRepository.restoreColorValue(intent.state)
 
-            is RootStore.Intent.UpdateImageConfig -> {
-                publish(RootStore.Label.ImageConfig(intent.state, intent.input))
-            }
+            is RootStore.Intent.UpdateColorConfig ->
+                settingsRepository.updateColorValue(intent.state, intent.color)
+
+            is RootStore.Intent.UpdateImageConfig ->
+                settingsRepository.updateImageSize(intent.state, intent.input.toInt())
         }
     }
 }

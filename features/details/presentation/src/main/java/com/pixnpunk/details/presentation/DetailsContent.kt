@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.pixnpunk.details.presentation.content.DetailsAppBar
@@ -12,17 +14,17 @@ import com.pixnpunk.details.presentation.content.DetailsButtonsSet
 import com.pixnpunk.details.presentation.content.DetailsDescription
 import com.pixnpunk.details.presentation.content.DetailsPrimaryInfo
 import com.pixnpunk.details.presentation.content.DetailsSecondaryInfo
-import com.pixnpunk.dto.BinaryPrefFormat
-import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.dto.GameListType
-import com.pixnpunk.dto.SettingsEntity
 
 @Composable
 fun DetailsContent(
-    component: DetailsComponent,
-    settings: SettingsEntity,
-    entry: GameEntry
+    component: DetailsComponent
 ) {
+    val state by component.model.collectAsState()
+    val settings by component.settingsState.collectAsState()
+
+    val entry = state.gameEntry
+
     Scaffold(
         topBar = { DetailsAppBar(component) }
     ) { paddingValues ->
@@ -36,11 +38,7 @@ fun DetailsContent(
             DetailsPrimaryInfo(entry)
             DetailsSecondaryInfo(
                 entry = entry,
-                numCountInfo =
-                    when (settings.binaryPref) {
-                        BinaryPrefFormat.SI -> 1000
-                        BinaryPrefFormat.ISO -> 1024
-                    }
+                prefFormat = settings.binaryPref
             )
             DetailsButtonsSet(
                 gameType = entry.listId,
@@ -48,7 +46,7 @@ fun DetailsContent(
                 onShowEditGameDialog = { component.showEditGameDialog(entry) },
                 onShowDownloadGameDialog = { component.showDownloadGameDialog(entry) }
             )
-            if (entry.listId == GameListType.Downloadable) {
+            if (entry.listId == GameListType.Downloadable || entry.descUrl.isNotEmpty()) {
                 DetailsDescription(entry.descUrl)
             }
         }

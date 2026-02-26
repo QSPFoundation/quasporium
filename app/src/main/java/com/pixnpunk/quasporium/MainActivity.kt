@@ -11,8 +11,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.launch
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.anggrayudi.storage.SimpleStorage.Companion.cleanupRedundantUriPermissions
-import com.anggrayudi.storage.SimpleStorage.Companion.hasStoragePermission
 import com.anggrayudi.storage.contract.FolderPickerResult
 import com.anggrayudi.storage.contract.OpenFolderPickerContract
 import com.anggrayudi.storage.contract.RequestStorageAccessContract
@@ -24,7 +24,6 @@ import com.anggrayudi.storage.file.MimeType
 import com.arkivanov.decompose.defaultComponentContext
 import com.pixnpunk.dto.OutputState
 import com.pixnpunk.game.presentation.GameActivity
-import com.pixnpunk.settings.SettingsRepository
 import com.pixnpunk.utils.AddonsUtils
 import com.pixnpunk.utils.FileUtil.isWritableDir
 import com.pixnpunk.utils.FileUtil.isWritableFile
@@ -33,8 +32,6 @@ import kotlin.concurrent.thread
 import kotlin.contracts.ExperimentalContracts
 
 class MainActivity : ComponentActivity() {
-
-    private val settingsRepository: SettingsRepository = get()
 
     private lateinit var root: RealRootComponent
 
@@ -156,12 +153,19 @@ class MainActivity : ComponentActivity() {
 
         }
 
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q
-            && !hasStoragePermission(this)
-        ) {
-            storagePermissionLauncher.launch()
+    private fun checkAndRequestPermissions() {
+        if (Build.VERSION.SDK_INT <= 28) {
+            val hasWrite = ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) == PackageManager.PERMISSION_GRANTED
+            val hasRead = ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            ) == PackageManager.PERMISSION_GRANTED
+            if (!hasWrite || !hasRead) {
+                storagePermissionLauncher.launch()
+            }
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -177,9 +181,13 @@ class MainActivity : ComponentActivity() {
                 )
             }
         }
+    }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+
+        checkAndRequestPermissions()
 
         root = RealRootComponent(
             componentContext = defaultComponentContext(),
@@ -206,6 +214,6 @@ class MainActivity : ComponentActivity() {
             }
         )
 
-        setContent { RootContent(root, settingsRepository) }
+        setContent { RootContent(root) }
     }
 }

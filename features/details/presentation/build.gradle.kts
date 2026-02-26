@@ -2,7 +2,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.compose.compiler)
 }
@@ -29,6 +28,10 @@ dependencies {
     implementation(project(":core:dto"))
     implementation(project(":core:utils"))
 
+    implementation(project(":features:stock:domain"))
+
+    implementation(project(":services:settings"))
+
     implementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(platform(libs.androidx.compose.bom))
 
@@ -43,11 +46,11 @@ dependencies {
     implementation(project.dependencies.platform(libs.koin.bom))
     implementation(libs.koin.android)
 
-    implementation(libs.prettytime)
-
     implementation(libs.coil.compose)
     implementation(libs.coil.gif)
     implementation(libs.coil.network.ktor3)
+
+    implementation(libs.prettytime)
 
     implementation(libs.essenty.lifecycle)
     implementation(libs.decompose.core)

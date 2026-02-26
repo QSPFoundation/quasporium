@@ -9,18 +9,16 @@ fun List<RemoteGameData>.toDomain(): List<GameEntry> =
         GameEntry(
             id = remoteGameData.id,
             listId = GameListType.Downloadable,
-            author = remoteGameData.author,
-            portedBy = remoteGameData.portedBy,
-            version = remoteGameData.version,
-            title = remoteGameData.title,
-            lang = remoteGameData.lang,
-            player = remoteGameData.player,
-            gameIconPath = remoteGameData.icon,
+            author = remoteGameData.authors,
+            portedBy = remoteGameData.translators ?: "",
+            version = remoteGameData.ver,
+            title = remoteGameData.name,
+            lang = remoteGameData.lang ?: "",
+            gameIconPath = remoteGameData.iconUrl ?: "",
             fileUrl = remoteGameData.fileUrl,
-            fileSize = remoteGameData.fileSize,
-            fileExt = remoteGameData.fileExt,
-            descUrl = remoteGameData.descUrl,
-            pubDate = remoteGameData.pubDate,
-            modDate = remoteGameData.modDate
+            fileSize = remoteGameData.fileSize ?: 0,
+            descUrl = remoteGameData.descriptionHtml,
+            pubDate = remoteGameData.createdAt,
+            modDate = remoteGameData.updatedAt
         )
     }

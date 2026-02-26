@@ -16,16 +16,22 @@ import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.pixnpunk.stock.presentation.R
 import com.pixnpunk.stock.presentation.TabState
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,11 +44,20 @@ fun StockSearchAppBar(
     val scope = rememberCoroutineScope()
     var searchText by rememberSaveable { mutableStateOf("") }
 
+    var canRequestFocus by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        delay(100)
+        canRequestFocus = true
+    }
+
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
         SearchBar(
-            modifier = Modifier.align(Alignment.CenterHorizontally),
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .focusProperties { canFocus = canRequestFocus },
             inputField = {
                 SearchBarDefaults.InputField(
                     query = searchText,
@@ -50,13 +65,13 @@ fun StockSearchAppBar(
                     onSearch = { searchEntries(it) },
                     expanded = false,
                     onExpandedChange = { },
-                    placeholder = { Text("Search") },
+                    placeholder = { Text(stringResource(R.string.placeholder_searchbar)) },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                     trailingIcon = {
                         IconButton(onClick = navigateToSettings) {
                             Icon(
                                 imageVector = Icons.Default.Settings,
-                                contentDescription = ""
+                                contentDescription = null
                             )
                         }
                     }
@@ -80,7 +95,11 @@ fun StockSearchAppBar(
                     },
                     text = {
                         Text(
-                            text = state.name,
+                            text = when (state.ordinal) {
+                                TabState.INSTALLED.ordinal -> stringResource(R.string.first_tab_text)
+                                TabState.LIBRARY.ordinal -> stringResource(R.string.second_tab_text)
+                                else -> ""
+                            },
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis
                         )

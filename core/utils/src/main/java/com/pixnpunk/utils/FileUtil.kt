@@ -1,6 +1,10 @@
 package com.pixnpunk.utils
 
 import android.content.Context
+import android.icu.text.MeasureFormat
+import android.icu.text.NumberFormat
+import android.icu.util.Measure
+import android.icu.util.MeasureUnit
 import android.net.Uri
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
@@ -16,12 +20,16 @@ import com.anggrayudi.storage.file.getRelativePath
 import com.anggrayudi.storage.file.isWritable
 import com.anggrayudi.storage.file.makeFile
 import com.anggrayudi.storage.file.openOutputStream
+import com.pixnpunk.dto.BinaryPrefFormat
 import com.pixnpunk.dto.DownloadStatus
 import com.pixnpunk.dto.ProgressState
+import com.pixnpunk.utils.PathUtil.normalizeContentPath
+import com.pixnpunk.utils.ViewUtil.formatEta
 import io.ktor.utils.io.*
-import io.ktor.utils.io.jvm.javaio.*
-import kotlinx.coroutines.flow.FlowCollector
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import net.sf.sevenzipjbinding.ExtractAskMode
 import net.sf.sevenzipjbinding.ExtractOperationResult
 import net.sf.sevenzipjbinding.IArchiveExtractCallback
@@ -34,13 +42,16 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import java.io.IOException
 import java.io.OutputStream
-import java.text.DecimalFormat
+import java.util.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
-import kotlin.math.log10
+import kotlin.math.ln
 import kotlin.math.pow
 
 object FileUtil : KoinComponent {
+    const val NOMEDIA_FILENAME: String = ".nomedia"
+    const val NOSEARCH_FILENAME: String = ".nosearch"
+
     @ExperimentalContracts
     fun DocumentFile?.isWritableFile(): Boolean {
         contract {
@@ -59,8 +70,11 @@ object FileUtil : KoinComponent {
         return this.exists() && this.isDirectory && this.isWritable(get())
     }
 
-    fun String.receiveDirName() =
+    fun String.receiveBaseName() =
         fromUri(get(), this.toUri())?.baseName ?: ""
+
+    fun String.receiveFullName() =
+        fromUri(get(), this.toUri())?.fullName ?: ""
 
     fun String.receiveDirRelPath() =
         fromUri(get(), this.toUri())?.let {
@@ -72,24 +86,37 @@ object FileUtil : KoinComponent {
             "${it.getRelativePath(get())}/${it.fullName}"
         } ?: ""
 
-    fun formatFileSize(size: Long, numCountInfo: Int): String {
-        if (size <= 0) {
-            return "0"
-        }
-        var units = arrayOfNulls<String>(0)
-        if (numCountInfo == 1000) {
-            units = arrayOf("B", "KB", "MB", "GB", "TB")
-        } else if (numCountInfo == 1024) {
-            units = arrayOf("B", "KiB", "MiB", "GiB", "TiB")
-        }
-        val digitGroups = (log10(size.toDouble()) / log10(numCountInfo.toDouble())).toInt()
-        return (DecimalFormat("#,##0.#").format(
-            size / numCountInfo.toDouble().pow(digitGroups.toDouble())
-        ) + " " + units[digitGroups])
-    }
+    fun String.removeFileByPath() =
+        this.toUri().toDocumentFile(get())?.delete() ?: false
 
-    const val NOMEDIA_FILENAME: String = ".nomedia"
-    const val NOSEARCH_FILENAME: String = ".nosearch"
+    fun formatFileSize(size: Long, prefFormat: BinaryPrefFormat): String {
+        if (size <= 0) return "0"
+
+        val locale = Locale.getDefault()
+        val numFormat = NumberFormat.getInstance(locale).apply {
+            maximumFractionDigits = 1
+        }
+        val fmt = MeasureFormat.getInstance(
+            locale,
+            MeasureFormat.FormatWidth.SHORT,
+            numFormat
+        )
+
+        val units = arrayOf(
+            MeasureUnit.BYTE,
+            MeasureUnit.KILOBYTE,
+            MeasureUnit.MEGABYTE,
+            MeasureUnit.GIGABYTE,
+            MeasureUnit.TERABYTE
+        )
+
+        val unitSize = if (prefFormat == BinaryPrefFormat.SI) 1000.0 else 1024.0
+        val digitGroups = (ln(size.toDouble()) / ln(unitSize)).toInt()
+            .coerceAtMost(units.lastIndex)
+
+        val value = size / unitSize.pow(digitGroups.toDouble())
+        return fmt.format(Measure(value, units[digitGroups]))
+    }
 
     @OptIn(ExperimentalContracts::class)
     fun createSpecialFiles(dirPath: String) {
@@ -153,11 +180,11 @@ object FileUtil : KoinComponent {
         return Result.success(destFile.uri.toString())
     }
 
-    fun Uri.readFileContents(): ByteArray? {
-        return runCatching {
-            this.openInputStream(get()).use { it?.readBytes() ?: throw NullPointerException() }
-        }.getOrElse { null }
-    }
+    fun Uri.readFileContents(): ByteArray? =
+        runCatching {
+            this.openInputStream(get())
+                .use { it?.readBytes() ?: throw NullPointerException() }
+        }.getOrNull()
 
     fun Uri.writeFileContents(dataToWrite: ByteArray) {
         get<Context>().contentResolver.runCatching {
@@ -167,72 +194,85 @@ object FileUtil : KoinComponent {
         }
     }
 
-    fun unpackFileToDir(
+    suspend fun unpackFileToDir(
         filePath: String,
         destDirPath: String,
         onProgressUpdate: suspend (state: ProgressState) -> Unit
-    ) = runCatching {
-        val fileUri = filePath.toUri()
-        DocumentFileRandomInStream(fileUri).use {
-            SevenZip.openInArchive(null, it).use { inArchive ->
-                inArchive.extract(
-                    null,
-                    false,
-                    ArchiveExtractCallback(
-                        destDirPath.toUri().toDocumentFile(get())!!,
-                        inArchive,
-                        onProgressUpdate
+    ): Result<Unit> = runCatching {
+        DocumentFileRandomInStream(
+            singleFileUri = filePath.toUri(),
+            contentResolver = get<Context>().contentResolver
+        ).use { randomInStream ->
+            withContext(Dispatchers.IO) {
+                SevenZip.openInArchive(null, randomInStream).use { inArchive ->
+                    inArchive.extract(
+                        null,
+                        false,
+                        ArchiveExtractCallback(
+                            context = get(),
+                            targetDir = destDirPath.toUri().toDocumentFile(get())!!,
+                            inArchive = inArchive,
+                            onProgressUpdate = onProgressUpdate,
+                            coroutineScope = this
+                        )
                     )
-                )
+                }
             }
         }
-        fileUri.toDocumentFile(get())?.delete()
-        Unit
     }
 
     private class ArchiveExtractCallback(
+        private val context: Context,
         private val targetDir: DocumentFile,
         private val inArchive: IInArchive,
-        private val onProgressUpdate: suspend (state: ProgressState) -> Unit
+        private val onProgressUpdate: suspend (state: ProgressState) -> Unit,
+        private val coroutineScope: CoroutineScope
     ) : IArchiveExtractCallback {
         private var stream: SequentialOutStream? = null
         private var totalSize: Long = 0L
+
+        private var startTime: Long = 0L
         private var lastUpdateTime: Long = 0L
 
         private companion object {
-            const val UPDATE_INTERVAL_MS = 500L
+            const val UPDATE_INTERVAL_MS = 200L
         }
 
         override fun getStream(
             index: Int,
             extractAskMode: ExtractAskMode?
         ): ISequentialOutStream? {
+            if (extractAskMode != ExtractAskMode.EXTRACT) return null
+
             val isFolder = inArchive.getProperty(index, PropID.IS_FOLDER) as? Boolean ?: false
             if (isFolder) return null
 
-            val pathString = inArchive.getProperty(index, PropID.PATH) as? String ?: return null
+            val rawPath = inArchive.getProperty(index, PropID.PATH) as? String ?: return null
+            val normalizedPath = rawPath.normalizeContentPath()
 
             val file = targetDir.makeFile(
                 get(),
-                pathString,
-                getExtensionFromFileName(pathString),
+                normalizedPath,
+                getExtensionFromFileName(normalizedPath),
                 mode = CreateMode.REUSE
-            )
+            ) ?: throw IOException("Could not create file: $normalizedPath")
 
-            stream = SequentialOutStream(file!!.openOutputStream(get())!!)
+            val outputStream = file.openOutputStream(context)
+                ?: throw IOException("Could not open stream for: $normalizedPath")
+
+            stream = SequentialOutStream(outputStream)
             return stream
         }
 
-        override fun prepareOperation(extractAskMode: ExtractAskMode?) {
-            //
-        }
+        override fun prepareOperation(extractAskMode: ExtractAskMode?) {}
 
         override fun setOperationResult(extractOperationResult: ExtractOperationResult?) {
             try {
                 stream?.close()
-                stream = null
             } catch (e: IOException) {
                 throw SevenZipException(e)
+            } finally {
+                stream = null
             }
 
             if (extractOperationResult != ExtractOperationResult.OK) {
@@ -246,16 +286,28 @@ object FileUtil : KoinComponent {
 
         override fun setCompleted(complete: Long) {
             val currentTime = System.currentTimeMillis()
-            if (currentTime - lastUpdateTime > UPDATE_INTERVAL_MS) {
+
+            if (startTime == 0L) startTime = currentTime
+
+            if (currentTime - lastUpdateTime > UPDATE_INTERVAL_MS || complete == totalSize) {
                 lastUpdateTime = currentTime
 
-                runBlocking {
+                val timeElapsed = currentTime - startTime
+                val etaString = if (timeElapsed > 0 && complete > 0 && totalSize > 0) {
+                    val speed = complete.toDouble() / timeElapsed
+                    val remainingBytes = totalSize - complete
+                    (remainingBytes / speed).toLong().formatEta()
+                } else {
+                    if (complete == totalSize) "00:00" else "--:--"
+                }
+
+                coroutineScope.launch {
                     onProgressUpdate(
                         ProgressState(
                             progress =
                                 if (totalSize > 0) complete.toFloat() / totalSize.toFloat() else 0f,
                             status = DownloadStatus.UNPACK_FILE,
-                            time = ""
+                            time = etaString
                         )
                     )
                 }
@@ -265,18 +317,15 @@ object FileUtil : KoinComponent {
 
     private class SequentialOutStream(private val out: OutputStream) : ISequentialOutStream {
         @Throws(SevenZipException::class)
-        override fun write(data: ByteArray): Int {
+        override fun write(data: ByteArray) =
             try {
                 out.write(data)
+                data.size
             } catch (e: IOException) {
                 throw SevenZipException(e)
             }
-            return data.size
-        }
 
         @Throws(IOException::class)
-        fun close() {
-            out.close()
-        }
+        fun close() = out.close()
     }
 }

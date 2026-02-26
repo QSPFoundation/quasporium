@@ -1,48 +1,30 @@
 package com.pixnpunk.stock.domain.model
 
+import com.pixnpunk.stock.domain.mapper.SlugAsIdSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import nl.adaptivity.xmlutil.serialization.XmlCData
 
 @Serializable
-@SerialName("game")
+@SerialName("data")
 data class RemoteGameData(
-    @XmlCData
+    @Serializable(with = SlugAsIdSerializer::class)
+    @SerialName("slug")
     val id: Long = 0,
-    @XmlCData
-    @SerialName("list_id")
-    val listId: Int = 1,
-    @XmlCData
-    val author: String = "",
-    @XmlCData
-    @SerialName("ported_by")
-    val portedBy: String = "",
-    @XmlCData
-    val version: String = "",
-    @XmlCData
-    val title: String = "",
-    @XmlCData
-    val lang: String = "",
-    @XmlCData
-    val player: String = "",
-    @XmlCData
-    val icon: String = "",
-    @XmlCData
-    @SerialName("file_url")
-    val fileUrl: String = "",
-    @XmlCData
-    @SerialName("file_size")
-    val fileSize: Long = 0,
-    @XmlCData
-    @SerialName("file_ext")
-    val fileExt: String = "",
-    @XmlCData
-    @SerialName("desc_url")
-    val descUrl: String = "",
-    @XmlCData
-    @SerialName("pub_date")
-    val pubDate: String = "",
-    @XmlCData
-    @SerialName("mod_date")
-    val modDate: String = ""
+    val name: String,
+    val lang: String? = null,
+    val ver: String,
+    val authors: String,
+    val translators: String? = null,
+    @SerialName("description_html") val descriptionHtml: String,
+    @SerialName("file_size") val fileSize: Long? = 0,
+    @SerialName("file_name") val fileName: String? = null,
+    @SerialName("icon_url") val iconUrl: String? = null,
+    @SerialName("cover_url") val coverUrl: String? = null,
+    @SerialName("file_url") val fileUrl: String,
+    @SerialName("downloads_count") val downloadsCount: Int,
+    @SerialName("plays_count") val playsCount: Int,
+    @SerialName("likes_count") val likesCount: Int,
+    @SerialName("comments_count") val commentsCount: Int,
+    @SerialName("created_at") val createdAt: String,
+    @SerialName("updated_at") val updatedAt: String
 )

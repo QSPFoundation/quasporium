@@ -9,7 +9,11 @@ import androidx.compose.material.icons.filled.OpenInFull
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.res.stringResource
 import com.pixnpunk.dto.InputState
+import com.pixnpunk.settings.presentation.R
 import me.zhanghai.compose.preference.switchPreference
 import me.zhanghai.compose.preference.twoTargetSwitchPreference
 
@@ -27,24 +31,36 @@ fun SettingsImageContent(
                 )
             },
             defaultValue = false,
-            title = { Text("Disable game images") }
+            title = { Text(stringResource(R.string.disable_images_switch_title)) }
         )
         twoTargetSwitchPreference(
             key = "useAutoImageWidthPref",
             icon = {
-//                Icon(
-//                    imageVector = Icons.Default.WidthFull,
-//                    contentDescription = null
-//                )
+                Icon(
+                    modifier = Modifier.rotate(90f),
+                    imageVector = Icons.Default.Height,
+                    contentDescription = null
+                )
             },
             defaultValue = true,
-            title = { Text("${if (it) "Auto" else "Manual"} game image width") },
+            title = {
+                Text(
+                    stringResource(
+                        R.string.image_width_twotarswitch_title,
+                        if (it) "Auto" else "Manual"
+                    )
+                )
+            },
             summary = {
                 if (!it) {
-                    Text("Specify game image width")
+                    Text(stringResource(R.string.image_width_twotarswitch_summary))
                 }
             },
-            onClick = { if (!it) { showInputDialog(InputState.INPUT_IMAGE_WIDTH) } }
+            onClick = {
+                if (!it) {
+                    showInputDialog(InputState.INPUT_IMAGE_WIDTH)
+                }
+            }
         )
         twoTargetSwitchPreference(
             key = "useAutoImageHeightPref",
@@ -55,13 +71,24 @@ fun SettingsImageContent(
                 )
             },
             defaultValue = true,
-            title = { Text("${if (it) "Auto" else "Manual"} game image height") },
+            title = {
+                Text(
+                    stringResource(
+                        R.string.image_height_twotarswitch_title,
+                        if (it) "Auto" else "Manual"
+                    )
+                )
+            },
             summary = {
                 if (!it) {
-                    Text("Specify game image height")
+                    Text(stringResource(R.string.image_height_twotarswitch_summary))
                 }
             },
-            onClick = { if (!it) { showInputDialog(InputState.INPUT_IMAGE_HEIGHT) } }
+            onClick = {
+                if (!it) {
+                    showInputDialog(InputState.INPUT_IMAGE_HEIGHT)
+                }
+            }
         )
         switchPreference(
             key = "useImmersImagesPref",
@@ -72,7 +99,7 @@ fun SettingsImageContent(
                 )
             },
             defaultValue = false,
-            title = { Text("Use dialog for game images ") }
+            title = { Text(stringResource(R.string.dialog_images_switch_title)) }
         )
         switchPreference(
             key = "useGameImageDebug",
@@ -83,7 +110,7 @@ fun SettingsImageContent(
                 )
             },
             defaultValue = false,
-            title = { Text("Image path debugger") }
+            title = { Text(stringResource(R.string.image_path_switch_title)) }
         )
     }
 }

@@ -32,7 +32,7 @@ data class SettingsEntity(
     val nativeLibFrom: NativeLibAuthors = NativeLibAuthors.SEEDHARTHA,
     val visActsCount: Int = 3,
     val language: String = "",
-    val theme: String = "",
+    val appThemeMode: AppThemeMode = AppThemeMode.SYSTEM,
 
     @Transient
     val binaryPref: BinaryPrefFormat = BinaryPrefFormat.SI,

@@ -19,6 +19,7 @@ import com.pixnpunk.dto.LibTypePopup
 import com.pixnpunk.dto.LibTypeWindow
 import com.pixnpunk.dto.LibUIConfig
 import com.pixnpunk.dto.NativeLibAuthors
+import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.natives.impl.QSLibSDHImpl
 import com.pixnpunk.natives.impl.QSLibSNXImpl
 import com.pixnpunk.natives.impl.QSPLibImpl
@@ -29,16 +30,21 @@ import com.pixnpunk.utils.PathUtil.absToRelPath
 import com.pixnpunk.utils.PathUtil.normalizeContentPath
 import com.pixnpunk.utils.PathUtil.pathToFile
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
 import org.koin.core.component.inject
 import java.util.concurrent.CompletableFuture
 import kotlin.contracts.ExperimentalContracts
@@ -50,13 +56,20 @@ class SupervisorViewModel(
 
     private val context: Context by inject()
 
+    private val settingsState: StateFlow<SettingsEntity> =
+        get<SettingsRepository>().settingsFlow.stateIn(
+            scope = CoroutineScope(Dispatchers.Main),
+            started = SharingStarted.Eagerly,
+            initialValue = get<SettingsRepository>().currentSettings
+        )
+
     private var counterNativeByteJob: Job? = null
     private var counterNativeSonnixJob: Job? = null
     private var counterNativeSeedhartaJob: Job? = null
     private var updateSettingsJob: Job? = null
 
     private val mLibAuthors: NativeLibAuthors
-        get() = settingsRepo.settingsFlow.value.nativeLibFrom
+        get() = settingsState.value.nativeLibFrom
     private val libNativeByte = QSPLibImpl(context, this)
     private val libNativeSonnix = QSLibSNXImpl(context, this)
     private val libNativeSeedharta = QSLibSDHImpl(context, this)

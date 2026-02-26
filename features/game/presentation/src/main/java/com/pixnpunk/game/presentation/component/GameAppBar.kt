@@ -36,7 +36,7 @@ fun GameAppBar(
             IconButton(onClick = onFinishActivity) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = stringResource(R.string.act_exit)
+                    contentDescription = stringResource(R.string.exit_button_description)
                 )
             }
         },
@@ -44,7 +44,7 @@ fun GameAppBar(
             IconButton(onClick = { component.restartGame() }) {
                 Icon(
                     imageVector = Icons.Default.RestartAlt,
-                    contentDescription = stringResource(R.string.act_restart)
+                    contentDescription = stringResource(R.string.restart_button_description)
                 )
             }
             if (isInputExecutorVis) {
@@ -53,7 +53,7 @@ fun GameAppBar(
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Terminal,
-                        contentDescription = ""
+                        contentDescription = null
                     )
                 }
             }

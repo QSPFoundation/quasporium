@@ -10,16 +10,17 @@ sealed interface SettingsComponent {
     val onDismissed: () -> Unit
 
     val showColorDialog: (ColorPickerState) -> Unit
+    val resetToDefault: (ColorPickerState) -> Unit
     val showInputDialog: (InputState) -> Unit
 
     fun moveToChild(config: RealSettingsComponent.ChildConfig)
     fun backToRoot()
 
     sealed class Child {
-        class AudioChild() : Child()
-        class GeneralChild() : Child()
-        class PicturesChild() : Child()
-        class RootChild() : Child()
-        class TextChild() : Child()
+        class AudioChild : Child()
+        class GeneralChild : Child()
+        class PicturesChild : Child()
+        class RootChild : Child()
+        class TextChild : Child()
     }
 }

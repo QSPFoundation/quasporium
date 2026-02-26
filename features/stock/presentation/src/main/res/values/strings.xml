@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="selected_items_count">
+        <item quantity="one">Selected %1$d element</item>
+        <item quantity="other">Selected %1$d elements</item>
+    </plurals>
+    <string name="games_list_error_template">An error occurred: %1$s</string>
+    <string name="games_list_empty">No Games Found</string>
+    <string name="games_list_error_append">Failed to load more games.</string>
+    <string name="first_tab_text">Installed</string>
+    <string name="second_tab_text">Library</string>
+    <string name="placeholder_searchbar">Search game</string>
+</resources>

@@ -13,9 +13,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.pixnpunk.details.presentation.R
 import com.pixnpunk.dto.GameEntry
 
 @Composable
@@ -30,10 +33,12 @@ fun DetailsPrimaryInfo(
                 colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                 leadingContent = {
                     AsyncImage(
-                        modifier = Modifier.size(50.dp),
+                        modifier = Modifier
+                            .size(56.dp)
+                            .clip(MaterialTheme.shapes.medium),
                         model = entry.gameIconPath,
                         error = rememberVectorPainter(Icons.Outlined.BrokenImage),
-                        contentDescription = null,
+                        contentDescription = stringResource(R.string.icon_description, entry.title),
                     )
                 },
                 headlineContent = { Text(entry.title) },
@@ -44,7 +49,7 @@ fun DetailsPrimaryInfo(
                         ) {
                             Text(
                                 style = MaterialTheme.typography.bodyMedium,
-                                text = "By: ${entry.author}"
+                                text = stringResource(R.string.author_title, entry.author)
                             )
                         }
                         AnimatedVisibility(
@@ -52,7 +57,7 @@ fun DetailsPrimaryInfo(
                         ) {
                             Text(
                                 style = MaterialTheme.typography.bodyMedium,
-                                text = "Ported by: ${entry.portedBy}"
+                                text = stringResource(R.string.ported_by_title, entry.portedBy)
                             )
                         }
                     }

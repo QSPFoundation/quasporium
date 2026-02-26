@@ -4,22 +4,26 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BorderColor
 import androidx.compose.material.icons.filled.FormatColorFill
+import androidx.compose.material.icons.filled.FormatPaint
 import androidx.compose.material.icons.filled.FormatSize
 import androidx.compose.material.icons.filled.Terminal
 import androidx.compose.material.icons.filled.TextFormat
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import com.pixnpunk.dto.ColorPickerState
 import com.pixnpunk.dto.FontTypeface
+import com.pixnpunk.settings.presentation.R
 import me.zhanghai.compose.preference.listPreference
 import me.zhanghai.compose.preference.switchPreference
 import me.zhanghai.compose.preference.twoTargetSwitchPreference
 
 @Composable
 fun SettingsTextContent(
-    showColorDialog: (ColorPickerState) -> Unit
+    showColorDialog: (ColorPickerState) -> Unit,
+    resetToDefault: (ColorPickerState) -> Unit
 ) {
     LazyColumn {
         listPreference(
@@ -42,7 +46,7 @@ fun SettingsTextContent(
                     }
                 )
             },
-            title = { Text("Game font style") }
+            title = { Text(stringResource(R.string.font_style_list_title)) }
         )
         listPreference(
             key = "fontSizePref",
@@ -54,7 +58,7 @@ fun SettingsTextContent(
             },
             defaultValue = 16,
             values = listOf(12, 14, 16, 18, 20, 22),
-            title = { Text("Game font size") }
+            title = { Text(stringResource(R.string.font_size_list_title)) }
         )
         twoTargetSwitchPreference(
             key = "customTextColorPref",
@@ -65,9 +69,19 @@ fun SettingsTextContent(
                 )
             },
             defaultValue = false,
-            title = { Text("Custom game text color") },
-            summary = { if (it) { Text("Specify text color") } },
-            onClick = { if (it) { showColorDialog(ColorPickerState.COLOR_TEXT) } }
+            title = { Text(stringResource(R.string.font_color_switch_title)) },
+            summary = {
+                if (it) {
+                    Text(stringResource(R.string.font_color_switch_summary))
+                } else {
+                    resetToDefault(ColorPickerState.COLOR_TEXT)
+                }
+            },
+            onClick = {
+                if (it) {
+                    showColorDialog(ColorPickerState.COLOR_TEXT)
+                }
+            }
         )
         twoTargetSwitchPreference(
             key = "customBackColorPref",
@@ -78,22 +92,42 @@ fun SettingsTextContent(
                 )
             },
             defaultValue = false,
-            title = { Text("Custom game background color") },
-            summary = { if (it) { Text("Specify background color") } },
-            onClick = { if (it) { showColorDialog(ColorPickerState.COLOR_BACK) } }
+            title = { Text(stringResource(R.string.back_color_switch_title)) },
+            summary = {
+                if (it) {
+                    Text(stringResource(R.string.back_color_switch_summary))
+                } else {
+                    resetToDefault(ColorPickerState.COLOR_BACK)
+                }
+            },
+            onClick = {
+                if (it) {
+                    showColorDialog(ColorPickerState.COLOR_BACK)
+                }
+            }
         )
         twoTargetSwitchPreference(
             key = "customLinkColorPref",
             icon = {
-//                Icon(
-//                    imageVector = Icons.Default.FormatHi,
-//                    contentDescription = null
-//                )
+                Icon(
+                    imageVector = Icons.Default.FormatPaint,
+                    contentDescription = null
+                )
             },
             defaultValue = false,
-            title = { Text("Custom game link color") },
-            summary = { if (it) { Text("Specify link color") } },
-            onClick = { if (it) { showColorDialog(ColorPickerState.COLOR_LINK) } }
+            title = { Text(stringResource(R.string.link_color_switch_title)) },
+            summary = {
+                if (it) {
+                    Text(stringResource(R.string.link_color_switch_summary))
+                } else {
+                    resetToDefault(ColorPickerState.COLOR_LINK)
+                }
+            },
+            onClick = {
+                if (it) {
+                    showColorDialog(ColorPickerState.COLOR_LINK)
+                }
+            }
         )
         switchPreference(
             key = "useGameExecStringPref",
@@ -104,7 +138,7 @@ fun SettingsTextContent(
                 )
             },
             defaultValue = false,
-            title = { Text("Use input field for debugging") }
+            title = { Text(stringResource(R.string.string_exec_switch_title)) }
         )
     }
 }

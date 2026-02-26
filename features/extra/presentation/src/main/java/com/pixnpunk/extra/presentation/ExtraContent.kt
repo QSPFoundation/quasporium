@@ -4,44 +4,69 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.webkit.WebView
 import android.widget.LinearLayout
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExtraContent(
-    component: ExtraComponent
+    component: ExtraComponent,
+    dismiss: () -> Unit
 ) {
     val state by component.model.collectAsState()
-    val settings by component.settingsFlow.collectAsState()
+    val settings by component.settingsState.collectAsState()
 
-    AndroidView(
-        modifier = Modifier.fillMaxSize(),
-        update = { webView ->
-            webView.loadDataWithBaseURL(
-                "file:///",
-                state.extraDesc,
-                "text/html",
-                "UTF-8",
-                null
-            )
-        },
-        factory = { ctx ->
-            component.getDefaultWebClient(
-                WebView(ctx).apply {
-                    setBackgroundColor(settings.backColor)
-                    layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-                    loadDataWithBaseURL(
-                        "file:///",
-                        state.extraDesc,
-                        "text/html",
-                        "UTF-8",
-                        null
-                    )
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Extra") },
+                navigationIcon = {
+                    IconButton(onClick = dismiss) {
+                        Icon(
+                            imageVector = Icons.Filled.Close,
+                            contentDescription = null
+                        )
+                    }
                 }
             )
         }
-    )
+    ) { paddingValues ->
+        AndroidView(
+            modifier = Modifier
+                .padding(paddingValues)
+                .fillMaxSize(),
+            update = { webView ->
+                webView.loadDataWithBaseURL(
+                    "https://appassets.androidplatform.net/game_files/",
+                    state.extraDesc,
+                    "text/html", "UTF-8", null
+                )
+            },
+            factory = { ctx ->
+                component.getDefaultWebClient(
+                    WebView(ctx).apply {
+                        setBackgroundColor(settings.backColor)
+                        layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+                        loadDataWithBaseURL(
+                            "https://appassets.androidplatform.net/game_files/",
+                            state.extraDesc,
+                            "text/html", "UTF-8", null
+                        )
+                    }
+                )
+            }
+        )
+    }
 }
