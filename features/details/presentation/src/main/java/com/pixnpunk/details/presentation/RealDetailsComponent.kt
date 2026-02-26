@@ -17,6 +17,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
+import org.ocpsoft.prettytime.PrettyTime
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+import java.util.*
 
 class RealDetailsComponent(
     private val componentContext: ComponentContext,
@@ -40,4 +47,43 @@ class RealDetailsComponent(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override val model: StateFlow<DetailsStore.State> = store.stateFlow
+
+    override fun convEntryData(
+        entry: GameEntry
+    ): GameEntry {
+        if (entry.pubDate.isEmpty() || entry.modDate.isEmpty()) return entry
+
+        val formatPubDate =
+            runCatching {
+                OffsetDateTime.parse(entry.pubDate).toInstant()
+            }.onFailure {
+                Instant.parse(
+                    LocalDateTime.parse(
+                        entry.pubDate,
+                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                    ).toInstant(ZoneOffset.UTC).toString()
+                )
+            }
+
+        val formatModDate =
+            runCatching {
+                OffsetDateTime.parse(entry.pubDate).toInstant()
+            }.onFailure {
+                Instant.parse(
+                    LocalDateTime.parse(
+                        entry.modDate,
+                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                    ).toInstant(ZoneOffset.UTC).toString()
+                )
+            }
+
+        return entry.copy(
+            pubDate =
+                if (formatPubDate.isSuccess) PrettyTime().format(formatModDate.getOrNull())
+                else entry.pubDate,
+            modDate =
+                if (formatModDate.isSuccess) PrettyTime().format(formatModDate.getOrNull())
+                else entry.modDate
+        )
+    }
 }
