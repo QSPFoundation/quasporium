@@ -1,8 +1,6 @@
 package com.pixnpunk.dialogs.presentation.content
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.fromHtml
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
