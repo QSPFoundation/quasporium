@@ -20,7 +20,7 @@ android {
                 arguments += listOf(
                     "-DBUILD_JAVA=1",
                     "-DBUILD_JVM=1",
-                    "-DBUILD_PRIVATE_CONTENT=0",
+                    "-DBUILD_PRIVATE_CONTENT=1",
                     "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
                 )
             }
