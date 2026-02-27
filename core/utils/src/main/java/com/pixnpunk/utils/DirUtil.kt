@@ -5,16 +5,35 @@ import android.os.Build
 import android.provider.DocumentsContract
 import android.provider.DocumentsContract.getDocumentMetadata
 import androidx.core.net.toUri
+import androidx.documentfile.provider.DocumentFile
 import com.anggrayudi.storage.file.DocumentFileCompat.fromUri
 import com.anggrayudi.storage.file.DocumentFileType
 import com.anggrayudi.storage.file.MimeType
+import com.anggrayudi.storage.file.findParent
 import com.anggrayudi.storage.file.search
 import com.pixnpunk.utils.FileUtil.isWritableDir
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.mapNotNull
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import kotlin.contracts.ExperimentalContracts
 
 object DirUtil : KoinComponent {
+    @OptIn(ExperimentalContracts::class)
+    suspend fun receiveGameDirFromFile(rootDirPath: String): DocumentFile? {
+        val gameDir = fromUri(get(), rootDirPath.toUri())
+        if (!gameDir.isWritableDir()) return null
+
+        val targetFile = gameDir.search(
+            recursive = true,
+            documentType = DocumentFileType.FILE,
+            mimeTypes = arrayOf(MimeType.BINARY_FILE),
+            regex = Regex(".*\\.(qsp|gam)$", RegexOption.IGNORE_CASE)
+        ).mapNotNull { it.firstOrNull() }.first()
+
+        return targetFile.findParent(get())
+    }
+
     @OptIn(ExperimentalContracts::class)
     suspend fun receiveGameFilesFromDir(rootDirPath: String): List<String> {
         val gameDir = fromUri(get(), rootDirPath.toUri())
