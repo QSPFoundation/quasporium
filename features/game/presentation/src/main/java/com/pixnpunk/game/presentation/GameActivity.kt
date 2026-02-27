@@ -110,7 +110,11 @@ class GameActivity : ComponentActivity() {
         val gameDirFile = gameDirUri.toDocumentFile(this)
         if (gameDirFile != null) {
             if (!root.model.value.isGameRunning) {
-                root.runGame(gameId, gameTitle, gameDirUri, gameFileUri)
+                root.runGame(
+                    gameId, gameTitle,
+                    gameDirUri, gameFileUri,
+                    settingsState.value.nativeLibFrom
+                )
             }
         }
 

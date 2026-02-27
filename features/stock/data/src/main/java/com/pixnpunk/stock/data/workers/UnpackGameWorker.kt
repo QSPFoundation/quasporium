@@ -1,11 +1,13 @@
 package com.pixnpunk.stock.data.workers
 
 import android.content.Context
+import androidx.core.net.toUri
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.pixnpunk.dto.stringToEntry
 import com.pixnpunk.notification.NotificationProvider
 import com.pixnpunk.stock.domain.repository.LocalRepository
+import com.pixnpunk.utils.DirUtil.receiveGameDirFromFile
 import com.pixnpunk.utils.FileUtil.removeFileByPath
 import com.pixnpunk.utils.FileUtil.unpackFileToDir
 import org.koin.core.component.KoinComponent
@@ -44,14 +46,25 @@ class UnpackGameWorker(
                     )
                 }
             ).getOrThrow()
+
             archivePath.removeFileByPath()
-            localRepository.fillAndInsertEntry(
-                gameEntry.copy(gameDirPath = destDirPath)
-            )
+
+            val newGameDir = receiveGameDirFromFile(destDirPath)
+            if (newGameDir == null || destDirPath.toUri() == newGameDir.uri) {
+                localRepository.fillAndInsertEntry(
+                    gameEntry.copy(gameDirPath = destDirPath)
+                )
+            } else {
+                localRepository.fillAndInsertEntry(
+                    gameEntry.copy(gameDirPath = newGameDir.uri.toString())
+                )
+            }
+
             notificationProvider.showNotification(
                 "Installation complete",
                 "${gameEntry.title} is ready to play!"
             )
+
             Result.success()
         } catch (_: Exception) {
             notificationProvider.showNotification(

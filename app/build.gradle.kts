@@ -17,14 +17,18 @@ android {
         applicationId = "com.pixnpunk.quasporium"
         minSdk = 26
         targetSdk = 36
-        versionCode = 30010002
-        versionName = "1.1.0-beta2"
+        versionCode = 30010101
+        versionName = "1.1.1-beta1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         release {
+            ndk {
+                debugSymbolLevel = "FULL"
+            }
+
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
@@ -45,6 +49,7 @@ android {
         }
     }
 
+    ndkVersion = "27.3.13750724"
     buildFeatures {
         compose = true
         buildConfig = true

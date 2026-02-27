@@ -55,7 +55,7 @@ object FileUtil : KoinComponent {
     @ExperimentalContracts
     fun DocumentFile?.isWritableFile(): Boolean {
         contract {
-            returns() implies (this@isWritableFile != null)
+            returns(true) implies (this@isWritableFile != null)
         }
         if (this == null) return false
         return this.exists() && this.isFile && this.isWritable(get())
@@ -64,7 +64,7 @@ object FileUtil : KoinComponent {
     @ExperimentalContracts
     fun DocumentFile?.isWritableDir(): Boolean {
         contract {
-            returns() implies (this@isWritableDir != null)
+            returns(true) implies (this@isWritableDir != null)
         }
         if (this == null) return false
         return this.exists() && this.isDirectory && this.isWritable(get())

@@ -22,7 +22,7 @@ import com.pixnpunk.dto.LibTypeDialog
 import com.pixnpunk.dto.LibTypePopup
 import com.pixnpunk.dto.LibTypeWindow
 import com.pixnpunk.dto.LibUIConfig
-import com.pixnpunk.natives.SupervisorViewModel.Companion.RECEIVE_FLOW_TIMEOUT
+import com.pixnpunk.natives.NativeViewModel.Companion.RECEIVE_FLOW_TIMEOUT
 import com.pixnpunk.utils.FileUtil.isWritableDir
 import com.pixnpunk.utils.FileUtil.isWritableFile
 import com.pixnpunk.utils.FileUtil.readFileContents
@@ -52,27 +52,15 @@ class QSPLibImpl(
     private val libLock = ReentrantLock()
     private var libThread: Thread? = null
     private val libQueue: ArrayBlockingQueue<Runnable> = ArrayBlockingQueue(1)
-
-    @Volatile
-    private lateinit var libHandler: Handler
-
-    @Volatile
-    private var libThreadInit = false
-
-    @Volatile
-    private var gameStartTime: Long = 0L
-
-    @Volatile
-    private var lastMsCountCallTime: Long = 0L
+    @Volatile private lateinit var libHandler: Handler
+    @Volatile private var libThreadInit = false
+    @Volatile private var gameStartTime: Long = 0L
+    @Volatile private var lastMsCountCallTime: Long = 0L
     private val currGameDir: DocumentFile?
         get() = fromUri(context, gameState.gameDirPath.toUri())
 
     private inline fun executeQspCommand(block: () -> Boolean): Boolean {
-        return if (block()) {
-            true
-        } else {
-            showLastQspError(); false
-        }
+        return if (block()) { true } else { showLastQspError(); false }
     }
 
     private fun runOnQspThread(runnable: Runnable) {

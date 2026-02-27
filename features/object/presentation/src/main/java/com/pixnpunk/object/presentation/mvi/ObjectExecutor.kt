@@ -1,7 +1,7 @@
 package com.pixnpunk.`object`.presentation.mvi
 
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
-import com.pixnpunk.natives.SupervisorViewModel
+import com.pixnpunk.natives.NativeViewModel
 import com.pixnpunk.`object`.presentation.mvi.ObjectStore.Message.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -9,7 +9,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
 class ObjectExecutor(
-    private val service: SupervisorViewModel
+    private val service: NativeViewModel
 ) : CoroutineExecutor<ObjectStore.Intent, ObjectStore.Action, ObjectStore.State, ObjectStore.Message, ObjectStore.Label>() {
     private val outScope = CoroutineScope(Dispatchers.Default)
 

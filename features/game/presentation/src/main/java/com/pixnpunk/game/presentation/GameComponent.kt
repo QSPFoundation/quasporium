@@ -6,6 +6,7 @@ import com.arkivanov.decompose.value.Value
 import com.pixnpunk.dialogs.presentation.DialogsComponent
 import com.pixnpunk.dto.LibGenItem
 import com.pixnpunk.dto.LibTypeDialog
+import com.pixnpunk.dto.NativeLibAuthors
 import com.pixnpunk.extra.presentation.RealExtraComponent
 import com.pixnpunk.game.presentation.mvi.GameStore
 import com.pixnpunk.main.presentation.MainComponent
@@ -27,7 +28,8 @@ sealed interface GameComponent {
         gameId: Long,
         gameTitle: String,
         gameDirUri: Uri,
-        gameFileUri: Uri
+        gameFileUri: Uri,
+        nativeLibFrom: NativeLibAuthors
     )
 
     fun doShowDialog()

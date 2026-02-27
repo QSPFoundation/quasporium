@@ -85,7 +85,7 @@ abstract class QSLibSNX {
     external fun restartGame(isRefresh: Boolean): Boolean
 
     // --- Menu ---
-    external fun selectMenuItem(index: Int)
+//    external fun selectMenuItem(index: Int)
 
     // --- Callbacks from Native Code ---
     open fun onCallDebug(str: String?) {}
