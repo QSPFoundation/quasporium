@@ -19,7 +19,6 @@ import com.pixnpunk.dto.LibTypePopup
 import com.pixnpunk.dto.LibTypeWindow
 import com.pixnpunk.dto.LibUIConfig
 import com.pixnpunk.dto.NativeLibAuthors
-import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.natives.impl.QSLibSDHImpl
 import com.pixnpunk.natives.impl.QSLibSNXImpl
 import com.pixnpunk.natives.impl.QSPLibImpl
@@ -30,7 +29,6 @@ import com.pixnpunk.utils.PathUtil.absToRelPath
 import com.pixnpunk.utils.PathUtil.normalizeContentPath
 import com.pixnpunk.utils.PathUtil.pathToFile
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -49,27 +47,20 @@ import org.koin.core.component.inject
 import java.util.concurrent.CompletableFuture
 import kotlin.contracts.ExperimentalContracts
 
-class SupervisorViewModel(
+class NativeViewModel(
     private val audioPlayer: AudioPlayerViewModel,
     private val settingsRepo: SettingsRepository
 ) : ViewModel(), GameInterface, KoinComponent {
 
     private val context: Context by inject()
 
-    private val settingsState: StateFlow<SettingsEntity> =
-        get<SettingsRepository>().settingsFlow.stateIn(
-            scope = CoroutineScope(Dispatchers.Main),
-            started = SharingStarted.Eagerly,
-            initialValue = get<SettingsRepository>().currentSettings
-        )
-
     private var counterNativeByteJob: Job? = null
     private var counterNativeSonnixJob: Job? = null
     private var counterNativeSeedhartaJob: Job? = null
     private var updateSettingsJob: Job? = null
 
-    private val mLibAuthors: NativeLibAuthors
-        get() = settingsState.value.nativeLibFrom
+    private var mLibAuthors: NativeLibAuthors = NativeLibAuthors.BYTE
+
     private val libNativeByte = QSPLibImpl(context, this)
     private val libNativeSonnix = QSLibSNXImpl(context, this)
     private val libNativeSeedharta = QSLibSDHImpl(context, this)
@@ -138,9 +129,11 @@ class SupervisorViewModel(
         gameId: Long,
         gameTitle: String,
         gameDirUri: Uri,
-        gameFileUri: Uri
+        gameFileUri: Uri,
+        libAuthor: NativeLibAuthors
     ) {
         this.gameDirUri = gameDirUri
+        this.mLibAuthors = libAuthor
 
         when (mLibAuthors) {
             NativeLibAuthors.BYTE -> {

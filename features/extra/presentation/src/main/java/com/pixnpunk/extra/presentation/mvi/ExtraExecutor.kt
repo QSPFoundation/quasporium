@@ -2,7 +2,7 @@ package com.pixnpunk.extra.presentation.mvi
 
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
 import com.pixnpunk.extra.presentation.mvi.ExtraStore.Message.UpdateExtraDesc
-import com.pixnpunk.natives.SupervisorViewModel
+import com.pixnpunk.natives.NativeViewModel
 import com.pixnpunk.settings.SettingsRepository
 import com.pixnpunk.utils.HtmlUtil.appendPageTemplate
 import com.pixnpunk.utils.HtmlUtil.getCleanHtmlAndMedia
@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
 class ExtraExecutor(
-    private val service: SupervisorViewModel,
+    private val service: NativeViewModel,
     private val settingsRepo: SettingsRepository
 ) : CoroutineExecutor<ExtraStore.Intent, ExtraStore.Action, ExtraStore.State, ExtraStore.Message, ExtraStore.Label>() {
     private val outScope = CoroutineScope(Dispatchers.Default)

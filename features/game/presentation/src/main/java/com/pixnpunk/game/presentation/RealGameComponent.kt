@@ -34,13 +34,14 @@ import com.pixnpunk.dialogs.presentation.RealDialogsComponent
 import com.pixnpunk.dto.InputState
 import com.pixnpunk.dto.LibGenItem
 import com.pixnpunk.dto.LibTypeDialog
+import com.pixnpunk.dto.NativeLibAuthors
 import com.pixnpunk.dto.OutputState
 import com.pixnpunk.extra.presentation.RealExtraComponent
 import com.pixnpunk.game.presentation.mvi.GameStore
 import com.pixnpunk.game.presentation.mvi.RealGameStore
 import com.pixnpunk.main.presentation.MainComponent
 import com.pixnpunk.main.presentation.RealMainComponent
-import com.pixnpunk.natives.SupervisorViewModel
+import com.pixnpunk.natives.NativeViewModel
 import com.pixnpunk.`object`.presentation.RealObjectComponent
 import com.pixnpunk.utils.Base64Util.decodeBase64
 import com.pixnpunk.utils.Base64Util.isBase64
@@ -62,7 +63,7 @@ class RealGameComponent(
     private val onStartActivity: (Intent) -> Unit
 ) : ComponentContext by componentContext, GameComponent, KoinComponent {
 
-    private val supervisorService: SupervisorViewModel by inject()
+    private val supervisorService: NativeViewModel by inject()
 
     private var rootDir: DocumentFile? = null
 
@@ -277,9 +278,14 @@ class RealGameComponent(
         gameId: Long,
         gameTitle: String,
         gameDirUri: Uri,
-        gameFileUri: Uri
+        gameFileUri: Uri,
+        nativeLibFrom: NativeLibAuthors
     ) {
-        supervisorService.startService(gameId, gameTitle, gameDirUri, gameFileUri)
+        supervisorService.startService(
+            gameId, gameTitle,
+            gameDirUri, gameFileUri,
+            nativeLibFrom
+        )
 
         rootDir = gameDirUri.toDocumentFile(get())
 

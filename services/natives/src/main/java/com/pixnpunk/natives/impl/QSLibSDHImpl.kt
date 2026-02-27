@@ -24,7 +24,7 @@ import com.pixnpunk.dto.LibTypeDialog
 import com.pixnpunk.dto.LibTypePopup
 import com.pixnpunk.dto.LibTypeWindow
 import com.pixnpunk.dto.LibUIConfig
-import com.pixnpunk.natives.SupervisorViewModel.Companion.RECEIVE_FLOW_TIMEOUT
+import com.pixnpunk.natives.NativeViewModel.Companion.RECEIVE_FLOW_TIMEOUT
 import com.pixnpunk.utils.FileUtil.isWritableDir
 import com.pixnpunk.utils.FileUtil.isWritableFile
 import com.pixnpunk.utils.FileUtil.readFileContents

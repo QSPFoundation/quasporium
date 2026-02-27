@@ -10,7 +10,7 @@ import com.pixnpunk.dto.LibTypeDialog
 import com.pixnpunk.dto.LibTypePopup
 import com.pixnpunk.dto.LibTypeWindow
 import com.pixnpunk.game.presentation.mvi.GameStore.Label.ShowDialog
-import com.pixnpunk.natives.SupervisorViewModel
+import com.pixnpunk.natives.NativeViewModel
 import com.pixnpunk.settings.SettingsRepository
 import com.pixnpunk.utils.PathUtil.getImageUriFromPath
 import com.pixnpunk.utils.PathUtil.normalizeContentPath
@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
 
 internal class GameExecutor(
     private val appContext: Context,
-    private val service: SupervisorViewModel,
+    private val service: NativeViewModel,
     private val settingsRepo: SettingsRepository
 ) : CoroutineExecutor<GameStore.Intent, GameStore.Action, GameStore.State, GameStore.Message, GameStore.Label>() {
 
