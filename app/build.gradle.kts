@@ -22,6 +22,10 @@ android {
 
     buildTypes {
         release {
+            ndk {
+                debugSymbolLevel = "FULL"
+            }
+
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
@@ -42,6 +46,7 @@ android {
         }
     }
 
+    ndkVersion = "27.3.13750724"
     buildFeatures {
         compose = true
         buildConfig = true
