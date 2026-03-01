@@ -1,10 +1,11 @@
 package com.pixnpunk.stock.data.workers
 
 import android.content.Context
+import androidx.core.net.toFile
+import androidx.core.net.toUri
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
-import com.pixnpunk.dto.DownloadStatus
 import com.pixnpunk.notification.NotificationProvider
 import com.pixnpunk.utils.FileUtil.writeFileToDir
 import io.ktor.client.*
@@ -119,6 +120,7 @@ class DownloadGameWorker(
                 "Error",
                 "Failed to download file"
             )
+            destDirPath.toUri().toFile().deleteRecursively()
             Result.failure()
         }
     }

@@ -60,8 +60,6 @@ fun DialogAddGameContent(
         gameName = entry.gameDirPath.receiveBaseName()
     }
 
-    val isButtonEnabled = gameName.isNotBlank() && entry.gameDirPath.isNotEmpty()
-
     val scrollState = rememberScrollState()
 
     Column(
@@ -104,67 +102,68 @@ fun DialogAddGameContent(
             )
         }
 
-        FlowRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            FilterChip(
-                selected = entry.gameDirPath.isNotEmpty(),
-                onClick = if (entry.gameDirPath.isNotEmpty()) deselectDir else selectDir,
-                label = {
-                    Text(
-                        if (entry.gameDirPath.isNotEmpty()) entry.gameDirPath.receiveDirRelPath()
-                        else stringResource(R.string.folder_selector_title)
-                    )
-                },
-                leadingIcon = {
-                    Icon(
-                        Icons.Default.FolderOpen,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                },
-                trailingIcon = if (entry.gameDirPath.isNotEmpty()) {
-                    { Icon(Icons.Default.Close, contentDescription = "Clear") }
-                } else null
-            )
+        if (isAddLocalGame) {
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                FilterChip(
+                    selected = entry.gameDirPath.isNotEmpty(),
+                    onClick = if (entry.gameDirPath.isNotEmpty()) deselectDir else selectDir,
+                    label = {
+                        Text(
+                            if (entry.gameDirPath.isNotEmpty()) entry.gameDirPath.receiveDirRelPath()
+                            else stringResource(R.string.folder_selector_title)
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.FolderOpen,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    },
+                    trailingIcon = if (entry.gameDirPath.isNotEmpty()) {
+                        { Icon(Icons.Default.Close, contentDescription = "Clear") }
+                    } else null
+                )
 
-            if (isAddLocalGame && entry.gameDirPath.isNotEmpty()) {
-                entry.gameFilesPath.forEach { filePath ->
-                    FilterChip(
-                        selected = true,
-                        onClick = { deselectFile(filePath) },
-                        label = { Text(filePath.receiveFileRelPath()) },
-                        leadingIcon = {
-                            Icon(
-                                Icons.AutoMirrored.Filled.InsertDriveFile,
-                                contentDescription = null
-                            )
-                        },
-                        trailingIcon = { Icon(Icons.Default.Close, contentDescription = null) },
+                if (entry.gameDirPath.isNotEmpty()) {
+                    entry.gameFilesPath.forEach { filePath ->
+                        FilterChip(
+                            selected = true,
+                            onClick = { deselectFile(filePath) },
+                            label = { Text(filePath.receiveFileRelPath()) },
+                            leadingIcon = {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.InsertDriveFile,
+                                    contentDescription = null
+                                )
+                            },
+                            trailingIcon = { Icon(Icons.Default.Close, contentDescription = null) },
+                        )
+                    }
+
+                    AssistChip(
+                        onClick = selectFiles,
+                        label = { Text(stringResource(R.string.file_selector_title)) },
+                        leadingIcon = { Icon(Icons.Default.Add, contentDescription = null) }
                     )
                 }
-
-                AssistChip(
-                    onClick = selectFiles,
-                    label = { Text(stringResource(R.string.file_selector_title)) },
-                    leadingIcon = { Icon(Icons.Default.Add, contentDescription = null) }
-                )
             }
+            Spacer(Modifier.height(8.dp))
         }
 
-        Spacer(Modifier.height(8.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.End
         ) {
-            if (isAddLocalGame) {
-                TextButton(onClick = onDismiss) {
-                    Text(stringResource(R.string.cancel_button_description))
-                }
-                Spacer(Modifier.width(8.dp))
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.cancel_button_description))
             }
+
+            Spacer(Modifier.width(8.dp))
 
             Button(
                 onClick = {
@@ -176,7 +175,12 @@ fun DialogAddGameContent(
                         )
                     )
                 },
-                enabled = isButtonEnabled
+                enabled =
+                    if (isAddLocalGame) {
+                        gameName.isNotBlank() && entry.gameDirPath.isNotEmpty()
+                    } else {
+                        gameName.isNotBlank()
+                    }
             ) {
                 Text(buttonText)
             }

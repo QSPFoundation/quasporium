@@ -147,7 +147,11 @@ class RealRootComponent(
                 dialogsConfig = config,
                 addNewEntry = { store.accept(RootStore.Intent.AddNewGame(it)) },
                 editEntry = { store.accept(RootStore.Intent.EditGame(it)) },
-                downloadNewEntry = { store.accept(RootStore.Intent.DownloadNewGame(it)) },
+                downloadNewEntry = { entry ->
+                    detailsNavigation.dismiss {
+                        store.accept(RootStore.Intent.DownloadNewGame(entry))
+                    }
+                },
                 selectFolder = launchDirPicker,
                 deselectDir = ::remDirSelect,
                 selectFile = launchFilePicker,
