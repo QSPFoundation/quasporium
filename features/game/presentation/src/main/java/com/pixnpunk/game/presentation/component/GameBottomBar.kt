@@ -43,7 +43,7 @@ fun GameBottomBar(
                     }
                 },
                 label = { Text(stringResource(R.string.extra_tab_title)) },
-                badge = { if (isExtraUpdated) { Badge() } },
+                badge = { if (isExtraUpdated && isExtraEnabled) { Badge() } },
                 onClick = activateExtraSlot,
                 selected = extraSlotIsNotEmpty,
             )
@@ -65,7 +65,7 @@ fun GameBottomBar(
                     }
                 },
                 label = { Text(stringResource(R.string.object_tab_title)) },
-                badge = { if (isObjectsUpdated) { Badge() } },
+                badge = { if (isObjectsUpdated && isObjectsEnabled) { Badge() } },
                 onClick = activateObjectSlot,
                 selected = objectSlotIsNotEmpty
             )
