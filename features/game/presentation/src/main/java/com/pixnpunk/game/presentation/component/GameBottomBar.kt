@@ -20,6 +20,7 @@ import com.pixnpunk.game.presentation.R
 fun GameBottomBar(
     isExtraEnabled: Boolean,
     isObjectsEnabled: Boolean,
+    isMainEnabled: Boolean,
     isExtraUpdated: Boolean,
     isObjectsUpdated: Boolean,
     isMainUpdated: Boolean,
@@ -53,7 +54,7 @@ fun GameBottomBar(
                     Icon(Icons.Filled.Menu, contentDescription = null)
                 },
                 label = { Text(stringResource(R.string.main_tab_title)) },
-                badge = { if (isMainUpdated) { Badge() } },
+                badge = { if (isMainUpdated && !isMainEnabled) { Badge() } },
                 onClick = cleanAllSlot,
                 selected = !extraSlotIsNotEmpty && !objectSlotIsNotEmpty
             )
