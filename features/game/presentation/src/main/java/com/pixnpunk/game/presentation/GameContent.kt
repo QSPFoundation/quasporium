@@ -59,6 +59,7 @@ fun GameContent(
             isObjectsEnabled = state.isObjectsEnabled,
             isExtraUpdated = state.isExtraUpdated,
             isObjectsUpdated = state.isObjectsUpdated,
+            isMainUpdated = state.isMainUpdated,
             extraSlotIsNotEmpty = extraSlotIsNotEmpty,
             activateExtraSlot = component::stateSwitchExtraSlot,
             objectSlotIsNotEmpty = objectSlotIsNotEmpty,

@@ -12,6 +12,7 @@ object GameReducer : Reducer<GameStore.State, GameStore.Message> {
             is GameStore.Message.UpdateVisObjElement -> copy(isObjectsEnabled = msg.isObjectsEnabled)
             is GameStore.Message.UpdateStatObjElement -> copy(isObjectsUpdated = msg.isObjectsUpdated)
             is GameStore.Message.UpdateExecutorStatus -> copy(isExecutorEnabled = msg.isExecutorEnabled)
+            is GameStore.Message.UpdateStatMainElement -> copy(isMainUpdated = msg.isMainUpdated)
         }
     }
 }

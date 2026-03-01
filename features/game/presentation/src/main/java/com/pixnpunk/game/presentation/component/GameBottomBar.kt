@@ -22,6 +22,7 @@ fun GameBottomBar(
     isObjectsEnabled: Boolean,
     isExtraUpdated: Boolean,
     isObjectsUpdated: Boolean,
+    isMainUpdated: Boolean,
     extraSlotIsNotEmpty: Boolean,
     activateExtraSlot: () -> Unit,
     objectSlotIsNotEmpty: Boolean,
@@ -52,6 +53,7 @@ fun GameBottomBar(
                     Icon(Icons.Filled.Menu, contentDescription = null)
                 },
                 label = { Text(stringResource(R.string.main_tab_title)) },
+                badge = { if (isMainUpdated) { Badge() } },
                 onClick = cleanAllSlot,
                 selected = !extraSlotIsNotEmpty && !objectSlotIsNotEmpty
             )

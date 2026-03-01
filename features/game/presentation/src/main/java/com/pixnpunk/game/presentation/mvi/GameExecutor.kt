@@ -39,6 +39,9 @@ internal class GameExecutor(
             is GameStore.Intent.MuteObjectUpdate ->
                 dispatch(GameStore.Message.UpdateStatObjElement(false))
 
+            is GameStore.Intent.MuteMainUpdate ->
+                dispatch(GameStore.Message.UpdateStatMainElement(false))
+
             is GameStore.Intent.OnSelectMenuItem ->
                 service.putReturnValue(
                     LibReturnValue(dialogNumValue = intent.index)
@@ -116,6 +119,7 @@ internal class GameExecutor(
                             dispatch(GameStore.Message.UpdateGameStatus(state.gameRunning))
                             dispatch(GameStore.Message.UpdateStatObjElement(state.objectsList.isNotEmpty()))
                             dispatch(GameStore.Message.UpdateStatExtraElement(state.varsDesc.isNotEmpty()))
+                            dispatch(GameStore.Message.UpdateStatMainElement(state.mainDesc.isNotEmpty() || state.actionsList.isNotEmpty()))
                         }
                     }
                 }
