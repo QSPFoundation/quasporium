@@ -12,7 +12,9 @@ sealed interface GameStore : Store<GameStore.Intent, GameStore.State, GameStore.
     @Serializable
     data class State(
         val isObjectsEnabled: Boolean = true,
+        val isObjectsUpdated: Boolean = false,
         val isExtraEnabled: Boolean = true,
+        val isExtraUpdated: Boolean = false,
         val isInputEnabled: Boolean = true,
         val isExecutorEnabled: Boolean = false,
         val isGameRunning: Boolean = false,
@@ -27,12 +29,16 @@ sealed interface GameStore : Store<GameStore.Intent, GameStore.State, GameStore.
         data class OnInputValue(val state: InputState, val inputString: String) : Intent
         data object CreateSaveIntent : Intent
         data object CreateLoadIntent : Intent
+        data object MuteExtraUpdate : Intent
+        data object MuteObjectUpdate : Intent
     }
 
     sealed interface Message {
         data class UpdateGameStatus(val isGameRunning: Boolean) : Message
         data class UpdateVisObjElement(val isObjectsEnabled: Boolean) : Message
+        data class UpdateStatObjElement(val isObjectsUpdated: Boolean) : Message
         data class UpdateVisExtraElement(val isExtraEnabled: Boolean) : Message
+        data class UpdateStatExtraElement(val isExtraUpdated: Boolean) : Message
         data class UpdateVisInputElement(val isInputEnabled: Boolean) : Message
         data class UpdateExecutorStatus(val isExecutorEnabled: Boolean) : Message
     }

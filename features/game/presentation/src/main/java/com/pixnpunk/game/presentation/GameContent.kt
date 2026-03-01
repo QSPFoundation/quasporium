@@ -57,6 +57,8 @@ fun GameContent(
         GameBottomBar(
             isExtraEnabled = state.isExtraEnabled,
             isObjectsEnabled = state.isObjectsEnabled,
+            isExtraUpdated = state.isExtraUpdated,
+            isObjectsUpdated = state.isObjectsUpdated,
             extraSlotIsNotEmpty = extraSlotIsNotEmpty,
             activateExtraSlot = component::stateSwitchExtraSlot,
             objectSlotIsNotEmpty = objectSlotIsNotEmpty,

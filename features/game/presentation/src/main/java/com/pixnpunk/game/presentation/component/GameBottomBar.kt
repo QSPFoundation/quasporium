@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.Sell
 import androidx.compose.material.icons.filled.Work
 import androidx.compose.material.icons.outlined.Sell
 import androidx.compose.material.icons.outlined.WorkOutline
+import androidx.compose.material3.Badge
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteItem
@@ -19,6 +20,8 @@ import com.pixnpunk.game.presentation.R
 fun GameBottomBar(
     isExtraEnabled: Boolean,
     isObjectsEnabled: Boolean,
+    isExtraUpdated: Boolean,
+    isObjectsUpdated: Boolean,
     extraSlotIsNotEmpty: Boolean,
     activateExtraSlot: () -> Unit,
     objectSlotIsNotEmpty: Boolean,
@@ -40,6 +43,7 @@ fun GameBottomBar(
                     }
                 },
                 label = { Text(stringResource(R.string.extra_tab_title)) },
+                badge = { if (isExtraUpdated) { Badge() } },
                 onClick = activateExtraSlot,
                 selected = extraSlotIsNotEmpty,
             )
@@ -61,6 +65,7 @@ fun GameBottomBar(
                     }
                 },
                 label = { Text(stringResource(R.string.object_tab_title)) },
+                badge = { if (isObjectsUpdated) { Badge() } },
                 onClick = activateObjectSlot,
                 selected = objectSlotIsNotEmpty
             )
