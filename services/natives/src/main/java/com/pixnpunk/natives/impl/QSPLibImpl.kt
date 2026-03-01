@@ -315,18 +315,16 @@ class QSPLibImpl(
     }
 
     override fun onRefreshInt(isForced: Boolean, isNewDesc: Boolean) {
-        if (isNewDesc) {
-            loadUIConfiguration()
+        loadUIConfiguration()
 
-            gameState = gameState.copy(
-                mainDesc = mainDesc,
-                varsDesc = varsDesc,
-                actionsList = actionsList,
-                objectsList = objectsList
-            )
+        gameState = gameState.copy(
+            mainDesc = mainDesc,
+            varsDesc = varsDesc,
+            actionsList = actionsList,
+            objectsList = objectsList
+        )
 
-            gameInterface.setGameState(gameState)
-        }
+        gameInterface.setGameState(gameState)
     }
 
     override fun onShowImage(file: String?) {

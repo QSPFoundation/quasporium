@@ -14,6 +14,7 @@ import com.pixnpunk.natives.NativeViewModel
 import com.pixnpunk.settings.SettingsRepository
 import com.pixnpunk.utils.PathUtil.getImageUriFromPath
 import com.pixnpunk.utils.PathUtil.normalizeContentPath
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.launch
@@ -31,6 +32,12 @@ internal class GameExecutor(
             is GameStore.Intent.OnSaveFile -> scope.launch { service.onSaveFile(intent.fileUri) }
 
             is GameStore.Intent.OnExecCode -> scope.launch { service.onCodeExec(intent.codeToExec) }
+
+            is GameStore.Intent.MuteExtraUpdate ->
+                dispatch(GameStore.Message.UpdateStatExtraElement(false))
+
+            is GameStore.Intent.MuteObjectUpdate ->
+                dispatch(GameStore.Message.UpdateStatObjElement(false))
 
             is GameStore.Intent.OnSelectMenuItem ->
                 service.putReturnValue(
@@ -103,9 +110,13 @@ internal class GameExecutor(
     override fun executeAction(action: GameStore.Action) {
         when (action) {
             is GameStore.Action.StartGameStateFlow ->
-                scope.launch {
+                scope.launch(Dispatchers.IO) {
                     service.gameStateFlow.collect { state ->
-                        dispatch(GameStore.Message.UpdateGameStatus(state.gameRunning))
+                        scope.launch {
+                            dispatch(GameStore.Message.UpdateGameStatus(state.gameRunning))
+                            dispatch(GameStore.Message.UpdateStatObjElement(state.objectsList.isNotEmpty()))
+                            dispatch(GameStore.Message.UpdateStatExtraElement(state.varsDesc.isNotEmpty()))
+                        }
                     }
                 }
 

@@ -7,9 +7,7 @@ import com.pixnpunk.settings.SettingsRepository
 import com.pixnpunk.utils.HtmlUtil.appendPageTemplate
 import com.pixnpunk.utils.HtmlUtil.getCleanHtmlAndMedia
 import com.pixnpunk.utils.HtmlUtil.getCleanHtmlRemMedia
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
@@ -17,12 +15,11 @@ class ExtraExecutor(
     private val service: NativeViewModel,
     private val settingsRepo: SettingsRepository
 ) : CoroutineExecutor<ExtraStore.Intent, ExtraStore.Action, ExtraStore.State, ExtraStore.Message, ExtraStore.Label>() {
-    private val outScope = CoroutineScope(Dispatchers.Default)
 
     override fun executeAction(action: ExtraStore.Action) {
         when (action) {
             is ExtraStore.Action.StartExtraReceiveFlow -> {
-                outScope.launch {
+                scope.launch(Dispatchers.IO) {
                     service.gameStateFlow
                         .combine(settingsRepo.settingsFlow) { state, settings -> state to settings }
                         .collect { (state, settings) ->
@@ -46,10 +43,5 @@ class ExtraExecutor(
                 }
             }
         }
-    }
-
-    override fun dispose() {
-        super.dispose()
-        outScope.cancel()
     }
 }

@@ -262,11 +262,13 @@ class RealGameComponent(
     override fun stateSwitchExtraSlot() {
         clearAllSlot()
         extraNavigation.activate(Unit)
+        store.accept(GameStore.Intent.MuteExtraUpdate)
     }
 
     override fun stateSwitchObjectSlot() {
         clearAllSlot()
         objectNavigation.activate(Unit)
+        store.accept(GameStore.Intent.MuteObjectUpdate)
     }
 
     override fun clearAllSlot() {
