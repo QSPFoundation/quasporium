@@ -178,6 +178,7 @@ fun DialogsMainContent(
                                 DialogOutputValueContent(
                                     message = config.outputValue,
                                     isImage = it == OutputState.OUTPUT_IMAGE,
+                                    isMsg = it == OutputState.OUTPUT_SIMPLE_MSG,
                                     onConfirm = { component.confirmMessage(it to 0) },
                                     onDismiss = component.onDismissed
                                 )

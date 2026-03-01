@@ -25,6 +25,7 @@ import com.pixnpunk.dialogs.presentation.R
 fun DialogOutputValueContent(
     message: String,
     isImage: Boolean,
+    isMsg: Boolean,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -50,10 +51,12 @@ fun DialogOutputValueContent(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.End
         ) {
-            TextButton(
-                onClick = onDismiss
-            ) {
-                Text(stringResource(R.string.cancel_button_description))
+            if (!isMsg) {
+                TextButton(
+                    onClick = onDismiss
+                ) {
+                    Text(stringResource(R.string.cancel_button_description))
+                }
             }
             TextButton(
                 onClick = { onConfirm(); onDismiss() }
