@@ -17,6 +17,7 @@ sealed interface GameStore : Store<GameStore.Intent, GameStore.State, GameStore.
         val isExtraUpdated: Boolean = false,
         val isInputEnabled: Boolean = true,
         val isExecutorEnabled: Boolean = false,
+        val isMainUpdated: Boolean = false,
         val isGameRunning: Boolean = false,
     )
 
@@ -31,6 +32,7 @@ sealed interface GameStore : Store<GameStore.Intent, GameStore.State, GameStore.
         data object CreateLoadIntent : Intent
         data object MuteExtraUpdate : Intent
         data object MuteObjectUpdate : Intent
+        data object MuteMainUpdate : Intent
     }
 
     sealed interface Message {
@@ -41,6 +43,7 @@ sealed interface GameStore : Store<GameStore.Intent, GameStore.State, GameStore.
         data class UpdateStatExtraElement(val isExtraUpdated: Boolean) : Message
         data class UpdateVisInputElement(val isInputEnabled: Boolean) : Message
         data class UpdateExecutorStatus(val isExecutorEnabled: Boolean) : Message
+        data class UpdateStatMainElement(val isMainUpdated: Boolean) : Message
     }
 
     sealed interface Label {

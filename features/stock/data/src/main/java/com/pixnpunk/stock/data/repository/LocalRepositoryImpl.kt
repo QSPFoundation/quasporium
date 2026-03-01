@@ -1,9 +1,13 @@
 package com.pixnpunk.stock.data.repository
 
+import androidx.core.net.toUri
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.map
+import com.anggrayudi.storage.extension.toDocumentFile
+import com.anggrayudi.storage.file.deleteRecursively
+import com.anggrayudi.storage.file.isRawFile
 import com.pixnpunk.database.dao.GameDao
 import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.dto.GameListType
@@ -17,6 +21,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
 import org.koin.core.component.inject
 
 class LocalRepositoryImpl : LocalRepository, KoinComponent {
@@ -29,8 +34,15 @@ class LocalRepositoryImpl : LocalRepository, KoinComponent {
     override fun observeEntryById(entryId: Long): Flow<GameEntry> =
         gameDao.subscribeById(entryId).distinctUntilChanged().map { it.toDomain() }
 
-    override suspend fun deleteGameEntries(entriesDelete: Set<GameEntry>): Int =
-        gameDao.deleteAll(entriesDelete.map { entry -> entry.toEntity() })
+    override suspend fun deleteGameEntries(entriesDelete: Set<GameEntry>): Int {
+        entriesDelete.forEach {
+            val gameDir = it.gameDirPath.toUri().toDocumentFile(get())
+            if (gameDir?.isRawFile == true) {
+                gameDir.deleteRecursively(get())
+            }
+        }
+        return gameDao.deleteAll(entriesDelete.map { entry -> entry.toEntity() })
+    }
 
     override suspend fun getGameEntryById(entryId: Long): GameEntry =
         gameDao.getById(entryId)?.toDomain() ?: GameEntry()

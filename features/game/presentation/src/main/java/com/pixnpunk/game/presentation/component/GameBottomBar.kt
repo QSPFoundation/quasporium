@@ -20,8 +20,10 @@ import com.pixnpunk.game.presentation.R
 fun GameBottomBar(
     isExtraEnabled: Boolean,
     isObjectsEnabled: Boolean,
+    isMainEnabled: Boolean,
     isExtraUpdated: Boolean,
     isObjectsUpdated: Boolean,
+    isMainUpdated: Boolean,
     extraSlotIsNotEmpty: Boolean,
     activateExtraSlot: () -> Unit,
     objectSlotIsNotEmpty: Boolean,
@@ -43,7 +45,7 @@ fun GameBottomBar(
                     }
                 },
                 label = { Text(stringResource(R.string.extra_tab_title)) },
-                badge = { if (isExtraUpdated) { Badge() } },
+                badge = { if (isExtraUpdated && isExtraEnabled) { Badge() } },
                 onClick = activateExtraSlot,
                 selected = extraSlotIsNotEmpty,
             )
@@ -52,6 +54,7 @@ fun GameBottomBar(
                     Icon(Icons.Filled.Menu, contentDescription = null)
                 },
                 label = { Text(stringResource(R.string.main_tab_title)) },
+                badge = { if (isMainUpdated && !isMainEnabled) { Badge() } },
                 onClick = cleanAllSlot,
                 selected = !extraSlotIsNotEmpty && !objectSlotIsNotEmpty
             )
@@ -65,7 +68,7 @@ fun GameBottomBar(
                     }
                 },
                 label = { Text(stringResource(R.string.object_tab_title)) },
-                badge = { if (isObjectsUpdated) { Badge() } },
+                badge = { if (isObjectsUpdated && isObjectsEnabled) { Badge() } },
                 onClick = activateObjectSlot,
                 selected = objectSlotIsNotEmpty
             )

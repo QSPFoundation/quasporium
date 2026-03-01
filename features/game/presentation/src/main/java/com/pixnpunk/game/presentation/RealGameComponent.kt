@@ -260,13 +260,15 @@ class RealGameComponent(
     }
 
     override fun stateSwitchExtraSlot() {
-        clearAllSlot()
+        extraNavigation.dismiss()
+        objectNavigation.dismiss()
         extraNavigation.activate(Unit)
         store.accept(GameStore.Intent.MuteExtraUpdate)
     }
 
     override fun stateSwitchObjectSlot() {
-        clearAllSlot()
+        extraNavigation.dismiss()
+        objectNavigation.dismiss()
         objectNavigation.activate(Unit)
         store.accept(GameStore.Intent.MuteObjectUpdate)
     }
@@ -274,6 +276,7 @@ class RealGameComponent(
     override fun clearAllSlot() {
         extraNavigation.dismiss()
         objectNavigation.dismiss()
+        store.accept(GameStore.Intent.MuteMainUpdate)
     }
 
     override fun runGame(

@@ -1,6 +1,7 @@
 package com.pixnpunk.stock.data.workers
 
 import android.content.Context
+import androidx.core.net.toFile
 import androidx.core.net.toUri
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
@@ -71,6 +72,7 @@ class UnpackGameWorker(
                 "Error",
                 "Failed to unpack file"
             )
+            destDirPath.toUri().toFile().deleteRecursively()
             Result.failure()
         }
     }

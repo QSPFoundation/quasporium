@@ -1,7 +1,6 @@
 package com.pixnpunk.main.presentation
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
@@ -47,102 +46,6 @@ import com.pixnpunk.dto.LibGenItem
 import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.utils.ViewUtil.toTypeface
 
-private fun calculateSpans(
-    items: List<LibGenItem>,
-    columnCount: Int,
-    columnWidthPx: Float,
-    textMeasurer: TextMeasurer,
-    textStyle: TextStyle,
-    density: Density
-): Map<Int, Boolean> {
-    if (columnCount <= 1) return items.indices.associateWith { true }
-
-    val spans = items.mapIndexed { index, item ->
-        val textWidth = textMeasurer.measure(
-            text = item.text,
-            style = textStyle,
-            maxLines = 1,
-            softWrap = false
-        ).size.width
-        val overheadPx = with(density) {
-            (if (item.imagePath.isNotBlank()) 104.dp else 32.dp).toPx()
-        }
-        index to (textWidth + overheadPx > columnWidthPx)
-    }.toMap().toMutableMap()
-
-    val buffer = mutableListOf<Int>()
-    items.indices.forEach { index ->
-        if (spans[index] == true) {
-            buffer.forEach { spans[it] = true }
-            buffer.clear()
-        } else {
-            buffer.add(index)
-            if (buffer.size == columnCount) buffer.clear()
-        }
-    }
-    buffer.forEach { spans[it] = true }
-
-    return spans
-}
-
-private fun calculateGridHeight(
-    visibleRows: Int,
-    itemHeightDp: Dp = 72.dp,
-    spacingDp: Dp = 8.dp,
-    contentPaddingDp: Dp = 32.dp
-): Dp =
-    if (visibleRows <= 0) {
-        0.dp
-    } else {
-        itemHeightDp * visibleRows + spacingDp * (visibleRows - 1) + contentPaddingDp
-    }
-
-@Composable
-private fun GridCell(
-    modifier: Modifier = Modifier,
-    item: LibGenItem,
-    isFullLine: Boolean,
-    textStyle: TextStyle,
-    cardBackgroundColor: Color,
-    onItemClick: () -> Unit
-) {
-    val annotatedText = remember(item.text) { AnnotatedString.fromHtml(item.text) }
-
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .semantics { contentDescription = item.text.replace(Regex("<[^>]*>"), "") },
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = cardBackgroundColor)
-    ) {
-        ListItem(
-            modifier = Modifier.clickable { onItemClick() },
-            headlineContent = {
-                Text(
-                    text = annotatedText,
-                    style = textStyle,
-                    maxLines = if (isFullLine) 3 else 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            },
-            leadingContent = if (item.imagePath.isNotBlank()) {
-                {
-                    AsyncImage(
-                        model = item.imagePath,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(56.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(MaterialTheme.colorScheme.surfaceContainerHighest),
-                    )
-                }
-            } else null,
-            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-        )
-    }
-}
-
 @Composable
 fun MainContentActionsList(
     countActsVis: Int,
@@ -151,30 +54,34 @@ fun MainContentActionsList(
     onActionClicked: (Int) -> Unit,
     gridState: LazyStaggeredGridState
 ) {
+    val customFontFamily = remember(settings.typeface) {
+        FontFamily(settings.typeface.toTypeface())
+    }
+    val textStyle = MaterialTheme.typography.bodyLarge.merge(
+        TextStyle(
+            color = Color(settings.textColor),
+            fontSize = settings.fontSize.sp,
+            fontFamily = customFontFamily,
+            background = Color(settings.backColor)
+        )
+    )
+    val cardBackgroundColor = Color(settings.backColor)
+
     BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
         val density = LocalDensity.current
-        val textStyle = MaterialTheme.typography.bodyLarge.merge(
-            TextStyle(
-                color = Color(settings.textColor),
-                fontSize = settings.fontSize.sp,
-                fontFamily = FontFamily(settings.typeface.toTypeface()),
-                background = Color(settings.backColor)
-            )
-        )
-
-        val cardBackgroundColor = Color(settings.backColor)
         val textMeasurer = rememberTextMeasurer(cacheSize = actions.size.coerceIn(1, 100))
 
         val columnCount = when (maxWidth) {
-            in 0.dp..319.dp -> 1
-            in 320.dp..549.dp -> 2
-            in 550.dp..849.dp -> 3
+            in 0.dp..599.dp -> 2
+            in 600.dp..839.dp -> 3
             else -> 4
         }
 
         val spanMap = remember(actions, maxWidth, columnCount, density) {
             val columnWidthPx = with(density) {
-                (maxWidth - 8.dp * (columnCount - 1)).toPx() / columnCount
+                val gridPadding = 32.dp // 16.dp * 2
+                val innerSpacing = 8.dp * (columnCount - 1)
+                (maxWidth - gridPadding - innerSpacing).toPx() / columnCount
             }
             calculateSpans(actions, columnCount, columnWidthPx, textMeasurer, textStyle, density)
         }
@@ -237,4 +144,115 @@ private fun MainContentActionsListPreview() {
         onActionClicked = {},
         gridState = rememberLazyStaggeredGridState()
     )
+}
+
+private fun calculateSpans(
+    items: List<LibGenItem>,
+    columnCount: Int,
+    columnWidthPx: Float,
+    textMeasurer: TextMeasurer,
+    textStyle: TextStyle,
+    density: Density
+): Map<Int, Boolean> {
+    if (columnCount <= 1) return items.indices.associateWith { true }
+
+    val spans = HashMap<Int, Boolean>(items.size)
+    val imageOverheadPx = with(density) { (104.dp).toPx() }
+    val noImageOverheadPx = with(density) { (32.dp).toPx() }
+
+    items.forEachIndexed { index, item ->
+        val cleanText = AnnotatedString.fromHtml(item.text).text
+
+        val textWidth = textMeasurer.measure(
+            text = cleanText,
+            style = textStyle,
+            maxLines = 1,
+            softWrap = false
+        ).size.width
+
+        val overheadPx =
+            if (item.imagePath.isNotBlank()) imageOverheadPx
+            else noImageOverheadPx
+
+        spans[index] = (textWidth + overheadPx > columnWidthPx)
+    }
+
+    var currentGroupSize = 0
+    val buffer = mutableListOf<Int>()
+    items.indices.forEach { index ->
+        if (spans[index] == true) {
+            buffer.forEach { spans[it] = true }
+            buffer.clear()
+            currentGroupSize = 0
+        } else {
+            buffer.add(index)
+            currentGroupSize++
+            if (currentGroupSize == columnCount) {
+                buffer.clear()
+                currentGroupSize = 0
+            }
+        }
+    }
+
+    buffer.forEach { spans[it] = true }
+
+    return spans
+}
+
+private fun calculateGridHeight(
+    visibleRows: Int,
+    itemHeightDp: Dp = 72.dp,
+    spacingDp: Dp = 8.dp,
+    contentPaddingDp: Dp = 32.dp
+): Dp =
+    if (visibleRows <= 0) {
+        0.dp
+    } else {
+        itemHeightDp * visibleRows + spacingDp * (visibleRows - 1) + contentPaddingDp
+    }
+
+@Composable
+private fun GridCell(
+    modifier: Modifier = Modifier,
+    item: LibGenItem,
+    isFullLine: Boolean,
+    textStyle: TextStyle,
+    cardBackgroundColor: Color,
+    onItemClick: () -> Unit
+) {
+    val annotatedText = remember(item.text) { AnnotatedString.fromHtml(item.text) }
+
+    Card(
+        onClick = onItemClick,
+        modifier = modifier
+            .fillMaxWidth()
+            .semantics { contentDescription = annotatedText.text },
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = cardBackgroundColor)
+    ) {
+        ListItem(
+            headlineContent = {
+                Text(
+                    text = annotatedText,
+                    style = textStyle,
+                    maxLines = if (isFullLine) 3 else 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            },
+            leadingContent = if (item.imagePath.isNotBlank()) {
+                {
+                    AsyncImage(
+                        model = item.imagePath,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(56.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.surfaceContainerHighest),
+                    )
+                }
+            } else null,
+            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+        )
+    }
 }

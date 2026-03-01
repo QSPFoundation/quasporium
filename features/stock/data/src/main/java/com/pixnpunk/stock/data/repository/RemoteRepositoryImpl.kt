@@ -1,5 +1,7 @@
 package com.pixnpunk.stock.data.repository
 
+import android.content.Context
+import androidx.core.net.toUri
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
@@ -17,6 +19,8 @@ import com.pixnpunk.stock.domain.repository.RemoteRepository
 import kotlinx.coroutines.flow.Flow
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
+import java.io.File
+import java.security.SecureRandom
 
 class RemoteRepositoryImpl : RemoteRepository, KoinComponent {
 
@@ -51,11 +55,15 @@ class RemoteRepositoryImpl : RemoteRepository, KoinComponent {
         ).flow
 
     override suspend fun downloadGame(downloadEntry: GameEntry) {
+        val gameDirName = "Game_${downloadEntry.title}-#${SecureRandom().nextInt()}"
+        val gameDir = File(get<Context>().filesDir, gameDirName)
+        gameDir.mkdir()
+
         val downloadRequest = OneTimeWorkRequestBuilder<DownloadGameWorker>()
             .setInputData(
                 workDataOf(
                     "url" to downloadEntry.fileUrl,
-                    "destDir" to downloadEntry.gameDirPath
+                    "destDir" to gameDir.toUri().toString()
                 )
             )
             .setConstraints(
