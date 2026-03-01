@@ -4,7 +4,6 @@ import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
 import com.pixnpunk.stock.domain.usecase.DeleteLocalGameEntries
 import com.pixnpunk.stock.presentation.mvi.StockStore.Message.ChangeStateDeleteMode
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -29,8 +28,5 @@ class StockExecutor(
                 }
             }
         }
-    }
-
-    override fun executeAction(action: StockStore.Action) {
     }
 }

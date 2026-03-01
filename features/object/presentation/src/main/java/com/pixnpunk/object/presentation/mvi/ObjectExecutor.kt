@@ -2,16 +2,13 @@ package com.pixnpunk.`object`.presentation.mvi
 
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
 import com.pixnpunk.natives.NativeViewModel
-import com.pixnpunk.`object`.presentation.mvi.ObjectStore.Message.*
-import kotlinx.coroutines.CoroutineScope
+import com.pixnpunk.`object`.presentation.mvi.ObjectStore.Message.UpdateObjects
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
 class ObjectExecutor(
     private val service: NativeViewModel
 ) : CoroutineExecutor<ObjectStore.Intent, ObjectStore.Action, ObjectStore.State, ObjectStore.Message, ObjectStore.Label>() {
-    private val outScope = CoroutineScope(Dispatchers.Default)
 
     override fun executeIntent(intent: ObjectStore.Intent) {
         when (intent) {
@@ -24,17 +21,12 @@ class ObjectExecutor(
     override fun executeAction(action: ObjectStore.Action) {
         when (action) {
             is ObjectStore.Action.StartObjectsFlow -> {
-                outScope.launch {
+                scope.launch(Dispatchers.IO) {
                     service.gameStateFlow.collect { state ->
                         scope.launch { dispatch(UpdateObjects(state.objectsList)) }
                     }
                 }
             }
         }
-    }
-
-    override fun dispose() {
-        super.dispose()
-        outScope.cancel()
     }
 }

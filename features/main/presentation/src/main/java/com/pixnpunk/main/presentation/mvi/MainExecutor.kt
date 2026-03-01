@@ -10,9 +10,7 @@ import com.pixnpunk.settings.SettingsRepository
 import com.pixnpunk.utils.HtmlUtil.appendPageTemplate
 import com.pixnpunk.utils.HtmlUtil.getCleanHtmlAndMedia
 import com.pixnpunk.utils.HtmlUtil.getCleanHtmlRemMedia
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
@@ -21,7 +19,6 @@ class MainExecutor(
     private val service: NativeViewModel,
     private val settingsRepo: SettingsRepository
 ) : CoroutineExecutor<MainStore.Intent, MainStore.Action, MainStore.State, MainStore.Message, MainStore.Label>() {
-    private val outScope = CoroutineScope(Dispatchers.Default)
 
     override fun executeIntent(intent: MainStore.Intent) {
         when (intent) {
@@ -31,16 +28,15 @@ class MainExecutor(
 
     override fun executeAction(action: MainStore.Action) {
         when (action) {
-            is MainStore.Action.StartActionsVisFlow -> {
-                outScope.launch {
+            is MainStore.Action.StartActionsVisFlow ->
+                scope.launch(Dispatchers.IO) {
                     service.gameElementVis
                         .filter { it.first == LibTypeWindow.ACTS }
                         .collect { scope.launch { dispatch(UpdateVisActions(it.second)) } }
                 }
-            }
 
-            is MainStore.Action.StartContentFlow -> {
-                outScope.launch {
+            is MainStore.Action.StartContentFlow ->
+                scope.launch(Dispatchers.IO) {
                     service.gameStateFlow
                         .combine(settingsRepo.settingsFlow) { state, settings -> state to settings }
                         .collect { (state, settings) ->
@@ -63,12 +59,6 @@ class MainExecutor(
                             }
                         }
                 }
-            }
         }
-    }
-
-    override fun dispose() {
-        super.dispose()
-        outScope.cancel()
     }
 }
