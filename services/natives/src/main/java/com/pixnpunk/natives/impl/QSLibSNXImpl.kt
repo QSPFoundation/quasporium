@@ -460,10 +460,13 @@ class QSLibSNXImpl(
     }
 
     override fun onSleep(msecs: Int) {
-        try {
+        runCatching {
             Thread.sleep(msecs.toLong())
-        } catch (ex: InterruptedException) {
-            gameInterface.showLibDialog(LibTypeDialog.DIALOG_ERROR, ex.toString())
+        }.onFailure {
+            gameInterface.showLibDialog(
+                LibTypeDialog.DIALOG_ERROR,
+                it.toString()
+            )
         }
     }
 
