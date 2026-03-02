@@ -6,6 +6,7 @@ import androidx.core.net.toUri
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.pixnpunk.notification.NotificationProvider
 import com.pixnpunk.utils.FileUtil.writeFileToDir
 import io.ktor.client.*
@@ -115,7 +116,11 @@ class DownloadGameWorker(
                     )
                 )
             }
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            FirebaseCrashlytics.getInstance().apply {
+                log("Failed to unpack file")
+                recordException(e)
+            }
             notificationProvider.showNotification(
                 "Error",
                 "Failed to download file"

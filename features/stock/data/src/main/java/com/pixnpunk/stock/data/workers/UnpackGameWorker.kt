@@ -5,6 +5,7 @@ import androidx.core.net.toFile
 import androidx.core.net.toUri
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.pixnpunk.dto.stringToEntry
 import com.pixnpunk.notification.NotificationProvider
 import com.pixnpunk.stock.domain.repository.LocalRepository
@@ -67,7 +68,11 @@ class UnpackGameWorker(
             )
 
             Result.success()
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            FirebaseCrashlytics.getInstance().apply {
+                log("Failed to unpack file")
+                recordException(e)
+            }
             notificationProvider.showNotification(
                 "Error",
                 "Failed to unpack file"

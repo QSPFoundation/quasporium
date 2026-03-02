@@ -63,6 +63,11 @@ dependencies {
     implementation(platform(libs.koin.bom))
     implementation(libs.koin.android)
 
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.crashlytics)
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.perf)
+
     implementation(libs.essenty.lifecycle)
     implementation(libs.decompose.core)
     implementation(libs.decompose.ext)

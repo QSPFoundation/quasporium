@@ -67,6 +67,11 @@ dependencies {
     implementation(libs.koin.android)
 
     implementation(libs.storage)
+    
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.crashlytics)
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.perf)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

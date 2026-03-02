@@ -46,4 +46,9 @@ dependencies {
 
     implementation(libs.jsoup)
     implementation(libs.storage)
+
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.crashlytics)
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.perf)
 }

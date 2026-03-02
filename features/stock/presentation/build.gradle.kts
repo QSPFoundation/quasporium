@@ -64,6 +64,11 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.coil.network.ktor3)
 
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.crashlytics)
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.perf)
+    
     implementation(libs.essenty.lifecycle)
     implementation(libs.decompose.core)
     implementation(libs.decompose.ext)
