@@ -36,6 +36,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
@@ -78,9 +79,9 @@ class NativeViewModel(
     private val _gameElementVis: MutableSharedFlow<Pair<LibTypeWindow, Boolean>> =
         MutableSharedFlow()
     val gameDialogFlow: SharedFlow<Triple<LibTypeDialog, String, List<LibGenItem>>> =
-        _gameDialogFlow
-    val gamePopupFlow: SharedFlow<LibTypePopup> = _gamePopupFlow
-    val gameElementVis: SharedFlow<Pair<LibTypeWindow, Boolean>> = _gameElementVis
+        _gameDialogFlow.asSharedFlow()
+    val gamePopupFlow: SharedFlow<LibTypePopup> = _gamePopupFlow.asSharedFlow()
+    val gameElementVis: SharedFlow<Pair<LibTypeWindow, Boolean>> = _gameElementVis.asSharedFlow()
 
     companion object {
         const val RECEIVE_FLOW_TIMEOUT: Long = 10000
