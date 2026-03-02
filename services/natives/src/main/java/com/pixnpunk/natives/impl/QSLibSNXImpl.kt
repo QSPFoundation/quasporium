@@ -259,18 +259,19 @@ class QSLibSNXImpl(
 
     private fun doRunGame(id: Long, title: String, dir: Uri, file: Uri) {
         gameInterface.doWithCounterDisabled {
-            gameInterface.closeAllFiles()
-            gameState = gameState.copy(
-                gameRunning = true,
-                gameId = id,
-                gameTitle = title,
-                gameDirPath = dir.toString(),
-                gameFilePath = file.toString()
-            )
-            if (!loadGameWorld()) return@doWithCounterDisabled
-            gameStartTime = SystemClock.elapsedRealtime()
-            lastMsCountCallTime = 0
-            executeQspCommand { restartGame(true) }
+            gameInterface.closeAllFiles().onSuccess {
+                gameState = gameState.copy(
+                    gameRunning = true,
+                    gameId = id,
+                    gameTitle = title,
+                    gameDirPath = dir.toString(),
+                    gameFilePath = file.toString()
+                )
+                if (!loadGameWorld()) return@doWithCounterDisabled
+                gameStartTime = SystemClock.elapsedRealtime()
+                lastMsCountCallTime = 0
+                executeQspCommand { restartGame(true) }
+            }
         }
     }
 
