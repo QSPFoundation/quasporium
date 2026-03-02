@@ -15,6 +15,7 @@ import com.pixnpunk.settings.SettingsRepository
 import com.pixnpunk.utils.PathUtil.getImageUriFromPath
 import com.pixnpunk.utils.PathUtil.normalizeContentPath
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.launch
@@ -32,15 +33,6 @@ internal class GameExecutor(
             is GameStore.Intent.OnSaveFile -> scope.launch { service.onSaveFile(intent.fileUri) }
 
             is GameStore.Intent.OnExecCode -> scope.launch { service.onCodeExec(intent.codeToExec) }
-
-            is GameStore.Intent.MuteExtraUpdate ->
-                dispatch(GameStore.Message.UpdateStatExtraElement(false))
-
-            is GameStore.Intent.MuteObjectUpdate ->
-                dispatch(GameStore.Message.UpdateStatObjElement(false))
-
-            is GameStore.Intent.MuteMainUpdate ->
-                dispatch(GameStore.Message.UpdateStatMainElement(false))
 
             is GameStore.Intent.OnSelectMenuItem ->
                 service.putReturnValue(
@@ -117,9 +109,6 @@ internal class GameExecutor(
                     service.gameStateFlow.collect { state ->
                         scope.launch {
                             dispatch(GameStore.Message.UpdateGameStatus(state.gameRunning))
-                            dispatch(GameStore.Message.UpdateStatObjElement(state.objectsList.isNotEmpty()))
-                            dispatch(GameStore.Message.UpdateStatExtraElement(state.varsDesc.isNotEmpty()))
-                            dispatch(GameStore.Message.UpdateStatMainElement(state.mainDesc.isNotEmpty() || state.actionsList.isNotEmpty()))
                         }
                     }
                 }
@@ -132,36 +121,39 @@ internal class GameExecutor(
                 }
 
             is GameStore.Action.StartGameElementVisFlow ->
-                scope.launch {
+                scope.launch(Dispatchers.IO) {
                     service.gameElementVis
+                        .distinctUntilChanged()
                         .filterNot { (window, _) -> window == LibTypeWindow.ACTS }
                         .collect { (window, bool) ->
-                            when (window) {
-                                LibTypeWindow.OBJS -> {
-                                    dispatch(GameStore.Message.UpdateVisObjElement(bool))
-                                }
+                            scope.launch {
+                                when (window) {
+                                    LibTypeWindow.OBJS -> {
+                                        dispatch(GameStore.Message.UpdateVisObjElement(bool))
+                                    }
 
-                                LibTypeWindow.VARS -> {
-                                    dispatch(GameStore.Message.UpdateVisExtraElement(bool))
-                                }
+                                    LibTypeWindow.VARS -> {
+                                        dispatch(GameStore.Message.UpdateVisExtraElement(bool))
+                                    }
 
-                                LibTypeWindow.INPUT -> {
-                                    dispatch(GameStore.Message.UpdateVisInputElement(bool))
-                                }
+                                    LibTypeWindow.INPUT -> {
+                                        dispatch(GameStore.Message.UpdateVisInputElement(bool))
+                                    }
 
-                                else -> {
-                                    // do nothing
+                                    else -> {
+                                        // do nothing
+                                    }
                                 }
                             }
                         }
                 }
 
             is GameStore.Action.StartGamePopupFlow ->
-                scope.launch {
+                scope.launch(Dispatchers.IO) {
                     service.gamePopupFlow.collect { type ->
-                        when (type) {
-                            LibTypePopup.POPUP_SAVE -> {
-                                scope.launch {
+                        scope.launch {
+                            when (type) {
+                                LibTypePopup.POPUP_SAVE -> {
                                     publish(
                                         GameStore.Label.ShowSaveFilePicker(
                                             Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
@@ -173,11 +165,10 @@ internal class GameExecutor(
                                                 setType(BINARY_FILE)
                                             }
                                         ))
-                                }
-                            }
 
-                            LibTypePopup.POPUP_LOAD -> {
-                                scope.launch {
+                                }
+
+                                LibTypePopup.POPUP_LOAD -> {
                                     publish(
                                         GameStore.Label.ShowLoadFilePicker(
                                             Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
