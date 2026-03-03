@@ -6,5 +6,6 @@ import com.pixnpunk.stock.domain.repository.LocalRepository
 class DeleteLocalGameEntries(
     private val localRepository: LocalRepository
 ) {
-    suspend fun execute(entries: Set<GameEntry>): Int = localRepository.deleteGameEntries(entries)
+    suspend fun execute(ids: Set<Long>): Int =
+        localRepository.deleteGameEntries(ids)
 }

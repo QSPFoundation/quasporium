@@ -34,14 +34,16 @@ class LocalRepositoryImpl : LocalRepository, KoinComponent {
     override fun observeEntryById(entryId: Long): Flow<GameEntry> =
         gameDao.subscribeById(entryId).distinctUntilChanged().map { it.toDomain() }
 
-    override suspend fun deleteGameEntries(entriesDelete: Set<GameEntry>): Int {
-        entriesDelete.forEach {
-            val gameDir = it.gameDirPath.toUri().toDocumentFile(get())
-            if (gameDir?.isRawFile == true) {
-                gameDir.deleteRecursively(get())
+    override suspend fun deleteGameEntries(idsDelete: Set<Long>): Int {
+        val entriesDelete = gameDao.getByIds(idsDelete).apply {
+            forEach {
+                val gameDir = it.gameDirPath.toUri().toDocumentFile(get())
+                if (gameDir?.isRawFile == true) {
+                    gameDir.deleteRecursively(get())
+                }
             }
         }
-        return gameDao.deleteAll(entriesDelete.map { entry -> entry.toEntity() })
+        return gameDao.deleteAll(entriesDelete)
     }
 
     override suspend fun getGameEntryById(entryId: Long): GameEntry =

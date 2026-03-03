@@ -4,6 +4,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.BrokenImage
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -29,7 +30,6 @@ fun StockInstalledGameListItem(
     prefFormat: BinaryPrefFormat,
     isSelected: Boolean,
     deleteModeActive: Boolean,
-    onToggleSelection: () -> Unit,
     onClick: () -> Unit,
     onLongClick: () -> Unit
 ) {
@@ -37,13 +37,7 @@ fun StockInstalledGameListItem(
         modifier = Modifier
             .clip(MaterialTheme.shapes.small)
             .combinedClickable(
-                onClick = {
-                    if (deleteModeActive) {
-                        onToggleSelection()
-                    } else {
-                        onClick()
-                    }
-                },
+                onClick = onClick,
                 onLongClick = onLongClick
             )
             .semantics {
@@ -53,7 +47,9 @@ fun StockInstalledGameListItem(
             Text(
                 text = gameEntry.title,
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface
             )
         },
         supportingContent = {
@@ -61,7 +57,8 @@ fun StockInstalledGameListItem(
                 Text(
                     text = formatFileSize(gameEntry.fileSize, prefFormat),
                     maxLines = 1,
-                    style = MaterialTheme.typography.bodySmall
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         },
@@ -75,6 +72,14 @@ fun StockInstalledGameListItem(
                 contentScale = ContentScale.Crop,
                 contentDescription = null
             )
+        },
+        trailingContent = {
+            if (deleteModeActive) {
+                Checkbox(
+                    checked = isSelected,
+                    onCheckedChange = { onClick() }
+                )
+            }
         },
         colors = ListItemDefaults.colors(
             containerColor = if (isSelected) {

@@ -18,9 +18,12 @@ sealed interface StockComponent {
     val gameLocalPageFlow: Flow<PagingData<GameEntry>>
     val gameRemotePageFlow: Flow<PagingData<GameEntry>>
 
-    fun startDeleteMode()
-    fun stopDeleteMode()
-    fun deleteEntries(entries: Set<GameEntry>)
     fun searchLocalEntries(query: String)
     fun searchRemoteEntries(query: String)
+
+    fun enterDeleteMode()
+    fun exitDeleteMode()
+    fun deleteEntries()
+    fun toggleGameSelection(gameId: Long)
+    fun addAllGames(gameIds: Set<Long>)
 }

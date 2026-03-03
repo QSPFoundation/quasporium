@@ -25,15 +25,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateSetOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalFocusManager
-import com.pixnpunk.dto.GameEntry
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.pixnpunk.stock.presentation.content.StockDeleteAppBar
 import com.pixnpunk.stock.presentation.content.StockFloatButton
 import com.pixnpunk.stock.presentation.content.StockInstalledChild
@@ -51,6 +49,8 @@ fun StockContent(
     val model by component.model.collectAsState()
     val settings by component.settingsState.collectAsState()
 
+    val lazyLocalPagingItems = component.gameLocalPageFlow.collectAsLazyPagingItems()
+
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -58,9 +58,6 @@ fun StockContent(
 
     val gridState = rememberLazyGridState()
     val listState = rememberLazyListState()
-
-    val setToDelete = rememberSaveable { mutableStateSetOf<GameEntry>() }
-    val setAllEntries = rememberSaveable { mutableStateSetOf<GameEntry>() }
 
     val isAtTop by remember {
         derivedStateOf {
@@ -104,18 +101,18 @@ fun StockContent(
                 )
             } else {
                 StockDeleteAppBar(
-                    deleteSetSize = setToDelete.size,
-                    stopDeleteMode = {
-                        setToDelete.clear()
-                        setAllEntries.clear()
-                        component.stopDeleteMode()
+                    deleteSetSize = model.selectedGameIds.size,
+                    stopDeleteMode = component::exitDeleteMode,
+                    selectAll = {
+                        component.addAllGames(
+                            lazyLocalPagingItems
+                                .itemSnapshotList
+                                .items
+                                .map { it.id }
+                                .toSet()
+                        )
                     },
-                    selectAll = { setToDelete.addAll(setAllEntries) },
-                    deleteEntries = {
-                        setAllEntries.clear()
-                        component.deleteEntries(setToDelete.toSet())
-                        setToDelete.clear()
-                    },
+                    deleteEntries = component::deleteEntries,
                 )
             }
         },
@@ -190,9 +187,7 @@ fun StockContent(
                         component = component,
                         prefFormat = settings.binaryPref,
                         listState = listState,
-                        setToDelete = setToDelete,
-                        allEntries = setAllEntries,
-                        deleteModeActive = model.isDeleteModeActive
+                        lazyPagingItems = lazyLocalPagingItems
                     )
             }
         }
