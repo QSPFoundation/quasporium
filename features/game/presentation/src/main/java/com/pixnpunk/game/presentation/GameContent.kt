@@ -110,14 +110,18 @@ fun GameContent(
                 },
                 supportingPane = {
                     val child = extraSlot.child?.instance
-                    if (child != null) {
-                        AnimatedPane { ExtraContent(child, component::clearAllSlot) }
+                    AnimatedPane {
+                        if (child != null) {
+                            ExtraContent(child, component::clearAllSlot)
+                        }
                     }
                 },
                 extraPane = {
                     val child = objectSlot.child?.instance
-                    if (child != null) {
-                        AnimatedPane { ObjectContent(child, component::clearAllSlot) }
+                    AnimatedPane {
+                        if (child != null) {
+                            ObjectContent(child, component::clearAllSlot)
+                        }
                     }
                 }
             )
