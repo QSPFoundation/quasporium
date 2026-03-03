@@ -27,6 +27,9 @@ interface GameDao {
     @Query("SELECT * FROM game WHERE id LIKE :id LIMIT 1")
     suspend fun getById(id: Long): GameEntity?
 
+    @Query("SELECT * FROM game WHERE id IN (:ids)")
+    suspend fun getByIds(ids: Set<Long>): List<GameEntity>
+
     @Query("SELECT * FROM game WHERE title LIKE :name LIMIT 1")
     suspend fun getByName(name: String?): GameEntity
 

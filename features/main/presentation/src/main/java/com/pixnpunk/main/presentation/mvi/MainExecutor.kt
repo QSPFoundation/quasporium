@@ -12,6 +12,7 @@ import com.pixnpunk.utils.HtmlUtil.getCleanHtmlAndMedia
 import com.pixnpunk.utils.HtmlUtil.getCleanHtmlRemMedia
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 
@@ -31,6 +32,7 @@ class MainExecutor(
             is MainStore.Action.StartActionsVisFlow ->
                 scope.launch(Dispatchers.IO) {
                     service.gameElementVis
+                        .distinctUntilChanged()
                         .filter { it.first == LibTypeWindow.ACTS }
                         .collect { scope.launch { dispatch(UpdateVisActions(it.second)) } }
                 }

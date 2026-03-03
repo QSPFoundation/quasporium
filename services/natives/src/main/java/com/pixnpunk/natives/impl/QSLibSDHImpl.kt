@@ -502,7 +502,7 @@ class QSLibSDHImpl(
                 .supplyAsync { gameInterface.requestReceiveFile(path) }
                 .get(RECEIVE_FLOW_TIMEOUT, TimeUnit.MILLISECONDS)
                 .toUri()
-        }.onFailure { println(it) }.getOrDefault(Uri.EMPTY)
+        }.getOrDefault(Uri.EMPTY)
 
         if (targetFileUri == Uri.EMPTY) return super.onGetFileDesc(path)
         return context.contentResolver

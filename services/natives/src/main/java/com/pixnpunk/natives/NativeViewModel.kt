@@ -1,6 +1,5 @@
 package com.pixnpunk.natives
 
-import android.content.Context
 import android.net.Uri
 import androidx.annotation.WorkerThread
 import androidx.lifecycle.ViewModel
@@ -34,17 +33,13 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
-import org.koin.core.component.inject
 import java.util.concurrent.CompletableFuture
 import kotlin.contracts.ExperimentalContracts
 
@@ -53,8 +48,6 @@ class NativeViewModel(
     private val settingsRepo: SettingsRepository
 ) : ViewModel(), GameInterface, KoinComponent {
 
-    private val context: Context by inject()
-
     private var counterNativeByteJob: Job? = null
     private var counterNativeSonnixJob: Job? = null
     private var counterNativeSeedhartaJob: Job? = null
@@ -62,9 +55,9 @@ class NativeViewModel(
 
     private var mLibAuthors: NativeLibAuthors = NativeLibAuthors.BYTE
 
-    private val libNativeByte = QSPLibImpl(context, this)
-    private val libNativeSonnix = QSLibSNXImpl(context, this)
-    private val libNativeSeedharta = QSLibSDHImpl(context, this)
+    private val libNativeByte = QSPLibImpl(get(), this)
+    private val libNativeSonnix = QSLibSNXImpl(get(), this)
+    private val libNativeSeedharta = QSLibSDHImpl(get(), this)
 
     private var gameDirUri: Uri = Uri.EMPTY
 
@@ -73,15 +66,12 @@ class NativeViewModel(
     private val _gameUIConfFlow: MutableStateFlow<LibUIConfig> = MutableStateFlow(LibUIConfig())
     val gameUIConfFlow = _gameUIConfFlow.asStateFlow()
 
-    private val _gameDialogFlow: MutableSharedFlow<Triple<LibTypeDialog, String, List<LibGenItem>>> =
-        MutableSharedFlow()
+    private val _gameDialogFlow: MutableSharedFlow<Triple<LibTypeDialog, String, List<LibGenItem>>> = MutableSharedFlow()
+    val gameDialogFlow = _gameDialogFlow.asSharedFlow()
     private val _gamePopupFlow: MutableSharedFlow<LibTypePopup> = MutableSharedFlow()
-    private val _gameElementVis: MutableSharedFlow<Pair<LibTypeWindow, Boolean>> =
-        MutableSharedFlow()
-    val gameDialogFlow: SharedFlow<Triple<LibTypeDialog, String, List<LibGenItem>>> =
-        _gameDialogFlow
-    val gamePopupFlow: SharedFlow<LibTypePopup> = _gamePopupFlow
-    val gameElementVis: SharedFlow<Pair<LibTypeWindow, Boolean>> = _gameElementVis
+    val gamePopupFlow = _gamePopupFlow.asSharedFlow()
+    private val _gameElementVis: MutableSharedFlow<Pair<LibTypeWindow, Boolean>> = MutableSharedFlow()
+    val gameElementVis = _gameElementVis.asSharedFlow()
 
     companion object {
         const val RECEIVE_FLOW_TIMEOUT: Long = 10000
@@ -139,17 +129,32 @@ class NativeViewModel(
         when (mLibAuthors) {
             NativeLibAuthors.BYTE -> {
                 libNativeByte.startLibThread()
-                libNativeByte.runGame(gameId, gameTitle, gameDirUri.toString(), gameFileUri.toString())
+                libNativeByte.runGame(
+                    gameId,
+                    gameTitle,
+                    gameDirUri.toString(),
+                    gameFileUri.toString()
+                )
             }
 
             NativeLibAuthors.SONNIX -> {
                 libNativeSonnix.startLibThread()
-                libNativeSonnix.runGame(gameId, gameTitle, gameDirUri.toString(), gameFileUri.toString())
+                libNativeSonnix.runGame(
+                    gameId,
+                    gameTitle,
+                    gameDirUri.toString(),
+                    gameFileUri.toString()
+                )
             }
 
             NativeLibAuthors.SEEDHARTHA -> {
                 libNativeSeedharta.startLibThread()
-                libNativeSeedharta.runGame(gameId, gameTitle, gameDirUri.toString(), gameFileUri.toString())
+                libNativeSeedharta.runGame(
+                    gameId,
+                    gameTitle,
+                    gameDirUri.toString(),
+                    gameFileUri.toString()
+                )
             }
         }
 
@@ -309,9 +314,9 @@ class NativeViewModel(
 
     @OptIn(ExperimentalContracts::class)
     override fun requestReceiveFile(filePath: String): String {
-        val gameDir = gameDirUri.toDocumentFile(context)
+        val gameDir = gameDirUri.toDocumentFile(get())
         if (gameDir.isWritableDir()) {
-            val docFile = filePath.pathToFile(context, gameDir)
+            val docFile = filePath.pathToFile(get(), gameDir)
             if (docFile.isWritableFile()) {
                 return docFile.uri.toString()
             }
@@ -322,13 +327,13 @@ class NativeViewModel(
     @OptIn(ExperimentalContracts::class)
     @WorkerThread
     override fun requestCreateFile(path: String, mimeType: String): String {
-        val gameDir = gameDirUri.toDocumentFile(context)
+        val gameDir = gameDirUri.toDocumentFile(get())
         if (!gameDir.isWritableDir()) return Uri.EMPTY.toString()
 
         return CompletableFuture
             .supplyAsync {
-                val relPath = path.absToRelPath(context, gameDir)
-                gameDir.makeFile(context, relPath, mimeType, CreateMode.REUSE)
+                val relPath = path.absToRelPath(get(), gameDir)
+                gameDir.makeFile(get(), relPath, mimeType, CreateMode.REUSE)
             }
             .thenApply {
                 if (it.isWritableFile()) {
@@ -342,11 +347,11 @@ class NativeViewModel(
 
     @OptIn(ExperimentalContracts::class)
     override fun isPlayingFile(filePath: String): Boolean {
-        val gameDir = gameDirUri.toDocumentFile(context)
+        val gameDir = gameDirUri.toDocumentFile(get())
         if (gameDir.isWritableDir()) {
             val docFile = filePath
                 .normalizeContentPath()
-                .pathToFile(context, gameDir)
+                .pathToFile(get(), gameDir)
             if (docFile.isWritableFile()) {
                 return audioPlayer.isPlayingFile(docFile.uri)
             }
@@ -354,20 +359,17 @@ class NativeViewModel(
         return false
     }
 
-    override fun closeAllFiles() {
-        try {
-            audioPlayer.closeAllFiles()
-        } catch (_: Exception) {
-        }
+    override fun closeAllFiles() = runCatching {
+        audioPlayer.closeAllFiles()
     }
 
     @OptIn(ExperimentalContracts::class)
     override fun closeFile(filePath: String) {
-        val gameDir = gameDirUri.toDocumentFile(context)
+        val gameDir = gameDirUri.toDocumentFile(get())
         if (gameDir.isWritableDir()) {
             val docFile = filePath
                 .normalizeContentPath()
-                .pathToFile(context, gameDir)
+                .pathToFile(get(), gameDir)
             if (docFile.isWritableFile()) {
                 audioPlayer.closeFile(docFile.uri)
             }
@@ -376,24 +378,24 @@ class NativeViewModel(
 
     @OptIn(ExperimentalContracts::class)
     override fun playFile(path: String, volume: Int) {
-        val gameDir = gameDirUri.toDocumentFile(context)
+        val gameDir = gameDirUri.toDocumentFile(get())
         if (gameDir.isWritableDir()) {
             val docFile = path
                 .normalizeContentPath()
-                .pathToFile(context, gameDir)
+                .pathToFile(get(), gameDir)
             if (docFile.isWritableFile()) {
-                audioPlayer.playFile(context, docFile.uri, volume)
+                audioPlayer.playFile(get(), docFile.uri, volume)
             }
         }
     }
 
     @OptIn(ExperimentalContracts::class)
     override fun changeGameDir(filePath: String) {
-        val gameDir = gameDirUri.toDocumentFile(context)
+        val gameDir = gameDirUri.toDocumentFile(get())
         if (!gameDir.isWritableDir()) return
 
         CompletableFuture
-            .supplyAsync { doesExist(context, filePath) }
+            .supplyAsync { doesExist(get(), filePath) }
             .thenAcceptAsync {
                 if (it) {
 //                    val oldDirPath = gameDir.getAbsolutePath(this)

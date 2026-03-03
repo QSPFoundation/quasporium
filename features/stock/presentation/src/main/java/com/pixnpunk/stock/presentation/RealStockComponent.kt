@@ -45,17 +45,20 @@ class RealStockComponent(
     override val gameRemotePageFlow: Flow<PagingData<GameEntry>> = sourceViewModel.remotePagingFlow
     override val gameLocalPageFlow: Flow<PagingData<GameEntry>> = sourceViewModel.localPagingFlow
 
-    override fun startDeleteMode() {
-        store.accept(StockStore.Intent.StartDeleteMode)
-    }
+    override fun toggleGameSelection(gameId: Long) =
+        store.accept(StockStore.Intent.ToggleGameSelection(gameId))
 
-    override fun stopDeleteMode() {
-        store.accept(StockStore.Intent.StopDeleteMode)
-    }
+    override fun addAllGames(gameIds: Set<Long>) =
+        store.accept(StockStore.Intent.AddAllVisibleGames(gameIds))
 
-    override fun deleteEntries(entries: Set<GameEntry>) {
-        store.accept(StockStore.Intent.DeleteEntries(entries))
-    }
+    override fun enterDeleteMode() =
+        store.accept(StockStore.Intent.EnterDeleteMode)
+
+    override fun exitDeleteMode() =
+        store.accept(StockStore.Intent.ExitDeleteMode)
+
+    override fun deleteEntries() =
+        store.accept(StockStore.Intent.DeleteSelectedGames)
 
     override fun searchLocalEntries(query: String) {
         sourceViewModel.localSearchGameEntry(query)

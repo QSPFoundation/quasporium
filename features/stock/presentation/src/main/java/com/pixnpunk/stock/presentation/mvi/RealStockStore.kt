@@ -18,6 +18,10 @@ class RealStockStore(
             reducer = { message ->
                 when (message) {
                     is StockStore.Message.ChangeStateDeleteMode -> copy(isDeleteModeActive = message.newState)
+
+                    is StockStore.Message.SelectionUpdated -> copy(selectedGameIds = message.newIds)
+
+                    is StockStore.Message.ClearSelection -> copy(selectedGameIds = emptySet())
                 }
             }
         )

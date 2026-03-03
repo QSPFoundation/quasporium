@@ -20,6 +20,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
@@ -39,6 +40,10 @@ fun ObjectContent(
 ) {
     val state by component.model.collectAsState()
     val settings by component.settingsState.collectAsState()
+
+    val customFontFamily = remember(settings.typeface) {
+        FontFamily(settings.typeface.toTypeface())
+    }
 
     Scaffold(
         topBar = {
@@ -62,6 +67,13 @@ fun ObjectContent(
                 .fillMaxSize()
         ) {
             itemsIndexed(state.objects) { key, obj ->
+                val annotatedText = remember(obj.text) {
+                    AnnotatedString.fromHtml(
+                        htmlString = obj.text,
+                        linkStyles = TextLinkStyles(SpanStyle(Color(settings.linkColor)))
+                    )
+                }
+
                 ListItem(
                     modifier = Modifier.clickable { component.onObjectSelected(key) },
                     colors = ListItemDefaults.colors(
@@ -77,14 +89,11 @@ fun ObjectContent(
                     },
                     headlineContent = {
                         Text(
-                            text = AnnotatedString.fromHtml(
-                                htmlString = obj.text,
-                                linkStyles = TextLinkStyles(SpanStyle(Color(settings.linkColor)))
-                            ),
+                            text = annotatedText,
                             style = LocalTextStyle.current.copy(
                                 color = Color(settings.textColor),
                                 fontSize = settings.fontSize.sp,
-                                fontFamily = FontFamily(settings.typeface.toTypeface()),
+                                fontFamily = customFontFamily,
                                 background = Color(settings.backColor)
                             )
                         )

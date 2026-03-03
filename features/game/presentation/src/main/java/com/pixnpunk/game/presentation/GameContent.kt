@@ -57,13 +57,9 @@ fun GameContent(
         GameBottomBar(
             isExtraEnabled = state.isExtraEnabled,
             isObjectsEnabled = state.isObjectsEnabled,
-            isMainEnabled = !extraSlotIsNotEmpty && !objectSlotIsNotEmpty,
-            isExtraUpdated = state.isExtraUpdated,
-            isObjectsUpdated = state.isObjectsUpdated,
-            isMainUpdated = state.isMainUpdated,
             extraSlotIsNotEmpty = extraSlotIsNotEmpty,
-            activateExtraSlot = component::stateSwitchExtraSlot,
             objectSlotIsNotEmpty = objectSlotIsNotEmpty,
+            activateExtraSlot = component::stateSwitchExtraSlot,
             activateObjectSlot = component::stateSwitchObjectSlot,
             cleanAllSlot = component::clearAllSlot
         ) {
@@ -114,14 +110,18 @@ fun GameContent(
                 },
                 supportingPane = {
                     val child = extraSlot.child?.instance
-                    if (child != null) {
-                        AnimatedPane { ExtraContent(child, component::clearAllSlot) }
+                    AnimatedPane {
+                        if (child != null) {
+                            ExtraContent(child, component::clearAllSlot)
+                        }
                     }
                 },
                 extraPane = {
                     val child = objectSlot.child?.instance
-                    if (child != null) {
-                        AnimatedPane { ObjectContent(child, component::clearAllSlot) }
+                    AnimatedPane {
+                        if (child != null) {
+                            ObjectContent(child, component::clearAllSlot)
+                        }
                     }
                 }
             )

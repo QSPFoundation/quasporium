@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
 
-class AudioPlayerViewModel: ViewModel(), DefaultLifecycleObserver {
+class AudioPlayerViewModel : ViewModel(), DefaultLifecycleObserver {
     private val audioDispatcher: CoroutineDispatcher = Dispatchers.IO
     private val mediaPlayers = ConcurrentHashMap<Uri, MediaPlayer>()
     private var isPaused = false
@@ -83,15 +83,13 @@ class AudioPlayerViewModel: ViewModel(), DefaultLifecycleObserver {
     private fun createNewSound(
         context: Context,
         filePath: Uri
-    ): MediaPlayer {
-        return MediaPlayer().apply {
-            setDataSource(context, filePath)
-            prepare()
-            setOnCompletionListener { player ->
-                runOnAudioContext {
-                    mediaPlayers.remove(filePath)
-                    player.release()
-                }
+    ) = MediaPlayer().apply {
+        setDataSource(context, filePath)
+        prepare()
+        setOnCompletionListener { player ->
+            runOnAudioContext {
+                mediaPlayers.remove(filePath)
+                player.release()
             }
         }
     }

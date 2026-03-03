@@ -27,7 +27,18 @@ class RealExtraComponent(
 ) : ComponentContext by componentContext, ExtraComponent, KoinComponent {
 
     private val store = instanceKeeper.getStore {
-        RealExtraStore(DefaultStoreFactory()).create()
+        RealExtraStore(
+            storeFactory = DefaultStoreFactory(),
+            stateKeeper = stateKeeper
+        ).create()
+    }
+
+    init {
+        stateKeeper.register(
+            key = "ExtraStoreSavedState",
+            strategy = ExtraStore.State.serializer(),
+            supplier = { store.state }
+        )
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)

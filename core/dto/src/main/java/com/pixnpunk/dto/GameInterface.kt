@@ -4,7 +4,7 @@ interface GameInterface {
     fun requestReceiveFile(filePath: String): String
     fun requestCreateFile(path: String, mimeType: String): String
     fun isPlayingFile(filePath: String): Boolean
-    fun closeAllFiles()
+    fun closeAllFiles(): Result<Unit>
     fun closeFile(filePath: String)
     fun playFile(path: String, volume: Int)
     fun changeGameDir(filePath: String)
