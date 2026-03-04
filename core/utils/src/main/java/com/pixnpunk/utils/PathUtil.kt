@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
+import com.anggrayudi.storage.extension.toDocumentFile
 import com.anggrayudi.storage.file.DocumentFileCompat.fromFullPath
 import com.anggrayudi.storage.file.child
 import com.anggrayudi.storage.file.getAbsolutePath
@@ -38,8 +39,9 @@ object PathUtil {
     @OptIn(ExperimentalContracts::class)
     fun String.getImageUriFromPath(
         context: Context,
-        rootDir: DocumentFile?
+        rootDirUriBox: String
     ): Uri {
+        val rootDir = rootDirUriBox.toUri().toDocumentFile(context)
         if (!rootDir.isWritableDir()) return Uri.EMPTY
         val relPath = this.toUri().path
         if (relPath.isNullOrEmpty()) return Uri.EMPTY

@@ -2,6 +2,7 @@ package com.pixnpunk.natives
 
 import android.net.Uri
 import androidx.annotation.WorkerThread
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anggrayudi.storage.extension.toDocumentFile
@@ -118,11 +119,11 @@ class NativeViewModel(
     fun startService(
         gameId: Long,
         gameTitle: String,
-        gameDirUri: Uri,
-        gameFileUri: Uri,
+        gameDirUriBox: String,
+        gameFileUriBox: String,
         libAuthor: NativeLibAuthors
     ) {
-        this.gameDirUri = gameDirUri
+        this.gameDirUri = gameDirUriBox.toUri()
         this.mLibAuthors = libAuthor
 
         when (mLibAuthors) {
@@ -131,8 +132,8 @@ class NativeViewModel(
                 libNativeByte.runGame(
                     gameId,
                     gameTitle,
-                    gameDirUri.toString(),
-                    gameFileUri.toString()
+                    gameDirUriBox,
+                    gameFileUriBox
                 )
             }
 
@@ -141,8 +142,8 @@ class NativeViewModel(
                 libNativeSonnix.runGame(
                     gameId,
                     gameTitle,
-                    gameDirUri.toString(),
-                    gameFileUri.toString()
+                    gameDirUriBox,
+                    gameFileUriBox
                 )
             }
 
@@ -151,8 +152,8 @@ class NativeViewModel(
                 libNativeSeedharta.runGame(
                     gameId,
                     gameTitle,
-                    gameDirUri.toString(),
-                    gameFileUri.toString()
+                    gameDirUriBox,
+                    gameFileUriBox
                 )
             }
         }

@@ -1,6 +1,5 @@
 package com.pixnpunk.game.presentation
 
-import android.net.Uri
 import com.arkivanov.decompose.router.slot.ChildSlot
 import com.arkivanov.decompose.value.Value
 import com.pixnpunk.dialogs.presentation.DialogsComponent
@@ -24,13 +23,8 @@ sealed interface GameComponent {
     val model: StateFlow<GameStore.State>
     val label: Flow<GameStore.Label>
 
-    fun runGame(
-        gameId: Long,
-        gameTitle: String,
-        gameDirUri: Uri,
-        gameFileUri: Uri,
-        nativeLibFrom: NativeLibAuthors
-    )
+    fun runGame(nativeLibFrom: NativeLibAuthors)
+    fun restartGame()
 
     fun doShowDialog()
     fun doShowDialog(
@@ -47,5 +41,4 @@ sealed interface GameComponent {
 
     fun doCreateSaveIntent()
     fun doCreateLoadIntent()
-    fun restartGame()
 }

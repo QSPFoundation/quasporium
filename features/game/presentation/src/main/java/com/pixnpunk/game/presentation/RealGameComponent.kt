@@ -9,7 +9,6 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.core.net.toUri
-import androidx.documentfile.provider.DocumentFile
 import androidx.webkit.WebViewAssetLoader
 import com.anggrayudi.storage.extension.toDocumentFile
 import com.anggrayudi.storage.file.MimeType
@@ -60,19 +59,27 @@ import kotlin.contracts.ExperimentalContracts
 
 class RealGameComponent(
     private val componentContext: ComponentContext,
-    private val onStartActivity: (Intent) -> Unit
+    private val onStartActivity: (Intent) -> Unit,
+    private val gameId: Long = 1L,
+    private val gameTitle: String = "Title",
+    private val gameDirUriBox: String = "",
+    private val gameFileUriBox: String = ""
 ) : ComponentContext by componentContext, GameComponent, KoinComponent {
 
     private val supervisorService: NativeViewModel by inject()
-
-    private var rootDir: DocumentFile? = null
 
     private val dialogNavigation = SlotNavigation<DialogsConfig>()
     private val extraNavigation = SlotNavigation<Unit>()
     private val objectNavigation = SlotNavigation<Unit>()
 
     private val store = instanceKeeper.getStore {
-        RealGameStore(DefaultStoreFactory()).create()
+        RealGameStore(
+            gameId = gameId,
+            gameTitle = gameTitle,
+            gameDirUriBox = gameDirUriBox,
+            gameFileUriBox = gameFileUriBox,
+            storeFactory = DefaultStoreFactory()
+        ).create()
     }
 
     private val assetLoader = WebViewAssetLoader.Builder()
@@ -283,26 +290,22 @@ class RealGameComponent(
         store.accept(GameStore.Intent.CleanCountMainPaneUpdates)
 
     override fun runGame(
-        gameId: Long,
-        gameTitle: String,
-        gameDirUri: Uri,
-        gameFileUri: Uri,
         nativeLibFrom: NativeLibAuthors
     ) {
-        supervisorService.startService(
-            gameId, gameTitle,
-            gameDirUri, gameFileUri,
-            nativeLibFrom
-        )
-
-        rootDir = gameDirUri.toDocumentFile(get())
-
-        store.accept(GameStore.Intent.StartGameDialogFlow(rootDir))
+        val currState = store.state
+        if (!currState.isGameRunning) {
+            supervisorService.startService(
+                currState.gameId,
+                currState.gameTitle,
+                currState.gameDirUriBox,
+                currState.gameFileUriBox,
+                nativeLibFrom
+            )
+        }
     }
 
-    override fun restartGame() {
+    override fun restartGame() =
         supervisorService.onRestartGame()
-    }
 
     private inner class GameWebViewClient : WebViewClient() {
         override fun shouldOverrideUrlLoading(
@@ -367,10 +370,10 @@ class RealGameComponent(
         }.getOrElse { super.shouldInterceptRequest(view, request) }
     }
 
-    private inner class ExternalStoragePathHandler() : WebViewAssetLoader.PathHandler {
+    private inner class ExternalStoragePathHandler : WebViewAssetLoader.PathHandler {
         @OptIn(ExperimentalContracts::class)
         override fun handle(path: String): WebResourceResponse? {
-            val mRootDir = rootDir
+            val mRootDir = store.state.gameDirUriBox.toUri().toDocumentFile(get())
             if (!mRootDir.isWritableDir()) return null
             return runCatching {
                 val mediaFile = mRootDir.child(get(), path)

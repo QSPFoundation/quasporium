@@ -99,29 +99,6 @@ internal class GameExecutor(
 
                     else -> service.onCodeExec(intent.inputString)
                 }
-
-            is GameStore.Intent.StartGameDialogFlow ->
-                scope.launch {
-                    service.gameDialogFlow.collect { items ->
-                        val payload = if (items.first == LibTypeDialog.DIALOG_PICTURE) {
-                            items.second
-                                .normalizeContentPath()
-                                .getImageUriFromPath(appContext, intent.rootDir)
-                                .toString()
-                        } else {
-                            items.second
-                        }
-                        scope.launch {
-                            publish(
-                                ShowDialog(
-                                    payload,
-                                    items.first,
-                                    items.third
-                                )
-                            )
-                        }
-                    }
-                }
         }
     }
 
@@ -183,6 +160,29 @@ internal class GameExecutor(
                         .collect { dispatch(GameStore.Message.UpdateExecutorStatus(it.isUseExecString)) }
                 }
 
+            is GameStore.Action.StartGameDialogFlow ->
+                scope.launch {
+                    service.gameDialogFlow.collect { items ->
+                        val payload = if (items.first == LibTypeDialog.DIALOG_PICTURE) {
+                            items.second
+                                .normalizeContentPath()
+                                .getImageUriFromPath(appContext, state().gameDirUriBox)
+                                .toString()
+                        } else {
+                            items.second
+                        }
+                        scope.launch {
+                            publish(
+                                ShowDialog(
+                                    payload,
+                                    items.first,
+                                    items.third
+                                )
+                            )
+                        }
+                    }
+                }
+
             is GameStore.Action.StartGameElementVisFlow ->
                 scope.launch(Dispatchers.IO) {
                     service.gameElementVis
@@ -218,7 +218,7 @@ internal class GameExecutor(
                             when (type) {
                                 LibTypePopup.POPUP_SAVE -> {
                                     publish(
-                                        GameStore.Label.ShowSaveFilePicker(
+                                        ShowSaveFilePicker(
                                             Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
                                                 addCategory(Intent.CATEGORY_OPENABLE)
                                                 putExtra(
@@ -233,7 +233,7 @@ internal class GameExecutor(
 
                                 LibTypePopup.POPUP_LOAD -> {
                                     publish(
-                                        GameStore.Label.ShowLoadFilePicker(
+                                        ShowLoadFilePicker(
                                             Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
                                                 addCategory(Intent.CATEGORY_OPENABLE)
                                                 putExtra(Intent.ACTION_GET_CONTENT, true)

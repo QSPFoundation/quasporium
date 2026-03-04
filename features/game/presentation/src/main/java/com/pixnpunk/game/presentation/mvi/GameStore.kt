@@ -1,7 +1,6 @@
 package com.pixnpunk.game.presentation.mvi
 
 import android.net.Uri
-import androidx.documentfile.provider.DocumentFile
 import com.arkivanov.mvikotlin.core.store.Store
 import com.pixnpunk.dto.InputState
 import com.pixnpunk.dto.LibGenItem
@@ -17,13 +16,17 @@ sealed interface GameStore : Store<GameStore.Intent, GameStore.State, GameStore.
         val isExecutorEnabled: Boolean = false,
         val isGameRunning: Boolean = false,
 
+        val gameId: Long = 1L,
+        val gameTitle: String = "Title",
+        val gameDirUriBox: String = "",
+        val gameFileUriBox: String = "",
+
         val countMainPaneUpdates: Map<Int, Boolean> = emptyMap(),
         val countExtraPaneUpdates: Map<Int, Boolean> = emptyMap(),
         val countObjectsPaneUpdates: Map<Int, Boolean> = emptyMap()
     )
 
     sealed interface Intent {
-        data class StartGameDialogFlow(val rootDir: DocumentFile?) : Intent
         data class OnSaveFile(val fileUri: Uri) : Intent
         data class OnLoadFile(val fileUri: Uri) : Intent
         data class OnExecCode(val codeToExec: String) : Intent
@@ -71,5 +74,6 @@ sealed interface GameStore : Store<GameStore.Intent, GameStore.State, GameStore.
         data object StartGamePopupFlow : Action
         data object StartGameElementVisFlow : Action
         data object StartGameSettingsFlow : Action
+        data object StartGameDialogFlow : Action
     }
 }
