@@ -27,6 +27,7 @@ import com.arkivanov.mvikotlin.core.instancekeeper.getStore
 import com.arkivanov.mvikotlin.extensions.coroutines.labels
 import com.arkivanov.mvikotlin.extensions.coroutines.stateFlow
 import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.pixnpunk.dialogs.presentation.DialogsComponent
 import com.pixnpunk.dialogs.presentation.DialogsConfig
 import com.pixnpunk.dialogs.presentation.DialogsState
@@ -364,6 +365,8 @@ class RealGameComponent(
         ) = runCatching {
             val uriPath = request.url ?: throw NullPointerException()
             assetLoader.shouldInterceptRequest(uriPath)
+        }.onFailure {
+            FirebaseCrashlytics.getInstance().recordException(it)
         }.getOrElse { super.shouldInterceptRequest(view, request) }
     }
 
@@ -371,7 +374,11 @@ class RealGameComponent(
         @OptIn(ExperimentalContracts::class)
         override fun handle(path: String): WebResourceResponse? {
             val mRootDir = rootDir
-            if (!mRootDir.isWritableDir()) return null
+            if (!mRootDir.isWritableDir()) {
+                FirebaseCrashlytics.getInstance()
+                    .recordException(RuntimeException("Root dir is not writable!"))
+                return null
+            }
             return runCatching {
                 val mediaFile = mRootDir.child(get(), path)
                 if (!mediaFile.isWritableFile()) {
@@ -389,6 +396,8 @@ class RealGameComponent(
                         get<Context>().contentResolver.openInputStream(mediaFile.uri)
                     )
                 }
+            }.onFailure {
+                FirebaseCrashlytics.getInstance().recordException(it)
             }.getOrElse { null }
         }
     }
