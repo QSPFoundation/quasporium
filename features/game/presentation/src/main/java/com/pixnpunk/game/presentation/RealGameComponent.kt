@@ -263,18 +263,24 @@ class RealGameComponent(
         extraNavigation.dismiss()
         objectNavigation.dismiss()
         extraNavigation.activate(Unit)
+        store.accept(GameStore.Intent.CleanCountExtraPaneUpdates)
     }
 
     override fun stateSwitchObjectSlot() {
         extraNavigation.dismiss()
         objectNavigation.dismiss()
         objectNavigation.activate(Unit)
+        store.accept(GameStore.Intent.CleanCountObjectsPaneUpdates)
     }
 
     override fun clearAllSlot() {
         extraNavigation.dismiss()
         objectNavigation.dismiss()
+        cleanCountUpdates()
     }
+
+    override fun cleanCountUpdates() =
+        store.accept(GameStore.Intent.CleanCountMainPaneUpdates)
 
     override fun runGame(
         gameId: Long,
