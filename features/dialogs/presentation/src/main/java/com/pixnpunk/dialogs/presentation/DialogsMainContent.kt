@@ -12,9 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
 import com.pixnpunk.dialogs.presentation.content.DialogAddGameContent
 import com.pixnpunk.dialogs.presentation.content.DialogEditGameContent
@@ -27,7 +25,6 @@ import com.pixnpunk.dto.ColorPickerState
 import com.pixnpunk.dto.InputState
 import com.pixnpunk.dto.OutputState
 import com.pixnpunk.dto.SettingsEntity
-import com.pixnpunk.utils.ViewUtil.toTypeface
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -174,23 +171,18 @@ fun DialogsMainContent(
                         if (it == null || config.outputValue.isBlank()) {
                             component.onDismissed()
                         } else {
-                            if (it != OutputState.OUTPUT_LIST) {
+                            if (it == OutputState.OUTPUT_LIST) {
+                                DialogOutputListValueContent(
+                                    listItems = config.menuItems,
+                                    onConfirm = { i -> component.confirmMessage(it to i) },
+                                    onDismiss = component.onDismissed
+                                )
+                            } else {
                                 DialogOutputValueContent(
                                     message = config.outputValue,
                                     isImage = it == OutputState.OUTPUT_IMAGE,
                                     isMsg = it == OutputState.OUTPUT_SIMPLE_MSG,
                                     onConfirm = { component.confirmMessage(it to 0) },
-                                    onDismiss = component.onDismissed
-                                )
-                            } else {
-                                DialogOutputListValueContent(
-                                    listItems = config.menuItems,
-                                    backColor = Color(settings.backColor),
-                                    textColor = Color(settings.textColor),
-                                    linkColor = Color(settings.linkColor),
-                                    fontSize = settings.fontSize.sp,
-                                    fontFamily = FontFamily(settings.typeface.toTypeface()),
-                                    onConfirm = { i -> component.confirmMessage(it to i) },
                                     onDismiss = component.onDismissed
                                 )
                             }

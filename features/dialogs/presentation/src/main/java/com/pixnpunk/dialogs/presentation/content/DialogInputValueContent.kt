@@ -35,7 +35,11 @@ fun DialogInputValueContent(
     cleanError: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    var enterValue by remember { mutableStateOf(initialValue) }
+    var enterValue by remember {
+        mutableStateOf(
+            AnnotatedString.fromHtml(initialValue).text
+        )
+    }
 
     val isEnable = when (keyboardOptions.keyboardType) {
         KeyboardType.Number -> enterValue.toIntOrNull() != null
@@ -59,13 +63,17 @@ fun DialogInputValueContent(
                 if (isError) {
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = AnnotatedString.fromHtml(supportErrorValue),
+                        text = remember(supportValue) {
+                            AnnotatedString.fromHtml(supportErrorValue)
+                        },
                         color = MaterialTheme.colorScheme.error
                     )
                 } else if (supportValue.isNotBlank()) {
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = AnnotatedString.fromHtml(supportValue)
+                        text = remember(supportValue) {
+                            AnnotatedString.fromHtml(supportValue)
+                        }
                     )
                 }
             }
