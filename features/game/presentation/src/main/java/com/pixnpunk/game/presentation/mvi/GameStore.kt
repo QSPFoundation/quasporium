@@ -16,6 +16,10 @@ sealed interface GameStore : Store<GameStore.Intent, GameStore.State, GameStore.
         val isInputEnabled: Boolean = true,
         val isExecutorEnabled: Boolean = false,
         val isGameRunning: Boolean = false,
+
+        val countMainPaneUpdates: Map<Int, Boolean> = emptyMap(),
+        val countExtraPaneUpdates: Map<Int, Boolean> = emptyMap(),
+        val countObjectsPaneUpdates: Map<Int, Boolean> = emptyMap()
     )
 
     sealed interface Intent {
@@ -27,6 +31,9 @@ sealed interface GameStore : Store<GameStore.Intent, GameStore.State, GameStore.
         data class OnInputValue(val state: InputState, val inputString: String) : Intent
         data object CreateSaveIntent : Intent
         data object CreateLoadIntent : Intent
+        data object CleanCountMainPaneUpdates : Intent
+        data object CleanCountExtraPaneUpdates : Intent
+        data object CleanCountObjectsPaneUpdates : Intent
     }
 
     sealed interface Message {
@@ -35,6 +42,12 @@ sealed interface GameStore : Store<GameStore.Intent, GameStore.State, GameStore.
         data class UpdateVisExtraElement(val isExtraEnabled: Boolean) : Message
         data class UpdateVisInputElement(val isInputEnabled: Boolean) : Message
         data class UpdateExecutorStatus(val isExecutorEnabled: Boolean) : Message
+        data class UpdateCountMainPaneUpdates(val countMainPaneUpdates: Map<Int, Boolean>) : Message
+        data class UpdateCountExtraPaneUpdates(val countExtraPaneUpdates: Map<Int, Boolean>) :
+            Message
+
+        data class UpdateCountObjectsPaneUpdates(val countObjectsPaneUpdates: Map<Int, Boolean>) :
+            Message
     }
 
     sealed interface Label {

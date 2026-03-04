@@ -8,8 +8,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
@@ -18,7 +21,9 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.InputChip
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -29,7 +34,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import com.pixnpunk.dialogs.presentation.R
 import com.pixnpunk.dto.GameEntry
@@ -50,12 +58,12 @@ fun DialogEditGameContent(
 
     val isButtonEnabled = gameName.isNotBlank() && entry.gameDirPath.isNotEmpty()
 
-    val scrollState = rememberScrollState()
+    val focusManager = LocalFocusManager.current
 
     Column(
         modifier = Modifier
             .padding(horizontal = 24.dp, vertical = 16.dp)
-            .verticalScroll(scrollState),
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -70,8 +78,13 @@ fun DialogEditGameContent(
             value = gameName,
             onValueChange = { gameName = it },
             singleLine = true,
-            label = { Text(stringResource(R.string.title_field)) }
+            label = { Text(stringResource(R.string.title_field)) },
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.Sentences,
+                imeAction = ImeAction.Next
+            )
         )
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -81,16 +94,28 @@ fun DialogEditGameContent(
                 value = gameAuthor,
                 onValueChange = { gameAuthor = it },
                 singleLine = true,
-                label = { Text(stringResource(R.string.author_field)) }
+                label = { Text(stringResource(R.string.author_field)) },
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Words,
+                    imeAction = ImeAction.Next
+                )
             )
             OutlinedTextField(
                 modifier = Modifier.weight(0.5f),
                 value = gameVersion,
                 onValueChange = { gameVersion = it },
                 singleLine = true,
-                label = { Text(stringResource(R.string.version_field)) }
+                label = { Text(stringResource(R.string.version_field)) },
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = { focusManager.clearFocus() }
+                )
             )
         }
+
+        HorizontalDivider()
 
         FlowRow(
             modifier = Modifier.fillMaxWidth(),
@@ -99,11 +124,17 @@ fun DialogEditGameContent(
         ) {
             if (entry.gameDirPath.isNotEmpty()) {
                 entry.gameFilesPath.forEach { filePath ->
-                    FilterChip(
+                    InputChip(
                         selected = true,
                         onClick = { deselectFile(filePath) },
                         label = { Text(filePath.receiveFileRelPath()) },
-                        leadingIcon = { Icon(Icons.AutoMirrored.Filled.InsertDriveFile, contentDescription = null)},
+                        avatar = {
+                            Icon(
+                                Icons.AutoMirrored.Filled.InsertDriveFile,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        },
                         trailingIcon = { Icon(Icons.Default.Close, contentDescription = null) },
                     )
                 }
@@ -117,6 +148,7 @@ fun DialogEditGameContent(
         }
 
         Spacer(Modifier.height(8.dp))
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.End

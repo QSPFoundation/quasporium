@@ -10,6 +10,8 @@ import com.pixnpunk.dto.LibTypeDialog
 import com.pixnpunk.dto.LibTypePopup
 import com.pixnpunk.dto.LibTypeWindow
 import com.pixnpunk.game.presentation.mvi.GameStore.Label.ShowDialog
+import com.pixnpunk.game.presentation.mvi.GameStore.Label.ShowLoadFilePicker
+import com.pixnpunk.game.presentation.mvi.GameStore.Label.ShowSaveFilePicker
 import com.pixnpunk.natives.NativeViewModel
 import com.pixnpunk.settings.SettingsRepository
 import com.pixnpunk.utils.PathUtil.getImageUriFromPath
@@ -34,6 +36,27 @@ internal class GameExecutor(
 
             is GameStore.Intent.OnExecCode -> scope.launch { service.onCodeExec(intent.codeToExec) }
 
+            is GameStore.Intent.CleanCountMainPaneUpdates ->
+                dispatch(
+                    GameStore.Message.UpdateCountMainPaneUpdates(
+                        state().countMainPaneUpdates.mapValues { true }
+                    )
+                )
+
+            is GameStore.Intent.CleanCountExtraPaneUpdates ->
+                dispatch(
+                    GameStore.Message.UpdateCountExtraPaneUpdates(
+                        state().countExtraPaneUpdates.mapValues { true }
+                    )
+                )
+
+            is GameStore.Intent.CleanCountObjectsPaneUpdates ->
+                dispatch(
+                    GameStore.Message.UpdateCountObjectsPaneUpdates(
+                        state().countObjectsPaneUpdates.mapValues { true }
+                    )
+                )
+
             is GameStore.Intent.OnSelectMenuItem ->
                 service.putReturnValue(
                     LibReturnValue(dialogNumValue = intent.index)
@@ -41,7 +64,7 @@ internal class GameExecutor(
 
             is GameStore.Intent.CreateLoadIntent ->
                 publish(
-                    GameStore.Label.ShowLoadFilePicker(
+                    ShowLoadFilePicker(
                         Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
                             addCategory(Intent.CATEGORY_OPENABLE)
                             putExtra(Intent.ACTION_GET_CONTENT, true)
@@ -52,7 +75,7 @@ internal class GameExecutor(
 
             is GameStore.Intent.CreateSaveIntent ->
                 publish(
-                    GameStore.Label.ShowSaveFilePicker(
+                    ShowSaveFilePicker(
                         Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
                             addCategory(Intent.CATEGORY_OPENABLE)
                             putExtra(
@@ -109,6 +132,46 @@ internal class GameExecutor(
                     service.gameStateFlow.collect { state ->
                         scope.launch {
                             dispatch(GameStore.Message.UpdateGameStatus(state.gameRunning))
+
+                            if (state.mainDesc.isNotBlank()) {
+                                val currentState = state().countMainPaneUpdates
+                                dispatch(
+                                    GameStore.Message.UpdateCountMainPaneUpdates(
+                                        currentState.toMutableMap().apply {
+                                            if (!containsKey(state.mainDesc.hashCode())) {
+                                                if (size > 3) toMutableMap().clear()
+                                                put(state.mainDesc.hashCode(), false)
+                                            }
+                                        }
+                                    )
+                                )
+                            }
+                            if (state.varsDesc.isNotBlank()) {
+                                val currentState = state().countExtraPaneUpdates
+                                dispatch(
+                                    GameStore.Message.UpdateCountExtraPaneUpdates(
+                                        currentState.toMutableMap().apply {
+                                            if (!containsKey(state.varsDesc.hashCode())) {
+                                                if (size > 3) toMutableMap().clear()
+                                                put(state.varsDesc.hashCode(), false)
+                                            }
+                                        }
+                                    )
+                                )
+                            }
+                            if (state.objectsList.isNotEmpty()) {
+                                val currentState = state().countObjectsPaneUpdates
+                                dispatch(
+                                    GameStore.Message.UpdateCountObjectsPaneUpdates(
+                                        currentState.toMutableMap().apply {
+                                            if (!containsKey(state.objectsList.hashCode())) {
+                                                if (size > 3) toMutableMap().clear()
+                                                put(state.objectsList.hashCode(), false)
+                                            }
+                                        }
+                                    )
+                                )
+                            }
                         }
                     }
                 }

@@ -11,27 +11,38 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.InputChip
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import com.pixnpunk.dialogs.presentation.R
 import com.pixnpunk.dto.GameEntry
@@ -56,16 +67,18 @@ fun DialogAddGameContent(
     var gameAuthor by remember { mutableStateOf(entry.author) }
     var gameVersion by remember { mutableStateOf(entry.version) }
 
-    if (gameName.isBlank() && entry.gameDirPath.isNotBlank()) {
-        gameName = entry.gameDirPath.receiveBaseName()
+    LaunchedEffect(entry.gameDirPath) {
+        if (gameName.isEmpty() && entry.gameDirPath.isNotBlank()) {
+            gameName = entry.gameDirPath.receiveBaseName()
+        }
     }
 
-    val scrollState = rememberScrollState()
+    val focusManager = LocalFocusManager.current
 
     Column(
         modifier = Modifier
             .padding(horizontal = 24.dp, vertical = 16.dp)
-            .verticalScroll(scrollState),
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -80,8 +93,13 @@ fun DialogAddGameContent(
             value = gameName,
             onValueChange = { gameName = it },
             singleLine = true,
-            label = { Text(stringResource(R.string.title_field)) }
+            label = { Text(stringResource(R.string.title_field)) },
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.Sentences,
+                imeAction = ImeAction.Next
+            )
         )
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -91,54 +109,72 @@ fun DialogAddGameContent(
                 value = gameAuthor,
                 onValueChange = { gameAuthor = it },
                 singleLine = true,
-                label = { Text(stringResource(R.string.author_field)) }
+                label = { Text(stringResource(R.string.author_field)) },
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Words,
+                    imeAction = ImeAction.Next
+                )
             )
             OutlinedTextField(
                 modifier = Modifier.weight(0.5f),
                 value = gameVersion,
                 onValueChange = { gameVersion = it },
                 singleLine = true,
-                label = { Text(stringResource(R.string.version_field)) }
+                label = { Text(stringResource(R.string.version_field)) },
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = { focusManager.clearFocus() }
+                )
             )
         }
 
         if (isAddLocalGame) {
+            HorizontalDivider()
+
             FlowRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+                val isDirSelected = entry.gameDirPath.isNotEmpty()
+
                 FilterChip(
-                    selected = entry.gameDirPath.isNotEmpty(),
-                    onClick = if (entry.gameDirPath.isNotEmpty()) deselectDir else selectDir,
+                    selected = isDirSelected,
+                    onClick = if (isDirSelected) deselectDir else selectDir,
                     label = {
                         Text(
-                            if (entry.gameDirPath.isNotEmpty()) entry.gameDirPath.receiveDirRelPath()
+                            if (isDirSelected) entry.gameDirPath.receiveDirRelPath()
                             else stringResource(R.string.folder_selector_title)
                         )
                     },
                     leadingIcon = {
                         Icon(
-                            Icons.Default.FolderOpen,
+                            imageVector = if (isDirSelected) Icons.Default.Folder else Icons.Default.FolderOpen,
                             contentDescription = null,
                             modifier = Modifier.size(18.dp)
                         )
                     },
-                    trailingIcon = if (entry.gameDirPath.isNotEmpty()) {
-                        { Icon(Icons.Default.Close, contentDescription = "Clear") }
-                    } else null
+                    trailingIcon = if (isDirSelected) {
+                        { Icon(Icons.Default.Close, contentDescription = null) }
+                    } else null,
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer
+                    )
                 )
 
-                if (entry.gameDirPath.isNotEmpty()) {
+                if (isDirSelected) {
                     entry.gameFilesPath.forEach { filePath ->
-                        FilterChip(
+                        InputChip(
                             selected = true,
                             onClick = { deselectFile(filePath) },
                             label = { Text(filePath.receiveFileRelPath()) },
-                            leadingIcon = {
+                            avatar = {
                                 Icon(
                                     Icons.AutoMirrored.Filled.InsertDriveFile,
-                                    contentDescription = null
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp)
                                 )
                             },
                             trailingIcon = { Icon(Icons.Default.Close, contentDescription = null) },

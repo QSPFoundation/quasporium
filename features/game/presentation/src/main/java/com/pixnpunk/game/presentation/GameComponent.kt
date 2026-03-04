@@ -43,6 +43,8 @@ sealed interface GameComponent {
     fun stateSwitchObjectSlot()
     fun clearAllSlot()
 
+    fun cleanCountUpdates()
+
     fun doCreateSaveIntent()
     fun doCreateLoadIntent()
     fun restartGame()

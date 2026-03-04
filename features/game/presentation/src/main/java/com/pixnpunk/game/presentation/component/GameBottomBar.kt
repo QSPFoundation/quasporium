@@ -24,6 +24,9 @@ fun GameBottomBar(
     activateExtraSlot: () -> Unit,
     activateObjectSlot: () -> Unit,
     cleanAllSlot: () -> Unit,
+    mainBadge: @Composable (() -> Unit)? = null,
+    extraBadge: @Composable (() -> Unit)? = null,
+    objectBadge: @Composable (() -> Unit)? = null,
     content: @Composable (() -> Unit)
 ) {
     NavigationSuiteScaffold(
@@ -40,6 +43,7 @@ fun GameBottomBar(
                     }
                 },
                 label = { Text(stringResource(R.string.extra_tab_title)) },
+                badge = extraBadge,
                 onClick = activateExtraSlot,
                 selected = extraSlotIsNotEmpty,
             )
@@ -48,6 +52,7 @@ fun GameBottomBar(
                     Icon(Icons.Filled.Menu, contentDescription = null)
                 },
                 label = { Text(stringResource(R.string.main_tab_title)) },
+                badge = mainBadge,
                 onClick = cleanAllSlot,
                 selected = !extraSlotIsNotEmpty && !objectSlotIsNotEmpty
             )
@@ -61,6 +66,7 @@ fun GameBottomBar(
                     }
                 },
                 label = { Text(stringResource(R.string.object_tab_title)) },
+                badge = objectBadge,
                 onClick = activateObjectSlot,
                 selected = objectSlotIsNotEmpty
             )
