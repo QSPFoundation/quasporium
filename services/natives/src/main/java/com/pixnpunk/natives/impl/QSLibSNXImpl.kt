@@ -4,15 +4,9 @@ package com.pixnpunk.natives.impl
 
 import android.content.Context
 import android.net.Uri
-import android.os.Handler
-import android.os.Looper
 import android.os.SystemClock
 import androidx.core.net.toUri
-import androidx.documentfile.provider.DocumentFile
 import com.anggrayudi.storage.extension.toDocumentFile
-import com.anggrayudi.storage.file.DocumentFileCompat.fromUri
-import com.anggrayudi.storage.file.MimeType
-import com.anggrayudi.storage.file.child
 import com.anggrayudi.storage.file.getAbsolutePath
 import com.libsnxqs.jni.QSLibSNX
 import com.pixnpunk.dto.GameInterface
@@ -21,60 +15,49 @@ import com.pixnpunk.dto.LibGenItem
 import com.pixnpunk.dto.LibIProxy
 import com.pixnpunk.dto.LibReturnValue
 import com.pixnpunk.dto.LibTypeDialog
-import com.pixnpunk.dto.LibTypePopup
-import com.pixnpunk.dto.LibTypeWindow
 import com.pixnpunk.dto.LibUIConfig
-import com.pixnpunk.natives.NativeViewModel.Companion.RECEIVE_FLOW_TIMEOUT
-import com.pixnpunk.utils.FileUtil.isWritableDir
-import com.pixnpunk.utils.FileUtil.isWritableFile
+import com.pixnpunk.natives.dto.toLibRawItem
 import com.pixnpunk.utils.FileUtil.readFileContents
 import com.pixnpunk.utils.FileUtil.writeFileContents
-import com.pixnpunk.utils.HtmlUtil.getSrcDir
-import com.pixnpunk.utils.HtmlUtil.isContainsHtmlTags
-import com.pixnpunk.utils.HtmlUtil.removeImgTags
-import com.pixnpunk.utils.PathUtil.getFilename
-import com.pixnpunk.utils.PathUtil.normalizeContentPath
 import com.pixnpunk.utils.ThreadUtil.isSameThread
-import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.locks.ReentrantLock
-import kotlin.concurrent.Volatile
-import kotlin.concurrent.thread
-import kotlin.concurrent.withLock
 import kotlin.contracts.ExperimentalContracts
 
 class QSLibSNXImpl(
     private val context: Context,
     override var gameInterface: GameInterface,
-    override var gameState: LibGameState = LibGameState(),
-    override var returnValueFuture: CompletableFuture<LibReturnValue> = CompletableFuture()
 ) : QSLibSNX(), LibIProxy {
 
-    private val libLock = ReentrantLock()
-    private var libThread: Thread? = null
-    private val libQueue: ArrayBlockingQueue<Runnable> = ArrayBlockingQueue(1)
-    @Volatile private lateinit var libHandler: Handler
-    @Volatile private var libThreadInit = false
-    @Volatile private var gameStartTime: Long = 0L
-    @Volatile private var lastMsCountCallTime: Long = 0L
-    private val currGameDir: DocumentFile?
-        get() = fromUri(context, gameState.gameDirPath.toUri())
+    private val delegate = LibDelegate(
+        context = context,
+        gameInterface = gameInterface,
+        initLib = ::init,
+        terminateLib = ::terminate
+    )
 
-    private val mutableMenuItemList: MutableList<LibGenItem> = mutableListOf()
+    override var gameState: LibGameState
+        get() = delegate.gameState
+        set(value) { delegate.gameState = value }
 
-    private inline fun executeQspCommand(block: () -> Boolean): Boolean {
-        return if (block()) { true } else { showLastQspError(); false }
-    }
+    override var returnValueFuture: CompletableFuture<LibReturnValue>
+        get() = delegate.returnValueFuture
+        set(value) { delegate.returnValueFuture = value }
 
-    private fun runOnQspThread(runnable: Runnable) {
-        if (libThreadInit) {
-            libHandler.post {
-                libLock.withLock { runnable.run() }
-            }
-        } else {
-            libQueue.offer(runnable)
-        }
+    private inline fun executeQspCommand(block: () -> Boolean): Boolean =
+        if (block()) true else { showLastLibError(); false }
+
+    private fun showLastLibError() {
+        val errorData = getLastErrorData()
+        gameInterface.showLibDialog(
+            dialogType = LibTypeDialog.DIALOG_ERROR,
+            inputString = """
+                Location: ${errorData?.locName.orEmpty()}
+                Action: ${errorData?.index}
+                Line: ${errorData?.line}
+                Error number: ${errorData?.errorNum}
+                Description: ${errorData?.let { getErrorDesc(it.errorNum).orEmpty() }.orEmpty()}
+            """.trimIndent()
+        )
     }
 
     private fun loadGameWorld(): Boolean {
@@ -86,399 +69,143 @@ class QSLibSNXImpl(
         return executeQspCommand { loadGameWorldFromFD(gameFileDescriptor, gameFileFullPath) }
     }
 
-    private fun showLastQspError() {
-        val errorData = getLastErrorData()
-        gameInterface.showLibDialog(
-            dialogType = LibTypeDialog.DIALOG_ERROR,
-            inputString =
-                """
-                Location: ${errorData?.locName ?: ""}
-                Action: ${errorData?.index}
-                Line: ${errorData?.line}
-                Error number: ${errorData?.errorNum}
-                Description: ${
-                    if (errorData != null) { getErrorDesc(errorData.errorNum) ?: "" } else { "" }
-                }
-                """.trimIndent()
-        )
-    }
-
-    /**
-     * Loads the interface configuration - using HTML, font and colors - from the library.
-     *
-     * @return `true` if the configuration has changed, otherwise `false`
-     */
-    private fun loadUIConfiguration() {
-        val htmlResult = getVarValues("USEHTML", 0)
-        val fSizeResult = getVarValues("FSIZE", 0)
-        val bColorResult = getVarValues("BCOLOR", 0)
-        val fColorResult = getVarValues("FCOLOR", 0)
-        val lColorResult = getVarValues("LCOLOR", 0)
-
-        gameInterface.setUIConfig(
-            LibUIConfig(
-                useHtml = htmlResult?.intValue != 0,
-                fontSize = fSizeResult?.intValue ?: 0,
-                backColor = bColorResult?.intValue ?: 0,
-                fontColor = fColorResult?.intValue ?: 0,
-                linkColor = lColorResult?.intValue ?: 0
-            )
-        )
-    }
-
     private val actionsList: List<LibGenItem>
-        get() {
-            val gameDir = currGameDir
-            if (!gameDir.isWritableDir()) return emptyList()
-
-            val actions = mutableListOf<LibGenItem>()
-            for (element in getActions() ?: return emptyList()) {
-                if (element == null) continue
-                var tempImagePath = element.image ?: ""
-                var tempText = element.text ?: ""
-
-                if (tempImagePath.isNotBlank()) {
-                    val tempPath = tempImagePath.getFilename().normalizeContentPath()
-                    val fileFromPath = gameDir.child(context, tempPath)
-                    if (fileFromPath.isWritableFile()) {
-                        tempImagePath = fileFromPath.uri.toString()
-                    }
-                }
-
-                if (tempText.contains("<img")) {
-                    if (!tempText.isContainsHtmlTags()) {
-                        val fileFromPath = gameDir.child(context, tempText)
-                        if (fileFromPath.isWritableFile()) {
-                            tempImagePath = fileFromPath.uri.toString()
-                        }
-                    } else {
-                        val tempPath = tempText.getSrcDir()
-                        val fileFromPath = gameDir.child(context, tempPath)
-                        if (fileFromPath.isWritableFile()) {
-                            tempImagePath = fileFromPath.uri.toString()
-                        }
-                    }
-                    tempText = tempText.removeImgTags()
-                }
-
-                actions.add(LibGenItem(tempText, tempImagePath))
-            }
-
-            return actions
-        }
+        get() = delegate.buildGameItemsList(
+            getActions().orEmpty().filterNotNull().map { it.toLibRawItem() }
+        )
 
     private val objectsList: List<LibGenItem>
-        get() {
-            val gameDir = currGameDir
-            if (!gameDir.isWritableDir()) return emptyList()
+        get() = delegate.buildGameItemsList(
+            getObjects().orEmpty().filterNotNull().map { it.toLibRawItem() }
+        )
 
-            val objects = mutableListOf<LibGenItem>()
-            for (element in getObjects() ?: return emptyList()) {
-                if (element == null) continue
-                var tempImagePath = element.image ?: ""
-                var tempText = element.text ?: ""
+    override fun startLibThread() = delegate.startLibThread("libSNXQSP")
+    override fun stopLibThread() = delegate.stopLibThread()
 
-                if (tempImagePath.isNotBlank()) {
-                    val tempPath = tempImagePath.getFilename().normalizeContentPath()
-                    val fileFromPath = gameDir.child(context, tempPath)
-                    if (fileFromPath.isWritableFile()) {
-                        tempImagePath = fileFromPath.uri.toString()
-                    }
-                }
-
-                if (tempText.contains("<img")) {
-                    if (!tempText.isContainsHtmlTags()) {
-                        val fileFromPath = gameDir.child(context, tempText)
-                        if (fileFromPath.isWritableFile()) {
-                            tempImagePath = fileFromPath.uri.toString()
-                        }
-                    } else {
-                        val tempPath = tempText.getSrcDir()
-                        val fileFromPath = gameDir.child(context, tempPath)
-                        if (fileFromPath.isWritableFile()) {
-                            tempImagePath = fileFromPath.uri.toString()
-                        }
-                    }
-                    tempText = tempText.removeImgTags()
-                }
-
-                objects.add(LibGenItem(tempText, tempImagePath))
-            }
-
-            return objects
-        }
-
-    // region LibQpProxy
-    override fun startLibThread() {
-        libThread = thread(name = "libSNXQSP") {
-            init()
-            Looper.prepare()
-            libHandler = Handler(Looper.myLooper()!!)
-            libThreadInit = true
-            while (!libQueue.isEmpty()) {
-                libQueue.poll()?.run()
-            }
-            Looper.loop()
-            terminate()
-        }
-    }
-
-    override fun stopLibThread() {
-        if (libThreadInit) {
-            val handler = libHandler
-            handler.looper.quitSafely()
-            libThreadInit = false
-        }
-
-        libThread?.interrupt()
-    }
-
-    override fun runGame(
-        gameId: Long,
-        gameTitle: String,
-        gameDirPath: String,
-        gameFilePath: String
-    ) {
-        runOnQspThread {
-            doRunGame(
-                gameId, gameTitle, gameDirPath.toUri(), gameFilePath.toUri()
-            )
+    override fun runGame(gameId: Long, gameTitle: String, gameDirPath: String, gameFilePath: String) {
+        delegate.runOnLibThread {
+            doRunGame(gameId, gameTitle, gameDirPath.toUri(), gameFilePath.toUri())
         }
     }
 
     override fun restartGame() {
-        runOnQspThread {
-            doRunGame(
-                gameState.gameId,
-                gameState.gameTitle,
-                gameState.gameDirPath.toUri(),
-                gameState.gameFilePath.toUri()
-            )
+        delegate.runOnLibThread {
+            with(delegate.gameState) {
+                doRunGame(gameId, gameTitle, gameDirPath.toUri(), gameFilePath.toUri())
+            }
         }
     }
 
     private fun doRunGame(id: Long, title: String, dir: Uri, file: Uri) {
         gameInterface.doWithCounterDisabled {
-            gameInterface.closeAllFiles().onSuccess {
-                gameState = gameState.copy(
-                    gameRunning = true,
-                    gameId = id,
-                    gameTitle = title,
-                    gameDirPath = dir.toString(),
-                    gameFilePath = file.toString()
-                )
-                if (!loadGameWorld()) return@doWithCounterDisabled
-                gameStartTime = SystemClock.elapsedRealtime()
-                lastMsCountCallTime = 0
-                executeQspCommand { restartGame(true) }
-            }
+            gameInterface.closeAllFiles()
+            delegate.gameState = delegate.gameState.copy(
+                gameRunning = true,
+                gameId = id,
+                gameTitle = title,
+                gameDirPath = dir.toString(),
+                gameFilePath = file.toString()
+            )
+            if (!loadGameWorld()) return@doWithCounterDisabled
+            delegate.gameStartTime = SystemClock.elapsedRealtime()
+            delegate.lastMsCountCallTime = 0
+            executeQspCommand { restartGame(true) }
         }
     }
 
     override fun loadGameState(path: String) {
-        if (!isSameThread(libHandler.looper.thread)) {
-            runOnQspThread { loadGameState(path) }
+        if (!isSameThread(delegate.libHandler.looper.thread)) {
+            delegate.runOnLibThread { loadGameState(path) }
             return
         }
-
         val gameData = path.toUri().readFileContents() ?: return
         executeQspCommand { openSavedGameFromData(gameData, true) }
     }
 
     override fun saveGameState(path: String) {
-        if (!isSameThread(libHandler.looper.thread)) {
-            runOnQspThread { saveGameState(path) }
+        if (!isSameThread(delegate.libHandler.looper.thread)) {
+            delegate.runOnLibThread { saveGameState(path) }
             return
         }
-
-        path.toUri().writeFileContents(
-            dataToWrite = saveGameAsData(false) ?: return
-        )
+        path.toUri().writeFileContents(saveGameAsData(false) ?: return)
     }
 
     override fun onActionClicked(index: Int) {
-        runOnQspThread {
+        delegate.runOnLibThread {
             executeQspCommand { setSelActionIndex(index, false) }
             executeQspCommand { executeSelActionCode(true) }
         }
     }
 
     override fun onObjectSelected(index: Int) {
-        runOnQspThread { executeQspCommand { setSelObjectIndex(index, true) } }
+        delegate.runOnLibThread { executeQspCommand { setSelObjectIndex(index, true) } }
     }
 
     override fun onInputAreaClicked(code: String) {
-        runOnQspThread {
+        delegate.runOnLibThread {
             setInputStrText(code)
             executeQspCommand { execUserInput(true) }
         }
     }
 
     override fun execute(code: String) {
-        runOnQspThread { executeQspCommand { execString(code, true) } }
+        delegate.runOnLibThread { executeQspCommand { execString(code, true) } }
     }
 
     override fun executeCounter() {
-        if (libLock.isLocked) return
-        runOnQspThread { executeQspCommand { execCounter(true) } }
+        if (delegate.libLock.isLocked) return
+        delegate.runOnLibThread { executeQspCommand { execCounter(true) } }
     }
 
     override fun onRefreshInt() {
         loadUIConfiguration()
-
-        gameState = gameState.copy(
-            mainDesc = getMainDesc() ?: "",
-            varsDesc = getVarsDesc() ?: "",
+        delegate.gameState = delegate.gameState.copy(
+            mainDesc = getMainDesc().orEmpty(),
+            varsDesc = getVarsDesc().orEmpty(),
             actionsList = actionsList,
             objectsList = objectsList
         )
-
-        gameInterface.setGameState(gameState)
+        gameInterface.setGameState(delegate.gameState)
     }
 
-    override fun onShowImage(path: String?) {
-        if (!path.isNullOrBlank()) {
-            gameInterface.showLibDialog(LibTypeDialog.DIALOG_PICTURE, path)
-        }
-    }
-
-    override fun onSetTimer(msecs: Int) {
-        gameInterface.setCountInter(msecs.toLong())
-    }
-
-    override fun onShowMessage(message: String?) {
-        gameInterface.showLibDialog(
-            dialogType = LibTypeDialog.DIALOG_MESSAGE,
-            inputString = message ?: ""
+    private fun loadUIConfiguration() {
+        gameInterface.setUIConfig(
+            LibUIConfig(
+                useHtml = getVarValues("USEHTML", 0)?.intValue != 0,
+                fontSize = getVarValues("FSIZE", 0)?.intValue ?: 0,
+                backColor = getVarValues("BCOLOR", 0)?.intValue ?: 0,
+                fontColor = getVarValues("FCOLOR", 0)?.intValue ?: 0,
+                linkColor = getVarValues("LCOLOR", 0)?.intValue ?: 0
+            )
         )
     }
 
-    override fun onPlayFile(path: String?, volume: Int) {
-        if (!path.isNullOrBlank()) {
-            gameInterface.playFile(path, volume)
-        }
-    }
+    override fun onShowImage(path: String?) = delegate.handleShowImage(path)
+    override fun onSetTimer(msecs: Int) = delegate.handleSetTimer(msecs)
+    override fun onShowMessage(message: String?) = delegate.handleShowMessage(message)
+    override fun onPlayFile(path: String?, volume: Int) = delegate.handlePlayFile(path, volume)
+    override fun onIsPlayingFile(path: String?) = delegate.handleIsPlayingFile(path)
+    override fun onCloseFile(path: String?) = delegate.handleCloseFile(path)
+    override fun onSleep(msecs: Int) = delegate.handleSleep(msecs)
+    override fun onGetMsCount() = delegate.handleGetMsCount()
+    override fun onInputBox(prompt: String?) = delegate.handleInputBox(prompt)
 
-    override fun onIsPlayingFile(path: String?): Boolean {
-        return if (path.isNullOrBlank()) {
-            false
-        } else {
-            runCatching {
-                CompletableFuture
-                    .supplyAsync { gameInterface.isPlayingFile(path) }
-                    .get(RECEIVE_FLOW_TIMEOUT, TimeUnit.MILLISECONDS)
-            }.getOrDefault(false)
-        }
-    }
-
-    override fun onCloseFile(path: String?) {
-        if (path.isNullOrBlank()) {
-            gameInterface.closeAllFiles()
-        } else {
-            gameInterface.closeFile(path)
-        }
-    }
-
-    override fun onOpenGameStatus(filename: String?) {
-        if (filename.isNullOrBlank()) {
-            gameInterface.showLibPopup(LibTypePopup.POPUP_LOAD)
-        } else {
-            gameInterface.requestReceiveFile(filename)
-            runCatching {
-                CompletableFuture
-                    .supplyAsync { gameInterface.requestReceiveFile(filename) }
-                    .get(RECEIVE_FLOW_TIMEOUT, TimeUnit.MILLISECONDS)
-            }.onSuccess {
-                if (it.isNotEmpty()) {
-                    gameInterface.doWithCounterDisabled { loadGameState(it) }
-                } else {
-                    gameInterface.showLibDialog(
-                        LibTypeDialog.DIALOG_ERROR,
-                        "Save file not found"
-                    )
-                }
-            }
-        }
-    }
-
-    override fun onSaveGameStatus(filename: String?) {
-        if (filename.isNullOrBlank()) {
-            gameInterface.showLibPopup(LibTypePopup.POPUP_SAVE)
-        } else {
-            gameInterface.requestCreateFile(filename, MimeType.BINARY_FILE)
-            runCatching {
-                returnValueFuture = CompletableFuture()
-                gameInterface.requestCreateFile(filename, MimeType.BINARY_FILE)
-                returnValueFuture.get(RECEIVE_FLOW_TIMEOUT, TimeUnit.MILLISECONDS).filePath
-            }.onSuccess {
-                if (it.isNotEmpty()) {
-                    saveGameState(it)
-                } else {
-                    gameInterface.showLibDialog(
-                        LibTypeDialog.DIALOG_ERROR,
-                        "Error access dir"
-                    )
-                }
-            }
-        }
-    }
-
-    override fun onInputBox(prompt: String?): String {
-        return runCatching {
-            returnValueFuture = CompletableFuture()
-            gameInterface.showLibDialog(
-                dialogType = LibTypeDialog.DIALOG_INPUT_BOX,
-                inputString = prompt ?: ""
-            )
-            returnValueFuture.get().dialogTextValue
-        }.getOrDefault("")
-    }
-
-    override fun onGetMsCount(): Int {
-        val now = SystemClock.elapsedRealtime()
-        if (lastMsCountCallTime == 0L) {
-            lastMsCountCallTime = gameStartTime
-        }
-        val dt = (now - lastMsCountCallTime).toInt()
-        lastMsCountCallTime = now
-        return dt
+    override fun onShowMenuNew(): Int {
+        return delegate.handleShowMenu(
+            delegate.mutableMenuItemList.toList()
+        )
     }
 
     override fun onAddMenuItem(name: String?, imgPath: String?) {
-        mutableMenuItemList.add(LibGenItem(name ?: "", imgPath ?: ""))
+        delegate.mutableMenuItemList.add(LibGenItem(name.orEmpty(), imgPath.orEmpty()))
     }
 
-    override fun onShowMenuNew(): Int {
-        return runCatching {
-            returnValueFuture = CompletableFuture()
-            gameInterface.showLibDialog(
-                LibTypeDialog.DIALOG_MENU,
-                menuItems = mutableMenuItemList
-            )
-            returnValueFuture.get(RECEIVE_FLOW_TIMEOUT, TimeUnit.MILLISECONDS).dialogNumValue
-        }.getOrDefault(-1)
+    override fun onShowWindow(type: Int, isShow: Boolean) = delegate.handleShowWindow(type, isShow)
+    override fun onOpenGame(path: String?) {
+        if (!path.isNullOrBlank()) gameInterface.changeGameDir(path)
     }
-
-    override fun onSleep(msecs: Int) {
-        runCatching {
-            Thread.sleep(msecs.toLong())
-        }.onFailure {
-            gameInterface.showLibDialog(
-                LibTypeDialog.DIALOG_ERROR,
-                it.toString()
-            )
-        }
-    }
-
-    override fun onShowWindow(type: Int, isShow: Boolean) {
-        gameInterface.changeVisWindow(
-            when (type) {
-                0 -> LibTypeWindow.ACTS
-                1 -> LibTypeWindow.OBJS
-                2 -> LibTypeWindow.VARS
-                3 -> LibTypeWindow.INPUT
-                else -> LibTypeWindow.MAIN
-            }, isShow
-        )
-    }
+    override fun onOpenGameStatus(filename: String?) =
+        delegate.handleOpenGameStatus(filename, ::loadGameState)
+    override fun onSaveGameStatus(filename: String?) =
+        delegate.handleSaveGameStatus(filename, ::saveGameState)
 }

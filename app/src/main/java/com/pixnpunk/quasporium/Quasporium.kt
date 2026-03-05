@@ -3,7 +3,7 @@ package com.pixnpunk.quasporium
 import android.app.Application
 import com.pixnpunk.audio.audioModule
 import com.pixnpunk.database.di.databaseModule
-import com.pixnpunk.natives.di.supervisorModule
+import com.pixnpunk.natives.di.nativeModule
 import com.pixnpunk.network.networkModule
 import com.pixnpunk.notification.notificationModule
 import com.pixnpunk.settings.settingsModule
@@ -19,7 +19,7 @@ class Quasporium : Application() {
             androidContext(this@Quasporium)
             workManagerFactory()
             modules(databaseModule, networkModule, settingsModule)
-            modules(audioModule, supervisorModule, notificationModule)
+            modules(audioModule, nativeModule, notificationModule)
             modules(featureStockModules)
         }
     }

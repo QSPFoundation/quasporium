@@ -41,6 +41,7 @@ import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.atomic.AtomicLong
 import kotlin.contracts.ExperimentalContracts
 
 class NativeViewModel(
@@ -77,24 +78,23 @@ class NativeViewModel(
         const val RECEIVE_FLOW_TIMEOUT: Long = 10000
     }
 
-    @Volatile
-    private var counterInterval = 500L
+    private val counterInterval = AtomicLong(500L)
     private val counterNativeByteTask: suspend CoroutineScope.() -> Unit = {
         while (isActive) {
             libNativeByte.executeCounter()
-            delay(counterInterval)
+            delay(counterInterval.get())
         }
     }
     private val counterNativeSonnixTask: suspend CoroutineScope.() -> Unit = {
         while (isActive) {
             libNativeSonnix.executeCounter()
-            delay(counterInterval)
+            delay(counterInterval.get())
         }
     }
     private val counterNativeSeedhartaTask: suspend CoroutineScope.() -> Unit = {
         while (isActive) {
             libNativeSeedharta.executeCounter()
-            delay(counterInterval)
+            delay(counterInterval.get())
         }
     }
 
@@ -188,9 +188,14 @@ class NativeViewModel(
     }
 
     override fun onCleared() {
-        libNativeByte.stopLibThread()
-        libNativeSonnix.stopLibThread()
-        libNativeSeedharta.stopLibThread()
+        super.onCleared()
+
+        listOf(
+            libNativeByte,
+            libNativeSonnix,
+            libNativeSeedharta
+        ).forEach { it.stopLibThread() }
+
         updateSettingsJob?.cancel()
         counterNativeByteJob?.cancel()
         counterNativeSonnixJob?.cancel()
@@ -435,7 +440,7 @@ class NativeViewModel(
     }
 
     override fun setCountInter(delayMillis: Long) {
-        counterInterval = delayMillis
+        counterInterval.set(delayMillis)
     }
 
     override fun doWithCounterDisabled(runnable: Runnable) {

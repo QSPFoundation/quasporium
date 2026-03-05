@@ -100,6 +100,9 @@ internal class GameExecutor(
 
                     else -> service.onCodeExec(intent.inputString)
                 }
+
+            is GameStore.Intent.OnDismissDialog ->
+                service.putReturnValue(LibReturnValue())
         }
     }
 

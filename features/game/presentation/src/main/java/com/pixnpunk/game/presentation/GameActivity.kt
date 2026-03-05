@@ -101,7 +101,11 @@ class GameActivity : ComponentActivity() {
                 root.label.collect {
                     when (it) {
                         is GameStore.Label.ShowDialog ->
-                            root.doShowDialog(it.inputString, it.dialogState)
+                            root.doShowDialog(
+                                it.dialogState,
+                                it.inputString,
+                                it.inputListItems ?: emptyList()
+                            )
 
                         is GameStore.Label.ShowLoadFilePicker ->
                             requestOpenFile.launch(it.intent)

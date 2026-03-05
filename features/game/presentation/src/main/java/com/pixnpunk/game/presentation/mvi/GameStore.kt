@@ -32,6 +32,7 @@ sealed interface GameStore : Store<GameStore.Intent, GameStore.State, GameStore.
         data class OnExecCode(val codeToExec: String) : Intent
         data class OnSelectMenuItem(val index: Int) : Intent
         data class OnInputValue(val state: InputState, val inputString: String) : Intent
+        data object OnDismissDialog : Intent
         data object CreateSaveIntent : Intent
         data object CreateLoadIntent : Intent
         data object CleanMainSavedDesc : Intent
