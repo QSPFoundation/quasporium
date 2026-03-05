@@ -11,7 +11,7 @@ interface GameInterface {
     fun showLibDialog(
         dialogType: LibTypeDialog,
         inputString: String = "",
-        menuItems: List<LibGenItem> = listOf(),
+        menuItems: List<LibGenItem> = emptyList(),
     )
     fun showLibPopup(popupType: LibTypePopup)
 
