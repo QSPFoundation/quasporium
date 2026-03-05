@@ -5,8 +5,8 @@
     <string name="audio_path_switch_title">Audio path debugger</string>
     <string name="theme_list_title">Application theme</string>
     <string name="library_version_list_title">Application library version</string>
-    <string name="prefixes_list_title">Byte prefixes</string>
-    <string name="count_action_list_title">Count visible action</string>
+    <string name="prefixes_list_title">File size units</string>
+    <string name="count_action_list_title">Visible actions count</string>
     <string name="immersive_switch_title">Immersive mode</string>
     <string name="disable_images_switch_title">Disable game images</string>
     <string name="image_path_switch_title">Image path debugger</string>
