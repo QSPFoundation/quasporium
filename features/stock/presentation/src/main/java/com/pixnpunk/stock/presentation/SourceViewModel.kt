@@ -8,7 +8,7 @@ import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.stock.domain.usecase.FetchLocalSourceUseCase
 import com.pixnpunk.stock.domain.usecase.FetchRemoteGamesExcludingLocalUseCase
 import com.pixnpunk.stock.domain.usecase.SearchLocalGameEntryUseCase
-import com.pixnpunk.stock.domain.usecase.SearchRemoteGameEntryUseCase
+import com.pixnpunk.stock.domain.usecase.SearchRemoteGamesExcludingLocalUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,7 +21,7 @@ class SourceViewModel(
     private val fetchRemoteSourceUseCase: FetchRemoteGamesExcludingLocalUseCase,
     private val fetchLocalSourceUseCase: FetchLocalSourceUseCase,
     private val searchLocalGameEntryUseCase: SearchLocalGameEntryUseCase,
-    private val searchRemoteGameEntryUseCase: SearchRemoteGameEntryUseCase
+    private val searchRemoteGameEntryUseCase: SearchRemoteGamesExcludingLocalUseCase
 ) : ViewModel(), KoinComponent {
 
     private val _remoteSearchQuery = MutableStateFlow("")
