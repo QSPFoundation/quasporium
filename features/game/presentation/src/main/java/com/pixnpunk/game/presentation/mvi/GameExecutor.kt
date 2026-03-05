@@ -36,14 +36,27 @@ internal class GameExecutor(
 
             is GameStore.Intent.OnExecCode -> scope.launch { service.onCodeExec(intent.codeToExec) }
 
-            is GameStore.Intent.CleanCountMainPaneUpdates ->
-                dispatch(GameStore.Message.UpdateMainHashCode(0))
+            is GameStore.Intent.CleanMainSavedDesc ->
+                dispatch(
+                    GameStore.Message.UpdateIsMainDescUpdated(
+                        state().isMainDescUpdated.copy(second = false)
+                    )
+                )
 
-            is GameStore.Intent.CleanCountExtraPaneUpdates ->
-                dispatch(GameStore.Message.UpdateExtraHashCode(0))
+            is GameStore.Intent.CleanExtraSavedDesc ->
+                dispatch(
+                    GameStore.Message.UpdateIsExtraDescUpdated(
+                        state().isExtraDescUpdated.copy(second = false)
+                    )
+                )
 
-            is GameStore.Intent.CleanCountObjectsPaneUpdates ->
-                dispatch(GameStore.Message.UpdateObjectsHashCode(0))
+
+            is GameStore.Intent.CleanObjectsSavedList ->
+                dispatch(
+                    GameStore.Message.UpdateIsObjsListUpdated(
+                        state().isObjectsListUpdated.copy(second = false)
+                    )
+                )
 
             is GameStore.Intent.OnSelectMenuItem ->
                 service.putReturnValue(
@@ -99,48 +112,30 @@ internal class GameExecutor(
                             dispatch(GameStore.Message.UpdateGameStatus(state.gameRunning))
 
                             if (state.mainDesc.isNotBlank()) {
-                                if (state().mainHashCode == 0) {
+                                if (state().isMainDescUpdated.first != state.mainDesc.hashCode()) {
                                     dispatch(
-                                        GameStore.Message.UpdateMainHashCode(
-                                            state.mainDesc.hashCode()
-                                        )
-                                    )
-                                } else if (state().mainHashCode != state.mainDesc.hashCode()) {
-                                    dispatch(
-                                        GameStore.Message.UpdateMainHashCode(
-                                            state.mainDesc.hashCode()
+                                        GameStore.Message.UpdateIsMainDescUpdated(
+                                            state.mainDesc.hashCode() to true
                                         )
                                     )
                                 }
                             }
 
                             if (state.varsDesc.isNotBlank()) {
-                                if (state().extraHashCode == 0) {
+                                if (state().isExtraDescUpdated.first != state.varsDesc.hashCode()) {
                                     dispatch(
-                                        GameStore.Message.UpdateExtraHashCode(
-                                            state.varsDesc.hashCode()
-                                        )
-                                    )
-                                } else if (state().extraHashCode != state.varsDesc.hashCode()) {
-                                    dispatch(
-                                        GameStore.Message.UpdateExtraHashCode(
-                                            state.varsDesc.hashCode()
+                                        GameStore.Message.UpdateIsExtraDescUpdated(
+                                            state.varsDesc.hashCode() to true
                                         )
                                     )
                                 }
                             }
 
                             if (state.objectsList.isNotEmpty()) {
-                                if (state().objectsHashCode == 0) {
+                                if (state().isObjectsListUpdated.first != state.objectsList.hashCode()) {
                                     dispatch(
-                                        GameStore.Message.UpdateObjectsHashCode(
-                                            state.objectsList.hashCode()
-                                        )
-                                    )
-                                } else if (state().objectsHashCode != state.objectsList.hashCode()) {
-                                    dispatch(
-                                        GameStore.Message.UpdateObjectsHashCode(
-                                            state.objectsList.hashCode()
+                                        GameStore.Message.UpdateIsObjsListUpdated(
+                                            state.objectsList.hashCode() to true
                                         )
                                     )
                                 }

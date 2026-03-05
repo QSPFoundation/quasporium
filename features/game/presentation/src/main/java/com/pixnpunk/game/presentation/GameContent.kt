@@ -48,6 +48,10 @@ fun GameContent(
     val extraSlotIsNotEmpty = extraSlot.child != null
     val objectSlotIsNotEmpty = objectSlot.child != null
 
+    val isMainDescUpdated = state.isMainDescUpdated.second
+    val isExtraDescUpdated = state.isExtraDescUpdated.second
+    val isObjectsListUpdated = state.isObjectsListUpdated.second
+
     val directive = calculatePaneScaffoldDirective(currentWindowAdaptiveInfo())
 
     val currentRole = when {
@@ -62,8 +66,8 @@ fun GameContent(
 
     val currentIsMain = currentRole == SupportingPaneScaffoldRole.Main
 
-    LaunchedEffect(state.mainHashCode, currentIsMain) {
-        if (currentIsMain && state.mainHashCode > 0) {
+    LaunchedEffect(isMainDescUpdated, currentIsMain) {
+        if (currentIsMain && isMainDescUpdated) {
             component.cleanCountUpdates()
         }
     }
@@ -99,13 +103,13 @@ fun GameContent(
             activateObjectSlot = component::stateSwitchObjectSlot,
             cleanAllSlot = component::clearAllSlot,
             mainBadge = {
-                if ((!extraSlotIsNotEmpty || !objectSlotIsNotEmpty) && !currentIsMain && state.mainHashCode > 0) Badge()
+                if ((!extraSlotIsNotEmpty || !objectSlotIsNotEmpty) && !currentIsMain && isMainDescUpdated) Badge()
             },
             extraBadge = {
-                if (state.isExtraEnabled && !extraSlotIsNotEmpty && state.extraHashCode > 0) Badge()
+                if (state.isExtraEnabled && !extraSlotIsNotEmpty && isExtraDescUpdated) Badge()
             },
             objectBadge = {
-                if (state.isObjectsEnabled && !objectSlotIsNotEmpty && state.objectsHashCode > 0) Badge()
+                if (state.isObjectsEnabled && !objectSlotIsNotEmpty && isObjectsListUpdated) Badge()
             }
         ) {
             SupportingPaneScaffold(

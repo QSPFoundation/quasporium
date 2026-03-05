@@ -21,9 +21,9 @@ sealed interface GameStore : Store<GameStore.Intent, GameStore.State, GameStore.
         val gameDirUriBox: String = "",
         val gameFileUriBox: String = "",
 
-        val mainHashCode: Int = 0,
-        val extraHashCode: Int = 0,
-        val objectsHashCode: Int = 0
+        val isMainDescUpdated: Pair<Int, Boolean> = 0 to false,
+        val isExtraDescUpdated: Pair<Int, Boolean> = 0 to false,
+        val isObjectsListUpdated: Pair<Int, Boolean> = 0 to false
     )
 
     sealed interface Intent {
@@ -34,9 +34,9 @@ sealed interface GameStore : Store<GameStore.Intent, GameStore.State, GameStore.
         data class OnInputValue(val state: InputState, val inputString: String) : Intent
         data object CreateSaveIntent : Intent
         data object CreateLoadIntent : Intent
-        data object CleanCountMainPaneUpdates : Intent
-        data object CleanCountExtraPaneUpdates : Intent
-        data object CleanCountObjectsPaneUpdates : Intent
+        data object CleanMainSavedDesc : Intent
+        data object CleanExtraSavedDesc : Intent
+        data object CleanObjectsSavedList : Intent
     }
 
     sealed interface Message {
@@ -45,9 +45,9 @@ sealed interface GameStore : Store<GameStore.Intent, GameStore.State, GameStore.
         data class UpdateVisExtraElement(val isExtraEnabled: Boolean) : Message
         data class UpdateVisInputElement(val isInputEnabled: Boolean) : Message
         data class UpdateExecutorStatus(val isExecutorEnabled: Boolean) : Message
-        data class UpdateMainHashCode(val mainHashCode: Int) : Message
-        data class UpdateExtraHashCode(val extraHashCode: Int) : Message
-        data class UpdateObjectsHashCode(val objectsHashCode: Int) : Message
+        data class UpdateIsMainDescUpdated(val isMainDescUpdated: Pair<Int, Boolean>) : Message
+        data class UpdateIsExtraDescUpdated(val isExtraDescUpdated: Pair<Int, Boolean>) : Message
+        data class UpdateIsObjsListUpdated(val isObjsListUpdated: Pair<Int, Boolean>) : Message
     }
 
     sealed interface Label {
