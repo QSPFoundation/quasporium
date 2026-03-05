@@ -48,16 +48,6 @@ fun GameContent(
     val extraSlotIsNotEmpty = extraSlot.child != null
     val objectSlotIsNotEmpty = objectSlot.child != null
 
-    val unreadMainCount = remember(state.countMainPaneUpdates) {
-        state.countMainPaneUpdates.count { !it.value }
-    }
-    val unreadExtraCount = remember(state.countExtraPaneUpdates) {
-        state.countExtraPaneUpdates.count { !it.value }
-    }
-    val unreadObjectsCount = remember(state.countObjectsPaneUpdates) {
-        state.countObjectsPaneUpdates.count { !it.value }
-    }
-
     val directive = calculatePaneScaffoldDirective(currentWindowAdaptiveInfo())
 
     val currentRole = when {
@@ -72,8 +62,8 @@ fun GameContent(
 
     val currentIsMain = currentRole == SupportingPaneScaffoldRole.Main
 
-    LaunchedEffect(state.countMainPaneUpdates, currentIsMain) {
-        if (currentIsMain && unreadMainCount > 0) {
+    LaunchedEffect(state.mainHashCode, currentIsMain) {
+        if (currentIsMain && state.mainHashCode > 0) {
             component.cleanCountUpdates()
         }
     }
@@ -109,13 +99,13 @@ fun GameContent(
             activateObjectSlot = component::stateSwitchObjectSlot,
             cleanAllSlot = component::clearAllSlot,
             mainBadge = {
-                if ((!extraSlotIsNotEmpty || !objectSlotIsNotEmpty) && !currentIsMain && unreadMainCount > 0) Badge()
+                if ((!extraSlotIsNotEmpty || !objectSlotIsNotEmpty) && !currentIsMain && state.mainHashCode > 0) Badge()
             },
             extraBadge = {
-                if (state.isExtraEnabled && !extraSlotIsNotEmpty && unreadExtraCount > 0) Badge()
+                if (state.isExtraEnabled && !extraSlotIsNotEmpty && state.extraHashCode > 0) Badge()
             },
             objectBadge = {
-                if (state.isObjectsEnabled && !objectSlotIsNotEmpty && unreadObjectsCount > 0) Badge()
+                if (state.isObjectsEnabled && !objectSlotIsNotEmpty && state.objectsHashCode > 0) Badge()
             }
         ) {
             SupportingPaneScaffold(

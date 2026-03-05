@@ -21,9 +21,9 @@ sealed interface GameStore : Store<GameStore.Intent, GameStore.State, GameStore.
         val gameDirUriBox: String = "",
         val gameFileUriBox: String = "",
 
-        val countMainPaneUpdates: Map<Int, Boolean> = emptyMap(),
-        val countExtraPaneUpdates: Map<Int, Boolean> = emptyMap(),
-        val countObjectsPaneUpdates: Map<Int, Boolean> = emptyMap()
+        val mainHashCode: Int = 0,
+        val extraHashCode: Int = 0,
+        val objectsHashCode: Int = 0
     )
 
     sealed interface Intent {
@@ -45,12 +45,9 @@ sealed interface GameStore : Store<GameStore.Intent, GameStore.State, GameStore.
         data class UpdateVisExtraElement(val isExtraEnabled: Boolean) : Message
         data class UpdateVisInputElement(val isInputEnabled: Boolean) : Message
         data class UpdateExecutorStatus(val isExecutorEnabled: Boolean) : Message
-        data class UpdateCountMainPaneUpdates(val countMainPaneUpdates: Map<Int, Boolean>) : Message
-        data class UpdateCountExtraPaneUpdates(val countExtraPaneUpdates: Map<Int, Boolean>) :
-            Message
-
-        data class UpdateCountObjectsPaneUpdates(val countObjectsPaneUpdates: Map<Int, Boolean>) :
-            Message
+        data class UpdateMainHashCode(val mainHashCode: Int) : Message
+        data class UpdateExtraHashCode(val extraHashCode: Int) : Message
+        data class UpdateObjectsHashCode(val objectsHashCode: Int) : Message
     }
 
     sealed interface Label {

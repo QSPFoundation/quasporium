@@ -10,9 +10,9 @@ object GameReducer : Reducer<GameStore.State, GameStore.Message> {
             is GameStore.Message.UpdateVisInputElement -> copy(isInputEnabled = msg.isInputEnabled)
             is GameStore.Message.UpdateVisObjElement -> copy(isObjectsEnabled = msg.isObjectsEnabled)
             is GameStore.Message.UpdateExecutorStatus -> copy(isExecutorEnabled = msg.isExecutorEnabled)
-            is GameStore.Message.UpdateCountMainPaneUpdates -> copy(countMainPaneUpdates = msg.countMainPaneUpdates)
-            is GameStore.Message.UpdateCountExtraPaneUpdates -> copy(countExtraPaneUpdates = msg.countExtraPaneUpdates)
-            is GameStore.Message.UpdateCountObjectsPaneUpdates -> copy(countObjectsPaneUpdates = msg.countObjectsPaneUpdates)
+            is GameStore.Message.UpdateMainHashCode -> copy(mainHashCode = msg.mainHashCode)
+            is GameStore.Message.UpdateExtraHashCode -> copy(extraHashCode = msg.extraHashCode)
+            is GameStore.Message.UpdateObjectsHashCode -> copy(objectsHashCode = msg.objectsHashCode)
         }
     }
 }

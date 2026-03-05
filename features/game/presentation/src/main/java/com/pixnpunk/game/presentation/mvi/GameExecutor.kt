@@ -37,25 +37,13 @@ internal class GameExecutor(
             is GameStore.Intent.OnExecCode -> scope.launch { service.onCodeExec(intent.codeToExec) }
 
             is GameStore.Intent.CleanCountMainPaneUpdates ->
-                dispatch(
-                    GameStore.Message.UpdateCountMainPaneUpdates(
-                        state().countMainPaneUpdates.mapValues { true }
-                    )
-                )
+                dispatch(GameStore.Message.UpdateMainHashCode(0))
 
             is GameStore.Intent.CleanCountExtraPaneUpdates ->
-                dispatch(
-                    GameStore.Message.UpdateCountExtraPaneUpdates(
-                        state().countExtraPaneUpdates.mapValues { true }
-                    )
-                )
+                dispatch(GameStore.Message.UpdateExtraHashCode(0))
 
             is GameStore.Intent.CleanCountObjectsPaneUpdates ->
-                dispatch(
-                    GameStore.Message.UpdateCountObjectsPaneUpdates(
-                        state().countObjectsPaneUpdates.mapValues { true }
-                    )
-                )
+                dispatch(GameStore.Message.UpdateObjectsHashCode(0))
 
             is GameStore.Intent.OnSelectMenuItem ->
                 service.putReturnValue(
@@ -111,43 +99,51 @@ internal class GameExecutor(
                             dispatch(GameStore.Message.UpdateGameStatus(state.gameRunning))
 
                             if (state.mainDesc.isNotBlank()) {
-                                val currentState = state().countMainPaneUpdates
-                                dispatch(
-                                    GameStore.Message.UpdateCountMainPaneUpdates(
-                                        currentState.toMutableMap().apply {
-                                            if (!containsKey(state.mainDesc.hashCode())) {
-                                                if (size > 3) toMutableMap().clear()
-                                                put(state.mainDesc.hashCode(), false)
-                                            }
-                                        }
+                                if (state().mainHashCode == 0) {
+                                    dispatch(
+                                        GameStore.Message.UpdateMainHashCode(
+                                            state.mainDesc.hashCode()
+                                        )
                                     )
-                                )
+                                } else if (state().mainHashCode != state.mainDesc.hashCode()) {
+                                    dispatch(
+                                        GameStore.Message.UpdateMainHashCode(
+                                            state.mainDesc.hashCode()
+                                        )
+                                    )
+                                }
                             }
+
                             if (state.varsDesc.isNotBlank()) {
-                                val currentState = state().countExtraPaneUpdates
-                                dispatch(
-                                    GameStore.Message.UpdateCountExtraPaneUpdates(
-                                        currentState.toMutableMap().apply {
-                                            if (!containsKey(state.varsDesc.hashCode())) {
-                                                if (size > 3) toMutableMap().clear()
-                                                put(state.varsDesc.hashCode(), false)
-                                            }
-                                        }
+                                if (state().extraHashCode == 0) {
+                                    dispatch(
+                                        GameStore.Message.UpdateExtraHashCode(
+                                            state.varsDesc.hashCode()
+                                        )
                                     )
-                                )
+                                } else if (state().extraHashCode != state.varsDesc.hashCode()) {
+                                    dispatch(
+                                        GameStore.Message.UpdateExtraHashCode(
+                                            state.varsDesc.hashCode()
+                                        )
+                                    )
+                                }
                             }
+
                             if (state.objectsList.isNotEmpty()) {
-                                val currentState = state().countObjectsPaneUpdates
-                                dispatch(
-                                    GameStore.Message.UpdateCountObjectsPaneUpdates(
-                                        currentState.toMutableMap().apply {
-                                            if (!containsKey(state.objectsList.hashCode())) {
-                                                if (size > 3) toMutableMap().clear()
-                                                put(state.objectsList.hashCode(), false)
-                                            }
-                                        }
+                                if (state().objectsHashCode == 0) {
+                                    dispatch(
+                                        GameStore.Message.UpdateObjectsHashCode(
+                                            state.objectsList.hashCode()
+                                        )
                                     )
-                                )
+                                } else if (state().objectsHashCode != state.objectsList.hashCode()) {
+                                    dispatch(
+                                        GameStore.Message.UpdateObjectsHashCode(
+                                            state.objectsList.hashCode()
+                                        )
+                                    )
+                                }
                             }
                         }
                     }
