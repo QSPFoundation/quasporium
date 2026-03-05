@@ -36,24 +36,25 @@ internal class GameExecutor(
 
             is GameStore.Intent.OnExecCode -> scope.launch { service.onCodeExec(intent.codeToExec) }
 
-            is GameStore.Intent.CleanCountMainPaneUpdates ->
+            is GameStore.Intent.CleanMainSavedDesc ->
                 dispatch(
-                    GameStore.Message.UpdateCountMainPaneUpdates(
-                        state().countMainPaneUpdates.mapValues { true }
+                    GameStore.Message.UpdateIsMainDescUpdated(
+                        state().isMainDescUpdated.copy(second = false)
                     )
                 )
 
-            is GameStore.Intent.CleanCountExtraPaneUpdates ->
+            is GameStore.Intent.CleanExtraSavedDesc ->
                 dispatch(
-                    GameStore.Message.UpdateCountExtraPaneUpdates(
-                        state().countExtraPaneUpdates.mapValues { true }
+                    GameStore.Message.UpdateIsExtraDescUpdated(
+                        state().isExtraDescUpdated.copy(second = false)
                     )
                 )
 
-            is GameStore.Intent.CleanCountObjectsPaneUpdates ->
+
+            is GameStore.Intent.CleanObjectsSavedList ->
                 dispatch(
-                    GameStore.Message.UpdateCountObjectsPaneUpdates(
-                        state().countObjectsPaneUpdates.mapValues { true }
+                    GameStore.Message.UpdateIsObjsListUpdated(
+                        state().isObjectsListUpdated.copy(second = false)
                     )
                 )
 
@@ -99,14 +100,64 @@ internal class GameExecutor(
 
                     else -> service.onCodeExec(intent.inputString)
                 }
+        }
+    }
 
-            is GameStore.Intent.StartGameDialogFlow ->
+    override fun executeAction(action: GameStore.Action) {
+        when (action) {
+            is GameStore.Action.StartGameStateFlow ->
+                scope.launch(Dispatchers.IO) {
+                    service.gameStateFlow.collect { state ->
+                        scope.launch {
+                            dispatch(GameStore.Message.UpdateGameStatus(state.gameRunning))
+
+                            if (state.mainDesc.isNotBlank()) {
+                                if (state().isMainDescUpdated.first != state.mainDesc.hashCode()) {
+                                    dispatch(
+                                        GameStore.Message.UpdateIsMainDescUpdated(
+                                            state.mainDesc.hashCode() to true
+                                        )
+                                    )
+                                }
+                            }
+
+                            if (state.varsDesc.isNotBlank()) {
+                                if (state().isExtraDescUpdated.first != state.varsDesc.hashCode()) {
+                                    dispatch(
+                                        GameStore.Message.UpdateIsExtraDescUpdated(
+                                            state.varsDesc.hashCode() to true
+                                        )
+                                    )
+                                }
+                            }
+
+                            if (state.objectsList.isNotEmpty()) {
+                                if (state().isObjectsListUpdated.first != state.objectsList.hashCode()) {
+                                    dispatch(
+                                        GameStore.Message.UpdateIsObjsListUpdated(
+                                            state.objectsList.hashCode() to true
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+            is GameStore.Action.StartGameSettingsFlow ->
+                scope.launch {
+                    settingsRepo.settingsFlow
+                        .filter { it.isUseExecString }
+                        .collect { dispatch(GameStore.Message.UpdateExecutorStatus(it.isUseExecString)) }
+                }
+
+            is GameStore.Action.StartGameDialogFlow ->
                 scope.launch {
                     service.gameDialogFlow.collect { items ->
                         val payload = if (items.first == LibTypeDialog.DIALOG_PICTURE) {
                             items.second
                                 .normalizeContentPath()
-                                .getImageUriFromPath(appContext, intent.rootDir)
+                                .getImageUriFromPath(appContext, state().gameDirUriBox)
                                 .toString()
                         } else {
                             items.second
@@ -121,66 +172,6 @@ internal class GameExecutor(
                             )
                         }
                     }
-                }
-        }
-    }
-
-    override fun executeAction(action: GameStore.Action) {
-        when (action) {
-            is GameStore.Action.StartGameStateFlow ->
-                scope.launch(Dispatchers.IO) {
-                    service.gameStateFlow.collect { state ->
-                        scope.launch {
-                            dispatch(GameStore.Message.UpdateGameStatus(state.gameRunning))
-
-                            if (state.mainDesc.isNotBlank()) {
-                                val currentState = state().countMainPaneUpdates
-                                dispatch(
-                                    GameStore.Message.UpdateCountMainPaneUpdates(
-                                        currentState.toMutableMap().apply {
-                                            if (!containsKey(state.mainDesc.hashCode())) {
-                                                if (size > 3) toMutableMap().clear()
-                                                put(state.mainDesc.hashCode(), false)
-                                            }
-                                        }
-                                    )
-                                )
-                            }
-                            if (state.varsDesc.isNotBlank()) {
-                                val currentState = state().countExtraPaneUpdates
-                                dispatch(
-                                    GameStore.Message.UpdateCountExtraPaneUpdates(
-                                        currentState.toMutableMap().apply {
-                                            if (!containsKey(state.varsDesc.hashCode())) {
-                                                if (size > 3) toMutableMap().clear()
-                                                put(state.varsDesc.hashCode(), false)
-                                            }
-                                        }
-                                    )
-                                )
-                            }
-                            if (state.objectsList.isNotEmpty()) {
-                                val currentState = state().countObjectsPaneUpdates
-                                dispatch(
-                                    GameStore.Message.UpdateCountObjectsPaneUpdates(
-                                        currentState.toMutableMap().apply {
-                                            if (!containsKey(state.objectsList.hashCode())) {
-                                                if (size > 3) toMutableMap().clear()
-                                                put(state.objectsList.hashCode(), false)
-                                            }
-                                        }
-                                    )
-                                )
-                            }
-                        }
-                    }
-                }
-
-            is GameStore.Action.StartGameSettingsFlow ->
-                scope.launch {
-                    settingsRepo.settingsFlow
-                        .filter { it.isUseExecString }
-                        .collect { dispatch(GameStore.Message.UpdateExecutorStatus(it.isUseExecString)) }
                 }
 
             is GameStore.Action.StartGameElementVisFlow ->
@@ -218,7 +209,7 @@ internal class GameExecutor(
                             when (type) {
                                 LibTypePopup.POPUP_SAVE -> {
                                     publish(
-                                        GameStore.Label.ShowSaveFilePicker(
+                                        ShowSaveFilePicker(
                                             Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
                                                 addCategory(Intent.CATEGORY_OPENABLE)
                                                 putExtra(
@@ -233,7 +224,7 @@ internal class GameExecutor(
 
                                 LibTypePopup.POPUP_LOAD -> {
                                     publish(
-                                        GameStore.Label.ShowLoadFilePicker(
+                                        ShowLoadFilePicker(
                                             Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
                                                 addCategory(Intent.CATEGORY_OPENABLE)
                                                 putExtra(Intent.ACTION_GET_CONTENT, true)

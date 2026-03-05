@@ -1,7 +1,6 @@
 package com.pixnpunk.game.presentation.mvi
 
 import android.net.Uri
-import androidx.documentfile.provider.DocumentFile
 import com.arkivanov.mvikotlin.core.store.Store
 import com.pixnpunk.dto.InputState
 import com.pixnpunk.dto.LibGenItem
@@ -17,13 +16,17 @@ sealed interface GameStore : Store<GameStore.Intent, GameStore.State, GameStore.
         val isExecutorEnabled: Boolean = false,
         val isGameRunning: Boolean = false,
 
-        val countMainPaneUpdates: Map<Int, Boolean> = emptyMap(),
-        val countExtraPaneUpdates: Map<Int, Boolean> = emptyMap(),
-        val countObjectsPaneUpdates: Map<Int, Boolean> = emptyMap()
+        val gameId: Long = 1L,
+        val gameTitle: String = "Title",
+        val gameDirUriBox: String = "",
+        val gameFileUriBox: String = "",
+
+        val isMainDescUpdated: Pair<Int, Boolean> = 0 to false,
+        val isExtraDescUpdated: Pair<Int, Boolean> = 0 to false,
+        val isObjectsListUpdated: Pair<Int, Boolean> = 0 to false
     )
 
     sealed interface Intent {
-        data class StartGameDialogFlow(val rootDir: DocumentFile?) : Intent
         data class OnSaveFile(val fileUri: Uri) : Intent
         data class OnLoadFile(val fileUri: Uri) : Intent
         data class OnExecCode(val codeToExec: String) : Intent
@@ -31,9 +34,9 @@ sealed interface GameStore : Store<GameStore.Intent, GameStore.State, GameStore.
         data class OnInputValue(val state: InputState, val inputString: String) : Intent
         data object CreateSaveIntent : Intent
         data object CreateLoadIntent : Intent
-        data object CleanCountMainPaneUpdates : Intent
-        data object CleanCountExtraPaneUpdates : Intent
-        data object CleanCountObjectsPaneUpdates : Intent
+        data object CleanMainSavedDesc : Intent
+        data object CleanExtraSavedDesc : Intent
+        data object CleanObjectsSavedList : Intent
     }
 
     sealed interface Message {
@@ -42,12 +45,9 @@ sealed interface GameStore : Store<GameStore.Intent, GameStore.State, GameStore.
         data class UpdateVisExtraElement(val isExtraEnabled: Boolean) : Message
         data class UpdateVisInputElement(val isInputEnabled: Boolean) : Message
         data class UpdateExecutorStatus(val isExecutorEnabled: Boolean) : Message
-        data class UpdateCountMainPaneUpdates(val countMainPaneUpdates: Map<Int, Boolean>) : Message
-        data class UpdateCountExtraPaneUpdates(val countExtraPaneUpdates: Map<Int, Boolean>) :
-            Message
-
-        data class UpdateCountObjectsPaneUpdates(val countObjectsPaneUpdates: Map<Int, Boolean>) :
-            Message
+        data class UpdateIsMainDescUpdated(val isMainDescUpdated: Pair<Int, Boolean>) : Message
+        data class UpdateIsExtraDescUpdated(val isExtraDescUpdated: Pair<Int, Boolean>) : Message
+        data class UpdateIsObjsListUpdated(val isObjsListUpdated: Pair<Int, Boolean>) : Message
     }
 
     sealed interface Label {
@@ -71,5 +71,6 @@ sealed interface GameStore : Store<GameStore.Intent, GameStore.State, GameStore.
         data object StartGamePopupFlow : Action
         data object StartGameElementVisFlow : Action
         data object StartGameSettingsFlow : Action
+        data object StartGameDialogFlow : Action
     }
 }
