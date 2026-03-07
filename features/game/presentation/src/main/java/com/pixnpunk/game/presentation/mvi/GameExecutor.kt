@@ -52,7 +52,14 @@ internal class GameExecutor(
                     )
                 }
 
-            is GameStore.Intent.OnCorruptFile -> service.putReturnValue(null)
+            is GameStore.Intent.OnCorruptFile -> {
+                dispatch(GameStore.Message.UpdateIsUserChooseSave(false))
+                if (intent.isCancelUser) {
+                    service.putReturnValue(null)
+                } else {
+                    service.putReturnValue(LibReturnValue())
+                }
+            }
 
             is GameStore.Intent.OnExecCode -> scope.launch { service.onCodeExec(intent.codeToExec) }
 
