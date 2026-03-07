@@ -74,10 +74,6 @@ class NativeViewModel(
     private val _gameElementVis: MutableSharedFlow<Pair<LibTypeWindow, Boolean>> = MutableSharedFlow()
     val gameElementVis = _gameElementVis.asSharedFlow()
 
-    companion object {
-        const val RECEIVE_FLOW_TIMEOUT: Long = 10000
-    }
-
     private val counterInterval = AtomicLong(500L)
     private val counterNativeByteTask: suspend CoroutineScope.() -> Unit = {
         while (isActive) {

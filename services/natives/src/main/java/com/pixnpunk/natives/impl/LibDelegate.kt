@@ -16,7 +16,6 @@ import com.pixnpunk.dto.LibGenItem
 import com.pixnpunk.dto.LibReturnValue
 import com.pixnpunk.dto.LibTypeDialog
 import com.pixnpunk.dto.LibTypeWindow
-import com.pixnpunk.natives.NativeViewModel.Companion.RECEIVE_FLOW_TIMEOUT
 import com.pixnpunk.natives.dto.LibRawItem
 import com.pixnpunk.utils.FileUtil.isWritableDir
 import com.pixnpunk.utils.FileUtil.isWritableFile
@@ -27,7 +26,6 @@ import com.pixnpunk.utils.PathUtil.getFilename
 import com.pixnpunk.utils.PathUtil.normalizeContentPath
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.thread
 import kotlin.concurrent.withLock
@@ -170,9 +168,7 @@ class LibDelegate(
     fun handleIsPlayingFile(path: String?): Boolean {
         if (path.isNullOrBlank()) return false
         return runCatching {
-            CompletableFuture
-                .supplyAsync { gameInterface.isPlayingFile(path) }
-                .get(RECEIVE_FLOW_TIMEOUT, TimeUnit.MILLISECONDS)
+            gameInterface.isPlayingFile(path)
         }.getOrDefault(false)
     }
 
