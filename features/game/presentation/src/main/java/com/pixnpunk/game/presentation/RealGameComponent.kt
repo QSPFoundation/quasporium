@@ -146,13 +146,13 @@ class RealGameComponent(
         store.accept(GameStore.Intent.OnLoadFile(fileUri))
     }
 
-    override fun doCreateSaveIntent() {
-        store.accept(GameStore.Intent.CreateSaveIntent)
+    fun onFileCorruptResult() {
+        store.accept(GameStore.Intent.OnCorruptFile)
     }
 
-    override fun doCreateLoadIntent() {
-        store.accept(GameStore.Intent.CreateLoadIntent)
-    }
+    override fun doSaveFile() = store.accept(GameStore.Intent.StartSaveFile)
+
+    override fun doLoadFile() = store.accept(GameStore.Intent.StartLoadFile)
 
     private fun onConfirmMessage(msg: Pair<OutputState, Int>) {
         when (msg.first) {

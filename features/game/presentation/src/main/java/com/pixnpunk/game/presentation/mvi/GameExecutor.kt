@@ -1,8 +1,6 @@
 package com.pixnpunk.game.presentation.mvi
 
 import android.content.Context
-import android.content.Intent
-import com.anggrayudi.storage.file.MimeType.BINARY_FILE
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
 import com.pixnpunk.dto.InputState
 import com.pixnpunk.dto.LibReturnValue
@@ -30,9 +28,28 @@ internal class GameExecutor(
 
     override fun executeIntent(intent: GameStore.Intent) {
         when (intent) {
-            is GameStore.Intent.OnLoadFile -> scope.launch { service.onLoadFile(intent.fileUri) }
+            is GameStore.Intent.OnLoadFile ->
+                service.putReturnValue(
+                    LibReturnValue(
+                        filePath = intent.fileUri.toString()
+                    )
+                )
 
-            is GameStore.Intent.OnSaveFile -> scope.launch { service.onSaveFile(intent.fileUri) }
+            is GameStore.Intent.OnSaveFile ->
+                if (state().isUserChooseSave) {
+                    dispatch(GameStore.Message.UpdateIsUserChooseSave(true))
+                    service.onSaveFile(intent.fileUri)
+                } else {
+                    service.putReturnValue(
+                        LibReturnValue(
+                            filePath = intent.fileUri.toString()
+                        )
+                    )
+                }
+
+            is GameStore.Intent.OnCorruptFile -> scope.launch {
+                service.putReturnValue(LibReturnValue())
+            }
 
             is GameStore.Intent.OnExecCode -> scope.launch { service.onCodeExec(intent.codeToExec) }
 
@@ -63,30 +80,22 @@ internal class GameExecutor(
                     LibReturnValue(dialogNumValue = intent.index)
                 )
 
-            is GameStore.Intent.CreateLoadIntent ->
-                publish(
-                    ShowLoadFilePicker(
-                        Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-                            addCategory(Intent.CATEGORY_OPENABLE)
-                            putExtra(Intent.ACTION_GET_CONTENT, true)
-                            setType(BINARY_FILE)
-                        }
-                    )
-                )
+            is GameStore.Intent.StartLoadFile -> {
+                if (!state().isGameDirInternal) {
+                    publish(ShowLoadFilePicker)
+                } else {
 
-            is GameStore.Intent.CreateSaveIntent ->
-                publish(
-                    ShowSaveFilePicker(
-                        Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
-                            addCategory(Intent.CATEGORY_OPENABLE)
-                            putExtra(
-                                Intent.EXTRA_TITLE,
-                                "${(UInt.MIN_VALUE..UInt.MAX_VALUE).random()}.sav"
-                            )
-                            setType(BINARY_FILE)
-                        }
-                    )
-                )
+                }
+            }
+
+            is GameStore.Intent.StartSaveFile -> {
+                if (!state().isGameDirInternal) {
+                    dispatch(GameStore.Message.UpdateIsUserChooseSave(true))
+                    publish(ShowSaveFilePicker)
+                } else {
+
+                }
+            }
 
             is GameStore.Intent.OnInputValue ->
                 when (intent.state) {
@@ -210,31 +219,9 @@ internal class GameExecutor(
                     service.gamePopupFlow.collect { type ->
                         scope.launch {
                             when (type) {
-                                LibTypePopup.POPUP_SAVE -> {
-                                    publish(
-                                        ShowSaveFilePicker(
-                                            Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
-                                                addCategory(Intent.CATEGORY_OPENABLE)
-                                                putExtra(
-                                                    Intent.EXTRA_TITLE,
-                                                    "${(UInt.MIN_VALUE..UInt.MAX_VALUE).random()}.sav"
-                                                )
-                                                setType(BINARY_FILE)
-                                            }
-                                        ))
+                                LibTypePopup.POPUP_SAVE -> publish(ShowSaveFilePicker)
 
-                                }
-
-                                LibTypePopup.POPUP_LOAD -> {
-                                    publish(
-                                        ShowLoadFilePicker(
-                                            Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-                                                addCategory(Intent.CATEGORY_OPENABLE)
-                                                putExtra(Intent.ACTION_GET_CONTENT, true)
-                                                setType(BINARY_FILE)
-                                            }
-                                        ))
-                                }
+                                LibTypePopup.POPUP_LOAD -> publish(ShowLoadFilePicker)
                             }
                         }
                     }

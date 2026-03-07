@@ -13,6 +13,8 @@ object GameReducer : Reducer<GameStore.State, GameStore.Message> {
             is GameStore.Message.UpdateIsExtraDescUpdated -> copy(isExtraDescUpdated = msg.isExtraDescUpdated)
             is GameStore.Message.UpdateIsMainDescUpdated -> copy(isMainDescUpdated = msg.isMainDescUpdated)
             is GameStore.Message.UpdateIsObjsListUpdated -> copy(isObjectsListUpdated = msg.isObjsListUpdated)
+            is GameStore.Message.UpdateIsUserChooseSave -> copy(isUserChooseSave = msg.isUserChooseSave)
+            is GameStore.Message.UpdateIsGameDirInternal -> copy(isGameDirInternal = msg.isGameDirInternal)
         }
     }
 }

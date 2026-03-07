@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anggrayudi.storage.extension.toDocumentFile
 import com.anggrayudi.storage.file.CreateMode
-import com.anggrayudi.storage.file.DocumentFileCompat.doesExist
+import com.anggrayudi.storage.file.MimeType.BINARY_FILE
 import com.anggrayudi.storage.file.makeFile
 import com.pixnpunk.audio.AudioPlayerViewModel
 import com.pixnpunk.dto.GameInterface
@@ -318,36 +318,68 @@ class NativeViewModel(
     }
 
     @OptIn(ExperimentalContracts::class)
-    override fun requestReceiveFile(filePath: String): String {
+    override fun requestReceiveFile(filePath: String) {
         val gameDir = gameDirUri.toDocumentFile(get())
-        if (gameDir.isWritableDir()) {
-            val docFile = filePath.pathToFile(get(), gameDir)
-            if (docFile.isWritableFile()) {
-                return docFile.uri.toString()
-            }
+        if (!gameDir.isWritableDir()) {
+            putReturnValue(LibReturnValue())
+            return
         }
-        return Uri.EMPTY.toString()
+
+        val docFile = filePath.pathToFile(get(), gameDir)
+        if (!docFile.isWritableFile()) {
+            putReturnValue(LibReturnValue())
+        } else {
+            putReturnValue(LibReturnValue(filePath = docFile.uri.toString()))
+        }
+    }
+
+    @OptIn(ExperimentalContracts::class)
+    override fun requestReceiveFile() {
+        val gameDir = gameDirUri.toDocumentFile(get())
+        if (!gameDir.isWritableDir()) {
+            putReturnValue(LibReturnValue())
+            return
+        }
+
+        showLibPopup(LibTypePopup.POPUP_LOAD)
     }
 
     @OptIn(ExperimentalContracts::class)
     @WorkerThread
-    override fun requestCreateFile(path: String, mimeType: String): String {
+    override fun requestCreateFile(path: String) {
         val gameDir = gameDirUri.toDocumentFile(get())
-        if (!gameDir.isWritableDir()) return Uri.EMPTY.toString()
+        if (!gameDir.isWritableDir()) {
+            putReturnValue(LibReturnValue())
+            return
+        }
 
-        return CompletableFuture
+        CompletableFuture
             .supplyAsync {
-                val relPath = path.absToRelPath(get(), gameDir)
-                gameDir.makeFile(get(), relPath, mimeType, CreateMode.REUSE)
+                gameDir.makeFile(
+                    get(),
+                    path.absToRelPath(get(), gameDir),
+                    BINARY_FILE,
+                    CreateMode.REUSE
+                )
             }
             .thenApply {
                 if (it.isWritableFile()) {
-                    return@thenApply it.uri.toString()
+                    putReturnValue(LibReturnValue(filePath = it.uri.toString()))
                 } else {
-                    return@thenApply Uri.EMPTY.toString()
+                    putReturnValue(LibReturnValue(filePath = Uri.EMPTY.toString()))
                 }
             }
-            .get()
+    }
+
+    @OptIn(ExperimentalContracts::class)
+    override fun requestCreateFile() {
+        val gameDir = gameDirUri.toDocumentFile(get())
+        if (!gameDir.isWritableDir()) {
+            putReturnValue(LibReturnValue())
+            return
+        }
+
+        showLibPopup(LibTypePopup.POPUP_SAVE)
     }
 
     @OptIn(ExperimentalContracts::class)
@@ -396,22 +428,7 @@ class NativeViewModel(
 
     @OptIn(ExperimentalContracts::class)
     override fun changeGameDir(filePath: String) {
-        val gameDir = gameDirUri.toDocumentFile(get())
-        if (!gameDir.isWritableDir()) return
-
-        CompletableFuture
-            .supplyAsync { doesExist(get(), filePath) }
-            .thenAcceptAsync {
-                if (it) {
-//                    val oldDirPath = gameDir.getAbsolutePath(this)
-//                    if (oldDirPath != filePath) {
-//                        val newGameDir = fromFullPath(this, filePath, requiresWriteAccess = true)
-//                        if (isWritableDir(this, newGameDir)) {
-//                            gameDirUri = newGameDir.uri
-//                        }
-//                    }
-                }
-            }
+        // do nothing
     }
 
     override fun showLibDialog(
@@ -424,7 +441,7 @@ class NativeViewModel(
         }
     }
 
-    override fun showLibPopup(popupType: LibTypePopup) {
+    private fun showLibPopup(popupType: LibTypePopup) {
         viewModelScope.launch {
             _gamePopupFlow.emit(popupType)
         }

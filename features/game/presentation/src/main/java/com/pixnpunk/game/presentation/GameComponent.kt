@@ -39,6 +39,6 @@ sealed interface GameComponent {
 
     fun cleanCountUpdates()
 
-    fun doCreateSaveIntent()
-    fun doCreateLoadIntent()
+    fun doSaveFile()
+    fun doLoadFile()
 }

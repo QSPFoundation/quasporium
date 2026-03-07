@@ -137,8 +137,8 @@ fun GameContent(
                                     component = component,
                                     showDialog = component::doShowDialog,
                                     onFinishActivity = onFinish,
-                                    doCreateSaveIntent = component::doCreateSaveIntent,
-                                    doCreateLoadIntent = component::doCreateLoadIntent
+                                    doSaveFile = component::doSaveFile,
+                                    doLoadFile = component::doLoadFile
                                 )
                             }
                         )

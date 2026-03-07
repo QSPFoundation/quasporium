@@ -36,7 +36,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var root: RealRootComponent
 
     @OptIn(ExperimentalContracts::class)
-    private val dirPickerLauncher = runCatching {
+    private val dirPickerLauncher =
         registerForActivityResult(OpenFolderPickerContract(get())) {
             when (it) {
                 is FolderPickerResult.AccessDenied -> {
@@ -70,7 +70,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-    }
 
     @OptIn(ExperimentalContracts::class)
     private val filePickerLauncher =
@@ -191,7 +190,9 @@ class MainActivity : ComponentActivity() {
         root = RealRootComponent(
             componentContext = defaultComponentContext(),
             launchDirPicker = {
-                dirPickerLauncher.getOrNull()?.launch(OpenFolderPickerContract.Options())
+                runCatching {
+                    dirPickerLauncher.launch(OpenFolderPickerContract.Options())
+                }.onFailure {  }
             },
             launchFilePicker = {
                 filePickerLauncher.launch(arrayOf(MimeType.IMAGE))

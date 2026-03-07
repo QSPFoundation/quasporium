@@ -9,14 +9,12 @@ import android.os.SystemClock
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import com.anggrayudi.storage.file.DocumentFileCompat.fromUri
-import com.anggrayudi.storage.file.MimeType
 import com.anggrayudi.storage.file.child
 import com.pixnpunk.dto.GameInterface
 import com.pixnpunk.dto.LibGameState
 import com.pixnpunk.dto.LibGenItem
 import com.pixnpunk.dto.LibReturnValue
 import com.pixnpunk.dto.LibTypeDialog
-import com.pixnpunk.dto.LibTypePopup
 import com.pixnpunk.dto.LibTypeWindow
 import com.pixnpunk.natives.NativeViewModel.Companion.RECEIVE_FLOW_TIMEOUT
 import com.pixnpunk.natives.dto.LibRawItem
@@ -82,7 +80,10 @@ class LibDelegate(
     }
 
     fun runOnLibThread(runnable: Runnable) {
+        if (libLock.isLocked) return
+
         if (libThreadInit) {
+            returnValueFuture.cancel(true)
             libHandler.post {
                 libLock.withLock { runnable.run() }
             }
@@ -215,15 +216,18 @@ class LibDelegate(
         }.getOrDefault(-1)
     }
 
-    fun handleOpenGameStatus(filename: String?, loadGameState: (String) -> Unit) {
-        if (filename.isNullOrBlank()) {
-            gameInterface.showLibPopup(LibTypePopup.POPUP_LOAD)
-            return
-        }
+    fun handleOpenGameStatus(
+        filename: String?,
+        loadGameState: (String) -> Unit
+    ) {
         runCatching {
-            CompletableFuture
-                .supplyAsync { gameInterface.requestReceiveFile(filename) }
-                .get(RECEIVE_FLOW_TIMEOUT, TimeUnit.MILLISECONDS)
+            returnValueFuture = CompletableFuture()
+            if (filename.isNullOrBlank()) {
+                gameInterface.requestReceiveFile()
+            } else {
+                gameInterface.requestReceiveFile(filename)
+            }
+            returnValueFuture.get().filePath
         }.onSuccess { path ->
             if (path.isNotEmpty()) {
                 gameInterface.doWithCounterDisabled { loadGameState(path) }
@@ -235,20 +239,28 @@ class LibDelegate(
         }
     }
 
+    fun handleOpenGameStatus(
+        filename: String
+    ) = runCatching {
+        returnValueFuture = CompletableFuture()
+        gameInterface.requestReceiveFile(filename)
+        returnValueFuture.get().filePath
+    }.onFailure {
+        gameInterface.showLibDialog(LibTypeDialog.DIALOG_ERROR, it.message ?: "Unknown error")
+    }
+
     fun handleSaveGameStatus(
         filename: String?,
         saveGameState: (String) -> Unit
     ) {
-        if (filename.isNullOrBlank()) {
-            gameInterface.showLibPopup(LibTypePopup.POPUP_SAVE)
-            return
-        }
         runCatching {
-            CompletableFuture
-                .supplyAsync {
-                    gameInterface.requestCreateFile(filename, MimeType.BINARY_FILE)
-                }
-                .get(RECEIVE_FLOW_TIMEOUT, TimeUnit.MILLISECONDS)
+            returnValueFuture = CompletableFuture()
+            if (filename.isNullOrBlank()) {
+                gameInterface.requestCreateFile()
+            } else {
+                gameInterface.requestCreateFile(filename)
+            }
+            returnValueFuture.get().filePath
         }.onSuccess { path ->
             if (path.isNotEmpty()) {
                 saveGameState(path)

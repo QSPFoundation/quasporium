@@ -16,13 +16,11 @@ import com.pixnpunk.dto.LibIProxy
 import com.pixnpunk.dto.LibReturnValue
 import com.pixnpunk.dto.LibTypeDialog
 import com.pixnpunk.dto.LibUIConfig
-import com.pixnpunk.natives.NativeViewModel.Companion.RECEIVE_FLOW_TIMEOUT
 import com.pixnpunk.natives.dto.toLibRawItem
 import com.pixnpunk.utils.FileUtil.readFileContents
 import com.pixnpunk.utils.FileUtil.writeFileContents
 import com.pixnpunk.utils.ThreadUtil.isSameThread
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
 import kotlin.contracts.ExperimentalContracts
 
 class QSLibSDHImpl(
@@ -84,7 +82,12 @@ class QSLibSDHImpl(
     override fun startLibThread() = delegate.startLibThread("libNDKQSP")
     override fun stopLibThread() = delegate.stopLibThread()
 
-    override fun runGame(gameId: Long, gameTitle: String, gameDirPath: String, gameFilePath: String) {
+    override fun runGame(
+        gameId: Long,
+        gameTitle: String,
+        gameDirPath: String,
+        gameFilePath: String
+    ) {
         delegate.runOnLibThread {
             doRunGame(gameId, gameTitle, gameDirPath.toUri(), gameFilePath.toUri())
         }
@@ -206,19 +209,17 @@ class QSLibSDHImpl(
     override fun onOpenGame(path: String?) {
         if (!path.isNullOrBlank()) gameInterface.changeGameDir(path)
     }
+
     override fun onOpenGameStatus(filename: String?) =
         delegate.handleOpenGameStatus(filename, ::loadGameState)
+
     override fun onSaveGameStatus(filename: String?) =
         delegate.handleSaveGameStatus(filename, ::saveGameState)
 
     override fun onGetFileDesc(path: String?): Int {
         if (path.isNullOrBlank()) return super.onGetFileDesc(path)
-        val targetFileUri = runCatching {
-            CompletableFuture
-                .supplyAsync { gameInterface.requestReceiveFile(path) }
-                .get(RECEIVE_FLOW_TIMEOUT, TimeUnit.MILLISECONDS)
-                .toUri()
-        }.getOrDefault(Uri.EMPTY)
+        val targetFileUri =
+            delegate.handleOpenGameStatus(path).getOrDefault("").toUri()
         if (targetFileUri == Uri.EMPTY) return super.onGetFileDesc(path)
         return context.contentResolver
             .openFileDescriptor(targetFileUri, "r")?.detachFd()

@@ -3,6 +3,7 @@ package com.pixnpunk.game.presentation.mvi
 import com.arkivanov.mvikotlin.core.store.SimpleBootstrapper
 import com.arkivanov.mvikotlin.core.store.Store
 import com.arkivanov.mvikotlin.core.store.StoreFactory
+import com.pixnpunk.utils.DirUtil.isGameDirIsInternal
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 
@@ -23,6 +24,7 @@ class RealGameStore(
                 gameTitle = gameTitle,
                 gameDirUriBox = gameDirUriBox,
                 gameFileUriBox = gameFileUriBox,
+                isGameDirInternal = isGameDirIsInternal(gameDirUriBox),
             ),
             bootstrapper = SimpleBootstrapper(
                 GameStore.Action.StartGameStateFlow,
