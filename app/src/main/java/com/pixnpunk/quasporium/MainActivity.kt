@@ -37,7 +37,9 @@ class MainActivity : ComponentActivity() {
 
     @OptIn(ExperimentalContracts::class)
     private val dirPickerLauncher =
-        registerForActivityResult(OpenFolderPickerContract(get())) {
+        registerForActivityResult(
+            OpenFolderPickerContract(get())
+        ) {
             when (it) {
                 is FolderPickerResult.AccessDenied -> {
                     root.doShowDialog(
@@ -73,7 +75,9 @@ class MainActivity : ComponentActivity() {
 
     @OptIn(ExperimentalContracts::class)
     private val filePickerLauncher =
-        registerForActivityResult(ActivityResultContracts.OpenDocument()) {
+        registerForActivityResult(
+            ActivityResultContracts.OpenDocument()
+        ) {
             if (it != null) {
                 val contentResolver = applicationContext.contentResolver
                 contentResolver.takePersistableUriPermission(
@@ -97,7 +101,9 @@ class MainActivity : ComponentActivity() {
 
     @OptIn(ExperimentalContracts::class)
     private val filesPickerLauncher =
-        registerForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) {
+        registerForActivityResult(
+            ActivityResultContracts.OpenMultipleDocuments()
+        ) {
             if (it.isNotEmpty()) {
                 var docGameFilesList = mutableListOf<String>()
                 it.forEach { uri ->
@@ -121,8 +127,10 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-    private val storageAccessLauncher = runCatching {
-        registerForActivityResult(RequestStorageAccessContract(get())) { result ->
+    private val storageAccessLauncher =
+        registerForActivityResult(
+            RequestStorageAccessContract(get())
+        ) { result ->
             when (result) {
                 is RequestStorageAccessResult.CanceledByUser -> {
 
@@ -145,7 +153,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-    }
 
     private val storagePermissionLauncher =
         registerForActivityResult(StoragePermissionContract()) { _ ->
@@ -191,7 +198,9 @@ class MainActivity : ComponentActivity() {
             componentContext = defaultComponentContext(),
             launchDirPicker = {
                 runCatching {
-                    dirPickerLauncher.launch(OpenFolderPickerContract.Options())
+                    dirPickerLauncher.launch(
+                        OpenFolderPickerContract.Options()
+                    )
                 }.onFailure {  }
             },
             launchFilePicker = {
@@ -201,7 +210,11 @@ class MainActivity : ComponentActivity() {
                 filesPickerLauncher.launch(arrayOf(MimeType.BINARY_FILE))
             },
             launchStorageAccess = {
-                storageAccessLauncher.getOrNull()?.launch(RequestStorageAccessContract.Options())
+                runCatching {
+                    storageAccessLauncher.launch(
+                        RequestStorageAccessContract.Options()
+                    )
+                }.onFailure {  }
             },
             launchEngineIntent = { (entry, i) ->
                 startActivitySafely(
