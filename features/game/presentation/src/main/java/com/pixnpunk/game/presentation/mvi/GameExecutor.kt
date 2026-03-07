@@ -29,15 +29,20 @@ internal class GameExecutor(
     override fun executeIntent(intent: GameStore.Intent) {
         when (intent) {
             is GameStore.Intent.OnLoadFile ->
-                service.putReturnValue(
-                    LibReturnValue(
-                        filePath = intent.fileUri.toString()
+                if (state().isUserChooseSave) {
+                    dispatch(GameStore.Message.UpdateIsUserChooseSave(false))
+                    service.onLoadFile(intent.fileUri)
+                } else {
+                    service.putReturnValue(
+                        LibReturnValue(
+                            filePath = intent.fileUri.toString()
+                        )
                     )
-                )
+                }
 
             is GameStore.Intent.OnSaveFile ->
                 if (state().isUserChooseSave) {
-                    dispatch(GameStore.Message.UpdateIsUserChooseSave(true))
+                    dispatch(GameStore.Message.UpdateIsUserChooseSave(false))
                     service.onSaveFile(intent.fileUri)
                 } else {
                     service.putReturnValue(
@@ -47,9 +52,7 @@ internal class GameExecutor(
                     )
                 }
 
-            is GameStore.Intent.OnCorruptFile -> scope.launch {
-                service.putReturnValue(LibReturnValue())
-            }
+            is GameStore.Intent.OnCorruptFile -> service.putReturnValue(null)
 
             is GameStore.Intent.OnExecCode -> scope.launch { service.onCodeExec(intent.codeToExec) }
 
@@ -82,6 +85,7 @@ internal class GameExecutor(
 
             is GameStore.Intent.StartLoadFile -> {
                 if (!state().isGameDirInternal) {
+                    dispatch(GameStore.Message.UpdateIsUserChooseSave(true))
                     publish(ShowLoadFilePicker)
                 } else {
 

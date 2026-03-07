@@ -146,8 +146,8 @@ class RealGameComponent(
         store.accept(GameStore.Intent.OnLoadFile(fileUri))
     }
 
-    fun onFileCorruptResult() {
-        store.accept(GameStore.Intent.OnCorruptFile)
+    fun onFileCorruptResult(isCancelUser: Boolean = false) {
+        store.accept(GameStore.Intent.OnCorruptFile(isCancelUser))
     }
 
     override fun doSaveFile() = store.accept(GameStore.Intent.StartSaveFile)

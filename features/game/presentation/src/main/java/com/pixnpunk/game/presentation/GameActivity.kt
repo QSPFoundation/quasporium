@@ -52,12 +52,12 @@ class GameActivity : ComponentActivity() {
         ) {
             runCatching {
                 when (it) {
-                    is FileCreationResult.CanceledByUser -> {
+                    is FileCreationResult.StoragePermissionDenied -> {
                         root.onFileCorruptResult()
                     }
 
-                    is FileCreationResult.StoragePermissionDenied -> {
-                        root.onFileCorruptResult()
+                    is FileCreationResult.CanceledByUser -> {
+                        root.onFileCorruptResult(true)
                     }
 
                     is FileCreationResult.Created -> {
@@ -78,7 +78,7 @@ class GameActivity : ComponentActivity() {
                     }
 
                     is FilePickerResult.CanceledByUser -> {
-                        root.onFileCorruptResult()
+                        root.onFileCorruptResult(true)
                     }
 
                     is FilePickerResult.Picked -> {

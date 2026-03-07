@@ -184,7 +184,10 @@ class LibDelegate(
         runCatching {
             Thread.sleep(msecs.toLong())
         }.onFailure { ex ->
-            gameInterface.showLibDialog(LibTypeDialog.DIALOG_ERROR, ex.toString())
+            gameInterface.showLibDialog(
+                LibTypeDialog.DIALOG_ERROR,
+                ex.toString()
+            )
         }
     }
 
@@ -244,10 +247,19 @@ class LibDelegate(
             if (path.isNotEmpty()) {
                 gameInterface.doWithCounterDisabled { loadGameState(path) }
             } else {
-                gameInterface.showLibDialog(LibTypeDialog.DIALOG_ERROR, "Save file not found")
+                gameInterface.showLibDialog(
+                    LibTypeDialog.DIALOG_ERROR,
+                    "Save file not found"
+                )
             }
-        }.onFailure {
-            gameInterface.showLibDialog(LibTypeDialog.DIALOG_ERROR, it.message ?: "Unknown error")
+        }.onFailure { error ->
+            val cause = (error as? java.util.concurrent.ExecutionException)?.cause ?: error
+            if (cause !is GameInterface.UserCancelledException) {
+                gameInterface.showLibDialog(
+                    LibTypeDialog.DIALOG_ERROR,
+                    error.message ?: "Unknown error"
+                )
+            }
         }
     }
 
@@ -257,8 +269,14 @@ class LibDelegate(
         returnValueFuture = CompletableFuture()
         gameInterface.requestReceiveFile(filename)
         returnValueFuture.get().filePath
-    }.onFailure {
-        gameInterface.showLibDialog(LibTypeDialog.DIALOG_ERROR, it.message ?: "Unknown error")
+    }.onFailure { error ->
+        val cause = (error as? java.util.concurrent.ExecutionException)?.cause ?: error
+        if (cause !is GameInterface.UserCancelledException) {
+            gameInterface.showLibDialog(
+                LibTypeDialog.DIALOG_ERROR,
+                error.message ?: "Unknown error"
+            )
+        }
     }
 
     fun handleSaveGameStatus(
@@ -277,10 +295,19 @@ class LibDelegate(
             if (path.isNotEmpty()) {
                 saveGameState(path)
             } else {
-                gameInterface.showLibDialog(LibTypeDialog.DIALOG_ERROR, "Error access dir")
+                gameInterface.showLibDialog(
+                    LibTypeDialog.DIALOG_ERROR,
+                    "Error access dir"
+                )
             }
-        }.onFailure {
-            gameInterface.showLibDialog(LibTypeDialog.DIALOG_ERROR, it.message ?: "Unknown error")
+        }.onFailure { error ->
+            val cause = (error as? java.util.concurrent.ExecutionException)?.cause ?: error
+            if (cause !is GameInterface.UserCancelledException) {
+                gameInterface.showLibDialog(
+                    LibTypeDialog.DIALOG_ERROR,
+                    error.message ?: "Unknown error"
+                )
+            }
         }
     }
 }

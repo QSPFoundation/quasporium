@@ -102,13 +102,35 @@ class NativeViewModel(
         _gameUIConfFlow.value = uiConfig
     }
 
-    fun putReturnValue(returnValue: LibReturnValue) {
-        when (mLibAuthors) {
-            NativeLibAuthors.BYTE -> libNativeByte.returnValueFuture.complete(returnValue)
+    fun putReturnValue(returnValue: LibReturnValue?) {
+        if (returnValue == null) {
+            when (mLibAuthors) {
+                NativeLibAuthors.BYTE ->
+                    libNativeByte.returnValueFuture.completeExceptionally(
+                        GameInterface.UserCancelledException()
+                    )
 
-            NativeLibAuthors.SONNIX -> libNativeSonnix.returnValueFuture.complete(returnValue)
+                NativeLibAuthors.SONNIX ->
+                    libNativeSonnix.returnValueFuture.completeExceptionally(
+                        GameInterface.UserCancelledException()
+                    )
 
-            NativeLibAuthors.SEEDHARTHA -> libNativeSeedharta.returnValueFuture.complete(returnValue)
+                NativeLibAuthors.SEEDHARTHA ->
+                    libNativeSeedharta.returnValueFuture.completeExceptionally(
+                        GameInterface.UserCancelledException()
+                    )
+            }
+        } else {
+            when (mLibAuthors) {
+                NativeLibAuthors.BYTE ->
+                    libNativeByte.returnValueFuture.complete(returnValue)
+
+                NativeLibAuthors.SONNIX ->
+                    libNativeSonnix.returnValueFuture.complete(returnValue)
+
+                NativeLibAuthors.SEEDHARTHA ->
+                    libNativeSeedharta.returnValueFuture.complete(returnValue)
+            }
         }
     }
 

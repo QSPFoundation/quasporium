@@ -33,7 +33,7 @@ sealed interface GameStore : Store<GameStore.Intent, GameStore.State, GameStore.
     sealed interface Intent {
         data class OnSaveFile(val fileUri: Uri) : Intent
         data class OnLoadFile(val fileUri: Uri) : Intent
-        data object OnCorruptFile : Intent
+        data class OnCorruptFile(val isCancelUser: Boolean) : Intent
         data class OnExecCode(val codeToExec: String) : Intent
         data class OnSelectMenuItem(val index: Int) : Intent
         data class OnInputValue(val state: InputState, val inputString: String) : Intent
