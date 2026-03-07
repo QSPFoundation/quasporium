@@ -111,6 +111,20 @@ class LibDelegate(
             }
     }
 
+    fun buildGameMenuList(menuItems: List<LibGenItem>): List<LibGenItem> {
+        val gameDir = currGameDir
+        if (!gameDir.isWritableDir()) return emptyList()
+
+        return menuItems
+            .filter { it.text.isNotEmpty() || it.imagePath.isNotEmpty() }
+            .map {
+                LibGenItem(
+                    it.text,
+                    gameDir.child(context, it.imagePath)?.uri.toString()
+                )
+            }
+    }
+
     private fun resolveImagePath(gameDir: DocumentFile, imagePath: String): String {
         if (imagePath.isBlank()) return imagePath
         val normalizedPath = imagePath.getFilename().normalizeContentPath()
@@ -208,13 +222,15 @@ class LibDelegate(
         }.getOrDefault("")
     }
 
-    fun handleShowMenu(items: List<LibGenItem>): Int {
-        return runCatching {
+    fun handleShowMenu(items: List<LibGenItem>): Int =
+        runCatching {
             returnValueFuture = CompletableFuture()
-            gameInterface.showLibDialog(LibTypeDialog.DIALOG_MENU, menuItems = items)
+            gameInterface.showLibDialog(
+                dialogType = LibTypeDialog.DIALOG_MENU,
+                menuItems = buildGameMenuList(items)
+            )
             returnValueFuture.get().dialogNumValue
         }.getOrDefault(-1)
-    }
 
     fun handleOpenGameStatus(
         filename: String?,
