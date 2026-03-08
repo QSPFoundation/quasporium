@@ -72,6 +72,12 @@ fun GameContent(
         }
     }
 
+    LaunchedEffect(state.isExtraEnabled, state.isObjectsEnabled) {
+        if (!state.isExtraEnabled || !state.isObjectsEnabled) {
+            component.clearAllSlot()
+        }
+    }
+
     val baseScaffoldValue = calculateThreePaneScaffoldValue(
         maxHorizontalPartitions = directive.maxHorizontalPartitions,
         maxVerticalPartitions = directive.maxVerticalPartitions,
