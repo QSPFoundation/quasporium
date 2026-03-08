@@ -64,9 +64,11 @@ class QSLibSDHImpl(
         val gameFileUri = delegate.gameState.gameFilePath.toUri()
         val gameFile = gameFileUri.toDocumentFile(context) ?: return false
         val gameFileFullPath = gameFile.getAbsolutePath(context)
-        val fd = context.contentResolver
-            .openFileDescriptor(gameFileUri, "rw")?.detachFd() ?: return false
-        return executeQspCommand { loadGameWorldFromFD(fd, gameFileFullPath) }
+        return try {
+            val fd = context.contentResolver
+                .openFileDescriptor(gameFileUri, "rw")?.detachFd() ?: return false
+            executeQspCommand { loadGameWorldFromFD(fd, gameFileFullPath) }
+        } catch (_ : Exception) { false }
     }
 
     private val actionsList: List<LibGenItem>
