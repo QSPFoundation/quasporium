@@ -20,7 +20,7 @@ else ()
 
     FetchContent_Declare(qslibsnx-external
             GIT_REPOSITORY https://github.com/l3ger0j/QSLibSNX.git
-            GIT_TAG ae7e686d8eceef7c8dcf027a48b2fa995feec704
+            GIT_TAG c95fa014efa72a9211a32d7cae5d0283c1c595c8
             GIT_PROGRESS true
             SUBBUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/qslibsnx-download"
             SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/qslibsnx-src"
@@ -30,7 +30,7 @@ else ()
 
     FetchContent_Declare(qslibsdh-external
             GIT_REPOSITORY https://github.com/l3ger0j/QSLibSDH.git
-            GIT_TAG 641c49201e029dff59c2a8f8325f2fe9c5ff5c77
+            GIT_TAG aa9433405c15f1f84f4ede89c76cc32a3322342e
             GIT_PROGRESS true
             SUBBUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/qslibsdh-download"
             SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/qslibsdh-src"
