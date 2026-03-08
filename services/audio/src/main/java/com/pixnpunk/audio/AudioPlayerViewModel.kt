@@ -7,7 +7,6 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -35,7 +34,6 @@ class AudioPlayerViewModel : ViewModel(), DefaultLifecycleObserver {
             runCatching {
                 mediaPlayers.values.filterNot { it.isPlaying }.forEach { it.start() }
             }.onFailure {
-                FirebaseCrashlytics.getInstance().recordException(it)
                 mediaPlayers.clear()
             }
         }
@@ -48,7 +46,6 @@ class AudioPlayerViewModel : ViewModel(), DefaultLifecycleObserver {
             runCatching {
                 mediaPlayers.values.filter { it.isPlaying }.forEach { it.pause() }
             }.onFailure {
-                FirebaseCrashlytics.getInstance().recordException(it)
                 mediaPlayers.clear()
             }
         }
@@ -73,7 +70,6 @@ class AudioPlayerViewModel : ViewModel(), DefaultLifecycleObserver {
                     player.start()
                 }
             }.onFailure {
-                FirebaseCrashlytics.getInstance().recordException(it)
                 mediaPlayers.remove(soundFileUri)
             }
         }
