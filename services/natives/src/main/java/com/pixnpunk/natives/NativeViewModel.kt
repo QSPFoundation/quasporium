@@ -9,7 +9,6 @@ import com.anggrayudi.storage.extension.toDocumentFile
 import com.anggrayudi.storage.file.CreateMode
 import com.anggrayudi.storage.file.MimeType.BINARY_FILE
 import com.anggrayudi.storage.file.makeFile
-import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.pixnpunk.audio.AudioPlayerViewModel
 import com.pixnpunk.dto.GameInterface
 import com.pixnpunk.dto.LibGameState
@@ -455,11 +454,6 @@ class NativeViewModel(
         inputString: String,
         menuItems: List<LibGenItem>
     ) {
-        if (dialogType == LibTypeDialog.DIALOG_ERROR) {
-            FirebaseCrashlytics.getInstance()
-                .recordException(RuntimeException(inputString))
-        }
-
         viewModelScope.launch {
             _gameDialogFlow.emit(Triple(dialogType, inputString, menuItems))
         }
