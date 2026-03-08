@@ -102,7 +102,10 @@ class RealGameComponent(
                 onCleanError = ::onCleanError,
                 inputValue = ::onInputValue,
                 confirmMessage = ::onConfirmMessage,
-                onDismissed = dialogNavigation::dismiss
+                onDismissed = {
+                    store.accept(GameStore.Intent.OnDismissDialog)
+                    dialogNavigation.dismiss()
+                }
             )
         }
 
@@ -144,18 +147,21 @@ class RealGameComponent(
         store.accept(GameStore.Intent.OnLoadFile(fileUri))
     }
 
-    override fun doCreateSaveIntent() {
-        store.accept(GameStore.Intent.CreateSaveIntent)
+    fun onFileCorruptResult(isCancelUser: Boolean = false) {
+        store.accept(GameStore.Intent.OnCorruptFile(isCancelUser))
     }
 
-    override fun doCreateLoadIntent() {
-        store.accept(GameStore.Intent.CreateLoadIntent)
-    }
+    override fun doSaveFile() = store.accept(GameStore.Intent.StartSaveFile)
+
+    override fun doLoadFile() = store.accept(GameStore.Intent.StartLoadFile)
 
     private fun onConfirmMessage(msg: Pair<OutputState, Int>) {
         when (msg.first) {
             OutputState.OUTPUT_LIST ->
                 store.accept(GameStore.Intent.OnSelectMenuItem(msg.second))
+
+            OutputState.OUTPUT_SIMPLE_MSG ->
+                store.accept(GameStore.Intent.OnDismissDialog)
 
             else -> {}
         }
@@ -195,9 +201,9 @@ class RealGameComponent(
     }
 
     override fun doShowDialog(
-        inputString: String,
         dialogState: LibTypeDialog,
-        inputListItems: List<LibGenItem>?
+        inputString: String,
+        inputListItems: List<LibGenItem>
     ) {
         when (dialogState) {
             LibTypeDialog.DIALOG_MESSAGE -> {
@@ -261,7 +267,7 @@ class RealGameComponent(
                     configuration = DialogsConfig(
                         dialogsState = DialogsState.DIALOG_OUTPUT_VALUE,
                         outputState = OutputState.OUTPUT_LIST,
-                        menuItems = inputListItems ?: emptyList()
+                        menuItems = inputListItems
                     )
                 )
         }

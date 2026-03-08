@@ -1,20 +1,26 @@
 package com.pixnpunk.game.presentation
 
-import android.content.Intent
 import android.os.Bundle
 import android.os.Process.killProcess
 import android.os.Process.myPid
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import com.anggrayudi.storage.contract.FileCreationContract
+import com.anggrayudi.storage.contract.FileCreationResult
+import com.anggrayudi.storage.contract.FilePickerResult
+import com.anggrayudi.storage.contract.OpenFilePickerContract
+import com.anggrayudi.storage.extension.toDocumentFile
+import com.anggrayudi.storage.file.FileFullPath
+import com.anggrayudi.storage.file.MimeType.BINARY_FILE
+import com.anggrayudi.storage.file.getAbsolutePath
 import com.arkivanov.decompose.defaultComponentContext
 import com.pixnpunk.audio.AudioPlayerViewModel
 import com.pixnpunk.dto.SettingsEntity
@@ -25,6 +31,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
+import org.koin.android.ext.android.get
 import org.koin.android.ext.android.inject
 
 class GameActivity : ComponentActivity() {
@@ -39,18 +46,46 @@ class GameActivity : ComponentActivity() {
             initialValue = settingsRepo.currentSettings
         )
 
-    private val requestCreateFile: ActivityResultLauncher<Intent> =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == RESULT_OK) {
-                result.data?.data?.let { root.onSaveFileResult(it) }
-            }
+    private val requestCreateFile =
+        registerForActivityResult(
+            FileCreationContract(get())
+        ) {
+            runCatching {
+                when (it) {
+                    is FileCreationResult.StoragePermissionDenied -> {
+                        root.onFileCorruptResult()
+                    }
+
+                    is FileCreationResult.CanceledByUser -> {
+                        root.onFileCorruptResult(true)
+                    }
+
+                    is FileCreationResult.Created -> {
+                        root.onSaveFileResult(it.file.uri)
+                    }
+                }
+            }.onFailure { root.onFileCorruptResult() }
         }
 
-    private val requestOpenFile: ActivityResultLauncher<Intent> =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == RESULT_OK) {
-                result.data?.data?.let { root.onLoadFileResult(it) }
-            }
+    private val requestOpenFile =
+        registerForActivityResult(
+            OpenFilePickerContract(get())
+        ) {
+            runCatching {
+                when (it) {
+                    is FilePickerResult.StoragePermissionDenied -> {
+                        root.onFileCorruptResult()
+                    }
+
+                    is FilePickerResult.CanceledByUser -> {
+                        root.onFileCorruptResult(true)
+                    }
+
+                    is FilePickerResult.Picked -> {
+                        root.onLoadFileResult(it.files.first().uri)
+                    }
+                }
+            }.onFailure { root.onFileCorruptResult() }
         }
 
     private var gameId: Long = 1L
@@ -101,13 +136,42 @@ class GameActivity : ComponentActivity() {
                 root.label.collect {
                     when (it) {
                         is GameStore.Label.ShowDialog ->
-                            root.doShowDialog(it.inputString, it.dialogState)
+                            root.doShowDialog(
+                                it.dialogState,
+                                it.inputString,
+                                it.inputListItems ?: emptyList()
+                            )
 
                         is GameStore.Label.ShowLoadFilePicker ->
-                            requestOpenFile.launch(it.intent)
+                            runCatching {
+                                val rootDir =
+                                    gameDirUriBox.toUri().toDocumentFile(this@GameActivity)!!
+                                requestOpenFile.launch(
+                                    OpenFilePickerContract.Options(
+                                        initialPath = FileFullPath(
+                                            context = this@GameActivity,
+                                            fullPath = rootDir.getAbsolutePath(this@GameActivity)
+                                        ),
+                                        filterMimeTypes = setOf(BINARY_FILE)
+                                    )
+                                )
+                            }
 
                         is GameStore.Label.ShowSaveFilePicker ->
-                            requestCreateFile.launch(it.intent)
+                            runCatching {
+                                val rootDir =
+                                    gameDirUriBox.toUri().toDocumentFile(this@GameActivity)!!
+                                requestCreateFile.launch(
+                                    FileCreationContract.Options(
+                                        mimeType = BINARY_FILE,
+                                        fileName = "${(UInt.MIN_VALUE..UInt.MAX_VALUE).random()}.sav",
+                                        initialPath = FileFullPath(
+                                            context = this@GameActivity,
+                                            fullPath = rootDir.getAbsolutePath(this@GameActivity)
+                                        )
+                                    )
+                                )
+                            }
                     }
                 }
             }

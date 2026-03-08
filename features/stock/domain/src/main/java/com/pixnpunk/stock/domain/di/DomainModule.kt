@@ -9,6 +9,7 @@ import com.pixnpunk.stock.domain.usecase.FillAndInsertEntryUseCase
 import com.pixnpunk.stock.domain.usecase.ObserveEntryByIdUseCase
 import com.pixnpunk.stock.domain.usecase.SearchLocalGameEntryUseCase
 import com.pixnpunk.stock.domain.usecase.SearchRemoteGameEntryUseCase
+import com.pixnpunk.stock.domain.usecase.SearchRemoteGamesExcludingLocalUseCase
 import com.pixnpunk.stock.domain.usecase.UpsertEntryUseCase
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
@@ -23,5 +24,6 @@ val domainModule = module {
     singleOf(::ObserveEntryByIdUseCase)
     singleOf(::SearchLocalGameEntryUseCase)
     singleOf(::SearchRemoteGameEntryUseCase)
+    singleOf(::SearchRemoteGamesExcludingLocalUseCase)
     singleOf(::UpsertEntryUseCase)
 }

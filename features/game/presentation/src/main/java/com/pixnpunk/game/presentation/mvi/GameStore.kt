@@ -16,10 +16,14 @@ sealed interface GameStore : Store<GameStore.Intent, GameStore.State, GameStore.
         val isExecutorEnabled: Boolean = false,
         val isGameRunning: Boolean = false,
 
+        val isUserChooseSave: Boolean = false,
+
         val gameId: Long = 1L,
         val gameTitle: String = "Title",
         val gameDirUriBox: String = "",
         val gameFileUriBox: String = "",
+
+        val isGameDirInternal: Boolean = false,
 
         val isMainDescUpdated: Pair<Int, Boolean> = 0 to false,
         val isExtraDescUpdated: Pair<Int, Boolean> = 0 to false,
@@ -29,11 +33,13 @@ sealed interface GameStore : Store<GameStore.Intent, GameStore.State, GameStore.
     sealed interface Intent {
         data class OnSaveFile(val fileUri: Uri) : Intent
         data class OnLoadFile(val fileUri: Uri) : Intent
+        data class OnCorruptFile(val isCancelUser: Boolean) : Intent
         data class OnExecCode(val codeToExec: String) : Intent
         data class OnSelectMenuItem(val index: Int) : Intent
         data class OnInputValue(val state: InputState, val inputString: String) : Intent
-        data object CreateSaveIntent : Intent
-        data object CreateLoadIntent : Intent
+        data object OnDismissDialog : Intent
+        data object StartSaveFile : Intent
+        data object StartLoadFile : Intent
         data object CleanMainSavedDesc : Intent
         data object CleanExtraSavedDesc : Intent
         data object CleanObjectsSavedList : Intent
@@ -48,6 +54,8 @@ sealed interface GameStore : Store<GameStore.Intent, GameStore.State, GameStore.
         data class UpdateIsMainDescUpdated(val isMainDescUpdated: Pair<Int, Boolean>) : Message
         data class UpdateIsExtraDescUpdated(val isExtraDescUpdated: Pair<Int, Boolean>) : Message
         data class UpdateIsObjsListUpdated(val isObjsListUpdated: Pair<Int, Boolean>) : Message
+        data class UpdateIsUserChooseSave(val isUserChooseSave: Boolean) : Message
+        data class UpdateIsGameDirInternal(val isGameDirInternal: Boolean) : Message
     }
 
     sealed interface Label {
@@ -57,13 +65,8 @@ sealed interface GameStore : Store<GameStore.Intent, GameStore.State, GameStore.
             val inputListItems: List<LibGenItem>? = null
         ) : Label
 
-        data class ShowSaveFilePicker(
-            val intent: android.content.Intent
-        ) : Label
-
-        data class ShowLoadFilePicker(
-            val intent: android.content.Intent
-        ) : Label
+        data object ShowSaveFilePicker : Label
+        data object ShowLoadFilePicker : Label
     }
 
     sealed interface Action {

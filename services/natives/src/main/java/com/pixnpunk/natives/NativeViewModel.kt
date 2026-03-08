@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anggrayudi.storage.extension.toDocumentFile
 import com.anggrayudi.storage.file.CreateMode
-import com.anggrayudi.storage.file.DocumentFileCompat.doesExist
+import com.anggrayudi.storage.file.MimeType.BINARY_FILE
 import com.anggrayudi.storage.file.makeFile
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.pixnpunk.audio.AudioPlayerViewModel
@@ -42,6 +42,7 @@ import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.atomic.AtomicLong
 import kotlin.contracts.ExperimentalContracts
 
 class NativeViewModel(
@@ -74,28 +75,23 @@ class NativeViewModel(
     private val _gameElementVis: MutableSharedFlow<Pair<LibTypeWindow, Boolean>> = MutableSharedFlow()
     val gameElementVis = _gameElementVis.asSharedFlow()
 
-    companion object {
-        const val RECEIVE_FLOW_TIMEOUT: Long = 10000
-    }
-
-    @Volatile
-    private var counterInterval = 500L
+    private val counterInterval = AtomicLong(500L)
     private val counterNativeByteTask: suspend CoroutineScope.() -> Unit = {
         while (isActive) {
             libNativeByte.executeCounter()
-            delay(counterInterval)
+            delay(counterInterval.get())
         }
     }
     private val counterNativeSonnixTask: suspend CoroutineScope.() -> Unit = {
         while (isActive) {
             libNativeSonnix.executeCounter()
-            delay(counterInterval)
+            delay(counterInterval.get())
         }
     }
     private val counterNativeSeedhartaTask: suspend CoroutineScope.() -> Unit = {
         while (isActive) {
             libNativeSeedharta.executeCounter()
-            delay(counterInterval)
+            delay(counterInterval.get())
         }
     }
 
@@ -107,13 +103,35 @@ class NativeViewModel(
         _gameUIConfFlow.value = uiConfig
     }
 
-    fun putReturnValue(returnValue: LibReturnValue) {
-        when (mLibAuthors) {
-            NativeLibAuthors.BYTE -> libNativeByte.returnValueFuture.complete(returnValue)
+    fun putReturnValue(returnValue: LibReturnValue?) {
+        if (returnValue == null) {
+            when (mLibAuthors) {
+                NativeLibAuthors.BYTE ->
+                    libNativeByte.returnValueFuture.completeExceptionally(
+                        GameInterface.UserCancelledException()
+                    )
 
-            NativeLibAuthors.SONNIX -> libNativeSonnix.returnValueFuture.complete(returnValue)
+                NativeLibAuthors.SONNIX ->
+                    libNativeSonnix.returnValueFuture.completeExceptionally(
+                        GameInterface.UserCancelledException()
+                    )
 
-            NativeLibAuthors.SEEDHARTHA -> libNativeSeedharta.returnValueFuture.complete(returnValue)
+                NativeLibAuthors.SEEDHARTHA ->
+                    libNativeSeedharta.returnValueFuture.completeExceptionally(
+                        GameInterface.UserCancelledException()
+                    )
+            }
+        } else {
+            when (mLibAuthors) {
+                NativeLibAuthors.BYTE ->
+                    libNativeByte.returnValueFuture.complete(returnValue)
+
+                NativeLibAuthors.SONNIX ->
+                    libNativeSonnix.returnValueFuture.complete(returnValue)
+
+                NativeLibAuthors.SEEDHARTHA ->
+                    libNativeSeedharta.returnValueFuture.complete(returnValue)
+            }
         }
     }
 
@@ -189,9 +207,14 @@ class NativeViewModel(
     }
 
     override fun onCleared() {
-        libNativeByte.stopLibThread()
-        libNativeSonnix.stopLibThread()
-        libNativeSeedharta.stopLibThread()
+        super.onCleared()
+
+        listOf(
+            libNativeByte,
+            libNativeSonnix,
+            libNativeSeedharta
+        ).forEach { it.stopLibThread() }
+
         updateSettingsJob?.cancel()
         counterNativeByteJob?.cancel()
         counterNativeSonnixJob?.cancel()
@@ -314,36 +337,68 @@ class NativeViewModel(
     }
 
     @OptIn(ExperimentalContracts::class)
-    override fun requestReceiveFile(filePath: String): String {
+    override fun requestReceiveFile(filePath: String) {
         val gameDir = gameDirUri.toDocumentFile(get())
-        if (gameDir.isWritableDir()) {
-            val docFile = filePath.pathToFile(get(), gameDir)
-            if (docFile.isWritableFile()) {
-                return docFile.uri.toString()
-            }
+        if (!gameDir.isWritableDir()) {
+            putReturnValue(LibReturnValue())
+            return
         }
-        return Uri.EMPTY.toString()
+
+        val docFile = filePath.pathToFile(get(), gameDir)
+        if (!docFile.isWritableFile()) {
+            putReturnValue(LibReturnValue())
+        } else {
+            putReturnValue(LibReturnValue(filePath = docFile.uri.toString()))
+        }
+    }
+
+    @OptIn(ExperimentalContracts::class)
+    override fun requestReceiveFile() {
+        val gameDir = gameDirUri.toDocumentFile(get())
+        if (!gameDir.isWritableDir()) {
+            putReturnValue(LibReturnValue())
+            return
+        }
+
+        showLibPopup(LibTypePopup.POPUP_LOAD)
     }
 
     @OptIn(ExperimentalContracts::class)
     @WorkerThread
-    override fun requestCreateFile(path: String, mimeType: String): String {
+    override fun requestCreateFile(path: String) {
         val gameDir = gameDirUri.toDocumentFile(get())
-        if (!gameDir.isWritableDir()) return Uri.EMPTY.toString()
+        if (!gameDir.isWritableDir()) {
+            putReturnValue(LibReturnValue())
+            return
+        }
 
-        return CompletableFuture
+        CompletableFuture
             .supplyAsync {
-                val relPath = path.absToRelPath(get(), gameDir)
-                gameDir.makeFile(get(), relPath, mimeType, CreateMode.REUSE)
+                gameDir.makeFile(
+                    get(),
+                    path.absToRelPath(get(), gameDir),
+                    BINARY_FILE,
+                    CreateMode.REUSE
+                )
             }
             .thenApply {
                 if (it.isWritableFile()) {
-                    return@thenApply it.uri.toString()
+                    putReturnValue(LibReturnValue(filePath = it.uri.toString()))
                 } else {
-                    return@thenApply Uri.EMPTY.toString()
+                    putReturnValue(LibReturnValue(filePath = Uri.EMPTY.toString()))
                 }
             }
-            .get()
+    }
+
+    @OptIn(ExperimentalContracts::class)
+    override fun requestCreateFile() {
+        val gameDir = gameDirUri.toDocumentFile(get())
+        if (!gameDir.isWritableDir()) {
+            putReturnValue(LibReturnValue())
+            return
+        }
+
+        showLibPopup(LibTypePopup.POPUP_SAVE)
     }
 
     @OptIn(ExperimentalContracts::class)
@@ -392,22 +447,7 @@ class NativeViewModel(
 
     @OptIn(ExperimentalContracts::class)
     override fun changeGameDir(filePath: String) {
-        val gameDir = gameDirUri.toDocumentFile(get())
-        if (!gameDir.isWritableDir()) return
-
-        CompletableFuture
-            .supplyAsync { doesExist(get(), filePath) }
-            .thenAcceptAsync {
-                if (it) {
-//                    val oldDirPath = gameDir.getAbsolutePath(this)
-//                    if (oldDirPath != filePath) {
-//                        val newGameDir = fromFullPath(this, filePath, requiresWriteAccess = true)
-//                        if (isWritableDir(this, newGameDir)) {
-//                            gameDirUri = newGameDir.uri
-//                        }
-//                    }
-                }
-            }
+        // do nothing
     }
 
     override fun showLibDialog(
@@ -425,7 +465,7 @@ class NativeViewModel(
         }
     }
 
-    override fun showLibPopup(popupType: LibTypePopup) {
+    private fun showLibPopup(popupType: LibTypePopup) {
         viewModelScope.launch {
             _gamePopupFlow.emit(popupType)
         }
@@ -441,7 +481,7 @@ class NativeViewModel(
     }
 
     override fun setCountInter(delayMillis: Long) {
-        counterInterval = delayMillis
+        counterInterval.set(delayMillis)
     }
 
     override fun doWithCounterDisabled(runnable: Runnable) {

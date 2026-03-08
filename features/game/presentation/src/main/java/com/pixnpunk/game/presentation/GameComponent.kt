@@ -28,9 +28,9 @@ sealed interface GameComponent {
 
     fun doShowDialog()
     fun doShowDialog(
-        inputString: String = "",
         dialogState: LibTypeDialog,
-        inputListItems: List<LibGenItem>? = null
+        inputString: String = "",
+        inputListItems: List<LibGenItem> = emptyList()
     )
 
     fun stateSwitchExtraSlot()
@@ -39,6 +39,6 @@ sealed interface GameComponent {
 
     fun cleanCountUpdates()
 
-    fun doCreateSaveIntent()
-    fun doCreateLoadIntent()
+    fun doSaveFile()
+    fun doLoadFile()
 }

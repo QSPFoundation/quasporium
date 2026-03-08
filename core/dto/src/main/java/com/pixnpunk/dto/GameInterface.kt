@@ -1,8 +1,12 @@
 package com.pixnpunk.dto
 
 interface GameInterface {
-    fun requestReceiveFile(filePath: String): String
-    fun requestCreateFile(path: String, mimeType: String): String
+    class UserCancelledException : Exception("User cancelled file selection")
+
+    fun requestReceiveFile(filePath: String)
+    fun requestReceiveFile()
+    fun requestCreateFile(path: String)
+    fun requestCreateFile()
     fun isPlayingFile(filePath: String): Boolean
     fun closeAllFiles(): Result<Unit>
     fun closeFile(filePath: String)
@@ -13,7 +17,6 @@ interface GameInterface {
         inputString: String = "",
         menuItems: List<LibGenItem> = emptyList(),
     )
-    fun showLibPopup(popupType: LibTypePopup)
 
     fun changeVisWindow(type: LibTypeWindow, show: Boolean)
 

@@ -23,8 +23,8 @@ fun GameAppBar(
     component: GameComponent,
     showDialog: () -> Unit,
     onFinishActivity: () -> Unit,
-    doCreateSaveIntent: () -> Unit,
-    doCreateLoadIntent: () -> Unit
+    doSaveFile: () -> Unit,
+    doLoadFile: () -> Unit
 ) {
     val state by component.model.collectAsState()
 
@@ -57,10 +57,10 @@ fun GameAppBar(
                     )
                 }
             }
-            if (state.isGameRunning) {
+            if (state.isGameRunning && !state.isGameDirInternal) {
                 RootAppBarMenu(
-                    doCreateSaveIntent = doCreateSaveIntent,
-                    doCreateLoadIntent = doCreateLoadIntent
+                    doCreateSaveIntent = doSaveFile,
+                    doCreateLoadIntent = doLoadFile
                 )
             }
         }

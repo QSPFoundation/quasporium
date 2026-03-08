@@ -167,23 +167,29 @@ fun DialogsMainContent(
                     }
 
                     DialogsState.DIALOG_OUTPUT_VALUE -> config.outputState.let {
-                        if (it == null || config.outputValue.isBlank()) {
+                        if (it == null) {
                             component.onDismissed()
                         } else {
-                            if (it == OutputState.OUTPUT_LIST) {
-                                DialogOutputListValueContent(
-                                    listItems = config.menuItems,
-                                    onConfirm = { i -> component.confirmMessage(it to i) },
-                                    onDismiss = component.onDismissed
-                                )
-                            } else {
-                                DialogOutputValueContent(
-                                    message = config.outputValue,
-                                    isImage = it == OutputState.OUTPUT_IMAGE,
-                                    isMsg = it == OutputState.OUTPUT_SIMPLE_MSG,
-                                    onConfirm = { component.confirmMessage(it to 0) },
-                                    onDismiss = component.onDismissed
-                                )
+                            when {
+                                config.menuItems.isNotEmpty() -> {
+                                    DialogOutputListValueContent(
+                                        listItems = config.menuItems,
+                                        onConfirm = { i -> component.confirmMessage(it to i) },
+                                        onDismiss = component.onDismissed
+                                    )
+                                }
+
+                                config.outputValue.isNotBlank() -> {
+                                    DialogOutputValueContent(
+                                        message = config.outputValue,
+                                        isImage = it == OutputState.OUTPUT_IMAGE,
+                                        isMsg = it == OutputState.OUTPUT_SIMPLE_MSG,
+                                        onConfirm = { component.confirmMessage(it to 0) },
+                                        onDismiss = component.onDismissed
+                                    )
+                                }
+
+                                else -> component.onDismissed()
                             }
                         }
                     }

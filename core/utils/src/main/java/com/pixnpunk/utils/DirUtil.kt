@@ -9,7 +9,9 @@ import androidx.documentfile.provider.DocumentFile
 import com.anggrayudi.storage.file.DocumentFileCompat.fromUri
 import com.anggrayudi.storage.file.DocumentFileType
 import com.anggrayudi.storage.file.MimeType
+import com.anggrayudi.storage.file.StorageId
 import com.anggrayudi.storage.file.findParent
+import com.anggrayudi.storage.file.getStorageId
 import com.anggrayudi.storage.file.search
 import com.pixnpunk.utils.FileUtil.isWritableDir
 import kotlinx.coroutines.flow.first
@@ -19,6 +21,14 @@ import org.koin.core.component.get
 import kotlin.contracts.ExperimentalContracts
 
 object DirUtil : KoinComponent {
+    @OptIn(ExperimentalContracts::class)
+    fun isGameDirIsInternal(rootDirPath: String): Boolean {
+        val gameDir = fromUri(get(), rootDirPath.toUri())
+        if (!gameDir.isWritableDir()) return false
+
+        return gameDir.getStorageId(get()) == StorageId.DATA
+    }
+
     @OptIn(ExperimentalContracts::class)
     suspend fun receiveGameDirFromFile(rootDirPath: String): DocumentFile? {
         val gameDir = fromUri(get(), rootDirPath.toUri())
