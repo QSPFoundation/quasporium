@@ -383,11 +383,7 @@ class RealGameComponent(
         @OptIn(ExperimentalContracts::class)
         override fun handle(path: String): WebResourceResponse? {
             val mRootDir = store.state.gameDirUriBox.toUri().toDocumentFile(get())
-            if (!mRootDir.isWritableDir()) {
-                FirebaseCrashlytics.getInstance()
-                    .recordException(RuntimeException("Root dir is not writable!"))
-                return null
-            }
+            if (!mRootDir.isWritableDir()) return null
             return runCatching {
                 val mediaFile = mRootDir.child(get(), path)
                 if (!mediaFile.isWritableFile()) {
