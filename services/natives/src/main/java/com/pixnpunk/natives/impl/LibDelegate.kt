@@ -151,12 +151,14 @@ class LibDelegate(
     }
 
     fun handleShowMessage(message: String?) {
-        returnValueFuture = CompletableFuture()
-        gameInterface.showLibDialog(
-            dialogType = LibTypeDialog.DIALOG_MESSAGE,
-            inputString = message.orEmpty()
-        )
-        returnValueFuture.get()
+        runCatching {
+            returnValueFuture = CompletableFuture()
+            gameInterface.showLibDialog(
+                dialogType = LibTypeDialog.DIALOG_MESSAGE,
+                inputString = message.orEmpty()
+            )
+            returnValueFuture.get()
+        }
     }
 
     fun handlePlayFile(path: String?, volume: Int) {
