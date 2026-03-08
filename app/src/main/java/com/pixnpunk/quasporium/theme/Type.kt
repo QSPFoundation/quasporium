@@ -4,16 +4,26 @@ import androidx.compose.material3.Typography
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import com.pixnpunk.quasporium.R
 
 val bodyFontFamily = FontFamily(
     Font(
-        resId = R.font.roboto_variablefont_wdth_wght,
-        style = FontStyle.Normal
+        resId = R.font.roboto_regular,
+        weight = FontWeight.Normal
     ),
     Font(
-        resId = R.font.roboto_italic_variablefont_wdth_wght,
+        resId = R.font.roboto_italic,
+        weight = FontWeight.Normal,
         style = FontStyle.Italic
+    ),
+    Font(
+        resId = R.font.roboto_medium,
+        weight = FontWeight.Medium
+    ),
+    Font(
+        resId = R.font.roboto_bold,
+        weight = FontWeight.Bold
     )
 )
 
