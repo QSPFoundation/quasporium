@@ -1,7 +1,7 @@
 package com.pixnpunk.dto
 
 interface GameInterface {
-    class UserCancelledException : Exception("User cancelled file selection")
+    class UserCancelledException : Exception("User cancelled file/menu selection")
 
     fun requestReceiveFile(filePath: String)
     fun requestReceiveFile()
