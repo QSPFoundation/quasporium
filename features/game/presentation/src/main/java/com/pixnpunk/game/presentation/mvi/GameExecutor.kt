@@ -28,6 +28,8 @@ internal class GameExecutor(
 
     override fun executeIntent(intent: GameStore.Intent) {
         when (intent) {
+            is GameStore.Intent.OnDismissDialog -> service.putReturnValue(null)
+
             is GameStore.Intent.OnLoadFile ->
                 if (state().isUserChooseSave) {
                     dispatch(GameStore.Message.UpdateIsUserChooseSave(false))
@@ -120,9 +122,6 @@ internal class GameExecutor(
 
                     else -> service.onCodeExec(intent.inputString)
                 }
-
-            is GameStore.Intent.OnDismissDialog ->
-                service.putReturnValue(LibReturnValue())
         }
     }
 
