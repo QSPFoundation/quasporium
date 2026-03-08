@@ -14,8 +14,8 @@ android {
         applicationId = "com.pixnpunk.quasporium"
         minSdk = 26
         targetSdk = 36
-        versionCode = 30060002
-        versionName = "1.6.0-beta2"
+        versionCode = 30060101
+        versionName = "1.6.1-beta1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
