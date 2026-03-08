@@ -18,7 +18,12 @@ interface GameDao {
     @Query("SELECT * FROM game ORDER BY id")
     fun getAllPaged(): PagingSource<Int, GameEntity>
 
-    @Query("SELECT * FROM game_fts WHERE title LIKE :query || '%' ")
+    @Query("""
+        SELECT game.* 
+        FROM game 
+        JOIN game_fts ON game.id = game_fts.rowid
+        WHERE game_fts MATCH 'title:' || :query || '*'
+    """)
     fun search(query: String): PagingSource<Int, GameEntity>
 
     @Query("SELECT count(*) FROM game")

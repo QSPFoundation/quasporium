@@ -9,7 +9,7 @@ import com.pixnpunk.database.model.GameFTS
 
 @Database(
     entities = [GameEntity::class, GameFTS::class],
-    version = 1
+    version = 2
 )
 @TypeConverters(ListStringConverter::class)
 abstract class AppDatabase : RoomDatabase() {
