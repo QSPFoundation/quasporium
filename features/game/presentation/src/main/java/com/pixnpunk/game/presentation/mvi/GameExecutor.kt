@@ -1,9 +1,18 @@
 package com.pixnpunk.game.presentation.mvi
 
 import android.content.Context
+import androidx.core.net.toUri
+import com.anggrayudi.storage.extension.toDocumentFile
+import com.anggrayudi.storage.file.CreateMode
+import com.anggrayudi.storage.file.MimeType
+import com.anggrayudi.storage.file.baseName
+import com.anggrayudi.storage.file.children
+import com.anggrayudi.storage.file.makeFile
+import com.anggrayudi.storage.file.makeFolder
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
 import com.pixnpunk.dto.InputState
 import com.pixnpunk.dto.LibReturnValue
+import com.pixnpunk.dto.LibSaveItem
 import com.pixnpunk.dto.LibTypeDialog
 import com.pixnpunk.dto.LibTypePopup
 import com.pixnpunk.dto.LibTypeWindow
@@ -12,6 +21,8 @@ import com.pixnpunk.game.presentation.mvi.GameStore.Label.ShowLoadFilePicker
 import com.pixnpunk.game.presentation.mvi.GameStore.Label.ShowSaveFilePicker
 import com.pixnpunk.natives.NativeViewModel
 import com.pixnpunk.settings.SettingsRepository
+import com.pixnpunk.utils.FileUtil.isWritableDir
+import com.pixnpunk.utils.FileUtil.isWritableFile
 import com.pixnpunk.utils.PathUtil.getImageUriFromPath
 import com.pixnpunk.utils.PathUtil.normalizeContentPath
 import kotlinx.coroutines.Dispatchers
@@ -19,6 +30,9 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.launch
+import kotlin.contracts.ExperimentalContracts
+import kotlin.random.Random
+import kotlin.random.nextUInt
 
 internal class GameExecutor(
     private val appContext: Context,
@@ -26,6 +40,7 @@ internal class GameExecutor(
     private val settingsRepo: SettingsRepository
 ) : CoroutineExecutor<GameStore.Intent, GameStore.Action, GameStore.State, GameStore.Message, GameStore.Label>() {
 
+    @OptIn(ExperimentalContracts::class)
     override fun executeIntent(intent: GameStore.Intent) {
         when (intent) {
             is GameStore.Intent.OnDismissDialog -> service.putReturnValue(null)
@@ -93,11 +108,26 @@ internal class GameExecutor(
                 )
 
             is GameStore.Intent.StartLoadFile -> {
+                dispatch(GameStore.Message.UpdateIsUserChooseSave(true))
                 if (!state().isGameDirInternal) {
-                    dispatch(GameStore.Message.UpdateIsUserChooseSave(true))
                     publish(ShowLoadFilePicker)
                 } else {
-
+                    val gameDir = state().gameDirUriBox.toUri().toDocumentFile(appContext)
+                    if (!gameDir.isWritableDir()) return
+                    val savesDir = gameDir.makeFolder(
+                        appContext,
+                        "QuasporiumSaves",
+                        CreateMode.REUSE
+                    )
+                    if (!savesDir.isWritableDir()) return
+                    val saveFiles = savesDir.children.map {
+                        LibSaveItem(
+                            it.baseName,
+                            it.lastModified(),
+                            it.uri.toString()
+                        )
+                    }
+                    publish(GameStore.Label.ShowListSavesDialog(saveFiles))
                 }
             }
 
@@ -106,7 +136,26 @@ internal class GameExecutor(
                     dispatch(GameStore.Message.UpdateIsUserChooseSave(true))
                     publish(ShowSaveFilePicker)
                 } else {
-
+                    val gameDir = state().gameDirUriBox.toUri().toDocumentFile(appContext)
+                    if (!gameDir.isWritableDir()) return
+                    val savesDir = gameDir.makeFolder(
+                        appContext,
+                        "QuasporiumSaves",
+                        CreateMode.REUSE
+                    )
+                    if (!savesDir.isWritableDir()) return
+                    val newSaveFile = savesDir.makeFile(
+                        appContext,
+                        "Save_${Random.nextUInt()}.sav",
+                        MimeType.BINARY_FILE,
+                        CreateMode.REPLACE
+                    )
+                    if (newSaveFile.isWritableFile()) {
+                        service.onSaveFile(newSaveFile.uri)
+                    } else {
+                        newSaveFile?.delete()
+                        return
+                    }
                 }
             }
 

@@ -24,6 +24,7 @@ import com.pixnpunk.dialogs.presentation.content.DialogSelectGameContent
 import com.pixnpunk.dto.ColorPickerState
 import com.pixnpunk.dto.InputState
 import com.pixnpunk.dto.OutputState
+import com.pixnpunk.dto.OutputStateValue
 import com.pixnpunk.dto.SettingsEntity
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -172,20 +173,46 @@ fun DialogsMainContent(
                             component.onDismissed()
                         } else {
                             when {
-                                config.menuItems.isNotEmpty() -> {
-                                    DialogOutputListValueContent(
-                                        listItems = config.menuItems,
-                                        onConfirm = { i -> component.confirmMessage(it to i) },
-                                        onDismiss = component.onDismissed
-                                    )
-                                }
-
                                 config.outputValue.isNotBlank() -> {
                                     DialogOutputValueContent(
                                         message = config.outputValue,
                                         isImage = it == OutputState.OUTPUT_IMAGE,
                                         isMsg = it == OutputState.OUTPUT_SIMPLE_MSG,
-                                        onConfirm = { component.confirmMessage(it to 0) },
+                                        onConfirm = {
+                                            component.confirmMessage(
+                                                OutputStateValue(it)
+                                            )
+                                        },
+                                        onDismiss = component.onDismissed
+                                    )
+                                }
+
+                                config.menuItems.isNotEmpty() -> {
+                                    DialogOutputListValueContent(
+                                        menuItems = config.menuItems,
+                                        onConfirm = { i ->
+                                            component.confirmMessage(
+                                                OutputStateValue(
+                                                    state = it,
+                                                    menuIndex = i
+                                                )
+                                            )
+                                        },
+                                        onDismiss = component.onDismissed
+                                    )
+                                }
+
+                                config.saveItems.isNotEmpty() -> {
+                                    DialogOutputListValueContent(
+                                        saveItems = config.saveItems,
+                                        onConfirmFile = { f ->
+                                            component.confirmMessage(
+                                                OutputStateValue(
+                                                    state = it,
+                                                    selFileBox = f
+                                                )
+                                            )
+                                        },
                                         onDismiss = component.onDismissed
                                     )
                                 }

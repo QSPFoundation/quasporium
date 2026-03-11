@@ -50,6 +50,8 @@ dependencies {
 
     implementation(libs.colorpicker.compose)
 
+    implementation(libs.prettytime)
+
     implementation(libs.essenty.lifecycle)
     implementation(libs.decompose.core)
     implementation(libs.decompose.ext)

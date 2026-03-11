@@ -57,7 +57,7 @@ fun GameAppBar(
                     )
                 }
             }
-            if (state.isGameRunning && !state.isGameDirInternal) {
+            if (state.isGameRunning) {
                 RootAppBarMenu(
                     doCreateSaveIntent = doSaveFile,
                     doCreateLoadIntent = doLoadFile

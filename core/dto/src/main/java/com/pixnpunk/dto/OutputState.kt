@@ -6,5 +6,6 @@ enum class OutputState {
     OUTPUT_REQUEST_PERM,
     OUTPUT_SIMPLE_MSG,
     OUTPUT_IMAGE,
-    OUTPUT_LIST,
+    OUTPUT_LIST_MENU,
+    OUTPUT_LIST_SAVES
 }

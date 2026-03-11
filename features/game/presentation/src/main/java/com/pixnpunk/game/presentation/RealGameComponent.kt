@@ -32,9 +32,11 @@ import com.pixnpunk.dialogs.presentation.DialogsState
 import com.pixnpunk.dialogs.presentation.RealDialogsComponent
 import com.pixnpunk.dto.InputState
 import com.pixnpunk.dto.LibGenItem
+import com.pixnpunk.dto.LibSaveItem
 import com.pixnpunk.dto.LibTypeDialog
 import com.pixnpunk.dto.NativeLibAuthors
 import com.pixnpunk.dto.OutputState
+import com.pixnpunk.dto.OutputStateValue
 import com.pixnpunk.extra.presentation.RealExtraComponent
 import com.pixnpunk.game.presentation.mvi.GameStore
 import com.pixnpunk.game.presentation.mvi.RealGameStore
@@ -155,14 +157,17 @@ class RealGameComponent(
 
     override fun doLoadFile() = store.accept(GameStore.Intent.StartLoadFile)
 
-    private fun onConfirmMessage(msg: Pair<OutputState, Int>) {
-        when (msg.first) {
+    private fun onConfirmMessage(value: OutputStateValue) {
+        when (value.state) {
             OutputState.OUTPUT_FINISH_GAME -> onFinishActivity()
 
             OutputState.OUTPUT_RESTART_GAME -> supervisorService.onRestartGame()
 
-            OutputState.OUTPUT_LIST ->
-                store.accept(GameStore.Intent.OnSelectMenuItem(msg.second))
+            OutputState.OUTPUT_LIST_MENU ->
+                store.accept(GameStore.Intent.OnSelectMenuItem(value.menuIndex))
+
+            OutputState.OUTPUT_LIST_SAVES ->
+                store.accept(GameStore.Intent.OnLoadFile(value.selFileBox.toUri()))
 
             OutputState.OUTPUT_SIMPLE_MSG ->
                 store.accept(GameStore.Intent.OnDismissDialog)
@@ -202,6 +207,16 @@ class RealGameComponent(
                 dialogState = LibTypeDialog.DIALOG_INPUT_EXEC
             )
         }
+    }
+
+    override fun doShowDialog(listSaves: List<LibSaveItem>) {
+        dialogNavigation.activate(
+            configuration = DialogsConfig(
+                dialogsState = DialogsState.DIALOG_OUTPUT_VALUE,
+                outputState = OutputState.OUTPUT_LIST_SAVES,
+                saveItems = listSaves
+            )
+        )
     }
 
     override fun doShowDialog(
@@ -270,7 +285,7 @@ class RealGameComponent(
                 dialogNavigation.activate(
                     configuration = DialogsConfig(
                         dialogsState = DialogsState.DIALOG_OUTPUT_VALUE,
-                        outputState = OutputState.OUTPUT_LIST,
+                        outputState = OutputState.OUTPUT_LIST_MENU,
                         menuItems = inputListItems
                     )
                 )

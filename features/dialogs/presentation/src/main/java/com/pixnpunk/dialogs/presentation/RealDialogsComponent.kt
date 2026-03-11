@@ -5,7 +5,7 @@ import com.arkivanov.decompose.ComponentContext
 import com.pixnpunk.dto.ColorPickerState
 import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.dto.InputState
-import com.pixnpunk.dto.OutputState
+import com.pixnpunk.dto.OutputStateValue
 
 class RealDialogsComponent(
     private val componentContext: ComponentContext,
@@ -19,7 +19,7 @@ class RealDialogsComponent(
     override val selectFile: () -> Unit = { },
     override val deselectFile: (String) -> Unit = { },
     override val selectColor: (Pair<ColorPickerState, Color>) -> Unit = { },
-    override val confirmMessage: (Pair<OutputState, Int>) -> Unit = { },
+    override val confirmMessage: (OutputStateValue) -> Unit = { },
     override val inputValue: (Pair<InputState, String>) -> Unit = { },
     override val doPlayGame: (GameEntry, Int) -> Unit = { _, _ -> },
     override val onCleanError: () -> Unit = { },

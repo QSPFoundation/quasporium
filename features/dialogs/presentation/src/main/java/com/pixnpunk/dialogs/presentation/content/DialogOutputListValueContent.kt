@@ -20,42 +20,62 @@ import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.pixnpunk.dto.LibGenItem
+import com.pixnpunk.dto.LibSaveItem
+import org.ocpsoft.prettytime.PrettyTime
+import java.util.*
 
 @Composable
 fun DialogOutputListValueContent(
-    listItems: List<LibGenItem>,
-    onConfirm: (Int) -> Unit,
-    onDismiss: () -> Unit
+    menuItems: List<LibGenItem> = emptyList(),
+    saveItems: List<LibSaveItem> = emptyList(),
+    onConfirm: (Int) -> Unit = { },
+    onConfirmFile: (String) -> Unit = { },
+    onDismiss: () -> Unit = { }
 ) {
     Column(
         modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         LazyColumn {
-            itemsIndexed(listItems) { key, value ->
-                ListItem(
-                    modifier = Modifier.clickable(true) {
-                        onConfirm(key)
-                        onDismiss()
-                    },
-                    leadingContent = {
-                        AsyncImage(
-                            modifier = Modifier
-                                .size(56.dp)
-                                .clip(MaterialTheme.shapes.medium),
-                            model = value.imagePath,
-                            contentScale = ContentScale.Crop,
-                            contentDescription = null
-                        )
-                    },
-                    headlineContent = {
-                        Text(
-                            text = remember(value.text) {
-                                AnnotatedString.fromHtml(value.text)
-                            }
-                        )
-                    }
-                )
+            if (saveItems.isNotEmpty()) {
+                itemsIndexed(saveItems) { _, value ->
+                    ListItem(
+                        modifier = Modifier.clickable(true) {
+                            onConfirmFile(value.fileUriBox)
+                            onDismiss()
+                        },
+                        headlineContent = { Text(text = value.fileName) },
+                        trailingContent = { Text(text = PrettyTime().format(Date(value.fileLastMod))) }
+                    )
+                }
+            }
+
+            if (menuItems.isNotEmpty()) {
+                itemsIndexed(menuItems) { key, value ->
+                    ListItem(
+                        modifier = Modifier.clickable(true) {
+                            onConfirm(key)
+                            onDismiss()
+                        },
+                        leadingContent = {
+                            AsyncImage(
+                                modifier = Modifier
+                                    .size(56.dp)
+                                    .clip(MaterialTheme.shapes.medium),
+                                model = value.imagePath,
+                                contentScale = ContentScale.Crop,
+                                contentDescription = null
+                            )
+                        },
+                        headlineContent = {
+                            Text(
+                                text = remember(value.text) {
+                                    AnnotatedString.fromHtml(value.text)
+                                }
+                            )
+                        }
+                    )
+                }
             }
         }
     }

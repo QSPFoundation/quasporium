@@ -141,6 +141,9 @@ class GameActivity : ComponentActivity() {
                                 it.inputListItems ?: emptyList()
                             )
 
+                        is GameStore.Label.ShowListSavesDialog ->
+                            root.doShowDialog(it.inputListItems)
+
                         is GameStore.Label.ShowLoadFilePicker ->
                             runCatching {
                                 val rootDir =

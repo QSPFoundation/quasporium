@@ -4,6 +4,7 @@ import android.net.Uri
 import com.arkivanov.mvikotlin.core.store.Store
 import com.pixnpunk.dto.InputState
 import com.pixnpunk.dto.LibGenItem
+import com.pixnpunk.dto.LibSaveItem
 import com.pixnpunk.dto.LibTypeDialog
 import kotlinx.serialization.Serializable
 
@@ -63,6 +64,10 @@ sealed interface GameStore : Store<GameStore.Intent, GameStore.State, GameStore.
             val inputString: String,
             val dialogState: LibTypeDialog,
             val inputListItems: List<LibGenItem>? = null
+        ) : Label
+
+        data class ShowListSavesDialog(
+            val inputListItems: List<LibSaveItem>
         ) : Label
 
         data object ShowSaveFilePicker : Label

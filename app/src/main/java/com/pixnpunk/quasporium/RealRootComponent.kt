@@ -161,13 +161,9 @@ class RealRootComponent(
                     store.accept(RootStore.Intent.UpdateColorConfig(it.first, it.second))
                 },
                 confirmMessage = {
-                    when (it.first) {
+                    when (it.state) {
                         OutputState.OUTPUT_REQUEST_PERM -> launchStorageAccess()
-                        OutputState.OUTPUT_SIMPLE_MSG -> {}
-                        OutputState.OUTPUT_IMAGE -> {}
-                        OutputState.OUTPUT_LIST -> {}
-                        OutputState.OUTPUT_RESTART_GAME -> {}
-                        OutputState.OUTPUT_FINISH_GAME -> {}
+                        else -> {}
                     }
                 },
                 inputValue = {
