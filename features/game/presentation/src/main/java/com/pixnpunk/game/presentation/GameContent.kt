@@ -3,6 +3,8 @@ package com.pixnpunk.game.presentation
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.material3.Badge
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.VerticalDragHandle
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
@@ -18,8 +20,12 @@ import androidx.compose.material3.adaptive.layout.calculateThreePaneScaffoldValu
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.arkivanov.decompose.ExperimentalDecomposeApi
@@ -32,6 +38,9 @@ import com.pixnpunk.game.presentation.component.GameBottomBar
 import com.pixnpunk.game.presentation.theme.QuasporiumTheme
 import com.pixnpunk.main.presentation.MainContent
 import com.pixnpunk.`object`.presentation.ObjectContent
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalDecomposeApi::class, ExperimentalMaterial3AdaptiveApi::class)
 @Composable
@@ -50,6 +59,12 @@ fun GameContent(
     val isMainDescUpdated = state.isMainDescUpdated.second
     val isExtraDescUpdated = state.isExtraDescUpdated.second
     val isObjectsListUpdated = state.isObjectsListUpdated.second
+
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    val coroutineScope = rememberCoroutineScope()
+    val doubleTapTimeout = LocalViewConfiguration.current.doubleTapTimeoutMillis
+    var clickJob by remember { mutableStateOf<Job?>(null) }
 
     val directive = calculatePaneScaffoldDirective(currentWindowAdaptiveInfo())
 
@@ -141,11 +156,25 @@ fun GameContent(
                                     titleText = stringResource(R.string.main_tab_title),
                                     component = component,
                                     showDialog = component::doShowDialog,
-                                    doCloseGame = component::doFinishGame,
+                                    doCloseGame = {
+                                        if (clickJob?.isActive == true) {
+                                            clickJob?.cancel()
+                                            component.doFinishGame()
+                                        } else {
+                                            clickJob = coroutineScope.launch {
+                                                delay(doubleTapTimeout)
+                                                snackbarHostState.showSnackbar(
+                                                    message = "Press back again to close",
+                                                    duration = SnackbarDuration.Short
+                                                )
+                                            }
+                                        }
+                                    },
                                     doSaveFile = component::doSaveFile,
                                     doLoadFile = component::doLoadFile
                                 )
-                            }
+                            },
+                            snackbarHostState = snackbarHostState
                         )
                     }
                 },

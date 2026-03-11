@@ -7,6 +7,8 @@ import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridS
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -18,7 +20,8 @@ import androidx.compose.ui.Modifier
 @Composable
 fun MainContent(
     component: MainComponent,
-    topAppBar: @Composable (() -> Unit)
+    topAppBar: @Composable (() -> Unit),
+    snackbarHostState: SnackbarHostState
 ) {
     val state by component.model.collectAsState()
     val settings by component.settingsState.collectAsState()
@@ -33,7 +36,8 @@ fun MainContent(
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        topBar = topAppBar
+        topBar = topAppBar,
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         if (!state.isActionsVis || !state.actions.isNotEmpty()) {
             MainContentWebView(

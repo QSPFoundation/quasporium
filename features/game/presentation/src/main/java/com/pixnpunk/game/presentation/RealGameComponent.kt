@@ -159,8 +159,6 @@ class RealGameComponent(
 
     private fun onConfirmMessage(value: OutputStateValue) {
         when (value.state) {
-            OutputState.OUTPUT_FINISH_GAME -> onFinishActivity()
-
             OutputState.OUTPUT_RESTART_GAME -> supervisorService.onRestartGame()
 
             OutputState.OUTPUT_LIST_MENU ->
@@ -335,20 +333,12 @@ class RealGameComponent(
             configuration = DialogsConfig(
                 dialogsState = DialogsState.DIALOG_OUTPUT_VALUE,
                 outputState = OutputState.OUTPUT_RESTART_GAME,
-                outputValue = "Restart game? All unsaved progress maybe lost."
+                outputValue = "Restart game? All unsaved progress might be lost"
             )
         )
     }
 
-    override fun doFinishGame() {
-        dialogNavigation.activate(
-            configuration = DialogsConfig(
-                dialogsState = DialogsState.DIALOG_OUTPUT_VALUE,
-                outputState = OutputState.OUTPUT_FINISH_GAME,
-                outputValue = "Close game? All unsaved progress maybe lost."
-            )
-        )
-    }
+    override fun doFinishGame() = onFinishActivity()
 
     private inner class GameWebViewClient : WebViewClient() {
         override fun shouldOverrideUrlLoading(
