@@ -4,7 +4,7 @@ import androidx.compose.ui.graphics.Color
 import com.pixnpunk.dto.ColorPickerState
 import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.dto.InputState
-import com.pixnpunk.dto.OutputState
+import com.pixnpunk.dto.OutputStateValue
 
 sealed interface DialogsComponent {
     val dialogsConfig: DialogsConfig
@@ -17,7 +17,7 @@ sealed interface DialogsComponent {
     val deselectFile: (String) -> Unit
     val selectFile: () -> Unit
     val selectColor: (Pair<ColorPickerState, Color>) -> Unit
-    val confirmMessage: (Pair<OutputState, Int>) -> Unit
+    val confirmMessage: (OutputStateValue) -> Unit
     val inputValue: (Pair<InputState, String>) -> Unit
     val doPlayGame: (GameEntry, Int) -> Unit
     val onCleanError: () -> Unit

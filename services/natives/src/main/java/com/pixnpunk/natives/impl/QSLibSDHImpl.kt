@@ -2,6 +2,7 @@
 
 package com.pixnpunk.natives.impl
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
 import android.os.SystemClock
@@ -17,8 +18,6 @@ import com.pixnpunk.dto.LibReturnValue
 import com.pixnpunk.dto.LibTypeDialog
 import com.pixnpunk.dto.LibUIConfig
 import com.pixnpunk.natives.dto.toLibRawItem
-import com.pixnpunk.utils.FileUtil.readFileContents
-import com.pixnpunk.utils.FileUtil.writeFileContents
 import com.pixnpunk.utils.ThreadUtil.isSameThread
 import java.util.concurrent.CompletableFuture
 import kotlin.contracts.ExperimentalContracts
@@ -64,11 +63,14 @@ class QSLibSDHImpl(
         val gameFileUri = delegate.gameState.gameFilePath.toUri()
         val gameFile = gameFileUri.toDocumentFile(context) ?: return false
         val gameFileFullPath = gameFile.getAbsolutePath(context)
+
         return try {
-            val fd = context.contentResolver
-                .openFileDescriptor(gameFileUri, "rw")?.detachFd() ?: return false
-            executeQspCommand { loadGameWorldFromFD(fd, gameFileFullPath) }
-        } catch (_ : Exception) { false }
+            context.contentResolver.openFileDescriptor(gameFileUri, "r")?.use { pfd ->
+                executeQspCommand { loadGameWorldFromFD(pfd.fd, gameFileFullPath) }
+            } ?: false
+        } catch (_: Exception) {
+            false
+        }
     }
 
     private val actionsList: List<LibGenItem>
@@ -125,8 +127,12 @@ class QSLibSDHImpl(
             delegate.runOnLibThread { loadGameState(path) }
             return
         }
-        val gameData = path.toUri().readFileContents() ?: return
-        executeQspCommand { openSavedGameFromData(gameData, true) }
+
+        runCatching {
+            context.contentResolver.openFileDescriptor(path.toUri(), "r")?.use {
+                executeQspCommand { openSavedGameFromFD(it.fd, true) }
+            }
+        }.onFailure {  }
     }
 
     override fun saveGameState(path: String) {
@@ -134,7 +140,12 @@ class QSLibSDHImpl(
             delegate.runOnLibThread { saveGameState(path) }
             return
         }
-        path.toUri().writeFileContents(saveGameAsData(false) ?: return)
+
+        runCatching {
+            context.contentResolver.openFileDescriptor(path.toUri(), "w")?.use {
+                executeQspCommand { saveGameByFD(it.fd, false) }
+            }
+        }.onFailure { }
     }
 
     override fun onActionClicked(index: Int) {
@@ -208,8 +219,20 @@ class QSLibSDHImpl(
     }
 
     override fun onShowWindow(type: Int, isShow: Boolean) = delegate.handleShowWindow(type, isShow)
-    override fun onOpenGame(path: String?) {
-        if (!path.isNullOrBlank()) gameInterface.changeGameDir(path)
+    @SuppressLint("Recycle")
+    override fun onOpenGame(path: String?): Int {
+        if (path.isNullOrBlank()) return super.onOpenGame(path)
+        val targetFileUri =
+            delegate.handleOpenGameStatus(path).getOrDefault("").toUri()
+        if (targetFileUri == Uri.EMPTY) return super.onOpenGame(path)
+
+        return try {
+            context.contentResolver
+                .openFileDescriptor(path.toUri(), "r")?.fd
+                ?: super.onOpenGame(path)
+        } catch (_: Exception) {
+            super.onOpenGame(path)
+        }
     }
 
     override fun onOpenGameStatus(filename: String?) =
@@ -218,13 +241,7 @@ class QSLibSDHImpl(
     override fun onSaveGameStatus(filename: String?) =
         delegate.handleSaveGameStatus(filename, ::saveGameState)
 
-    override fun onGetFileDesc(path: String?): Int {
-        if (path.isNullOrBlank()) return super.onGetFileDesc(path)
-        val targetFileUri =
-            delegate.handleOpenGameStatus(path).getOrDefault("").toUri()
-        if (targetFileUri == Uri.EMPTY) return super.onGetFileDesc(path)
-        return context.contentResolver
-            .openFileDescriptor(targetFileUri, "r")?.detachFd()
-            ?: super.onGetFileDesc(path)
+    override fun onChangeQuestPath(path: String?) {
+        if (!path.isNullOrBlank()) gameInterface.changeGameDir(path)
     }
 }

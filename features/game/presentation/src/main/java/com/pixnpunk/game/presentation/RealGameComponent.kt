@@ -33,9 +33,11 @@ import com.pixnpunk.dialogs.presentation.DialogsState
 import com.pixnpunk.dialogs.presentation.RealDialogsComponent
 import com.pixnpunk.dto.InputState
 import com.pixnpunk.dto.LibGenItem
+import com.pixnpunk.dto.LibSaveItem
 import com.pixnpunk.dto.LibTypeDialog
 import com.pixnpunk.dto.NativeLibAuthors
 import com.pixnpunk.dto.OutputState
+import com.pixnpunk.dto.OutputStateValue
 import com.pixnpunk.extra.presentation.RealExtraComponent
 import com.pixnpunk.game.presentation.mvi.GameStore
 import com.pixnpunk.game.presentation.mvi.RealGameStore
@@ -61,6 +63,7 @@ import kotlin.contracts.ExperimentalContracts
 class RealGameComponent(
     private val componentContext: ComponentContext,
     private val onStartActivity: (Intent) -> Unit,
+    private val onFinishActivity: () -> Unit,
     private val gameId: Long = 1L,
     private val gameTitle: String = "Title",
     private val gameDirUriBox: String = "",
@@ -155,10 +158,15 @@ class RealGameComponent(
 
     override fun doLoadFile() = store.accept(GameStore.Intent.StartLoadFile)
 
-    private fun onConfirmMessage(msg: Pair<OutputState, Int>) {
-        when (msg.first) {
-            OutputState.OUTPUT_LIST ->
-                store.accept(GameStore.Intent.OnSelectMenuItem(msg.second))
+    private fun onConfirmMessage(value: OutputStateValue) {
+        when (value.state) {
+            OutputState.OUTPUT_RESTART_GAME -> supervisorService.onRestartGame()
+
+            OutputState.OUTPUT_LIST_MENU ->
+                store.accept(GameStore.Intent.OnSelectMenuItem(value.menuIndex))
+
+            OutputState.OUTPUT_LIST_SAVES ->
+                store.accept(GameStore.Intent.OnLoadFile(value.selFileBox.toUri()))
 
             OutputState.OUTPUT_SIMPLE_MSG ->
                 store.accept(GameStore.Intent.OnDismissDialog)
@@ -198,6 +206,16 @@ class RealGameComponent(
                 dialogState = LibTypeDialog.DIALOG_INPUT_EXEC
             )
         }
+    }
+
+    override fun doShowDialog(listSaves: List<LibSaveItem>) {
+        dialogNavigation.activate(
+            configuration = DialogsConfig(
+                dialogsState = DialogsState.DIALOG_OUTPUT_VALUE,
+                outputState = OutputState.OUTPUT_LIST_SAVES,
+                saveItems = listSaves
+            )
+        )
     }
 
     override fun doShowDialog(
@@ -266,7 +284,7 @@ class RealGameComponent(
                 dialogNavigation.activate(
                     configuration = DialogsConfig(
                         dialogsState = DialogsState.DIALOG_OUTPUT_VALUE,
-                        outputState = OutputState.OUTPUT_LIST,
+                        outputState = OutputState.OUTPUT_LIST_MENU,
                         menuItems = inputListItems
                     )
                 )
@@ -296,7 +314,7 @@ class RealGameComponent(
     override fun cleanCountUpdates() =
         store.accept(GameStore.Intent.CleanMainSavedDesc)
 
-    override fun runGame(
+    override fun doRunGame(
         nativeLibFrom: NativeLibAuthors
     ) {
         val currState = store.state
@@ -311,8 +329,17 @@ class RealGameComponent(
         }
     }
 
-    override fun restartGame() =
-        supervisorService.onRestartGame()
+    override fun doRestartGame() {
+        dialogNavigation.activate(
+            configuration = DialogsConfig(
+                dialogsState = DialogsState.DIALOG_OUTPUT_VALUE,
+                outputState = OutputState.OUTPUT_RESTART_GAME,
+                outputValue = "Restart game? All unsaved progress might be lost"
+            )
+        )
+    }
+
+    override fun doFinishGame() = onFinishActivity()
 
     private inner class GameWebViewClient : WebViewClient() {
         override fun shouldOverrideUrlLoading(

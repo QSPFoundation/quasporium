@@ -4,6 +4,7 @@ import com.arkivanov.decompose.router.slot.ChildSlot
 import com.arkivanov.decompose.value.Value
 import com.pixnpunk.dialogs.presentation.DialogsComponent
 import com.pixnpunk.dto.LibGenItem
+import com.pixnpunk.dto.LibSaveItem
 import com.pixnpunk.dto.LibTypeDialog
 import com.pixnpunk.dto.NativeLibAuthors
 import com.pixnpunk.extra.presentation.RealExtraComponent
@@ -23,10 +24,12 @@ sealed interface GameComponent {
     val model: StateFlow<GameStore.State>
     val label: Flow<GameStore.Label>
 
-    fun runGame(nativeLibFrom: NativeLibAuthors)
-    fun restartGame()
+    fun doRunGame(nativeLibFrom: NativeLibAuthors)
+    fun doRestartGame()
+    fun doFinishGame()
 
     fun doShowDialog()
+    fun doShowDialog(listSaves: List<LibSaveItem>)
     fun doShowDialog(
         dialogState: LibTypeDialog,
         inputString: String = "",

@@ -22,7 +22,7 @@ fun GameAppBar(
     titleText: String,
     component: GameComponent,
     showDialog: () -> Unit,
-    onFinishActivity: () -> Unit,
+    doCloseGame: () -> Unit,
     doSaveFile: () -> Unit,
     doLoadFile: () -> Unit
 ) {
@@ -33,7 +33,7 @@ fun GameAppBar(
     TopAppBar(
         title = { Text(titleText) },
         navigationIcon = {
-            IconButton(onClick = onFinishActivity) {
+            IconButton(onClick = doCloseGame) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = stringResource(R.string.exit_button_description)
@@ -41,7 +41,7 @@ fun GameAppBar(
             }
         },
         actions = {
-            IconButton(onClick = { component.restartGame() }) {
+            IconButton(onClick = { component.doRestartGame() }) {
                 Icon(
                     imageVector = Icons.Default.RestartAlt,
                     contentDescription = stringResource(R.string.restart_button_description)
@@ -57,7 +57,7 @@ fun GameAppBar(
                     )
                 }
             }
-            if (state.isGameRunning && !state.isGameDirInternal) {
+            if (state.isGameRunning) {
                 RootAppBarMenu(
                     doCreateSaveIntent = doSaveFile,
                     doCreateLoadIntent = doLoadFile

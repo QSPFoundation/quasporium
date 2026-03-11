@@ -4,6 +4,7 @@ import com.pixnpunk.dto.ColorPickerState
 import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.dto.InputState
 import com.pixnpunk.dto.LibGenItem
+import com.pixnpunk.dto.LibSaveItem
 import com.pixnpunk.dto.OutputState
 import kotlinx.serialization.Serializable
 
@@ -18,5 +19,6 @@ data class DialogsConfig(
     val isError: Boolean = false,
     val supportValue: String = "",
     val supportErrorValue: String = "",
-	val menuItems: List<LibGenItem> = emptyList()
+	val menuItems: List<LibGenItem> = emptyList(),
+    val saveItems: List<LibSaveItem> = emptyList()
 )
