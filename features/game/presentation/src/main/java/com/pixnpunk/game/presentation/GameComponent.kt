@@ -23,8 +23,9 @@ sealed interface GameComponent {
     val model: StateFlow<GameStore.State>
     val label: Flow<GameStore.Label>
 
-    fun runGame(nativeLibFrom: NativeLibAuthors)
-    fun restartGame()
+    fun doRunGame(nativeLibFrom: NativeLibAuthors)
+    fun doRestartGame()
+    fun doFinishGame()
 
     fun doShowDialog()
     fun doShowDialog(

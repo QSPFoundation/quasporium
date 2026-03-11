@@ -120,16 +120,15 @@ class GameActivity : ComponentActivity() {
 
         root = RealGameComponent(
             componentContext = defaultComponentContext(),
-            onStartActivity = {
-                startActivity(it)
-            },
+            onStartActivity = { startActivity(it) },
+            onFinishActivity = { killProcess(myPid()) },
             gameId = gameId,
             gameTitle = gameTitle,
             gameDirUriBox = gameDirUriBox,
             gameFileUriBox = gameFileUriBox
         )
 
-        root.runGame(settingsState.value.nativeLibFrom)
+        root.doRunGame(settingsState.value.nativeLibFrom)
 
         setContent {
             LaunchedEffect(Unit) {
@@ -178,8 +177,7 @@ class GameActivity : ComponentActivity() {
 
             GameContent(
                 component = root,
-                settings = settingsState.collectAsState().value,
-                onFinish = { killProcess(myPid()) }
+                settings = settingsState.collectAsState().value
             )
         }
     }

@@ -60,6 +60,7 @@ import kotlin.contracts.ExperimentalContracts
 class RealGameComponent(
     private val componentContext: ComponentContext,
     private val onStartActivity: (Intent) -> Unit,
+    private val onFinishActivity: () -> Unit,
     private val gameId: Long = 1L,
     private val gameTitle: String = "Title",
     private val gameDirUriBox: String = "",
@@ -156,6 +157,10 @@ class RealGameComponent(
 
     private fun onConfirmMessage(msg: Pair<OutputState, Int>) {
         when (msg.first) {
+            OutputState.OUTPUT_FINISH_GAME -> onFinishActivity()
+
+            OutputState.OUTPUT_RESTART_GAME -> supervisorService.onRestartGame()
+
             OutputState.OUTPUT_LIST ->
                 store.accept(GameStore.Intent.OnSelectMenuItem(msg.second))
 
@@ -295,7 +300,7 @@ class RealGameComponent(
     override fun cleanCountUpdates() =
         store.accept(GameStore.Intent.CleanMainSavedDesc)
 
-    override fun runGame(
+    override fun doRunGame(
         nativeLibFrom: NativeLibAuthors
     ) {
         val currState = store.state
@@ -310,8 +315,25 @@ class RealGameComponent(
         }
     }
 
-    override fun restartGame() =
-        supervisorService.onRestartGame()
+    override fun doRestartGame() {
+        dialogNavigation.activate(
+            configuration = DialogsConfig(
+                dialogsState = DialogsState.DIALOG_OUTPUT_VALUE,
+                outputState = OutputState.OUTPUT_RESTART_GAME,
+                outputValue = "Restart game? All unsaved progress maybe lost."
+            )
+        )
+    }
+
+    override fun doFinishGame() {
+        dialogNavigation.activate(
+            configuration = DialogsConfig(
+                dialogsState = DialogsState.DIALOG_OUTPUT_VALUE,
+                outputState = OutputState.OUTPUT_FINISH_GAME,
+                outputValue = "Close game? All unsaved progress maybe lost."
+            )
+        )
+    }
 
     private inner class GameWebViewClient : WebViewClient() {
         override fun shouldOverrideUrlLoading(

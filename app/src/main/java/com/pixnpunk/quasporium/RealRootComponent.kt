@@ -166,6 +166,8 @@ class RealRootComponent(
                         OutputState.OUTPUT_SIMPLE_MSG -> {}
                         OutputState.OUTPUT_IMAGE -> {}
                         OutputState.OUTPUT_LIST -> {}
+                        OutputState.OUTPUT_RESTART_GAME -> {}
+                        OutputState.OUTPUT_FINISH_GAME -> {}
                     }
                 },
                 inputValue = {

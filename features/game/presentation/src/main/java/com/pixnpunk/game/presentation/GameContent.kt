@@ -37,8 +37,7 @@ import com.pixnpunk.`object`.presentation.ObjectContent
 @Composable
 fun GameContent(
     component: GameComponent,
-    settings: SettingsEntity,
-    onFinish: () -> Unit
+    settings: SettingsEntity
 ) {
     val state by component.model.collectAsStateWithLifecycle()
     val dialogSlot by component.dialogSlot.subscribeAsState()
@@ -142,7 +141,7 @@ fun GameContent(
                                     titleText = stringResource(R.string.main_tab_title),
                                     component = component,
                                     showDialog = component::doShowDialog,
-                                    onFinishActivity = onFinish,
+                                    doCloseGame = component::doFinishGame,
                                     doSaveFile = component::doSaveFile,
                                     doLoadFile = component::doLoadFile
                                 )
