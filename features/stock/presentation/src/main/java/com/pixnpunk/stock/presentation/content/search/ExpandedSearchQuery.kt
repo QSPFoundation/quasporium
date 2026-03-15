@@ -27,6 +27,7 @@ fun LazyListScope.expandedSearchQueryDefault(
     recentSearches: List<SearchToken>,
     suggestedAuthors: List<String>,
     suggestedTranslators: List<String>,
+    addSearch: (String) -> Unit,
     addToken: (SearchToken) -> Unit
 ) {
     if (recentSearches.isNotEmpty()) {
@@ -35,7 +36,13 @@ fun LazyListScope.expandedSearchQueryDefault(
             SearchSuggestionItem(
                 token = token,
                 icon = Icons.Default.History,
-                onClick = { addToken(token) }
+                onClick = {
+                    if (token.type == SearchTokenType.TITLE) {
+                        addSearch(token.value)
+                    } else {
+                        addToken(token)
+                    }
+                }
             )
         }
     }

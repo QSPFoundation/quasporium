@@ -15,6 +15,7 @@ fun ColumnScope.SharedSearchSuggestionColumn(
     suggestedTranslators: List<String>,
     searchQuery: String,
     recentSearches: List<SearchToken>,
+    addSearch: (String) -> Unit,
     addToken: (SearchToken) -> Unit
 ) {
     LazyColumn(
@@ -46,6 +47,7 @@ fun ColumnScope.SharedSearchSuggestionColumn(
                     suggestedTranslators = suggestedTranslators,
                     searchQuery = searchQuery,
                     recentSearches = recentSearches,
+                    addSearch = addSearch,
                     addToken = addToken
                 )
             }

@@ -46,6 +46,7 @@ class RemotePagingSource(
                         when (it.type) {
                             SearchTokenType.AUTHOR -> parameter(API_SEARCH_AUTHORS, it.value)
                             SearchTokenType.TRANSLATOR -> parameter(API_SEARCH_TRANSLATORS, it.value)
+                            SearchTokenType.TITLE -> parameter(API_SEARCH_NAME, it.value)
                             SearchTokenType.DESCRIPTION -> parameter(API_SEARCH_DESC, it.value)
                         }
                     }

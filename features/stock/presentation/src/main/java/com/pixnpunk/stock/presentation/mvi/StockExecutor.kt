@@ -1,6 +1,8 @@
 package com.pixnpunk.stock.presentation.mvi
 
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
+import com.pixnpunk.stock.domain.model.SearchToken
+import com.pixnpunk.stock.domain.model.SearchTokenType
 import com.pixnpunk.stock.domain.model.SortOrder
 import com.pixnpunk.stock.domain.usecase.DeleteLocalGameEntriesUseCase
 import com.pixnpunk.stock.domain.usecase.SyncDictionariesUseCase
@@ -66,11 +68,25 @@ class StockExecutor(
             is StockStore.Intent.UpdateQuery ->
                 dispatch(StockStore.Message.UpdateSearchQuery(intent.query))
 
-            is StockStore.Intent.ExecuteSearch ->
+            is StockStore.Intent.ExecuteSearch -> {
+                if (state().searchQuery.length >= 3) {
+                    val newRecent = state().recentSearches + SearchToken(
+                        state().searchQuery,
+                        SearchTokenType.TITLE,
+                        state().searchQuery
+                    )
+                    dispatch(
+                        StockStore.Message.UpdateRecentSearches(
+                            newRecent.toSet().toList()
+                        )
+                    )
+                }
                 dispatch(StockStore.Message.ChangeStateSearch(false))
+            }
 
             is StockStore.Intent.AddToken -> {
                 dispatch(StockStore.Message.UpdateSearchQuery(""))
+                dispatch(StockStore.Message.UpdateRecentSearches(state().recentSearches + intent.token))
                 dispatch(StockStore.Message.UpdateActiveTokens(state().activeTokens + intent.token))
                 dispatch(StockStore.Message.ChangeStateSearch(false))
             }

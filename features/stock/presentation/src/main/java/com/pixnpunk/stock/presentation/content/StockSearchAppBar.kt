@@ -155,7 +155,8 @@ fun StockSearchAppBar(
                         suggestedTranslators = suggestedTranslators,
                         searchQuery = searchQuery,
                         recentSearches = recentSearches,
-                        addToken = addToken
+                        addToken = addToken,
+                        addSearch = updateSearchQuery
                     )
                 }
             )
@@ -180,7 +181,8 @@ fun StockSearchAppBar(
                         suggestedTranslators = suggestedTranslators,
                         searchQuery = searchQuery,
                         recentSearches = recentSearches,
-                        addToken = addToken
+                        addToken = addToken,
+                        addSearch = updateSearchQuery
                     )
                 }
             )
