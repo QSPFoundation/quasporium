@@ -7,6 +7,8 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.pixnpunk.notification.NotificationProvider
+import com.pixnpunk.stock.data.workers.WorkerKeys.DEST_DIR
+import com.pixnpunk.stock.data.workers.WorkerKeys.DOWNLOAD_URL
 import com.pixnpunk.utils.FileUtil.writeFileToDir
 import io.ktor.client.*
 import io.ktor.client.plugins.*
@@ -24,8 +26,8 @@ class DownloadGameWorker(
     private val notificationProvider: NotificationProvider
 ) : CoroutineWorker(appContext, workerParams), KoinComponent {
     override suspend fun doWork(): Result {
-        val downloadLink = inputData.getString("url") ?: return Result.failure()
-        val destDirPath = inputData.getString("destDir") ?: return Result.failure()
+        val downloadLink = inputData.getString(DOWNLOAD_URL) ?: return Result.failure()
+        val destDirPath = inputData.getString(DEST_DIR) ?: return Result.failure()
 
         setForeground(
             notificationProvider.createForegroundInfo(

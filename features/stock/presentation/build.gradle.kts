@@ -65,6 +65,7 @@ dependencies {
     implementation(libs.coil.network.ktor3)
 
     implementation(libs.essenty.lifecycle)
+    implementation(libs.essenty.coroutines)
     implementation(libs.decompose.core)
     implementation(libs.decompose.ext)
     implementation(libs.decompose.ext.exp)

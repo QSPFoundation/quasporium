@@ -7,6 +7,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.pixnpunk.dto.stringToEntry
 import com.pixnpunk.notification.NotificationProvider
+import com.pixnpunk.stock.data.workers.WorkerKeys.GAME_DATA_JSON
 import com.pixnpunk.stock.domain.repository.LocalRepository
 import com.pixnpunk.utils.DirUtil.receiveGameDirFromFile
 import com.pixnpunk.utils.FileUtil.removeFileByPath
@@ -22,7 +23,7 @@ class UnpackGameWorker(
     override suspend fun doWork(): Result {
         val archivePath = inputData.getString("filePath") ?: return Result.failure()
         val destDirPath = inputData.getString("destDirPath") ?: return Result.failure()
-        val dataJson = inputData.getString("gameDataJson") ?: return Result.failure()
+        val dataJson = inputData.getString(GAME_DATA_JSON) ?: return Result.failure()
         val gameEntry = dataJson.stringToEntry()
 
         setForeground(

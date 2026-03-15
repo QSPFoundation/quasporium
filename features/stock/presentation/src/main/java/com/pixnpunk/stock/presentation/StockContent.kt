@@ -51,6 +51,9 @@ fun StockContent(
 
     val lazyLocalPagingItems = component.gameLocalPageFlow.collectAsLazyPagingItems()
 
+    val authorSuggestions by component.authorSuggestionsFlow.collectAsState(emptyList())
+    val translatorSuggestions by component.translatorSuggestionsFlow.collectAsState(emptyList())
+
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -91,12 +94,23 @@ fun StockContent(
             if (!model.isDeleteModeActive) {
                 StockSearchAppBar(
                     pagerState = pagerState,
-                    searchEntries = {
-                        when (pagerState.currentPage) {
-                            TabState.LIBRARY.ordinal -> component.searchRemoteEntries(it)
-                            TabState.INSTALLED.ordinal -> component.searchLocalEntries(it)
-                        }
-                    },
+                    sortOrder = model.sortOrder,
+                    selectSortOrder = component::changeSortOrder,
+                    sortBy = model.sortBy,
+                    selectSortBy = component::changeSortBy,
+                    lang = model.selectedLang,
+                    selectSortLang = component::changeSortLang,
+                    searchQuery = model.searchQuery,
+                    isSearchExpanded = model.isSearchExpanded,
+                    activeTokens = model.activeTokens,
+                    recentSearches = model.recentSearches,
+                    suggestedAuthors = authorSuggestions,
+                    suggestedTranslators = translatorSuggestions,
+                    toggleSearch = component::toggleSearch,
+                    updateSearchQuery = component::updateSearchQuery,
+                    executeSearch = component::executeSearch,
+                    addToken = component::addToken,
+                    removeToken = component::removeToken,
                     navigateToSettings = component.navigateToSettings
                 )
             } else {

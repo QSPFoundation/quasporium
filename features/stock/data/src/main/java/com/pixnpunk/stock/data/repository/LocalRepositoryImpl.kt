@@ -1,5 +1,6 @@
 package com.pixnpunk.stock.data.repository
 
+import android.content.Context
 import androidx.core.net.toUri
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
@@ -13,6 +14,7 @@ import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.dto.GameListType
 import com.pixnpunk.stock.data.mapper.toDomain
 import com.pixnpunk.stock.data.mapper.toEntity
+import com.pixnpunk.stock.domain.model.SearchState
 import com.pixnpunk.stock.domain.repository.LocalRepository
 import com.pixnpunk.utils.DirUtil.receiveGameFilesFromDir
 import com.pixnpunk.utils.DirUtil.tryReceiveDirSize
@@ -20,13 +22,11 @@ import com.pixnpunk.utils.FileUtil.createSpecialFiles
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.get
-import org.koin.core.component.inject
 
-class LocalRepositoryImpl : LocalRepository, KoinComponent {
-
-    private val gameDao: GameDao by inject()
+class LocalRepositoryImpl(
+    private val context: Context,
+    private val gameDao: GameDao
+) : LocalRepository {
 
     override fun observeEntryUrls(): Flow<List<String>> =
         gameDao.getByUrl().distinctUntilChanged()
@@ -37,9 +37,9 @@ class LocalRepositoryImpl : LocalRepository, KoinComponent {
     override suspend fun deleteGameEntries(idsDelete: Set<Long>): Int {
         val entriesDelete = gameDao.getByIds(idsDelete).apply {
             forEach {
-                val gameDir = it.gameDirPath.toUri().toDocumentFile(get())
+                val gameDir = it.gameDirPath.toUri().toDocumentFile(context)
                 if (gameDir?.isRawFile == true) {
-                    gameDir.deleteRecursively(get())
+                    gameDir.deleteRecursively(context)
                 }
             }
         }
@@ -49,24 +49,22 @@ class LocalRepositoryImpl : LocalRepository, KoinComponent {
     override suspend fun getGameEntryById(entryId: Long): GameEntry =
         gameDao.getById(entryId)?.toDomain() ?: GameEntry()
 
-    override suspend fun getAllPagedGameEntries(): Flow<PagingData<GameEntry>> =
+    override fun getGameEntriesPager(
+        searchState: SearchState
+    ): Flow<PagingData<GameEntry>> =
         Pager(
             config = PagingConfig(
                 pageSize = 15,
                 initialLoadSize = 20,
                 enablePlaceholders = false
             ),
-            pagingSourceFactory = { gameDao.getAllPaged() }
-        ).flow.map { data -> data.map { entry -> entry.toDomain() } }
-
-    override suspend fun searchGameEntriesByQuery(query: String): Flow<PagingData<GameEntry>> =
-        Pager(
-            config = PagingConfig(
-                pageSize = 15,
-                initialLoadSize = 20,
-                enablePlaceholders = false
-            ),
-            pagingSourceFactory = { gameDao.search(query) }
+            pagingSourceFactory = {
+                if (searchState.query.isBlank()) {
+                    gameDao.getAllPaged()
+                } else {
+                    gameDao.search(searchState.query)
+                }
+            }
         ).flow.map { data -> data.map { entry -> entry.toDomain() } }
 
     override suspend fun updateEntry(entry: GameEntry) {
