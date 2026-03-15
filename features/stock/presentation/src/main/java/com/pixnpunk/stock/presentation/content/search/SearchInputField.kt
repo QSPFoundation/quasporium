@@ -1,5 +1,6 @@
 package com.pixnpunk.stock.presentation.content.search
 
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
@@ -9,12 +10,15 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.SearchBarDefaults
+import androidx.compose.material3.SearchBarState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchInputField(
+    searchBarState: SearchBarState,
+    textFieldState: TextFieldState,
     searchQuery: String,
     isSearchExpanded: Boolean,
     updateSearchQuery: (String) -> Unit,
@@ -23,11 +27,9 @@ fun SearchInputField(
     navigateToSettings: () -> Unit,
 ) {
     SearchBarDefaults.InputField(
-        query = searchQuery,
-        onQueryChange = { updateSearchQuery(it) },
+        searchBarState = searchBarState,
+        textFieldState = textFieldState,
         onSearch = { executeSearch() },
-        expanded = isSearchExpanded,
-        onExpandedChange = { toggleSearch(it) },
         placeholder = { Text("Search games") },
         leadingIcon = {
             if (!isSearchExpanded) {

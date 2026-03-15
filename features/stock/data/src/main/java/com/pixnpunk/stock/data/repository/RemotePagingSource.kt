@@ -33,20 +33,21 @@ class RemotePagingSource(
     private val language: String? = null,
     private val activeTokens: List<SearchToken> = emptyList()
 ) : PagingSource<Int, GameEntry>() {
-    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, GameEntry> {
-        return try {
+    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, GameEntry> =
+        try {
             val currentPage = params.key ?: INITIAL_PAGE_INDEX
 
             val responseResult = ktorClient.get(REMOTE_GAMES_URL) {
                 parameter(API_QUERY_PAGE, currentPage)
                 parameter(API_QUERY_PER_PAGE, PAGE_SIZE)
                 parameter(API_SEARCH_NAME, searchQuery)
-                activeTokens.forEach {
-                    when (it.type) {
-                        SearchTokenType.AUTHOR -> parameter(API_SEARCH_AUTHORS, it.value)
-                        SearchTokenType.TRANSLATOR -> parameter(API_SEARCH_TRANSLATORS, it.value)
-                        SearchTokenType.TITLE -> parameter(API_SEARCH_NAME, it.value)
-                        SearchTokenType.DESCRIPTION -> parameter(API_SEARCH_DESC, it.value)
+                if (activeTokens.isNotEmpty()) {
+                    activeTokens.forEach {
+                        when (it.type) {
+                            SearchTokenType.AUTHOR -> parameter(API_SEARCH_AUTHORS, it.value)
+                            SearchTokenType.TRANSLATOR -> parameter(API_SEARCH_TRANSLATORS, it.value)
+                            SearchTokenType.DESCRIPTION -> parameter(API_SEARCH_DESC, it.value)
+                        }
                     }
                 }
                 parameter(API_QUERY_SORT, sortBy.apiName)
@@ -64,7 +65,6 @@ class RemotePagingSource(
         } catch (e: Exception) {
             LoadResult.Error(e)
         }
-    }
 
     override fun getRefreshKey(state: PagingState<Int, GameEntry>): Int? =
         state.anchorPosition?.let { anchorPosition ->

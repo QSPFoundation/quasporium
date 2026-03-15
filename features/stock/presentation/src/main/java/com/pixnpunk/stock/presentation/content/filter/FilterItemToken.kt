@@ -6,7 +6,6 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Subject
-import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Translate
@@ -31,7 +30,6 @@ fun LazyListScope.filterItemToken(
                 imageVector = when (token.type) {
                     SearchTokenType.AUTHOR -> Icons.Default.Person
                     SearchTokenType.TRANSLATOR -> Icons.Default.Translate
-                    SearchTokenType.TITLE -> Icons.Default.Book
                     SearchTokenType.DESCRIPTION -> Icons.AutoMirrored.Filled.Subject
                 },
                 contentDescription = null,

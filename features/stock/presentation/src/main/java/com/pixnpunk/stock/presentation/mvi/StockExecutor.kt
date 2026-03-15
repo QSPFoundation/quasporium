@@ -70,9 +70,9 @@ class StockExecutor(
                 dispatch(StockStore.Message.ChangeStateSearch(false))
 
             is StockStore.Intent.AddToken -> {
-                dispatch(StockStore.Message.ChangeStateSearch(false))
                 dispatch(StockStore.Message.UpdateSearchQuery(""))
                 dispatch(StockStore.Message.UpdateActiveTokens(state().activeTokens + intent.token))
+                dispatch(StockStore.Message.ChangeStateSearch(false))
             }
 
             is StockStore.Intent.RemoveToken -> {

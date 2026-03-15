@@ -5,14 +5,20 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.material3.ExpandedDockedSearchBar
+import androidx.compose.material3.ExpandedFullScreenSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SearchBarValue
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -20,12 +26,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.window.core.layout.WindowSizeClass
 import com.pixnpunk.stock.domain.model.SearchToken
 import com.pixnpunk.stock.domain.model.SortBy
 import com.pixnpunk.stock.domain.model.SortOrder
@@ -37,8 +45,7 @@ import com.pixnpunk.stock.presentation.content.filter.filterItemOrder
 import com.pixnpunk.stock.presentation.content.filter.filterItemToken
 import com.pixnpunk.stock.presentation.content.filter.filterVerticalDivider
 import com.pixnpunk.stock.presentation.content.search.SearchInputField
-import com.pixnpunk.stock.presentation.content.search.expandedSearchQueryEmpty
-import com.pixnpunk.stock.presentation.content.search.expandedSearchQueryNotEmpty
+import com.pixnpunk.stock.presentation.content.search.SharedSearchSuggestionColumn
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -73,13 +80,48 @@ fun StockSearchAppBar(
         canRequestFocus = true
     }
 
+    val searchBarState = rememberSearchBarState()
+    val textFieldState = rememberTextFieldState()
+
+    LaunchedEffect(textFieldState) {
+        snapshotFlow { textFieldState.text.toString() }
+            .collect(updateSearchQuery)
+    }
+
+    LaunchedEffect(searchQuery) {
+        if (textFieldState.text.toString() != searchQuery) {
+            textFieldState.edit {
+                replace(0, length, searchQuery)
+            }
+        }
+    }
+
+    LaunchedEffect(isSearchExpanded) {
+        if (isSearchExpanded && searchBarState.currentValue == SearchBarValue.Collapsed) {
+            searchBarState.animateToExpanded()
+        } else if (!isSearchExpanded && searchBarState.currentValue == SearchBarValue.Expanded) {
+            searchBarState.animateToCollapsed()
+        }
+    }
+
+    LaunchedEffect(searchBarState.currentValue) {
+        val composeExpanded = searchBarState.currentValue == SearchBarValue.Expanded
+        if (composeExpanded != isSearchExpanded) {
+            toggleSearch(composeExpanded)
+        }
+    }
+
     Column(modifier = Modifier.fillMaxWidth()) {
         SearchBar(
             modifier = Modifier
+                .statusBarsPadding()
                 .align(Alignment.CenterHorizontally)
                 .focusProperties { canFocus = canRequestFocus },
+            state = searchBarState,
             inputField = {
                 SearchInputField(
+                    searchBarState = searchBarState,
+                    textFieldState = textFieldState,
                     searchQuery = searchQuery,
                     isSearchExpanded = isSearchExpanded,
                     updateSearchQuery = updateSearchQuery,
@@ -87,30 +129,61 @@ fun StockSearchAppBar(
                     toggleSearch = toggleSearch,
                     navigateToSettings = navigateToSettings
                 )
-            },
-            expanded = isSearchExpanded,
-            onExpandedChange = { toggleSearch(it) }
+            }
+        )
+        if (currentWindowAdaptiveInfo().windowSizeClass.isWidthAtLeastBreakpoint(
+                WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND
+            )
         ) {
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth(),
-                contentPadding = PaddingValues(bottom = 16.dp)
-            ) {
-                if (searchQuery.isEmpty()) {
-                    expandedSearchQueryEmpty(
-                        recentSearches = recentSearches,
-                        suggestedAuthors = suggestedAuthors,
-                        suggestedTranslators = suggestedTranslators,
-                        addToken = addToken
+            ExpandedDockedSearchBar(
+                state = searchBarState,
+                inputField = {
+                    SearchInputField(
+                        searchBarState = searchBarState,
+                        textFieldState = textFieldState,
+                        searchQuery = searchQuery,
+                        isSearchExpanded = isSearchExpanded,
+                        updateSearchQuery = updateSearchQuery,
+                        executeSearch = executeSearch,
+                        toggleSearch = toggleSearch,
+                        navigateToSettings = navigateToSettings
                     )
-                } else {
-                    expandedSearchQueryNotEmpty(
+                },
+                content = {
+                    SharedSearchSuggestionColumn(
                         suggestedAuthors = suggestedAuthors,
                         suggestedTranslators = suggestedTranslators,
                         searchQuery = searchQuery,
+                        recentSearches = recentSearches,
                         addToken = addToken
                     )
                 }
-            }
+            )
+        } else {
+            ExpandedFullScreenSearchBar(
+                state = searchBarState,
+                inputField = {
+                    SearchInputField(
+                        searchBarState = searchBarState,
+                        textFieldState = textFieldState,
+                        searchQuery = searchQuery,
+                        isSearchExpanded = isSearchExpanded,
+                        updateSearchQuery = updateSearchQuery,
+                        executeSearch = executeSearch,
+                        toggleSearch = toggleSearch,
+                        navigateToSettings = navigateToSettings
+                    )
+                },
+                content = {
+                    SharedSearchSuggestionColumn(
+                        suggestedAuthors = suggestedAuthors,
+                        suggestedTranslators = suggestedTranslators,
+                        searchQuery = searchQuery,
+                        recentSearches = recentSearches,
+                        addToken = addToken
+                    )
+                }
+            )
         }
 
         PrimaryTabRow(
