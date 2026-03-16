@@ -212,6 +212,7 @@ fun DialogsMainContent(
                                         when (it) {
                                             InputState.INPUT_IMAGE_WIDTH -> settings.imageWidth
                                             InputState.INPUT_IMAGE_HEIGHT -> settings.imageHeight
+                                            InputState.INPUT_SAVE_NAME -> config.initialValue
                                             else -> ""
                                         }
                                     }",
@@ -222,10 +223,8 @@ fun DialogsMainContent(
                                             when (it) {
                                                 InputState.INPUT_IMAGE_WIDTH -> stringResource(R.string.input_width_title)
                                                 InputState.INPUT_IMAGE_HEIGHT -> stringResource(R.string.input_height_title)
-                                                InputState.INPUT_WITH_MESSAGE_EXEC -> stringResource(
-                                                    R.string.input_msg_exec_title
-                                                )
-
+                                                InputState.INPUT_WITH_MESSAGE_EXEC -> stringResource(R.string.input_msg_exec_title)
+                                                InputState.INPUT_SAVE_NAME -> "Enter save name"
                                                 else -> stringResource(R.string.input_generic_title)
                                             }
                                         )

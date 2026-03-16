@@ -7,5 +7,6 @@ enum class LibTypeDialog {
     DIALOG_INPUT_AREA,
     DIALOG_INPUT_BOX,
     DIALOG_INPUT_EXEC,
-    DIALOG_MENU
+    DIALOG_MENU,
+    DIALOG_SAVEGAME
 }

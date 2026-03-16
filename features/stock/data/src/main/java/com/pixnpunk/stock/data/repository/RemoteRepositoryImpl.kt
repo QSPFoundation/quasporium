@@ -177,6 +177,7 @@ class RemoteRepositoryImpl(
                 currentPage++
             }
         }
+
         return allItems
     }
 }

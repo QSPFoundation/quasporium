@@ -88,10 +88,7 @@ fun DialogInputValueContent(
                 Text(stringResource(R.string.cancel_button_description))
             }
             TextButton(
-                onClick = {
-                    inputValue(enterValue)
-                    onDismiss()
-                },
+                onClick = { inputValue(enterValue); onDismiss() },
                 enabled = isEnable
             ) {
                 Text(stringResource(R.string.input_button_description))

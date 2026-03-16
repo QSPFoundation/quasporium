@@ -5,11 +5,11 @@ import androidx.core.net.toUri
 import com.anggrayudi.storage.extension.toDocumentFile
 import com.anggrayudi.storage.file.CreateMode
 import com.anggrayudi.storage.file.MimeType
-import com.anggrayudi.storage.file.baseName
-import com.anggrayudi.storage.file.children
 import com.anggrayudi.storage.file.makeFile
 import com.anggrayudi.storage.file.makeFolder
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
+import com.pixnpunk.database.dao.SaveSlotDao
+import com.pixnpunk.database.model.SaveSlotEntity
 import com.pixnpunk.dto.InputState
 import com.pixnpunk.dto.LibReturnValue
 import com.pixnpunk.dto.LibSaveItem
@@ -31,13 +31,12 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.launch
 import kotlin.contracts.ExperimentalContracts
-import kotlin.random.Random
-import kotlin.random.nextUInt
 
 internal class GameExecutor(
     private val appContext: Context,
     private val service: NativeViewModel,
-    private val settingsRepo: SettingsRepository
+    private val settingsRepo: SettingsRepository,
+    private val saveSlotDao: SaveSlotDao
 ) : CoroutineExecutor<GameStore.Intent, GameStore.Action, GameStore.State, GameStore.Message, GameStore.Label>() {
 
     @OptIn(ExperimentalContracts::class)
@@ -112,22 +111,23 @@ internal class GameExecutor(
                 if (!state().isGameDirInternal) {
                     publish(ShowLoadFilePicker)
                 } else {
-                    val gameDir = state().gameDirUriBox.toUri().toDocumentFile(appContext)
-                    if (!gameDir.isWritableDir()) return
-                    val savesDir = gameDir.makeFolder(
-                        appContext,
-                        "QuasporiumSaves",
-                        CreateMode.REUSE
-                    )
-                    if (!savesDir.isWritableDir()) return
-                    val saveFiles = savesDir.children.map {
-                        LibSaveItem(
-                            it.baseName,
-                            it.lastModified(),
-                            it.uri.toString()
-                        )
+                    scope.launch(Dispatchers.IO) {
+                        val saveFiles =
+                            saveSlotDao.getAllSaves(state().gameId).map {
+                                LibSaveItem(
+                                    it.userTitle,
+                                    it.timestamp,
+                                    it.filePath
+                                )
+                            }
+                        scope.launch {
+                            publish(
+                                GameStore.Label.ShowListSavesDialog(
+                                    saveFiles
+                                )
+                            )
+                        }
                     }
-                    publish(GameStore.Label.ShowListSavesDialog(saveFiles))
                 }
             }
 
@@ -136,25 +136,16 @@ internal class GameExecutor(
                     dispatch(GameStore.Message.UpdateIsUserChooseSave(true))
                     publish(ShowSaveFilePicker)
                 } else {
-                    val gameDir = state().gameDirUriBox.toUri().toDocumentFile(appContext)
-                    if (!gameDir.isWritableDir()) return
-                    val savesDir = gameDir.makeFolder(
-                        appContext,
-                        "QuasporiumSaves",
-                        CreateMode.REUSE
-                    )
-                    if (!savesDir.isWritableDir()) return
-                    val newSaveFile = savesDir.makeFile(
-                        appContext,
-                        "Save_${Random.nextUInt()}.sav",
-                        MimeType.BINARY_FILE,
-                        CreateMode.REPLACE
-                    )
-                    if (newSaveFile.isWritableFile()) {
-                        service.onSaveFile(newSaveFile.uri)
-                    } else {
-                        newSaveFile?.delete()
-                        return
+                    scope.launch(Dispatchers.IO) {
+                        val savesCount = saveSlotDao.getSavesCount(state().gameId)
+                        scope.launch {
+                            publish(
+                                ShowDialog(
+                                    inputString = "Save ${savesCount + 1}",
+                                    dialogState = LibTypeDialog.DIALOG_SAVEGAME
+                                )
+                            )
+                        }
                     }
                 }
             }
@@ -168,6 +159,42 @@ internal class GameExecutor(
                         service.putReturnValue(
                             LibReturnValue(dialogTextValue = intent.inputString)
                         )
+
+                    InputState.INPUT_SAVE_NAME -> {
+                        val gameDir = state().gameDirUriBox.toUri().toDocumentFile(appContext)
+                        if (!gameDir.isWritableDir()) return
+                        val savesDir = gameDir.makeFolder(
+                            appContext,
+                            "QuasporiumSaves",
+                            CreateMode.REUSE
+                        )
+                        if (!savesDir.isWritableDir()) return
+                        scope.launch(Dispatchers.IO) {
+                            val savesCount = saveSlotDao.getSavesCount(state().gameId)
+                            val newSaveFile = savesDir.makeFile(
+                                appContext,
+                                "Save_${state().gameId}_${state().gameTitle}_${savesCount + 1}_.sav",
+                                MimeType.BINARY_FILE,
+                                CreateMode.REPLACE
+                            )
+                            if (newSaveFile.isWritableFile()) {
+                                saveSlotDao.insert(
+                                    SaveSlotEntity(
+                                        gameId = state().gameId,
+                                        userTitle = intent.inputString,
+                                        filePath = newSaveFile.uri.toString(),
+                                        timestamp = System.currentTimeMillis()
+                                    )
+                                )
+                                scope.launch {
+                                    service.onSaveFile(newSaveFile.uri)
+                                    publish(GameStore.Label.ShowSnackBar("Save success!"))
+                                }
+                            } else {
+                                newSaveFile?.delete()
+                            }
+                        }
+                    }
 
                     else -> service.onCodeExec(intent.inputString)
                 }

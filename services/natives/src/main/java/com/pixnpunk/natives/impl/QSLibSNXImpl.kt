@@ -204,8 +204,10 @@ class QSLibSNXImpl(
     override fun onOpenGame(path: String?) {
         if (!path.isNullOrBlank()) gameInterface.changeGameDir(path)
     }
+
     override fun onOpenGameStatus(filename: String?) =
         delegate.handleOpenGameStatus(filename, ::loadGameState)
+
     override fun onSaveGameStatus(filename: String?) =
         delegate.handleSaveGameStatus(filename, ::saveGameState)
 }

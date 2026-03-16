@@ -223,6 +223,16 @@ class RealGameComponent(
         inputListItems: List<LibGenItem>
     ) {
         when (dialogState) {
+            LibTypeDialog.DIALOG_SAVEGAME -> {
+                dialogNavigation.activate(
+                    DialogsConfig(
+                        dialogsState = DialogsState.DIALOG_INPUT_VALUE,
+                        inputState = InputState.INPUT_SAVE_NAME,
+                        initialValue = inputString
+                    )
+                )
+            }
+
             LibTypeDialog.DIALOG_MESSAGE -> {
                 val oldConfig = dialogSlot.child?.configuration as? DialogsConfig
                 if (oldConfig != null && oldConfig.dialogsState == DialogsState.DIALOG_OUTPUT_VALUE) {

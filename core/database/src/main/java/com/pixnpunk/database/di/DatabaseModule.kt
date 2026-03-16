@@ -17,4 +17,5 @@ val databaseModule = module {
     single { get<AppDatabase>().gameDao() }
     single { get<AppDatabase>().authorDao() }
     single { get<AppDatabase>().translatorDao() }
+    single { get<AppDatabase>().saveSlotDao() }
 }

@@ -60,6 +60,10 @@ sealed interface GameStore : Store<GameStore.Intent, GameStore.State, GameStore.
     }
 
     sealed interface Label {
+        data class ShowSnackBar(
+            val inputString: String
+        ) : Label
+
         data class ShowDialog(
             val inputString: String,
             val dialogState: LibTypeDialog,

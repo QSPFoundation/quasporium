@@ -6,8 +6,10 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import com.pixnpunk.database.model.GameEntity
+import com.pixnpunk.database.model.GameWithSaves
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -40,6 +42,10 @@ interface GameDao {
 
     @Query("SELECT fileUrl FROM game")
     fun getByUrl(): Flow<List<String>>
+
+    @Transaction
+    @Query("SELECT * FROM game WHERE id = :gameId")
+    fun getGameWithSaves(gameId: Long): Flow<GameWithSaves>
 
     @Query("SELECT * FROM game WHERE id LIKE :id")
     fun subscribeById(id: Long): Flow<GameEntity>
