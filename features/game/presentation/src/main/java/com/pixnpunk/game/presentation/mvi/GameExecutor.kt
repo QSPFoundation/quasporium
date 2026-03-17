@@ -188,7 +188,7 @@ internal class GameExecutor(
                                 )
                                 scope.launch {
                                     service.onSaveFile(newSaveFile.uri)
-                                    publish(GameStore.Label.ShowSnackBar("Save success!"))
+                                    publish(GameStore.Label.ShowSnackBar("Game saved!"))
                                 }
                             } else {
                                 newSaveFile?.delete()
