@@ -17,16 +17,27 @@ interface GameDao {
     @Query("SELECT * FROM game")
     suspend fun getAll(): List<GameEntity>
 
-    @Query("SELECT * FROM game ORDER BY id")
-    fun getAllPaged(): PagingSource<Int, GameEntity>
+    @Query("SELECT * FROM game ORDER BY id ASC")
+    fun getAllAsc(): PagingSource<Int, GameEntity>
+
+    @Query("SELECT * FROM game ORDER BY id DESC")
+    fun getAllDesc(): PagingSource<Int, GameEntity>
 
     @Query("""
-        SELECT game.* 
-        FROM game 
+        SELECT game.* FROM game 
         JOIN game_fts ON game.id = game_fts.rowid
-        WHERE game_fts MATCH 'title:' || :query || '*'
+        WHERE game_fts MATCH :ftsQuery
+        ORDER BY game.id ASC
     """)
-    fun search(query: String): PagingSource<Int, GameEntity>
+    fun searchAsc(ftsQuery: String): PagingSource<Int, GameEntity>
+
+    @Query("""
+        SELECT game.* FROM game 
+        JOIN game_fts ON game.id = game_fts.rowid
+        WHERE game_fts MATCH :ftsQuery
+        ORDER BY game.id DESC
+    """)
+    fun searchDesc(ftsQuery: String): PagingSource<Int, GameEntity>
 
     @Query("SELECT count(*) FROM game")
     suspend fun countGames(): Int

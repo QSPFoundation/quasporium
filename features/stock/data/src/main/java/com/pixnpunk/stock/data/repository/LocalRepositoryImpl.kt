@@ -15,6 +15,8 @@ import com.pixnpunk.dto.GameListType
 import com.pixnpunk.stock.data.mapper.toDomain
 import com.pixnpunk.stock.data.mapper.toEntity
 import com.pixnpunk.stock.domain.model.SearchState
+import com.pixnpunk.stock.domain.model.SearchTokenType
+import com.pixnpunk.stock.domain.model.SortOrder
 import com.pixnpunk.stock.domain.repository.LocalRepository
 import com.pixnpunk.utils.DirUtil.receiveGameFilesFromDir
 import com.pixnpunk.utils.DirUtil.tryReceiveDirSize
@@ -59,10 +61,54 @@ class LocalRepositoryImpl(
                 enablePlaceholders = false
             ),
             pagingSourceFactory = {
-                if (searchState.query.isBlank()) {
-                    gameDao.getAllPaged()
-                } else {
-                    gameDao.search(searchState.query)
+                val ftsQuery = buildList {
+                    val cleanTitle = searchState.query
+                        .filter { it.isLetterOrDigit() || it.isWhitespace() }
+                    if (cleanTitle.isNotBlank()) {
+                        val titleQuery = cleanTitle
+                            .split(' ')
+                            .filter { it.isNotBlank() }
+                            .joinToString(" ") { "title:$it*" }
+                        add(titleQuery)
+                    }
+
+                    searchState.activeTokens.forEach { token ->
+                        val cleanTokenValue = token.value
+                            .filter { it.isLetterOrDigit() || it.isWhitespace() }
+                        if (cleanTokenValue.isNotEmpty()) {
+                            when (token.type) {
+                                SearchTokenType.AUTHOR -> "author"
+                                SearchTokenType.TRANSLATOR -> "portedBy"
+                                SearchTokenType.DESCRIPTION -> "descUrl"
+                                else -> null
+                            }?.let { column ->
+                                add(
+                                    cleanTokenValue
+                                        .split(' ')
+                                        .filter { it.isNotBlank() }
+                                        .joinToString(" ") { "$column:$it*" }
+                                )
+                            }
+                        }
+                    }
+                }.joinToString(separator = " ")
+
+                when (searchState.sortOrder) {
+                    SortOrder.ASCENDING -> {
+                        if (ftsQuery.isBlank()) {
+                            gameDao.getAllAsc()
+                        } else {
+                            gameDao.searchAsc(ftsQuery)
+                        }
+                    }
+
+                    SortOrder.DESCENDING -> {
+                        if (ftsQuery.isBlank()) {
+                            gameDao.getAllDesc()
+                        } else {
+                            gameDao.searchDesc(ftsQuery)
+                        }
+                    }
                 }
             }
         ).flow.map { data -> data.map { entry -> entry.toDomain() } }
