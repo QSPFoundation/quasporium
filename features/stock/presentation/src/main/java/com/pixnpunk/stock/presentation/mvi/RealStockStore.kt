@@ -1,6 +1,5 @@
 package com.pixnpunk.stock.presentation.mvi
 
-import com.arkivanov.mvikotlin.core.store.SimpleBootstrapper
 import com.arkivanov.mvikotlin.core.store.Store
 import com.arkivanov.mvikotlin.core.store.StoreFactory
 import org.koin.core.component.KoinComponent
@@ -15,12 +14,7 @@ class RealStockStore(
         Store<StockStore.Intent, StockStore.State, StockStore.Label> by storeFactory.create(
             name = "StockStore",
             initialState = StockStore.State(),
-            executorFactory = {
-                StockExecutor(get(), get())
-            },
-            bootstrapper = SimpleBootstrapper(
-                StockStore.Action.StartSyncDictionary
-            ),
+            executorFactory = { StockExecutor(get()) },
             reducer = { message ->
                 when (message) {
                     is StockStore.Message.ChangeStateDeleteMode -> copy(isDeleteModeActive = message.newState)

@@ -5,7 +5,6 @@ import com.pixnpunk.stock.domain.model.SearchToken
 import com.pixnpunk.stock.domain.model.SearchTokenType
 import com.pixnpunk.stock.domain.model.SortOrder
 import com.pixnpunk.stock.domain.usecase.DeleteLocalGameEntriesUseCase
-import com.pixnpunk.stock.domain.usecase.SyncDictionariesUseCase
 import com.pixnpunk.stock.presentation.mvi.StockStore.Message.ChangeStateDeleteMode
 import com.pixnpunk.stock.presentation.mvi.StockStore.Message.ClearSelection
 import com.pixnpunk.stock.presentation.mvi.StockStore.Message.SelectionUpdated
@@ -14,8 +13,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class StockExecutor(
-    private val deleteLocalGameEntriesUseCase: DeleteLocalGameEntriesUseCase,
-    private val syncDictionariesUseCase: SyncDictionariesUseCase
+    private val deleteLocalGameEntriesUseCase: DeleteLocalGameEntriesUseCase
 ) : CoroutineExecutor<StockStore.Intent, StockStore.Action, StockStore.State, StockStore.Message, StockStore.Label>() {
 
     override fun executeIntent(intent: StockStore.Intent) {
@@ -94,13 +92,6 @@ class StockExecutor(
             is StockStore.Intent.RemoveToken -> {
                 dispatch(StockStore.Message.UpdateActiveTokens(state().activeTokens - intent.token))
             }
-        }
-    }
-
-    override fun executeAction(action: StockStore.Action) {
-        when (action) {
-            is StockStore.Action.StartSyncDictionary ->
-                scope.launch(Dispatchers.IO) { syncDictionariesUseCase.execute() }
         }
     }
 }

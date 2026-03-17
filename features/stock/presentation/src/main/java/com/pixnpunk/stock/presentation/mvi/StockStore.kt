@@ -57,7 +57,5 @@ sealed interface StockStore : Store<StockStore.Intent, StockStore.State, StockSt
 
     sealed interface Label
 
-    sealed interface Action {
-        data object StartSyncDictionary : Action
-    }
+    sealed interface Action
 }
