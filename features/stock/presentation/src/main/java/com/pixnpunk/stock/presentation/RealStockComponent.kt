@@ -28,7 +28,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.get
+import org.koin.core.component.inject
 
 class RealStockComponent(
     private val componentContext: ComponentContext,
@@ -39,11 +39,11 @@ class RealStockComponent(
 
     private val componentScope = coroutineScope()
 
-    private val settingsRepository: SettingsRepository = get()
-    private val getLocalGameEntriesUseCase: GetLocalGameEntriesUseCase = get()
-    private val getRemoteGameEntriesUseCase: GetRemoteGameEntriesExcludingLocalUseCase = get()
-    private val getAuthorSuggestionUseCase: GetAuthorSuggestionUseCase = get()
-    private val getTranslatorSuggestionUseCase: GetTranslatorSuggestionUseCase = get()
+    private val settingsRepository: SettingsRepository by inject()
+    private val getLocalGameEntriesUseCase: GetLocalGameEntriesUseCase by inject()
+    private val getRemoteGameEntriesUseCase: GetRemoteGameEntriesExcludingLocalUseCase by inject()
+    private val getAuthorSuggestionUseCase: GetAuthorSuggestionUseCase by inject()
+    private val getTranslatorSuggestionUseCase: GetTranslatorSuggestionUseCase by inject()
 
     private val store = instanceKeeper.getStore {
         RealStockStore(DefaultStoreFactory()).create()
