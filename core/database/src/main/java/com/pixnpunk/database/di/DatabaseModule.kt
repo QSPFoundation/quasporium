@@ -7,23 +7,16 @@ import com.pixnpunk.database.AppDatabase
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
-val MIGRATION_1_2 = object : Migration(1, 2) {
+val MIGRATION_5_6 = object : Migration(5, 6) {
     override fun migrate(db: SupportSQLiteDatabase) {
         db.execSQL("DROP TABLE IF EXISTS `game_fts`")
-
-        db.execSQL("DROP TRIGGER IF EXISTS room_fts_content_sync_game_fts_BEFORE_UPDATE")
-        db.execSQL("DROP TRIGGER IF EXISTS room_fts_content_sync_game_fts_BEFORE_DELETE")
-        db.execSQL("DROP TRIGGER IF EXISTS room_fts_content_sync_game_fts_AFTER_UPDATE")
-        db.execSQL("DROP TRIGGER IF EXISTS room_fts_content_sync_game_fts_AFTER_INSERT")
-
-        db.execSQL("CREATE VIRTUAL TABLE IF NOT EXISTS `game_fts` USING FTS4(`author`,`title`, content=`game`)")
-
-        db.execSQL("CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_game_fts_BEFORE_UPDATE BEFORE UPDATE ON `game` BEGIN DELETE FROM `game_fts` WHERE `docid`=OLD.`rowid`; END")
-        db.execSQL("CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_game_fts_BEFORE_DELETE BEFORE DELETE ON `game` BEGIN DELETE FROM `game_fts` WHERE `docid`=OLD.`rowid`; END")
-        db.execSQL("CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_game_fts_AFTER_UPDATE AFTER UPDATE ON `game` BEGIN INSERT INTO `game_fts`(`docid`, `author`, `title`) VALUES (NEW.`rowid`, NEW.`author`, NEW.`title`); END")
-        db.execSQL("CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_game_fts_AFTER_INSERT AFTER INSERT ON `game` BEGIN INSERT INTO `game_fts`(`docid`, `author`, `title`) VALUES (NEW.`rowid`, NEW.`author`, NEW.`title`); END")
-
-        db.execSQL("INSERT INTO game_fts(game_fts) VALUES ('rebuild')")
+        db.execSQL("""
+            CREATE VIRTUAL TABLE IF NOT EXISTS `game_fts` USING FTS4(
+                `author`, `portedBy`, `title`, `descUrl`, 
+                content=`game`, tokenize=unicode61
+            )
+        """.trimIndent())
+        db.execSQL("INSERT INTO `game_fts`(`game_fts`) VALUES ('rebuild')")
     }
 }
 
@@ -34,8 +27,11 @@ val databaseModule = module {
             klass = AppDatabase::class.java,
             name = "games.db"
         )
-        .addMigrations(MIGRATION_1_2)
+        .addMigrations(MIGRATION_5_6)
         .build()
     }
     single { get<AppDatabase>().gameDao() }
+    single { get<AppDatabase>().authorDao() }
+    single { get<AppDatabase>().translatorDao() }
+    single { get<AppDatabase>().saveSlotDao() }
 }

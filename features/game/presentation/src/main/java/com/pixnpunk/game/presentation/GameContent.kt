@@ -46,7 +46,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun GameContent(
     component: GameComponent,
-    settings: SettingsEntity
+    settings: SettingsEntity,
+    snackbarHostState: SnackbarHostState
 ) {
     val state by component.model.collectAsStateWithLifecycle()
     val dialogSlot by component.dialogSlot.subscribeAsState()
@@ -59,8 +60,6 @@ fun GameContent(
     val isMainDescUpdated = state.isMainDescUpdated.second
     val isExtraDescUpdated = state.isExtraDescUpdated.second
     val isObjectsListUpdated = state.isObjectsListUpdated.second
-
-    val snackbarHostState = remember { SnackbarHostState() }
 
     val coroutineScope = rememberCoroutineScope()
     val doubleTapTimeout = LocalViewConfiguration.current.doubleTapTimeoutMillis

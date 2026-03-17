@@ -18,6 +18,7 @@ import com.pixnpunk.dto.LibReturnValue
 import com.pixnpunk.dto.LibTypeDialog
 import com.pixnpunk.dto.LibUIConfig
 import com.pixnpunk.natives.dto.toLibRawItem
+import com.pixnpunk.utils.FileUtil.isWritableFile
 import com.pixnpunk.utils.ThreadUtil.isSameThread
 import java.util.concurrent.CompletableFuture
 import kotlin.contracts.ExperimentalContracts
@@ -225,10 +226,12 @@ class QSLibSDHImpl(
         val targetFileUri =
             delegate.handleOpenGameStatus(path).getOrDefault("").toUri()
         if (targetFileUri == Uri.EMPTY) return super.onOpenGame(path)
+        val targetFile = targetFileUri.toDocumentFile(context)
+        if (!targetFile.isWritableFile()) return super.onOpenGame(path)
 
         return try {
             context.contentResolver
-                .openFileDescriptor(path.toUri(), "r")?.fd
+                .openFileDescriptor(targetFile.uri, "r")?.fd
                 ?: super.onOpenGame(path)
         } catch (_: Exception) {
             super.onOpenGame(path)

@@ -6,6 +6,7 @@ import android.content.Context
 import android.net.Uri
 import android.os.SystemClock
 import androidx.core.net.toUri
+import com.anggrayudi.storage.extension.toDocumentFile
 import com.libqsp.jni.QSPLib
 import com.pixnpunk.dto.GameInterface
 import com.pixnpunk.dto.LibGameState
@@ -16,6 +17,7 @@ import com.pixnpunk.dto.LibTypeDialog
 import com.pixnpunk.dto.LibTypeWindow
 import com.pixnpunk.dto.LibUIConfig
 import com.pixnpunk.natives.dto.toLibRawItem
+import com.pixnpunk.utils.FileUtil.isWritableFile
 import com.pixnpunk.utils.FileUtil.readFileContents
 import com.pixnpunk.utils.FileUtil.writeFileContents
 import com.pixnpunk.utils.ThreadUtil.isSameThread
@@ -81,7 +83,12 @@ class QSPLibImpl(
     override fun startLibThread() = delegate.startLibThread("libQSP")
     override fun stopLibThread() = delegate.stopLibThread()
 
-    override fun runGame(gameId: Long, gameTitle: String, gameDirPath: String, gameFilePath: String) {
+    override fun runGame(
+        gameId: Long,
+        gameTitle: String,
+        gameDirPath: String,
+        gameFilePath: String
+    ) {
         delegate.runOnLibThread {
             doRunGame(gameId, gameTitle, gameDirPath.toUri(), gameFilePath.toUri())
         }
@@ -195,15 +202,26 @@ class QSPLibImpl(
         )
     }
 
+    override fun onOpenGame(file: String?, isNewGame: Boolean) {
+        if (file.isNullOrBlank()) return
+
+        val targetFileUri =
+            delegate.handleOpenGameStatus(file).getOrDefault("").toUri()
+        if (targetFileUri == Uri.EMPTY) return
+        val targetFile = targetFileUri.toDocumentFile(context)
+        if (!targetFile.isWritableFile()) return
+
+        executeQspCommand {
+            loadGameWorldFromData(targetFile.uri.readFileContents(), isNewGame)
+        }
+    }
+
     override fun onOpenGameStatus(file: String?) =
         delegate.handleOpenGameStatus(file, ::loadGameState)
 
     override fun onSaveGameStatus(file: String?) =
         delegate.handleSaveGameStatus(file, ::saveGameState)
 
-    override fun onOpenGame(file: String?, isNewGame: Boolean) {
-        if (!file.isNullOrBlank()) gameInterface.changeGameDir(file)
-    }
 
     private fun loadUIConfiguration() {
         gameInterface.setUIConfig(

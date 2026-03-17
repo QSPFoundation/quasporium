@@ -1,29 +1,27 @@
 package com.pixnpunk.stock.domain.di
 
-import com.pixnpunk.stock.domain.usecase.DeleteLocalGameEntries
+import com.pixnpunk.stock.domain.usecase.DeleteLocalGameEntriesUseCase
 import com.pixnpunk.stock.domain.usecase.DownloadGameArchUseCase
-import com.pixnpunk.stock.domain.usecase.FetchLocalSourceUseCase
-import com.pixnpunk.stock.domain.usecase.FetchRemoteGamesExcludingLocalUseCase
-import com.pixnpunk.stock.domain.usecase.FetchRemoteSourceUseCase
 import com.pixnpunk.stock.domain.usecase.FillAndInsertEntryUseCase
+import com.pixnpunk.stock.domain.usecase.GetAuthorSuggestionUseCase
+import com.pixnpunk.stock.domain.usecase.GetLocalGameEntriesUseCase
+import com.pixnpunk.stock.domain.usecase.GetRemoteGameEntriesExcludingLocalUseCase
+import com.pixnpunk.stock.domain.usecase.GetTranslatorSuggestionUseCase
 import com.pixnpunk.stock.domain.usecase.ObserveEntryByIdUseCase
-import com.pixnpunk.stock.domain.usecase.SearchLocalGameEntryUseCase
-import com.pixnpunk.stock.domain.usecase.SearchRemoteGameEntryUseCase
-import com.pixnpunk.stock.domain.usecase.SearchRemoteGamesExcludingLocalUseCase
+import com.pixnpunk.stock.domain.usecase.SyncDictionariesUseCase
 import com.pixnpunk.stock.domain.usecase.UpsertEntryUseCase
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
 val domainModule = module {
     singleOf(::FillAndInsertEntryUseCase)
-    singleOf(::FetchRemoteSourceUseCase)
-    singleOf(::FetchRemoteGamesExcludingLocalUseCase)
-    singleOf(::FetchLocalSourceUseCase)
-    singleOf(::DeleteLocalGameEntries)
+    singleOf(::DeleteLocalGameEntriesUseCase)
     singleOf(::DownloadGameArchUseCase)
     singleOf(::ObserveEntryByIdUseCase)
-    singleOf(::SearchLocalGameEntryUseCase)
-    singleOf(::SearchRemoteGameEntryUseCase)
-    singleOf(::SearchRemoteGamesExcludingLocalUseCase)
     singleOf(::UpsertEntryUseCase)
+    singleOf(::SyncDictionariesUseCase)
+    singleOf(::GetLocalGameEntriesUseCase)
+    singleOf(::GetRemoteGameEntriesExcludingLocalUseCase)
+    singleOf(::GetAuthorSuggestionUseCase)
+    singleOf(::GetTranslatorSuggestionUseCase)
 }

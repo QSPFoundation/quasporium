@@ -6,8 +6,10 @@ import android.os.Process.myPid
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
@@ -131,6 +133,8 @@ class GameActivity : ComponentActivity() {
         root.doRunGame(settingsState.value.nativeLibFrom)
 
         setContent {
+            val snackbarHostState = remember { SnackbarHostState() }
+
             LaunchedEffect(Unit) {
                 root.label.collect {
                     when (it) {
@@ -143,6 +147,9 @@ class GameActivity : ComponentActivity() {
 
                         is GameStore.Label.ShowListSavesDialog ->
                             root.doShowDialog(it.inputListItems)
+
+                        is GameStore.Label.ShowSnackBar ->
+                            snackbarHostState.showSnackbar(it.inputString)
 
                         is GameStore.Label.ShowLoadFilePicker ->
                             runCatching {
@@ -180,7 +187,8 @@ class GameActivity : ComponentActivity() {
 
             GameContent(
                 component = root,
-                settings = settingsState.collectAsState().value
+                settings = settingsState.collectAsState().value,
+                snackbarHostState = snackbarHostState
             )
         }
     }

@@ -2,6 +2,7 @@ package com.pixnpunk.stock.domain.repository
 
 import androidx.paging.PagingData
 import com.pixnpunk.dto.GameEntry
+import com.pixnpunk.stock.domain.model.SearchState
 import kotlinx.coroutines.flow.Flow
 
 interface LocalRepository {
@@ -9,8 +10,7 @@ interface LocalRepository {
     fun observeEntryById(entryId: Long): Flow<GameEntry>
     suspend fun deleteGameEntries(idsDelete: Set<Long>): Int
     suspend fun getGameEntryById(entryId: Long): GameEntry
-    suspend fun getAllPagedGameEntries(): Flow<PagingData<GameEntry>>
-    suspend fun searchGameEntriesByQuery(query: String): Flow<PagingData<GameEntry>>
+    fun getGameEntriesPager(searchState: SearchState): Flow<PagingData<GameEntry>>
     suspend fun updateEntry(entry: GameEntry)
     suspend fun updateOrInsertEntry(entry: GameEntry)
     suspend fun insertDefaultEntry(newEntry: GameEntry)

@@ -2,8 +2,8 @@ package com.pixnpunk.stock.domain.usecase
 
 import com.pixnpunk.stock.domain.repository.RemoteRepository
 
-class FetchRemoteSourceUseCase(
+class GetTranslatorSuggestionUseCase(
     private val remoteRepository: RemoteRepository
 ) {
-    suspend fun execute() = remoteRepository.fetchRemoteSource()
+    fun execute(query: String) = remoteRepository.getTranslatorSuggestions(query)
 }

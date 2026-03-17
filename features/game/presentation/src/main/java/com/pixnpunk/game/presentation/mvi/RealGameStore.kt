@@ -32,7 +32,7 @@ class RealGameStore(
                 GameStore.Action.StartGameElementVisFlow,
                 GameStore.Action.StartGameDialogFlow
             ),
-            executorFactory = { GameExecutor(get(), get(), get()) },
+            executorFactory = { GameExecutor(get(), get(), get(), get()) },
             reducer = GameReducer
         )
 }

@@ -17,6 +17,7 @@ data class DialogsConfig(
     val colorPickerState: ColorPickerState? = null,
     val unfilledEntry: GameEntry = GameEntry(),
     val isError: Boolean = false,
+    val initialValue: String = "",
     val supportValue: String = "",
     val supportErrorValue: String = "",
 	val menuItems: List<LibGenItem> = emptyList(),

@@ -1,6 +1,9 @@
 package com.pixnpunk.quasporium
 
 import android.app.Application
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.pixnpunk.audio.audioModule
 import com.pixnpunk.database.di.databaseModule
 import com.pixnpunk.natives.di.nativeModule
@@ -22,5 +25,11 @@ class Quasporium : Application() {
             modules(audioModule, nativeModule, notificationModule)
             modules(featureStockModules)
         }
+
+        WorkManager.getInstance(this).enqueueUniqueWork(
+            "AppStartupWork",
+            ExistingWorkPolicy.KEEP,
+            OneTimeWorkRequestBuilder<StartupWorker>().build()
+        )
     }
 }
