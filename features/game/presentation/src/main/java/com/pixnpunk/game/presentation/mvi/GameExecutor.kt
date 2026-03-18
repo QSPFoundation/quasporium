@@ -178,7 +178,7 @@ internal class GameExecutor(
                                 CreateMode.REPLACE
                             )
                             if (newSaveFile.isWritableFile()) {
-                                saveSlotDao.insert(
+                                saveSlotDao.upsertByUserTitle(
                                     SaveSlotEntity(
                                         gameId = state().gameId,
                                         userTitle = intent.inputString,
