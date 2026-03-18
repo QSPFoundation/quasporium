@@ -5,6 +5,7 @@ import androidx.core.net.toUri
 import com.anggrayudi.storage.extension.toDocumentFile
 import com.anggrayudi.storage.file.CreateMode
 import com.anggrayudi.storage.file.MimeType
+import com.anggrayudi.storage.file.forceDelete
 import com.anggrayudi.storage.file.makeFile
 import com.anggrayudi.storage.file.makeFolder
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
@@ -31,6 +32,8 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.launch
 import kotlin.contracts.ExperimentalContracts
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 internal class GameExecutor(
     private val appContext: Context,
@@ -39,7 +42,7 @@ internal class GameExecutor(
     private val saveSlotDao: SaveSlotDao
 ) : CoroutineExecutor<GameStore.Intent, GameStore.Action, GameStore.State, GameStore.Message, GameStore.Label>() {
 
-    @OptIn(ExperimentalContracts::class)
+    @OptIn(ExperimentalContracts::class, ExperimentalUuidApi::class)
     override fun executeIntent(intent: GameStore.Intent) {
         when (intent) {
             is GameStore.Intent.OnDismissDialog -> service.putReturnValue(null)
@@ -170,28 +173,45 @@ internal class GameExecutor(
                         )
                         if (!savesDir.isWritableDir()) return
                         scope.launch(Dispatchers.IO) {
-                            val savesCount = saveSlotDao.getSavesCount(state().gameId)
                             val newSaveFile = savesDir.makeFile(
                                 appContext,
-                                "Save_${state().gameId}_${state().gameTitle}_${savesCount + 1}_.sav",
+                                "Save_${Uuid.generateV4()}_.sav",
                                 MimeType.BINARY_FILE,
                                 CreateMode.REPLACE
                             )
-                            if (newSaveFile.isWritableFile()) {
-                                saveSlotDao.upsertByUserTitle(
-                                    SaveSlotEntity(
-                                        gameId = state().gameId,
-                                        userTitle = intent.inputString,
-                                        filePath = newSaveFile.uri.toString(),
-                                        timestamp = System.currentTimeMillis()
-                                    )
+                            if (!newSaveFile.isWritableFile()) {
+                                newSaveFile?.delete()
+                            } else {
+                                val existSave = saveSlotDao.searchByTitle(
+                                    state().gameId,
+                                    intent.inputString
                                 )
+                                if (existSave == null) {
+                                    saveSlotDao.insert(
+                                        SaveSlotEntity(
+                                            gameId = state().gameId,
+                                            userTitle = intent.inputString,
+                                            filePath = newSaveFile.uri.toString(),
+                                            timestamp = System.currentTimeMillis()
+                                        )
+                                    )
+                                } else {
+                                    val fileExistSave = existSave.filePath.toUri().toDocumentFile(appContext)
+                                    if (fileExistSave != null) {
+                                        fileExistSave.forceDelete(appContext)
+                                        saveSlotDao.update(
+                                            existSave.copy(
+                                                userTitle = intent.inputString,
+                                                filePath = newSaveFile.uri.toString(),
+                                                timestamp = System.currentTimeMillis()
+                                            )
+                                        )
+                                    }
+                                }
                                 scope.launch {
                                     service.onSaveFile(newSaveFile.uri)
                                     publish(GameStore.Label.ShowSnackBar("Game saved!"))
                                 }
-                            } else {
-                                newSaveFile?.delete()
                             }
                         }
                     }
