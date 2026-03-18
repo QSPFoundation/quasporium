@@ -112,20 +112,20 @@ internal class GameExecutor(
                     publish(ShowLoadFilePicker)
                 } else {
                     scope.launch(Dispatchers.IO) {
-                        val saveFiles =
-                            saveSlotDao.getAllSaves(state().gameId).map {
-                                LibSaveItem(
-                                    it.userTitle,
-                                    it.timestamp,
-                                    it.filePath
-                                )
-                            }
-                        scope.launch {
-                            publish(
-                                GameStore.Label.ShowListSavesDialog(
-                                    saveFiles
-                                )
+                        saveSlotDao.getAllSaves(state().gameId).map {
+                            LibSaveItem(
+                                it.userTitle,
+                                it.timestamp,
+                                it.filePath
                             )
+                        }.let {
+                            scope.launch {
+                                if (it.isEmpty()) {
+                                    publish(GameStore.Label.ShowSnackBar("No saved games!"))
+                                } else {
+                                    publish(GameStore.Label.ShowListSavesDialog(it))
+                                }
+                            }
                         }
                     }
                 }
