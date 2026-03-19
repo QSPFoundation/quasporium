@@ -60,6 +60,7 @@ fun GameContent(
     val isMainDescUpdated = state.isMainDescUpdated.second
     val isExtraDescUpdated = state.isExtraDescUpdated.second
     val isObjectsListUpdated = state.isObjectsListUpdated.second
+    val isActionsListUpdated = state.isActionsListUpdated.second
 
     val coroutineScope = rememberCoroutineScope()
     val doubleTapTimeout = LocalViewConfiguration.current.doubleTapTimeoutMillis
@@ -122,13 +123,22 @@ fun GameContent(
             activateObjectSlot = component::stateSwitchObjectSlot,
             cleanAllSlot = component::clearAllSlot,
             mainBadge = {
-                if ((!extraSlotIsNotEmpty || !objectSlotIsNotEmpty) && !currentIsMain && isMainDescUpdated) Badge()
+                if (!currentIsMain
+                    && (!extraSlotIsNotEmpty || !objectSlotIsNotEmpty)
+                    && (isMainDescUpdated || isActionsListUpdated)
+                ) Badge()
             },
             extraBadge = {
-                if (state.isExtraEnabled && !extraSlotIsNotEmpty && isExtraDescUpdated) Badge()
+                if (state.isExtraEnabled
+                    && !extraSlotIsNotEmpty
+                    && isExtraDescUpdated
+                ) Badge()
             },
             objectBadge = {
-                if (state.isObjectsEnabled && !objectSlotIsNotEmpty && isObjectsListUpdated) Badge()
+                if (state.isObjectsEnabled
+                    && !objectSlotIsNotEmpty
+                    && isObjectsListUpdated
+                ) Badge()
             }
         ) {
             SupportingPaneScaffold(

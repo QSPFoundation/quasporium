@@ -82,12 +82,18 @@ internal class GameExecutor(
 
             is GameStore.Intent.OnExecCode -> scope.launch { service.onCodeExec(intent.codeToExec) }
 
-            is GameStore.Intent.CleanMainSavedDesc ->
+            is GameStore.Intent.CleanMainSavedDesc -> {
                 dispatch(
                     GameStore.Message.UpdateIsMainDescUpdated(
                         state().isMainDescUpdated.copy(second = false)
                     )
                 )
+                dispatch(
+                    GameStore.Message.UpdateIsActionsListUpdated(
+                        state().isActionsListUpdated.copy(second = false)
+                    )
+                )
+            }
 
             is GameStore.Intent.CleanExtraSavedDesc ->
                 dispatch(
@@ -196,7 +202,8 @@ internal class GameExecutor(
                                         )
                                     )
                                 } else {
-                                    val fileExistSave = existSave.filePath.toUri().toDocumentFile(appContext)
+                                    val fileExistSave =
+                                        existSave.filePath.toUri().toDocumentFile(appContext)
                                     if (fileExistSave != null) {
                                         fileExistSave.forceDelete(appContext)
                                         saveSlotDao.update(
@@ -254,6 +261,16 @@ internal class GameExecutor(
                                     dispatch(
                                         GameStore.Message.UpdateIsObjsListUpdated(
                                             state.objectsList.hashCode() to true
+                                        )
+                                    )
+                                }
+                            }
+
+                            if (state.actionsList.isNotEmpty()) {
+                                if (state().isActionsListUpdated.first != state.actionsList.hashCode()) {
+                                    dispatch(
+                                        GameStore.Message.UpdateIsActionsListUpdated(
+                                            state.actionsList.hashCode() to true
                                         )
                                     )
                                 }
