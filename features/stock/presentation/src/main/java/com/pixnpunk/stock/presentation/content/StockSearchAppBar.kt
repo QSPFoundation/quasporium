@@ -241,7 +241,16 @@ fun StockSearchAppBar(
 
             filterItemCategory(
                 sortBy = sortBy,
-                selectSort = selectSortBy
+                selectSort = {
+                    if (pagerState.currentPage == TabState.INSTALLED.ordinal) {
+                        scope.launch {
+                            pagerState.animateScrollToPage(
+                                TabState.LIBRARY.ordinal
+                            )
+                        }
+                    }
+                    selectSortBy(it)
+                }
             )
         }
     }
