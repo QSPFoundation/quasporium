@@ -101,7 +101,8 @@ fun DialogsMainContent(
                         }
                 ) {
                     Surface(
-                        shape = MaterialTheme.shapes.medium,
+                        shape = MaterialTheme.shapes.extraLarge,
+                        color = AlertDialogDefaults.containerColor,
                         tonalElevation = AlertDialogDefaults.TonalElevation
                     ) {
                         when {
