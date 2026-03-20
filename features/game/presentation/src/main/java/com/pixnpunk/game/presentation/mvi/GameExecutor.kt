@@ -244,6 +244,10 @@ internal class GameExecutor(
                                         )
                                     )
                                 }
+                            } else {
+                                dispatch(
+                                    GameStore.Message.UpdateIsMainDescUpdated(0 to false)
+                                )
                             }
 
                             if (state.varsDesc.isNotBlank()) {
@@ -254,6 +258,10 @@ internal class GameExecutor(
                                         )
                                     )
                                 }
+                            } else {
+                                dispatch(
+                                    GameStore.Message.UpdateIsExtraDescUpdated(0 to false)
+                                )
                             }
 
                             if (state.objectsList.isNotEmpty()) {
@@ -264,6 +272,10 @@ internal class GameExecutor(
                                         )
                                     )
                                 }
+                            } else {
+                                dispatch(
+                                    GameStore.Message.UpdateIsObjsListUpdated(0 to false)
+                                )
                             }
 
                             if (state.actionsList.isNotEmpty()) {
@@ -274,6 +286,10 @@ internal class GameExecutor(
                                         )
                                     )
                                 }
+                            } else {
+                                dispatch(
+                                    GameStore.Message.UpdateIsActionsListUpdated(0 to false)
+                                )
                             }
                         }
                     }
