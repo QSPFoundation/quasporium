@@ -1,5 +1,6 @@
 package com.pixnpunk.stock.presentation.content
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -44,7 +45,9 @@ fun StockInstalledChild(
         lazyPagingItems.loadState.refresh is LoadState.Error && lazyPagingItems.itemCount == 0
 
     Box(modifier = Modifier.fillMaxSize()) {
-        if (!isFirstLoad && !isInitialError) {
+        AnimatedVisibility(
+            visible = !isFirstLoad && !isInitialError
+        ) {
             LazyColumn(
                 state = listState,
                 contentPadding = PaddingValues(vertical = 8.dp),

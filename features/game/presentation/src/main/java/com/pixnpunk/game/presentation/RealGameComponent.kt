@@ -315,7 +315,6 @@ class RealGameComponent(
     override fun clearAllSlot() {
         extraNavigation.dismiss()
         objectNavigation.dismiss()
-        cleanMainUpdates()
     }
 
     override fun cleanMainUpdates() =

@@ -6,12 +6,15 @@ import androidx.compose.material3.adaptive.layout.AnimatedPane
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldDefaults
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
+import androidx.compose.material3.adaptive.layout.PaneAdaptedValue
 import androidx.compose.material3.adaptive.layout.ThreePaneScaffoldDestinationItem
+import androidx.compose.material3.adaptive.layout.ThreePaneScaffoldValue
 import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirective
 import androidx.compose.material3.adaptive.layout.calculateThreePaneScaffoldValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.pixnpunk.details.presentation.DetailsContent
@@ -31,19 +34,27 @@ fun RootContent(
     val detailsSlot by component.detailsSlot.subscribeAsState()
     val settingsSlot by component.settingsSlot.subscribeAsState()
 
+    val detailsSlotIsNotEmpty = detailsSlot.child != null
+    val settingsSlotIsNotEmpty = settingsSlot.child != null
+
     val directive = calculatePaneScaffoldDirective(currentWindowAdaptiveInfo())
+
     val scaffoldValue = calculateThreePaneScaffoldValue(
         maxHorizontalPartitions = directive.maxHorizontalPartitions,
+        maxVerticalPartitions = directive.maxVerticalPartitions,
         adaptStrategies = ListDetailPaneScaffoldDefaults.adaptStrategies(),
-        destinationHistory = listOf(
-            ThreePaneScaffoldDestinationItem<Any>(
-                pane = when {
-                    settingsSlot.child != null -> ListDetailPaneScaffoldRole.Extra
-                    detailsSlot.child != null -> ListDetailPaneScaffoldRole.Detail
-                    else -> ListDetailPaneScaffoldRole.List
+        destinationHistory = remember(detailsSlot.child, settingsSlot.child) {
+            buildList {
+                add(ThreePaneScaffoldDestinationItem<Any>(pane = ListDetailPaneScaffoldRole.List))
+
+                if (detailsSlot.child != null) {
+                    add(ThreePaneScaffoldDestinationItem<Any>(pane = ListDetailPaneScaffoldRole.Detail))
                 }
-            )
-        )
+                if (settingsSlot.child != null) {
+                    add(ThreePaneScaffoldDestinationItem<Any>(pane = ListDetailPaneScaffoldRole.Extra))
+                }
+            }
+        }
     )
 
     QuasporiumTheme(
@@ -55,18 +66,30 @@ fun RootContent(
 
         ListDetailPaneScaffold(
             directive = directive,
-            value = scaffoldValue,
-            listPane = { AnimatedPane { StockContent(component.stockComponent) } },
+            value = remember(scaffoldValue, detailsSlotIsNotEmpty, settingsSlotIsNotEmpty) {
+                ThreePaneScaffoldValue(
+                    primary = if (detailsSlotIsNotEmpty) scaffoldValue.primary else PaneAdaptedValue.Hidden,
+                    secondary = scaffoldValue.secondary,
+                    tertiary = if (settingsSlotIsNotEmpty) scaffoldValue.tertiary else PaneAdaptedValue.Hidden
+                )
+            },
+            listPane = {
+                AnimatedPane {
+                    StockContent(component.stockComponent)
+                }
+            },
             detailPane = {
-                val child = detailsSlot.child?.instance
-                if (child != null) {
-                    AnimatedPane { DetailsContent(child) }
+                AnimatedPane {
+                    detailsSlot.child?.instance?.let { child ->
+                        DetailsContent(child)
+                    }
                 }
             },
             extraPane = {
-                val child = settingsSlot.child?.instance
-                if (child != null) {
-                    AnimatedPane { SettingsContent(child) }
+                AnimatedPane {
+                    settingsSlot.child?.instance?.let { child ->
+                        SettingsContent(child)
+                    }
                 }
             }
         )

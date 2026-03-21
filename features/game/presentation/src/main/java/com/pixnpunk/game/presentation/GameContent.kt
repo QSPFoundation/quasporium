@@ -74,10 +74,6 @@ fun GameContent(
         else -> SupportingPaneScaffoldRole.Main
     }
 
-    val destinationHistory = remember(currentRole) {
-        listOf(ThreePaneScaffoldDestinationItem<Any>(pane = currentRole))
-    }
-
     val currentIsMain = currentRole == SupportingPaneScaffoldRole.Main
 
     LaunchedEffect(isMainDescUpdated, currentIsMain) {
@@ -108,16 +104,20 @@ fun GameContent(
         maxHorizontalPartitions = directive.maxHorizontalPartitions,
         maxVerticalPartitions = directive.maxVerticalPartitions,
         adaptStrategies = ListDetailPaneScaffoldDefaults.adaptStrategies(),
-        destinationHistory = destinationHistory
-    )
+        destinationHistory = remember(extraSlot.child, objectSlot.child) {
+            buildList {
+                add(ThreePaneScaffoldDestinationItem<Any>(pane = SupportingPaneScaffoldRole.Main))
 
-    val correctedValue = remember(baseScaffoldValue, extraSlotIsNotEmpty, objectSlotIsNotEmpty) {
-        ThreePaneScaffoldValue(
-            primary = baseScaffoldValue.primary,
-            secondary = if (extraSlotIsNotEmpty) baseScaffoldValue.secondary else PaneAdaptedValue.Hidden,
-            tertiary = if (objectSlotIsNotEmpty) baseScaffoldValue.tertiary else PaneAdaptedValue.Hidden
-        )
-    }
+                if (extraSlot.child != null) {
+                    add(ThreePaneScaffoldDestinationItem<Any>(pane = SupportingPaneScaffoldRole.Supporting))
+                }
+
+                if (objectSlot.child != null) {
+                    add(ThreePaneScaffoldDestinationItem<Any>(pane = SupportingPaneScaffoldRole.Extra))
+                }
+            }
+        }
+    )
 
     QuasporiumTheme(
         themeMode = settings.appThemeMode
@@ -155,7 +155,13 @@ fun GameContent(
         ) {
             SupportingPaneScaffold(
                 directive = directive,
-                value = correctedValue,
+                value = remember(baseScaffoldValue, extraSlotIsNotEmpty, objectSlotIsNotEmpty) {
+                    ThreePaneScaffoldValue(
+                        primary = baseScaffoldValue.primary,
+                        secondary = if (extraSlotIsNotEmpty) baseScaffoldValue.secondary else PaneAdaptedValue.Hidden,
+                        tertiary = if (objectSlotIsNotEmpty) baseScaffoldValue.tertiary else PaneAdaptedValue.Hidden
+                    )
+                },
                 paneExpansionDragHandle = {
                     val interactionSource = remember { MutableInteractionSource() }
                     VerticalDragHandle(
