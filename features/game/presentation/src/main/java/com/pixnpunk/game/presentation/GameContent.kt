@@ -82,7 +82,19 @@ fun GameContent(
 
     LaunchedEffect(isMainDescUpdated, currentIsMain) {
         if (currentIsMain && isMainDescUpdated) {
-            component.cleanCountUpdates()
+            component.cleanMainUpdates()
+        }
+    }
+
+    LaunchedEffect(isExtraDescUpdated, extraSlotIsNotEmpty) {
+        if (extraSlotIsNotEmpty && isExtraDescUpdated) {
+            component.cleanExtraUpdates()
+        }
+    }
+
+    LaunchedEffect(isObjectsListUpdated, objectSlotIsNotEmpty) {
+        if (objectSlotIsNotEmpty && isObjectsListUpdated) {
+            component.cleanObjectsUpdates()
         }
     }
 
