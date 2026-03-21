@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Subject
+import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
@@ -94,8 +95,22 @@ fun LazyListScope.expandedSearchQueryNotEmpty(
     suggestedAuthors: List<String>,
     suggestedTranslators: List<String>,
     searchQuery: String,
+    addSearch: (String) -> Unit,
     addToken: (SearchToken) -> Unit
 ) {
+    item {
+        val titleToken = SearchToken(
+            value = searchQuery,
+            type = SearchTokenType.TITLE,
+            displayText = "In title: $searchQuery"
+        )
+        SearchSuggestionItem(
+            token = titleToken,
+            icon = Icons.Default.Book,
+            onClick = { addSearch(titleToken.value) }
+        )
+    }
+
     item {
         val descToken = SearchToken(
             value = searchQuery,

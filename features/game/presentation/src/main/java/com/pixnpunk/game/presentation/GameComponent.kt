@@ -40,7 +40,9 @@ sealed interface GameComponent {
     fun stateSwitchObjectSlot()
     fun clearAllSlot()
 
-    fun cleanCountUpdates()
+    fun cleanMainUpdates()
+    fun cleanExtraUpdates()
+    fun cleanObjectsUpdates()
 
     fun doSaveFile()
     fun doLoadFile()

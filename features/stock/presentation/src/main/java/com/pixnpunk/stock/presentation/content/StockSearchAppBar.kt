@@ -156,7 +156,8 @@ fun StockSearchAppBar(
                         searchQuery = searchQuery,
                         recentSearches = recentSearches,
                         addToken = addToken,
-                        addSearch = updateSearchQuery
+                        updateSearchQuery = updateSearchQuery,
+                        executeSearch = executeSearch
                     )
                 }
             )
@@ -182,7 +183,8 @@ fun StockSearchAppBar(
                         searchQuery = searchQuery,
                         recentSearches = recentSearches,
                         addToken = addToken,
-                        addSearch = updateSearchQuery
+                        updateSearchQuery = updateSearchQuery,
+                        executeSearch = executeSearch
                     )
                 }
             )

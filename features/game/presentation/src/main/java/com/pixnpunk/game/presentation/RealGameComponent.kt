@@ -305,24 +305,27 @@ class RealGameComponent(
         extraNavigation.dismiss()
         objectNavigation.dismiss()
         extraNavigation.activate(Unit)
-        store.accept(GameStore.Intent.CleanExtraSavedDesc)
     }
 
     override fun stateSwitchObjectSlot() {
         extraNavigation.dismiss()
         objectNavigation.dismiss()
         objectNavigation.activate(Unit)
-        store.accept(GameStore.Intent.CleanObjectsSavedList)
     }
 
     override fun clearAllSlot() {
         extraNavigation.dismiss()
         objectNavigation.dismiss()
-        cleanCountUpdates()
     }
 
-    override fun cleanCountUpdates() =
+    override fun cleanMainUpdates() =
         store.accept(GameStore.Intent.CleanMainSavedDesc)
+
+    override fun cleanExtraUpdates() =
+        store.accept(GameStore.Intent.CleanExtraSavedDesc)
+
+    override fun cleanObjectsUpdates() =
+        store.accept(GameStore.Intent.CleanObjectsSavedList)
 
     override fun doRunGame(
         nativeLibFrom: NativeLibAuthors

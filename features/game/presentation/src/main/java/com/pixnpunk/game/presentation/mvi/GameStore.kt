@@ -28,7 +28,8 @@ sealed interface GameStore : Store<GameStore.Intent, GameStore.State, GameStore.
 
         val isMainDescUpdated: Pair<Int, Boolean> = 0 to false,
         val isExtraDescUpdated: Pair<Int, Boolean> = 0 to false,
-        val isObjectsListUpdated: Pair<Int, Boolean> = 0 to false
+        val isObjectsListUpdated: Pair<Int, Boolean> = 0 to false,
+        val isActionsListUpdated: Pair<Int, Boolean> = 0 to false,
     )
 
     sealed interface Intent {
@@ -55,6 +56,7 @@ sealed interface GameStore : Store<GameStore.Intent, GameStore.State, GameStore.
         data class UpdateIsMainDescUpdated(val isMainDescUpdated: Pair<Int, Boolean>) : Message
         data class UpdateIsExtraDescUpdated(val isExtraDescUpdated: Pair<Int, Boolean>) : Message
         data class UpdateIsObjsListUpdated(val isObjsListUpdated: Pair<Int, Boolean>) : Message
+        data class UpdateIsActionsListUpdated(val isActionsListUpdated: Pair<Int, Boolean>) : Message
         data class UpdateIsUserChooseSave(val isUserChooseSave: Boolean) : Message
         data class UpdateIsGameDirInternal(val isGameDirInternal: Boolean) : Message
     }

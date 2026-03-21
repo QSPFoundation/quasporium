@@ -82,12 +82,18 @@ internal class GameExecutor(
 
             is GameStore.Intent.OnExecCode -> scope.launch { service.onCodeExec(intent.codeToExec) }
 
-            is GameStore.Intent.CleanMainSavedDesc ->
+            is GameStore.Intent.CleanMainSavedDesc -> {
                 dispatch(
                     GameStore.Message.UpdateIsMainDescUpdated(
                         state().isMainDescUpdated.copy(second = false)
                     )
                 )
+                dispatch(
+                    GameStore.Message.UpdateIsActionsListUpdated(
+                        state().isActionsListUpdated.copy(second = false)
+                    )
+                )
+            }
 
             is GameStore.Intent.CleanExtraSavedDesc ->
                 dispatch(
@@ -196,7 +202,8 @@ internal class GameExecutor(
                                         )
                                     )
                                 } else {
-                                    val fileExistSave = existSave.filePath.toUri().toDocumentFile(appContext)
+                                    val fileExistSave =
+                                        existSave.filePath.toUri().toDocumentFile(appContext)
                                     if (fileExistSave != null) {
                                         fileExistSave.forceDelete(appContext)
                                         saveSlotDao.update(
@@ -237,6 +244,10 @@ internal class GameExecutor(
                                         )
                                     )
                                 }
+                            } else {
+                                dispatch(
+                                    GameStore.Message.UpdateIsMainDescUpdated(0 to false)
+                                )
                             }
 
                             if (state.varsDesc.isNotBlank()) {
@@ -247,6 +258,10 @@ internal class GameExecutor(
                                         )
                                     )
                                 }
+                            } else {
+                                dispatch(
+                                    GameStore.Message.UpdateIsExtraDescUpdated(0 to false)
+                                )
                             }
 
                             if (state.objectsList.isNotEmpty()) {
@@ -257,6 +272,24 @@ internal class GameExecutor(
                                         )
                                     )
                                 }
+                            } else {
+                                dispatch(
+                                    GameStore.Message.UpdateIsObjsListUpdated(0 to false)
+                                )
+                            }
+
+                            if (state.actionsList.isNotEmpty()) {
+                                if (state().isActionsListUpdated.first != state.actionsList.hashCode()) {
+                                    dispatch(
+                                        GameStore.Message.UpdateIsActionsListUpdated(
+                                            state.actionsList.hashCode() to true
+                                        )
+                                    )
+                                }
+                            } else {
+                                dispatch(
+                                    GameStore.Message.UpdateIsActionsListUpdated(0 to false)
+                                )
                             }
                         }
                     }
