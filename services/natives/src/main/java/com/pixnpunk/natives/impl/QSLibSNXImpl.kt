@@ -17,6 +17,7 @@ import com.pixnpunk.dto.LibReturnValue
 import com.pixnpunk.dto.LibTypeDialog
 import com.pixnpunk.dto.LibUIConfig
 import com.pixnpunk.natives.dto.toLibRawItem
+import com.pixnpunk.utils.FileUtil.isWritableFile
 import com.pixnpunk.utils.FileUtil.readFileContents
 import com.pixnpunk.utils.FileUtil.writeFileContents
 import com.pixnpunk.utils.ThreadUtil.isSameThread
@@ -66,7 +67,13 @@ class QSLibSNXImpl(
         val gameFileFullPath = gameFile.getAbsolutePath(context)
         val gameFileDescriptor = context.contentResolver
             .openFileDescriptor(gameFileUri, "rw")?.detachFd() ?: return false
-        return executeQspCommand { loadGameWorldFromFD(gameFileDescriptor, gameFileFullPath) }
+        return executeQspCommand {
+            loadGameWorldFromFD(
+                gameFileDescriptor,
+                gameFileFullPath,
+                false
+            )
+        }
     }
 
     private val actionsList: List<LibGenItem>
@@ -82,7 +89,12 @@ class QSLibSNXImpl(
     override fun startLibThread() = delegate.startLibThread("libSNXQSP")
     override fun stopLibThread() = delegate.stopLibThread()
 
-    override fun runGame(gameId: Long, gameTitle: String, gameDirPath: String, gameFilePath: String) {
+    override fun runGame(
+        gameId: Long,
+        gameTitle: String,
+        gameDirPath: String,
+        gameFilePath: String
+    ) {
         delegate.runOnLibThread {
             doRunGame(gameId, gameTitle, gameDirPath.toUri(), gameFilePath.toUri())
         }
@@ -201,8 +213,26 @@ class QSLibSNXImpl(
     }
 
     override fun onShowWindow(type: Int, isShow: Boolean) = delegate.handleShowWindow(type, isShow)
-    override fun onOpenGame(path: String?) {
-        if (!path.isNullOrBlank()) gameInterface.changeGameDir(path)
+
+    override fun onOpenGame(path: String?, isNewGame: Boolean) {
+        if (path.isNullOrBlank()) return
+
+        val targetFileUri =
+            delegate.handleOpenGameStatus(path).getOrDefault("").toUri()
+        if (targetFileUri == Uri.EMPTY) return
+        val targetFile = targetFileUri.toDocumentFile(context)
+        if (!targetFile.isWritableFile()) return
+        val targetFileFullPath = targetFile.getAbsolutePath(context)
+
+        context.contentResolver.openFileDescriptor(targetFile.uri, "r")?.use { pfd ->
+            executeQspCommand {
+                loadGameWorldFromFD(
+                    pfd.fd,
+                    targetFileFullPath,
+                    isNewGame
+                )
+            }
+        }
     }
 
     override fun onOpenGameStatus(filename: String?) =

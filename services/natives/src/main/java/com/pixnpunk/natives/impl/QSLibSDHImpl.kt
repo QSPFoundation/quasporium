@@ -2,7 +2,6 @@
 
 package com.pixnpunk.natives.impl
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
 import android.os.SystemClock
@@ -67,7 +66,13 @@ class QSLibSDHImpl(
 
         return try {
             context.contentResolver.openFileDescriptor(gameFileUri, "r")?.use { pfd ->
-                executeQspCommand { loadGameWorldFromFD(pfd.fd, gameFileFullPath) }
+                executeQspCommand {
+                    loadGameWorldFromFD(
+                        pfd.fd,
+                        gameFileFullPath,
+                        false
+                    )
+                }
             } ?: false
         } catch (_: Exception) {
             false
@@ -220,21 +225,25 @@ class QSLibSDHImpl(
     }
 
     override fun onShowWindow(type: Int, isShow: Boolean) = delegate.handleShowWindow(type, isShow)
-    @SuppressLint("Recycle")
-    override fun onOpenGame(path: String?): Int {
-        if (path.isNullOrBlank()) return super.onOpenGame(path)
-        val targetFileUri =
-            delegate.handleOpenGameStatus(path).getOrDefault("").toUri()
-        if (targetFileUri == Uri.EMPTY) return super.onOpenGame(path)
-        val targetFile = targetFileUri.toDocumentFile(context)
-        if (!targetFile.isWritableFile()) return super.onOpenGame(path)
 
-        return try {
-            context.contentResolver
-                .openFileDescriptor(targetFile.uri, "r")?.fd
-                ?: super.onOpenGame(path)
-        } catch (_: Exception) {
-            super.onOpenGame(path)
+    override fun onOpenGame(file: String?, isNewGame: Boolean) {
+        if (file.isNullOrBlank()) return
+
+        val targetFileUri =
+            delegate.handleOpenGameStatus(file).getOrDefault("").toUri()
+        if (targetFileUri == Uri.EMPTY) return
+        val targetFile = targetFileUri.toDocumentFile(context)
+        if (!targetFile.isWritableFile()) return
+        val targetFileFullPath = targetFile.getAbsolutePath(context)
+
+        context.contentResolver.openFileDescriptor(targetFile.uri, "r")?.use { pfd ->
+            executeQspCommand {
+                loadGameWorldFromFD(
+                    pfd.fd,
+                    targetFileFullPath,
+                    isNewGame
+                )
+            }
         }
     }
 
