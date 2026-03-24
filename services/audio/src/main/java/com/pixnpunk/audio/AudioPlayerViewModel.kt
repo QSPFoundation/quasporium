@@ -57,13 +57,12 @@ class AudioPlayerViewModel : ViewModel(), DefaultLifecycleObserver {
         volume: Int
     ) {
         runOnAudioContext {
-            val mediaPlayerVolume = volume / 100f
-
             runCatching {
                 val player = mediaPlayers.getOrPut(soundFileUri) {
                     createNewSound(context, soundFileUri)
                 }
 
+                val mediaPlayerVolume = volume / 100f
                 player.setVolume(mediaPlayerVolume, mediaPlayerVolume)
 
                 if (isSoundEnabled && !isPaused) {

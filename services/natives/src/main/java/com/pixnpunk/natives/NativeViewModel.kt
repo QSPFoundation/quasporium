@@ -438,7 +438,8 @@ class NativeViewModel(
             val docFile = path
                 .normalizeContentPath()
                 .pathToFile(get(), gameDir)
-            if (docFile.isWritableFile()) {
+            if (docFile.isWritableFile()
+                && !audioPlayer.isPlayingFile(docFile.uri)) {
                 audioPlayer.playFile(get(), docFile.uri, volume)
             }
         }
