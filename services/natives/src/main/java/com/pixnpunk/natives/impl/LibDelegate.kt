@@ -77,9 +77,7 @@ class LibDelegate(
         libThread = null
     }
 
-    fun runOnLibThread(runnable: Runnable) {
-        if (libLock.isLocked) return
-
+    fun runActionOnLibThread(runnable: Runnable) {
         if (libThreadInit) {
             returnValueFuture.cancel(true)
             libHandler.post {
@@ -87,6 +85,20 @@ class LibDelegate(
             }
         } else {
             libQueue.offer(runnable)
+        }
+    }
+
+    fun runCounterOnLibThread(runnable: Runnable) {
+        if (!libThreadInit || libLock.isLocked) return
+
+        libHandler.post {
+            if (libLock.tryLock()) {
+                try {
+                    runnable.run()
+                } finally {
+                    libLock.unlock()
+                }
+            }
         }
     }
 

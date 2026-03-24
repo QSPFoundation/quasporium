@@ -95,13 +95,13 @@ class QSLibSNXImpl(
         gameDirPath: String,
         gameFilePath: String
     ) {
-        delegate.runOnLibThread {
+        delegate.runActionOnLibThread {
             doRunGame(gameId, gameTitle, gameDirPath.toUri(), gameFilePath.toUri())
         }
     }
 
     override fun restartGame() {
-        delegate.runOnLibThread {
+        delegate.runActionOnLibThread {
             with(delegate.gameState) {
                 doRunGame(gameId, gameTitle, gameDirPath.toUri(), gameFilePath.toUri())
             }
@@ -127,7 +127,7 @@ class QSLibSNXImpl(
 
     override fun loadGameState(path: String) {
         if (!isSameThread(delegate.libHandler.looper.thread)) {
-            delegate.runOnLibThread { loadGameState(path) }
+            delegate.runActionOnLibThread { loadGameState(path) }
             return
         }
         val gameData = path.toUri().readFileContents() ?: return
@@ -136,37 +136,36 @@ class QSLibSNXImpl(
 
     override fun saveGameState(path: String) {
         if (!isSameThread(delegate.libHandler.looper.thread)) {
-            delegate.runOnLibThread { saveGameState(path) }
+            delegate.runActionOnLibThread { saveGameState(path) }
             return
         }
         path.toUri().writeFileContents(saveGameAsData(false) ?: return)
     }
 
     override fun onActionClicked(index: Int) {
-        delegate.runOnLibThread {
+        delegate.runActionOnLibThread {
             executeQspCommand { setSelActionIndex(index, false) }
             executeQspCommand { executeSelActionCode(true) }
         }
     }
 
     override fun onObjectSelected(index: Int) {
-        delegate.runOnLibThread { executeQspCommand { setSelObjectIndex(index, true) } }
+        delegate.runActionOnLibThread { executeQspCommand { setSelObjectIndex(index, true) } }
     }
 
     override fun onInputAreaClicked(code: String) {
-        delegate.runOnLibThread {
+        delegate.runActionOnLibThread {
             setInputStrText(code)
             executeQspCommand { execUserInput(true) }
         }
     }
 
     override fun execute(code: String) {
-        delegate.runOnLibThread { executeQspCommand { execString(code, true) } }
+        delegate.runActionOnLibThread { executeQspCommand { execString(code, true) } }
     }
 
     override fun executeCounter() {
-        if (delegate.libLock.isLocked) return
-        delegate.runOnLibThread { executeQspCommand { execCounter(true) } }
+        delegate.runCounterOnLibThread { executeQspCommand { execCounter(true) } }
     }
 
     override fun onRefreshInt() {

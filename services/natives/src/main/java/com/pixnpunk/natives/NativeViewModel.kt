@@ -29,6 +29,7 @@ import com.pixnpunk.utils.PathUtil.absToRelPath
 import com.pixnpunk.utils.PathUtil.normalizeContentPath
 import com.pixnpunk.utils.PathUtil.pathToFile
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -40,7 +41,6 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
-import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.contracts.ExperimentalContracts
 
@@ -371,22 +371,19 @@ class NativeViewModel(
             return
         }
 
-        CompletableFuture
-            .supplyAsync {
-                gameDir.makeFile(
-                    get(),
-                    path.absToRelPath(get(), gameDir),
-                    BINARY_FILE,
-                    CreateMode.REUSE
-                )
+        viewModelScope.launch(Dispatchers.IO) {
+            val file = gameDir.makeFile(
+                get(),
+                path.absToRelPath(get(), gameDir),
+                BINARY_FILE,
+                CreateMode.REUSE
+            )
+            if (file.isWritableFile()) {
+                putReturnValue(LibReturnValue(filePath = file.uri.toString()))
+            } else {
+                putReturnValue(LibReturnValue(filePath = Uri.EMPTY.toString()))
             }
-            .thenApply {
-                if (it.isWritableFile()) {
-                    putReturnValue(LibReturnValue(filePath = it.uri.toString()))
-                } else {
-                    putReturnValue(LibReturnValue(filePath = Uri.EMPTY.toString()))
-                }
-            }
+        }
     }
 
     @OptIn(ExperimentalContracts::class)
