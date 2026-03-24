@@ -17,8 +17,8 @@ import java.util.concurrent.ConcurrentHashMap
 class AudioPlayerViewModel : ViewModel(), DefaultLifecycleObserver {
     private val audioDispatcher: CoroutineDispatcher = Dispatchers.IO
     private val mediaPlayers = ConcurrentHashMap<Uri, MediaPlayer>()
-    private var isPaused = false
-    var isSoundEnabled = true
+    @Volatile private var isPaused = false
+    @Volatile var isSoundEnabled = true
 
     fun isPlayingFile(fileUri: Uri?): Boolean {
         return fileUri != null && fileUri != Uri.EMPTY && mediaPlayers.containsKey(fileUri)
@@ -27,26 +27,33 @@ class AudioPlayerViewModel : ViewModel(), DefaultLifecycleObserver {
     private fun runOnAudioContext(block: suspend () -> Unit): Job =
         viewModelScope.launch(audioDispatcher) { block() }
 
+    private fun releasePlayer(player: MediaPlayer) {
+        runCatching {
+            if (player.isPlaying) {
+                player.stop()
+            }
+            player.release()
+        }
+    }
+
     override fun onResume(owner: LifecycleOwner) {
-        if (!isSoundEnabled || !isPaused) return
-        runOnAudioContext {
+        if (isSoundEnabled && isPaused) {
             isPaused = false
-            runCatching {
-                mediaPlayers.values.filterNot { it.isPlaying }.forEach { it.start() }
-            }.onFailure {
-                mediaPlayers.clear()
+            runOnAudioContext {
+                runCatching {
+                    mediaPlayers.values.filterNot { it.isPlaying }.forEach { it.start() }
+                }.onFailure { closeAllFilesSync() }
             }
         }
     }
 
     override fun onPause(owner: LifecycleOwner) {
-        if (isPaused) return
-        runOnAudioContext {
+        if (!isPaused) {
             isPaused = true
-            runCatching {
-                mediaPlayers.values.filter { it.isPlaying }.forEach { it.pause() }
-            }.onFailure {
-                mediaPlayers.clear()
+            runOnAudioContext {
+                runCatching {
+                    mediaPlayers.values.filter { it.isPlaying }.forEach { it.pause() }
+                }.onFailure { closeAllFilesSync() }
             }
         }
     }
@@ -68,9 +75,7 @@ class AudioPlayerViewModel : ViewModel(), DefaultLifecycleObserver {
                 if (isSoundEnabled && !isPaused) {
                     player.start()
                 }
-            }.onFailure {
-                mediaPlayers.remove(soundFileUri)
-            }
+            }.onFailure { closeFile(soundFileUri) }
         }
     }
 
@@ -81,35 +86,26 @@ class AudioPlayerViewModel : ViewModel(), DefaultLifecycleObserver {
     ) = MediaPlayer().apply {
         setDataSource(context, filePath)
         prepare()
-        setOnCompletionListener { player ->
+        setOnCompletionListener {
             runOnAudioContext {
                 mediaPlayers.remove(filePath)
-                player.release()
+                runCatching { it.release() }
             }
         }
     }
 
     fun closeFile(filePath: Uri) {
-        runOnAudioContext {
-            mediaPlayers.remove(filePath)?.let { player ->
-                if (player.isPlaying) {
-                    player.stop()
-                }
-                player.release()
-            }
-        }
+        runOnAudioContext { mediaPlayers.remove(filePath)?.let { releasePlayer(it) } }
     }
 
     fun closeAllFiles() {
-        runOnAudioContext {
-            mediaPlayers.values.forEach { player ->
-                if (player.isPlaying) {
-                    player.stop()
-                }
-                player.release()
-            }
-            mediaPlayers.clear()
-        }
+        runOnAudioContext { closeAllFilesSync() }
+    }
+
+    private fun closeAllFilesSync() {
+        val players = mediaPlayers.values
+        mediaPlayers.clear()
+        players.forEach { releasePlayer(it) }
     }
 
     override fun onCleared() {
