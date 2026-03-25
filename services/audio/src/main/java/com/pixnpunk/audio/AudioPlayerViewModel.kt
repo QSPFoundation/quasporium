@@ -7,6 +7,7 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.pixnpunk.logger.AppLogger
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -14,7 +15,10 @@ import kotlinx.coroutines.launch
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
 
-class AudioPlayerViewModel : ViewModel(), DefaultLifecycleObserver {
+class AudioPlayerViewModel(
+    private val logger: AppLogger,
+) : ViewModel(), DefaultLifecycleObserver {
+
     private val audioDispatcher: CoroutineDispatcher = Dispatchers.IO
     private val mediaPlayers = ConcurrentHashMap<Uri, MediaPlayer>()
     @Volatile private var isPaused = false
@@ -33,6 +37,10 @@ class AudioPlayerViewModel : ViewModel(), DefaultLifecycleObserver {
                 player.stop()
             }
             player.release()
+        }.onFailure {
+            logger.recordNonFatalException(
+                AudioPlayerException.ReleaseError(it)
+            )
         }
     }
 
@@ -42,7 +50,12 @@ class AudioPlayerViewModel : ViewModel(), DefaultLifecycleObserver {
             runOnAudioContext {
                 runCatching {
                     mediaPlayers.values.filterNot { it.isPlaying }.forEach { it.start() }
-                }.onFailure { closeAllFilesSync() }
+                }.onFailure {
+                    logger.recordNonFatalException(
+                        AudioPlayerException.PlaybackError(Uri.EMPTY, it)
+                    )
+                    closeAllFilesSync()
+                }
             }
         }
     }
@@ -53,7 +66,12 @@ class AudioPlayerViewModel : ViewModel(), DefaultLifecycleObserver {
             runOnAudioContext {
                 runCatching {
                     mediaPlayers.values.filter { it.isPlaying }.forEach { it.pause() }
-                }.onFailure { closeAllFilesSync() }
+                }.onFailure {
+                    logger.recordNonFatalException(
+                        AudioPlayerException.PlaybackError(Uri.EMPTY, it)
+                    )
+                    closeAllFilesSync()
+                }
             }
         }
     }
@@ -75,7 +93,12 @@ class AudioPlayerViewModel : ViewModel(), DefaultLifecycleObserver {
                 if (isSoundEnabled && !isPaused) {
                     player.start()
                 }
-            }.onFailure { closeFile(soundFileUri) }
+            }.onFailure {
+                logger.recordNonFatalException(
+                    AudioPlayerException.PlaybackError(soundFileUri, it)
+                )
+                closeFile(soundFileUri)
+            }
         }
     }
 
@@ -89,7 +112,16 @@ class AudioPlayerViewModel : ViewModel(), DefaultLifecycleObserver {
         setOnCompletionListener {
             runOnAudioContext {
                 mediaPlayers.remove(filePath)
-                runCatching { it.release() }
+                runCatching {
+                    it.release()
+                }.getOrElse { error ->
+                    AudioPlayerException.InitializationError(
+                        filePath, error
+                    ).apply {
+                        logger.recordNonFatalException(this)
+                        throw this
+                    }
+                }
             }
         }
     }

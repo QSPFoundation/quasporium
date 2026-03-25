@@ -6,6 +6,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.pixnpunk.audio.audioModule
 import com.pixnpunk.database.di.databaseModule
+import com.pixnpunk.logger.appLoggerModule
 import com.pixnpunk.natives.di.nativeModule
 import com.pixnpunk.network.networkModule
 import com.pixnpunk.notification.notificationModule
@@ -21,8 +22,12 @@ class Quasporium : Application() {
         startKoin {
             androidContext(this@Quasporium)
             workManagerFactory()
-            modules(databaseModule, networkModule, settingsModule)
-            modules(audioModule, nativeModule, notificationModule)
+            modules(
+                appLoggerModule, databaseModule,
+                networkModule, settingsModule,
+                audioModule, nativeModule,
+                notificationModule
+            )
             modules(featureStockModules)
         }
 

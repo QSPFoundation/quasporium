@@ -28,6 +28,7 @@ include(
     ":core",
     ":core:database",
     ":core:dto",
+    ":core:logger",
     ":core:network",
     ":core:utils",
 
