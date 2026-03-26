@@ -15,12 +15,12 @@ import com.pixnpunk.settings.data.repository.SettingsRepository
 import kotlinx.serialization.Serializable
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
+import org.koin.core.component.inject
 import org.koin.core.parameter.parametersOf
-import org.koin.core.qualifier.named
 
 class RealSettingsComponent(
     private val componentContext: ComponentContext,
-    private val gameId: Long = -1L,
+    private val gameId: Long? = null,
     override val gameTitle: String = "",
     override val showColorDialog: (ColorPickerState) -> Unit,
     override val resetToDefault: (ColorPickerState) -> Unit,
@@ -28,23 +28,14 @@ class RealSettingsComponent(
     override val onDismissed: () -> Unit
 ) : ComponentContext by componentContext, SettingsComponent, KoinComponent {
 
-    override val isLocalSettings: Boolean = gameId != -1L
+    override val isLocalSettings: Boolean = gameId != null
 
-    override val preferences: SharedPreferences by lazy {
-        if (gameId == -1L) {
-            get(named("GlobalPrefs"))
-        } else {
-            get(named("LocalPrefs")) { parametersOf(gameId) }
-        }
-    }
+    override val preferences: SharedPreferences by inject { parametersOf(gameId) }
 
-    override val repository: SettingsRepository = instanceKeeper.getOrCreate(key = "SettingsRepo_$gameId") {
-        if (gameId == -1L) {
-            getKoin().get(named("GlobalRepository"))
-        } else {
-            getKoin().get(named("GameRepository")) { parametersOf(gameId) }
+    override val repository: SettingsRepository =
+        instanceKeeper.getOrCreate {
+            get<SettingsRepository> { parametersOf(gameId) }
         }
-    }
 
     private val navigation = StackNavigation<ChildConfig>()
 

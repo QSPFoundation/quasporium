@@ -21,29 +21,32 @@ import me.zhanghai.compose.preference.switchPreference
 
 @Composable
 fun SettingsGeneralContent(
+    isLocalSettings: Boolean
 ) {
     LazyColumn {
-        listPreference(
-            key = "appThemePref",
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.DarkMode,
-                    contentDescription = null
-                )
-            },
-            defaultValue = AppThemeMode.SYSTEM.toString(),
-            values = AppThemeMode.entries.map { it.toString() },
-            valueToText = {
-                AnnotatedString(
-                    when (AppThemeMode.valueOf(it)) {
-                        AppThemeMode.SYSTEM -> "System"
-                        AppThemeMode.LIGHT -> "Light"
-                        AppThemeMode.DARK -> "Dark"
-                    }
-                )
-            },
-            title = { Text(stringResource(R.string.theme_list_title)) }
-        )
+        if (!isLocalSettings) {
+            listPreference(
+                key = "appThemePref",
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.DarkMode,
+                        contentDescription = null
+                    )
+                },
+                defaultValue = AppThemeMode.SYSTEM.toString(),
+                values = AppThemeMode.entries.map { it.toString() },
+                valueToText = {
+                    AnnotatedString(
+                        when (AppThemeMode.valueOf(it)) {
+                            AppThemeMode.SYSTEM -> "System"
+                            AppThemeMode.LIGHT -> "Light"
+                            AppThemeMode.DARK -> "Dark"
+                        }
+                    )
+                },
+                title = { Text(stringResource(R.string.theme_list_title)) }
+            )
+        }
 //        listPreference(
 //            key = "appLangPref",
 //            icon = {
@@ -84,7 +87,15 @@ fun SettingsGeneralContent(
                     }
                 )
             },
-            title = { Text(stringResource(R.string.library_version_list_title)) }
+            title = {
+                Text(
+                    if (isLocalSettings) {
+                        stringResource(R.string.local_library_version_list_title)
+                    } else {
+                        stringResource(R.string.global_library_version_list_title)
+                    }
+                )
+            }
         )
         listPreference(
             key = "appBinPref",

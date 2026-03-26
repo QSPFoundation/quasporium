@@ -70,7 +70,7 @@ fun StockSearchAppBar(
     selectSortOrder: () -> Unit,
     selectSortBy: (SortBy) -> Unit,
     selectSortLang: (String?) -> Unit,
-    navigateToSettings: (Long) -> Unit
+    navigateToSettings: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
 

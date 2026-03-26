@@ -62,7 +62,6 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import org.koin.core.component.inject
 import org.koin.core.parameter.parametersOf
-import org.koin.core.qualifier.named
 import java.io.FileNotFoundException
 import kotlin.contracts.ExperimentalContracts
 
@@ -86,31 +85,8 @@ class RealGameComponent(
 
     private val settingsRepository: SettingsRepository =
         instanceKeeper.getOrCreate {
-            if (gameId == -1L) {
-                get(named("GlobalPrefs"))
-            } else {
-                get(named("LocalPrefs")) { parametersOf(gameId) }
-            }
+            get<SettingsRepository> { parametersOf(gameId) }
         }
-
-    private val store = instanceKeeper.getStore {
-        RealGameStore(
-            gameId = gameId,
-            gameTitle = gameTitle,
-            gameDirUriBox = gameDirUriBox,
-            gameFileUriBox = gameFileUriBox,
-            storeFactory = DefaultStoreFactory(),
-            settingsState = settingsState
-        ).create()
-    }
-
-    private val assetLoader = WebViewAssetLoader.Builder()
-        .addPathHandler("/game_files/", ExternalStoragePathHandler())
-        .build()
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    override val model: StateFlow<GameStore.State> = store.stateFlow
-    override val label = store.labels
 
     override val settingsState: StateFlow<SettingsEntity> =
         settingsRepository.settingsFlow.stateIn(
@@ -118,6 +94,26 @@ class RealGameComponent(
             started = SharingStarted.Eagerly,
             initialValue = settingsRepository.currentSettings
         )
+
+    private val assetLoader = WebViewAssetLoader.Builder()
+        .addPathHandler("/game_files/", ExternalStoragePathHandler())
+        .build()
+
+    private val store =
+        instanceKeeper.getStore {
+            RealGameStore(
+                gameId = gameId,
+                gameTitle = gameTitle,
+                gameDirUriBox = gameDirUriBox,
+                gameFileUriBox = gameFileUriBox,
+                storeFactory = DefaultStoreFactory(),
+                settingsState = settingsState
+            ).create()
+        }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override val model: StateFlow<GameStore.State> = store.stateFlow
+    override val label = store.labels
 
     override val dialogSlot: Value<ChildSlot<*, DialogsComponent>> =
         childSlot(

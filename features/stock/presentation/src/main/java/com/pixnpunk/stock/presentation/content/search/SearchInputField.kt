@@ -25,7 +25,7 @@ fun SearchInputField(
     updateSearchQuery: (String) -> Unit,
     executeSearch: () -> Unit,
     toggleSearch: (Boolean) -> Unit,
-    navigateToSettings: (Long) -> Unit
+    navigateToSettings: () -> Unit
 ) {
     SearchBarDefaults.InputField(
         searchBarState = searchBarState,
@@ -57,7 +57,7 @@ fun SearchInputField(
                 }
             } else if (!isSearchExpanded) {
                 Row {
-                    IconButton(onClick = { navigateToSettings(-1) }) {
+                    IconButton(onClick = navigateToSettings) {
                         Icon(
                             imageVector = Icons.Default.Settings,
                             contentDescription = null

@@ -6,32 +6,33 @@ import android.preference.PreferenceManager
 import com.pixnpunk.settings.data.repository.SettingsRepository
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.parameter.parametersOf
-import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 val settingsDataModule = module {
-    single<SharedPreferences>(named("GlobalPrefs")) {
-        PreferenceManager.getDefaultSharedPreferences(androidContext())
+    factory<SharedPreferences> { params ->
+        val gameId = params.getOrNull<Long>()?.takeIf { it != -1L }
+        if (gameId == null) {
+            PreferenceManager.getDefaultSharedPreferences(androidContext())
+        } else {
+            androidContext().getSharedPreferences(
+                "game_settings_${gameId}",
+                Context.MODE_PRIVATE
+            )
+        }
     }
 
-    factory<SharedPreferences>(named("LocalPrefs")) {
-        androidContext().getSharedPreferences(
-            "game_settings_${it.get<Long>()}",
-            Context.MODE_PRIVATE
-        )
-    }
-
-    single<SettingsRepository>(named("GlobalRepository")) {
-        SettingsRepository(
-            globalPrefs = get(named("GlobalPrefs")),
-            localPrefs = null
-        )
-    }
-
-    factory<SettingsRepository>(named("GameRepository")) {
-        SettingsRepository(
-            globalPrefs = get(named("GlobalPrefs")),
-            localPrefs = get(named("LocalPrefs")) { parametersOf(it.get<Long>()) }
-        )
+    factory<SettingsRepository> { params ->
+        val gameId = params.getOrNull<Long>()?.takeIf { it != -1L }
+        if (gameId == null) {
+            SettingsRepository(
+                globalPrefs = get(),
+                localPrefs = null
+            )
+        } else {
+            SettingsRepository(
+                globalPrefs = get(),
+                localPrefs = get { parametersOf(gameId) }
+            )
+        }
     }
 }

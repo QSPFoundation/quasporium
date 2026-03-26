@@ -35,7 +35,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
-import org.koin.core.qualifier.named
 
 class RealRootComponent(
     private val componentContext: ComponentContext,
@@ -54,7 +53,7 @@ class RealRootComponent(
 
     private val settingsRepository: SettingsRepository =
         instanceKeeper.getOrCreate {
-            get(named("GlobalRepository"))
+            get<SettingsRepository>()
         }
 
     override val settingsState: StateFlow<SettingsEntity> =
@@ -64,12 +63,13 @@ class RealRootComponent(
             initialValue = settingsRepository.currentSettings
         )
 
-    private val store = instanceKeeper.getStore {
-        RealRootStore(
-            storeFactory = DefaultStoreFactory(),
-            settingsRepository = settingsRepository
-        ).create()
-    }
+    private val store =
+        instanceKeeper.getStore {
+            RealRootStore(
+                storeFactory = DefaultStoreFactory(),
+                settingsRepository = settingsRepository
+            ).create()
+        }
 
     fun processPickedDir(dirName: String, dirPath: String) {
         val oldConfig = dialogSlot.child?.configuration as? DialogsConfig
@@ -247,7 +247,9 @@ class RealRootComponent(
         componentContext = childContext(key = "StockComponent"),
         showDialogAdd = ::doShowDialog,
         navigateToSettings = {
-            settingsNavigation.activate(SettingsConfig(it, ""))
+            settingsNavigation.activate(
+                SettingsConfig(null, "")
+            )
         },
         navigateToDetails = {
             detailsNavigation.activate(DetailsConfig(it))
@@ -364,7 +366,7 @@ class RealRootComponent(
         )
 
     @Serializable
-    data class SettingsConfig(val gameId: Long, val gameTitle: String)
+    data class SettingsConfig(val gameId: Long?, val gameTitle: String)
 
     @Serializable
     data class DetailsConfig(val entry: GameEntry)

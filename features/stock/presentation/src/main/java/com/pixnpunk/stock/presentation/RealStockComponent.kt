@@ -30,7 +30,7 @@ import org.koin.core.component.inject
 class RealStockComponent(
     private val componentContext: ComponentContext,
     override val showDialogAdd: () -> Unit,
-    override val navigateToSettings: (Long) -> Unit,
+    override val navigateToSettings: () -> Unit,
     override val navigateToDetails: (GameEntry) -> Unit,
     override val settingsState: StateFlow<SettingsEntity>
 ) : ComponentContext by componentContext, StockComponent, KoinComponent {

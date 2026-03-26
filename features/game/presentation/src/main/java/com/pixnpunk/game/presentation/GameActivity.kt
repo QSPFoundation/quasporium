@@ -13,7 +13,6 @@ import androidx.core.net.toUri
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import androidx.lifecycle.lifecycleScope
 import com.anggrayudi.storage.contract.FileCreationContract
 import com.anggrayudi.storage.contract.FileCreationResult
 import com.anggrayudi.storage.contract.FilePickerResult
@@ -26,24 +25,16 @@ import com.arkivanov.decompose.defaultComponentContext
 import com.pixnpunk.audio.AudioPlayerViewModel
 import com.pixnpunk.game.presentation.mvi.GameStore
 import com.pixnpunk.settings.data.repository.SettingsRepository
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import org.koin.android.ext.android.get
 import org.koin.android.ext.android.inject
 import org.koin.core.parameter.parametersOf
-import org.koin.core.qualifier.named
 
 class GameActivity : ComponentActivity() {
+
     private lateinit var root: RealGameComponent
 
     private val audioPlayer: AudioPlayerViewModel by inject()
-    private val settingsRepository: SettingsRepository by inject(
-        named("GameRepository")
-    ) {
-        parametersOf(intent.getStringExtra("gameId"))
-    }
+    private val settingsRepository: SettingsRepository by inject { parametersOf(gameId) }
 
     private val requestCreateFile =
         registerForActivityResult(
@@ -87,29 +78,10 @@ class GameActivity : ComponentActivity() {
             }.onFailure { root.onFileCorruptResult() }
         }
 
-    private var gameId: Long = 1L
-    private var gameTitle: String = "Title"
-    private var gameDirUriBox: String = ""
-    private var gameFileUriBox: String = ""
-
-    private fun subscribeToImmersiveModeChanges() {
-        settingsRepository.settingsFlow
-            .map { it.isImmersModeEnabled }
-            .distinctUntilChanged()
-            .onEach { isEnabled ->
-                val windowInsetsController =
-                    WindowCompat.getInsetsController(window, window.decorView)
-
-                if (isEnabled) {
-                    windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
-                    windowInsetsController.systemBarsBehavior =
-                        WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-                } else {
-                    windowInsetsController.show(WindowInsetsCompat.Type.systemBars())
-                }
-            }
-            .launchIn(lifecycleScope)
-    }
+    private val gameId: Long by lazy { intent.getLongExtra("GAME_ID", -1L) }
+    private val gameTitle: String by lazy { intent.getStringExtra("gameTitle") ?: "Title" }
+    private val gameDirUriBox: String by lazy { intent.getStringExtra("gameDirUri") ?: "" }
+    private val gameFileUriBox: String by lazy { intent.getStringExtra("gameFileUri") ?: "" }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -117,13 +89,13 @@ class GameActivity : ComponentActivity() {
 
         lifecycle.addObserver(audioPlayer)
 
-        subscribeToImmersiveModeChanges()
-
-        intent?.let {
-            gameId = it.getLongExtra("gameId", 1L)
-            gameTitle = it.getStringExtra("gameTitle") ?: "Title"
-            gameDirUriBox = it.getStringExtra("gameDirUri") ?: ""
-            gameFileUriBox = it.getStringExtra("gameFileUri") ?: ""
+        val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
+        if (settingsRepository.currentSettings.isImmersModeEnabled) {
+            windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
+            windowInsetsController.systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        } else {
+            windowInsetsController.show(WindowInsetsCompat.Type.systemBars())
         }
 
         root = RealGameComponent(
