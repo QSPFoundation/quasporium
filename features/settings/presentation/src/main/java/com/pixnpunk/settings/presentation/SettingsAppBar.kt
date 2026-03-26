@@ -39,10 +39,23 @@ fun SettingsAppBar(
             IconButton(
                 onClick = onClickBack
             ) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = null
-                )
+                when {
+                    isLocalSettings && currentWindowAdaptiveInfo().windowSizeClass.isWidthAtLeastBreakpoint(
+                        WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND
+                    ) -> {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = null
+                        )
+                    }
+
+                    else -> {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = null
+                        )
+                    }
+                }
             }
         },
         scrollBehavior = scrollBehavior
