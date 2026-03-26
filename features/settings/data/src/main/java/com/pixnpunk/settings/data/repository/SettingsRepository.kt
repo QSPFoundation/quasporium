@@ -11,8 +11,8 @@ import com.pixnpunk.dto.ColorPickerState
 import com.pixnpunk.dto.FontTypeface
 import com.pixnpunk.dto.InputState
 import com.pixnpunk.dto.NativeLibAuthors
-import com.pixnpunk.dto.PrefKeys
 import com.pixnpunk.dto.SettingsEntity
+import com.pixnpunk.settings.dto.model.PrefKeys
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

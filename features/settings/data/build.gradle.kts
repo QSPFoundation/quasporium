@@ -25,6 +25,8 @@ android {
 dependencies {
     implementation(project(":core:dto"))
 
+    implementation(project(":features:settings:domain"))
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
 
