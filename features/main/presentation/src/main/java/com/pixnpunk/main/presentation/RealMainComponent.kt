@@ -11,25 +11,21 @@ import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
 import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.main.presentation.mvi.MainStore
 import com.pixnpunk.main.presentation.mvi.RealMainStore
-import com.pixnpunk.settings.SettingsRepository
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.get
 
 class RealMainComponent(
     private val componentContext: ComponentContext,
-    private val gameWebViewClient: WebViewClient
+    private val gameWebViewClient: WebViewClient,
+    override val settingsState: StateFlow<SettingsEntity>
 ) : ComponentContext by componentContext, MainComponent, KoinComponent {
 
     private val store = instanceKeeper.getStore {
         RealMainStore(
             storeFactory = DefaultStoreFactory(),
-            stateKeeper = stateKeeper
+            stateKeeper = stateKeeper,
+            settingsState = settingsState
         ).create()
     }
 
@@ -43,12 +39,6 @@ class RealMainComponent(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override val model: StateFlow<MainStore.State> = store.stateFlow
-    override val settingsState: StateFlow<SettingsEntity> =
-        get<SettingsRepository>().settingsFlow.stateIn(
-            scope = CoroutineScope(Dispatchers.Main),
-            started = SharingStarted.Eagerly,
-            initialValue = get<SettingsRepository>().currentSettings
-        )
     override val onActionClicked: (Int) -> Unit = { index ->
         store.accept(MainStore.Intent.ActionClick(index))
     }

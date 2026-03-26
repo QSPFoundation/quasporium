@@ -17,6 +17,7 @@ import com.pixnpunk.settings.presentation.contents.SettingsImageContent
 import com.pixnpunk.settings.presentation.contents.SettingsRootContent
 import com.pixnpunk.settings.presentation.contents.SettingsTextContent
 import me.zhanghai.compose.preference.ProvidePreferenceLocals
+import me.zhanghai.compose.preference.createPreferenceFlow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,13 +28,21 @@ fun SettingsContent(
     val activeComponent = stack.active.instance
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
-    ProvidePreferenceLocals {
+    ProvidePreferenceLocals(
+        flow = createPreferenceFlow(component.preferences)
+    ) {
         Scaffold(
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             topBar = {
                 SettingsAppBar(
                     activeComponent = activeComponent,
                     scrollBehavior = scrollBehavior,
+                    rootChildTitle =
+                        if (component.isLocalSettings) {
+                            "${component.gameTitle} settings"
+                        } else {
+                            "Global settings"
+                        },
                     onClickBack = {
                         if (activeComponent is SettingsComponent.Child.RootChild) {
                             component.onDismissed()

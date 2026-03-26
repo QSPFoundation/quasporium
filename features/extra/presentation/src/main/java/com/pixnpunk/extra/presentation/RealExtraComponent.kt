@@ -11,25 +11,21 @@ import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
 import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.extra.presentation.mvi.ExtraStore
 import com.pixnpunk.extra.presentation.mvi.RealExtraStore
-import com.pixnpunk.settings.SettingsRepository
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.get
 
 class RealExtraComponent(
     private val componentContext: ComponentContext,
     private val gameWebViewClient: WebViewClient,
+    override val settingsState: StateFlow<SettingsEntity>
 ) : ComponentContext by componentContext, ExtraComponent, KoinComponent {
 
     private val store = instanceKeeper.getStore {
         RealExtraStore(
             storeFactory = DefaultStoreFactory(),
-            stateKeeper = stateKeeper
+            stateKeeper = stateKeeper,
+            settingsState = settingsState
         ).create()
     }
 
@@ -43,12 +39,6 @@ class RealExtraComponent(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override val model: StateFlow<ExtraStore.State> = store.stateFlow
-    override val settingsState: StateFlow<SettingsEntity> =
-        get<SettingsRepository>().settingsFlow.stateIn(
-            scope = CoroutineScope(Dispatchers.Main),
-            started = SharingStarted.Eagerly,
-            initialValue = get<SettingsRepository>().currentSettings
-        )
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun getDefaultWebClient(view: WebView): WebView =

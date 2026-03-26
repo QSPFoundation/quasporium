@@ -63,7 +63,6 @@ dependencies {
     implementation(project(":services:audio"))
     implementation(project(":services:natives"))
     implementation(project(":services:notification"))
-    implementation(project(":services:settings"))
 
     implementation(project(":features:stock:data"))
     implementation(project(":features:stock:domain"))
@@ -71,6 +70,7 @@ dependencies {
 
     implementation(project(":features:dialogs:presentation"))
     implementation(project(":features:details:presentation"))
+    implementation(project(":features:settings:data"))
     implementation(project(":features:settings:presentation"))
     implementation(project(":features:game:presentation"))
 
@@ -99,6 +99,7 @@ dependencies {
     implementation(libs.koin.workmanager)
 
     implementation(libs.essenty.lifecycle)
+    implementation(libs.essenty.coroutines)
     implementation(libs.decompose.core)
     implementation(libs.decompose.ext)
     implementation(libs.decompose.ext.exp)

@@ -10,7 +10,7 @@ import com.pixnpunk.logger.appLoggerModule
 import com.pixnpunk.natives.di.nativeModule
 import com.pixnpunk.network.networkModule
 import com.pixnpunk.notification.notificationModule
-import com.pixnpunk.settings.settingsModule
+import com.pixnpunk.settings.presentation.di.featureSettingsModule
 import com.pixnpunk.stock.presentation.di.featureStockModules
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.workmanager.koin.workManagerFactory
@@ -24,10 +24,11 @@ class Quasporium : Application() {
             workManagerFactory()
             modules(
                 appLoggerModule, databaseModule,
-                networkModule, settingsModule,
+                networkModule,
                 audioModule, nativeModule,
                 notificationModule
             )
+            modules(featureSettingsModule)
             modules(featureStockModules)
         }
 

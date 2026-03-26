@@ -22,7 +22,7 @@ import com.pixnpunk.dto.NativeLibAuthors
 import com.pixnpunk.natives.impl.QSLibSDHImpl
 import com.pixnpunk.natives.impl.QSLibSNXImpl
 import com.pixnpunk.natives.impl.QSPLibImpl
-import com.pixnpunk.settings.SettingsRepository
+import com.pixnpunk.settings.data.repository.SettingsRepository
 import com.pixnpunk.utils.FileUtil.isWritableDir
 import com.pixnpunk.utils.FileUtil.isWritableFile
 import com.pixnpunk.utils.PathUtil.absToRelPath
@@ -45,8 +45,7 @@ import java.util.concurrent.atomic.AtomicLong
 import kotlin.contracts.ExperimentalContracts
 
 class NativeViewModel(
-    private val audioPlayer: AudioPlayerViewModel,
-    private val settingsRepo: SettingsRepository
+    private val audioPlayer: AudioPlayerViewModel
 ) : ViewModel(), GameInterface, KoinComponent {
 
     private var counterNativeByteJob: Job? = null
@@ -135,14 +134,14 @@ class NativeViewModel(
     }
 
     fun startService(
+        settingsRepository: SettingsRepository,
         gameId: Long,
         gameTitle: String,
         gameDirUriBox: String,
-        gameFileUriBox: String,
-        libAuthor: NativeLibAuthors
+        gameFileUriBox: String
     ) {
         this.gameDirUri = gameDirUriBox.toUri()
-        this.mLibAuthors = libAuthor
+        this.mLibAuthors = settingsRepository.currentSettings.nativeLibFrom
 
         when (mLibAuthors) {
             NativeLibAuthors.BYTE -> {
@@ -177,7 +176,7 @@ class NativeViewModel(
         }
 
         updateSettingsJob = viewModelScope.launch {
-            settingsRepo.settingsFlow.combine(gameUIConfFlow) { appSet, libSet ->
+            settingsRepository.settingsFlow.combine(gameUIConfFlow) { appSet, libSet ->
                 appSet.copy(
                     isUseHtml = libSet.useHtml,
                     textColor = if (!appSet.isTextColorOverride && libSet.fontColor != 0) {
@@ -201,7 +200,7 @@ class NativeViewModel(
                         appSet.fontSize
                     }
                 )
-            }.collect { settingsRepo.emitValue(it) }
+            }.collect { settingsRepository.emitValue(it) }
         }
     }
 

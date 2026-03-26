@@ -4,12 +4,15 @@ import com.arkivanov.essenty.statekeeper.StateKeeper
 import com.arkivanov.mvikotlin.core.store.SimpleBootstrapper
 import com.arkivanov.mvikotlin.core.store.Store
 import com.arkivanov.mvikotlin.core.store.StoreFactory
+import com.pixnpunk.dto.SettingsEntity
+import kotlinx.coroutines.flow.StateFlow
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 
 class RealExtraStore(
     private val storeFactory: StoreFactory,
-    private val stateKeeper: StateKeeper
+    private val stateKeeper: StateKeeper,
+    private val settingsState: StateFlow<SettingsEntity>
 ) : KoinComponent {
     internal fun create(): ExtraStore = ExtraImpl()
 
@@ -24,7 +27,12 @@ class RealExtraStore(
             bootstrapper = SimpleBootstrapper(
                 ExtraStore.Action.StartExtraReceiveFlow
             ),
-            executorFactory = { ExtraExecutor(get(), get()) },
+            executorFactory = {
+                ExtraExecutor(
+                    service = get(),
+                    settingsState = settingsState
+                )
+            },
             reducer = ExtraReducer
         )
 }

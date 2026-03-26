@@ -22,6 +22,8 @@ import com.arkivanov.decompose.router.slot.child
 import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
 import com.arkivanov.decompose.value.Value
+import com.arkivanov.essenty.instancekeeper.getOrCreate
+import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
 import com.arkivanov.mvikotlin.core.instancekeeper.getStore
 import com.arkivanov.mvikotlin.extensions.coroutines.labels
 import com.arkivanov.mvikotlin.extensions.coroutines.stateFlow
@@ -34,9 +36,9 @@ import com.pixnpunk.dto.InputState
 import com.pixnpunk.dto.LibGenItem
 import com.pixnpunk.dto.LibSaveItem
 import com.pixnpunk.dto.LibTypeDialog
-import com.pixnpunk.dto.NativeLibAuthors
 import com.pixnpunk.dto.OutputState
 import com.pixnpunk.dto.OutputStateValue
+import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.extra.presentation.RealExtraComponent
 import com.pixnpunk.game.presentation.mvi.GameStore
 import com.pixnpunk.game.presentation.mvi.RealGameStore
@@ -44,6 +46,7 @@ import com.pixnpunk.main.presentation.MainComponent
 import com.pixnpunk.main.presentation.RealMainComponent
 import com.pixnpunk.natives.NativeViewModel
 import com.pixnpunk.`object`.presentation.RealObjectComponent
+import com.pixnpunk.settings.data.repository.SettingsRepository
 import com.pixnpunk.utils.Base64Util.decodeBase64
 import com.pixnpunk.utils.Base64Util.isBase64
 import com.pixnpunk.utils.FileUtil.isWritableDir
@@ -51,11 +54,15 @@ import com.pixnpunk.utils.FileUtil.isWritableFile
 import com.pixnpunk.utils.HtmlUtil.isContainsHtmlTags
 import com.pixnpunk.utils.HtmlUtil.removeHtmlTags
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.serialization.serializer
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import org.koin.core.component.inject
+import org.koin.core.parameter.parametersOf
+import org.koin.core.qualifier.named
 import java.io.FileNotFoundException
 import kotlin.contracts.ExperimentalContracts
 
@@ -63,11 +70,13 @@ class RealGameComponent(
     private val componentContext: ComponentContext,
     private val onStartActivity: (Intent) -> Unit,
     private val onFinishActivity: () -> Unit,
-    private val gameId: Long = 1L,
+    private val gameId: Long = -1L,
     private val gameTitle: String = "Title",
     private val gameDirUriBox: String = "",
     private val gameFileUriBox: String = ""
 ) : ComponentContext by componentContext, GameComponent, KoinComponent {
+
+    private val componentScope = coroutineScope()
 
     private val supervisorService: NativeViewModel by inject()
 
@@ -75,13 +84,23 @@ class RealGameComponent(
     private val extraNavigation = SlotNavigation<Unit>()
     private val objectNavigation = SlotNavigation<Unit>()
 
+    private val settingsRepository: SettingsRepository =
+        instanceKeeper.getOrCreate {
+            if (gameId == -1L) {
+                get(named("GlobalPrefs"))
+            } else {
+                get(named("LocalPrefs")) { parametersOf(gameId) }
+            }
+        }
+
     private val store = instanceKeeper.getStore {
         RealGameStore(
             gameId = gameId,
             gameTitle = gameTitle,
             gameDirUriBox = gameDirUriBox,
             gameFileUriBox = gameFileUriBox,
-            storeFactory = DefaultStoreFactory()
+            storeFactory = DefaultStoreFactory(),
+            settingsState = settingsState
         ).create()
     }
 
@@ -92,6 +111,13 @@ class RealGameComponent(
     @OptIn(ExperimentalCoroutinesApi::class)
     override val model: StateFlow<GameStore.State> = store.stateFlow
     override val label = store.labels
+
+    override val settingsState: StateFlow<SettingsEntity> =
+        settingsRepository.settingsFlow.stateIn(
+            scope = componentScope,
+            started = SharingStarted.Eagerly,
+            initialValue = settingsRepository.currentSettings
+        )
 
     override val dialogSlot: Value<ChildSlot<*, DialogsComponent>> =
         childSlot(
@@ -120,7 +146,8 @@ class RealGameComponent(
         ) { _, ctx ->
             RealExtraComponent(
                 componentContext = ctx,
-                gameWebViewClient = GameWebViewClient()
+                gameWebViewClient = GameWebViewClient(),
+                settingsState = settingsState
             )
         }
 
@@ -132,13 +159,15 @@ class RealGameComponent(
             handleBackButton = true
         ) { _, ctx ->
             RealObjectComponent(
-                componentContext = ctx
+                componentContext = ctx,
+                settingsState = settingsState
             )
         }
 
     override val mainComponent: MainComponent = RealMainComponent(
         componentContext = childContext("MainComponent"),
-        gameWebViewClient = GameWebViewClient()
+        gameWebViewClient = GameWebViewClient(),
+        settingsState = settingsState
     )
 
     fun onSaveFileResult(fileUri: Uri) {
@@ -326,17 +355,15 @@ class RealGameComponent(
     override fun cleanObjectsUpdates() =
         store.accept(GameStore.Intent.CleanObjectsSavedList)
 
-    override fun doRunGame(
-        nativeLibFrom: NativeLibAuthors
-    ) {
+    override fun doRunGame() {
         val currState = store.state
         if (!currState.isGameRunning) {
             supervisorService.startService(
+                settingsRepository,
                 currState.gameId,
                 currState.gameTitle,
                 currState.gameDirUriBox,
-                currState.gameFileUriBox,
-                nativeLibFrom
+                currState.gameFileUriBox
             )
         }
     }

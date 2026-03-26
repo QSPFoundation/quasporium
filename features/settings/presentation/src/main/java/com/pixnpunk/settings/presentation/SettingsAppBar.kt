@@ -16,16 +16,21 @@ import androidx.compose.ui.res.stringResource
 fun SettingsAppBar(
     activeComponent: SettingsComponent.Child,
     scrollBehavior: TopAppBarScrollBehavior,
+    rootChildTitle: String,
     onClickBack: () -> Unit
 ) {
     MediumTopAppBar(
         title = {
             Text(
                 when (activeComponent) {
+                    is SettingsComponent.Child.RootChild -> rootChildTitle
+
                     is SettingsComponent.Child.AudioChild -> stringResource(R.string.audio_button_title)
+
                     is SettingsComponent.Child.GeneralChild -> stringResource(R.string.general_button_title)
+
                     is SettingsComponent.Child.PicturesChild -> stringResource(R.string.pictures_button_title)
-                    is SettingsComponent.Child.RootChild -> stringResource(R.string.root_button_title)
+
                     is SettingsComponent.Child.TextChild -> stringResource(R.string.text_button_title)
                 }
             )

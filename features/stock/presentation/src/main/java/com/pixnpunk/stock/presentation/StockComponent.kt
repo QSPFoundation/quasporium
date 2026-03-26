@@ -14,7 +14,7 @@ sealed interface StockComponent {
     val settingsState: StateFlow<SettingsEntity>
 
     val showDialogAdd: () -> Unit
-    val navigateToSettings: () -> Unit
+    val navigateToSettings: (Long) -> Unit
     val navigateToDetails: (GameEntry) -> Unit
 
     val gameLocalPageFlow: Flow<PagingData<GameEntry>>

@@ -34,7 +34,7 @@ dependencies {
 
     implementation(project(":features:details:presentation"))
 
-    implementation(project(":services:settings"))
+    implementation(project(":features:settings:data"))
 
     implementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(platform(libs.androidx.compose.bom))

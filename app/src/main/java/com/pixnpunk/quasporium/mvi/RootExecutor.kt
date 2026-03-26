@@ -1,7 +1,7 @@
 package com.pixnpunk.quasporium.mvi
 
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
-import com.pixnpunk.settings.SettingsRepository
+import com.pixnpunk.settings.data.repository.SettingsRepository
 import com.pixnpunk.stock.domain.usecase.DownloadGameArchUseCase
 import com.pixnpunk.stock.domain.usecase.FillAndInsertEntryUseCase
 import com.pixnpunk.stock.domain.usecase.UpsertEntryUseCase

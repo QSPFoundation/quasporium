@@ -38,6 +38,7 @@ include(
     ":features:dialogs",
     ":features:dialogs:presentation",
     ":features:settings",
+    ":features:settings:data",
     ":features:settings:presentation",
     ":features:stock",
     ":features:stock:data",
@@ -55,6 +56,6 @@ include(
     ":services",
     ":services:audio",
     ":services:natives",
-    ":services:notification",
-    ":services:settings"
+    ":services:notification"
 )
+include(":features:settings:domain")

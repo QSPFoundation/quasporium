@@ -44,6 +44,7 @@ fun DetailsContent(
                 gameType = entry.listId,
                 onShowSelectGameDialog = { component.showSelectGameDialog(entry) },
                 onShowEditGameDialog = { component.showEditGameDialog(entry) },
+                onShowSettingsGamePanel = { component.showSettingsGamePanel(entry) },
                 onShowDownloadGameDialog = { component.showDownloadGameDialog(entry) }
             )
             if (entry.listId == GameListType.Downloadable || entry.descUrl.isNotEmpty()) {
