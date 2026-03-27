@@ -17,6 +17,7 @@ import com.pixnpunk.dto.LibReturnValue
 import com.pixnpunk.dto.LibTypeDialog
 import com.pixnpunk.dto.LibUIConfig
 import com.pixnpunk.natives.dto.toLibRawItem
+import com.pixnpunk.utils.FileUtil.isWritableFile
 import com.pixnpunk.utils.FileUtil.readFileContents
 import com.pixnpunk.utils.FileUtil.writeFileContents
 import com.pixnpunk.utils.ThreadUtil.isSameThread
@@ -66,7 +67,13 @@ class QSLibSNXImpl(
         val gameFileFullPath = gameFile.getAbsolutePath(context)
         val gameFileDescriptor = context.contentResolver
             .openFileDescriptor(gameFileUri, "rw")?.detachFd() ?: return false
-        return executeQspCommand { loadGameWorldFromFD(gameFileDescriptor, gameFileFullPath) }
+        return executeQspCommand {
+            loadGameWorldFromFD(
+                gameFileDescriptor,
+                gameFileFullPath,
+                false
+            )
+        }
     }
 
     private val actionsList: List<LibGenItem>
@@ -82,14 +89,19 @@ class QSLibSNXImpl(
     override fun startLibThread() = delegate.startLibThread("libSNXQSP")
     override fun stopLibThread() = delegate.stopLibThread()
 
-    override fun runGame(gameId: Long, gameTitle: String, gameDirPath: String, gameFilePath: String) {
-        delegate.runOnLibThread {
+    override fun runGame(
+        gameId: Long,
+        gameTitle: String,
+        gameDirPath: String,
+        gameFilePath: String
+    ) {
+        delegate.runActionOnLibThread {
             doRunGame(gameId, gameTitle, gameDirPath.toUri(), gameFilePath.toUri())
         }
     }
 
     override fun restartGame() {
-        delegate.runOnLibThread {
+        delegate.runActionOnLibThread {
             with(delegate.gameState) {
                 doRunGame(gameId, gameTitle, gameDirPath.toUri(), gameFilePath.toUri())
             }
@@ -115,7 +127,7 @@ class QSLibSNXImpl(
 
     override fun loadGameState(path: String) {
         if (!isSameThread(delegate.libHandler.looper.thread)) {
-            delegate.runOnLibThread { loadGameState(path) }
+            delegate.runActionOnLibThread { loadGameState(path) }
             return
         }
         val gameData = path.toUri().readFileContents() ?: return
@@ -124,37 +136,36 @@ class QSLibSNXImpl(
 
     override fun saveGameState(path: String) {
         if (!isSameThread(delegate.libHandler.looper.thread)) {
-            delegate.runOnLibThread { saveGameState(path) }
+            delegate.runActionOnLibThread { saveGameState(path) }
             return
         }
         path.toUri().writeFileContents(saveGameAsData(false) ?: return)
     }
 
     override fun onActionClicked(index: Int) {
-        delegate.runOnLibThread {
+        delegate.runActionOnLibThread {
             executeQspCommand { setSelActionIndex(index, false) }
             executeQspCommand { executeSelActionCode(true) }
         }
     }
 
     override fun onObjectSelected(index: Int) {
-        delegate.runOnLibThread { executeQspCommand { setSelObjectIndex(index, true) } }
+        delegate.runActionOnLibThread { executeQspCommand { setSelObjectIndex(index, true) } }
     }
 
     override fun onInputAreaClicked(code: String) {
-        delegate.runOnLibThread {
+        delegate.runActionOnLibThread {
             setInputStrText(code)
             executeQspCommand { execUserInput(true) }
         }
     }
 
     override fun execute(code: String) {
-        delegate.runOnLibThread { executeQspCommand { execString(code, true) } }
+        delegate.runActionOnLibThread { executeQspCommand { execString(code, true) } }
     }
 
     override fun executeCounter() {
-        if (delegate.libLock.isLocked) return
-        delegate.runOnLibThread { executeQspCommand { execCounter(true) } }
+        delegate.runCounterOnLibThread { executeQspCommand { execCounter(true) } }
     }
 
     override fun onRefreshInt() {
@@ -201,8 +212,26 @@ class QSLibSNXImpl(
     }
 
     override fun onShowWindow(type: Int, isShow: Boolean) = delegate.handleShowWindow(type, isShow)
-    override fun onOpenGame(path: String?) {
-        if (!path.isNullOrBlank()) gameInterface.changeGameDir(path)
+
+    override fun onOpenGame(path: String?, isNewGame: Boolean) {
+        if (path.isNullOrBlank()) return
+
+        val targetFileUri =
+            delegate.handleOpenGameStatus(path).getOrDefault("").toUri()
+        if (targetFileUri == Uri.EMPTY) return
+        val targetFile = targetFileUri.toDocumentFile(context)
+        if (!targetFile.isWritableFile()) return
+        val targetFileFullPath = targetFile.getAbsolutePath(context)
+
+        context.contentResolver.openFileDescriptor(targetFile.uri, "r")?.use { pfd ->
+            executeQspCommand {
+                loadGameWorldFromFD(
+                    pfd.fd,
+                    targetFileFullPath,
+                    isNewGame
+                )
+            }
+        }
     }
 
     override fun onOpenGameStatus(filename: String?) =

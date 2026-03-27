@@ -4,12 +4,15 @@ import com.arkivanov.essenty.statekeeper.StateKeeper
 import com.arkivanov.mvikotlin.core.store.SimpleBootstrapper
 import com.arkivanov.mvikotlin.core.store.Store
 import com.arkivanov.mvikotlin.core.store.StoreFactory
+import com.pixnpunk.dto.SettingsEntity
+import kotlinx.coroutines.flow.StateFlow
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 
 class RealMainStore(
     private val storeFactory: StoreFactory,
-    private val stateKeeper: StateKeeper
+    private val stateKeeper: StateKeeper,
+    private val settingsState: StateFlow<SettingsEntity>
 ) : KoinComponent {
     internal fun create(): MainStore = MainImpl()
 
@@ -25,7 +28,12 @@ class RealMainStore(
                 MainStore.Action.StartContentFlow,
                 MainStore.Action.StartActionsVisFlow
             ),
-            executorFactory = { MainExecutor(get(), get()) },
+            executorFactory = {
+                MainExecutor(
+                    nativeProxy = get(),
+                    settingsState = settingsState
+                )
+            },
             reducer = MainReducer
         )
 }

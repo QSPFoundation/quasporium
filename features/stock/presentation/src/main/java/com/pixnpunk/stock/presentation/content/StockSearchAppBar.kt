@@ -111,6 +111,19 @@ fun StockSearchAppBar(
         }
     }
 
+    val sharedInputField = @Composable {
+        SearchInputField(
+            searchBarState = searchBarState,
+            textFieldState = textFieldState,
+            searchQuery = searchQuery,
+            isSearchExpanded = isSearchExpanded,
+            updateSearchQuery = updateSearchQuery,
+            executeSearch = executeSearch,
+            toggleSearch = toggleSearch,
+            navigateToSettings = navigateToSettings
+        )
+    }
+
     Column(modifier = Modifier.fillMaxWidth()) {
         SearchBar(
             modifier = Modifier
@@ -118,37 +131,16 @@ fun StockSearchAppBar(
                 .align(Alignment.CenterHorizontally)
                 .focusProperties { canFocus = canRequestFocus },
             state = searchBarState,
-            inputField = {
-                SearchInputField(
-                    searchBarState = searchBarState,
-                    textFieldState = textFieldState,
-                    searchQuery = searchQuery,
-                    isSearchExpanded = isSearchExpanded,
-                    updateSearchQuery = updateSearchQuery,
-                    executeSearch = executeSearch,
-                    toggleSearch = toggleSearch,
-                    navigateToSettings = navigateToSettings
-                )
-            }
+            inputField = sharedInputField
         )
+
         if (currentWindowAdaptiveInfo().windowSizeClass.isWidthAtLeastBreakpoint(
                 WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND
             )
         ) {
             ExpandedDockedSearchBar(
                 state = searchBarState,
-                inputField = {
-                    SearchInputField(
-                        searchBarState = searchBarState,
-                        textFieldState = textFieldState,
-                        searchQuery = searchQuery,
-                        isSearchExpanded = isSearchExpanded,
-                        updateSearchQuery = updateSearchQuery,
-                        executeSearch = executeSearch,
-                        toggleSearch = toggleSearch,
-                        navigateToSettings = navigateToSettings
-                    )
-                },
+                inputField = sharedInputField,
                 content = {
                     SharedSearchSuggestionColumn(
                         suggestedAuthors = suggestedAuthors,
@@ -164,18 +156,7 @@ fun StockSearchAppBar(
         } else {
             ExpandedFullScreenSearchBar(
                 state = searchBarState,
-                inputField = {
-                    SearchInputField(
-                        searchBarState = searchBarState,
-                        textFieldState = textFieldState,
-                        searchQuery = searchQuery,
-                        isSearchExpanded = isSearchExpanded,
-                        updateSearchQuery = updateSearchQuery,
-                        executeSearch = executeSearch,
-                        toggleSearch = toggleSearch,
-                        navigateToSettings = navigateToSettings
-                    )
-                },
+                inputField = sharedInputField,
                 content = {
                     SharedSearchSuggestionColumn(
                         suggestedAuthors = suggestedAuthors,

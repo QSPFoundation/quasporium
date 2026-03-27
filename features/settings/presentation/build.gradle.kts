@@ -27,11 +27,13 @@ dependencies {
     implementation(project(":core:dto"))
     implementation(project(":core:utils"))
 
-    implementation(project(":services:settings"))
+    implementation(project(":features:settings:data"))
+    implementation(project(":features:settings:domain"))
 
     implementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(platform(libs.androidx.compose.bom))
 
+    implementation(libs.androidx.compose.adaptive)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.icons.extended)
     debugImplementation(libs.androidx.compose.ui.tooling)

@@ -1,5 +1,6 @@
 package com.pixnpunk.stock.presentation.content.search
 
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -24,7 +25,7 @@ fun SearchInputField(
     updateSearchQuery: (String) -> Unit,
     executeSearch: () -> Unit,
     toggleSearch: (Boolean) -> Unit,
-    navigateToSettings: () -> Unit,
+    navigateToSettings: () -> Unit
 ) {
     SearchBarDefaults.InputField(
         searchBarState = searchBarState,
@@ -55,11 +56,13 @@ fun SearchInputField(
                     )
                 }
             } else if (!isSearchExpanded) {
-                IconButton(onClick = navigateToSettings) {
-                    Icon(
-                        imageVector = Icons.Default.Settings,
-                        contentDescription = "Settings"
-                    )
+                Row {
+                    IconButton(onClick = navigateToSettings) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = null
+                        )
+                    }
                 }
             }
         }

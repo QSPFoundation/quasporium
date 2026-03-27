@@ -2,7 +2,8 @@
 <resources>
     <string name="back_button_description">Navigate back</string>
     <string name="play_button_description">Play</string>
-    <string name="modify_button_description">Modify</string>
+    <string name="modify_button_description">Edit</string>
+    <string name="settings_button_description">Settings</string>
     <string name="download_button_description">Download</string>
     <string name="expand_button_description">Expand</string>
     <string name="collapse_button_description">Collapse</string>

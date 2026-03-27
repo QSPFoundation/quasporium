@@ -3,12 +3,15 @@ package com.pixnpunk.game.presentation.mvi
 import com.arkivanov.mvikotlin.core.store.SimpleBootstrapper
 import com.arkivanov.mvikotlin.core.store.Store
 import com.arkivanov.mvikotlin.core.store.StoreFactory
+import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.utils.DirUtil.isGameDirIsInternal
+import kotlinx.coroutines.flow.StateFlow
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 
 class RealGameStore(
     private val storeFactory: StoreFactory,
+    private val settingsState: StateFlow<SettingsEntity>,
     private val gameId: Long,
     private val gameTitle: String,
     private val gameDirUriBox: String,
@@ -32,7 +35,12 @@ class RealGameStore(
                 GameStore.Action.StartGameElementVisFlow,
                 GameStore.Action.StartGameDialogFlow
             ),
-            executorFactory = { GameExecutor(get(), get(), get(), get()) },
+            executorFactory = {
+                GameExecutor(
+                    get(), get(),
+                    settingsState, get()
+                )
+            },
             reducer = GameReducer
         )
 }

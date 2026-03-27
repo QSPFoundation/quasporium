@@ -1,5 +1,14 @@
 package com.pixnpunk.quasporium
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.layout.AnimatedPane
@@ -15,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.pixnpunk.details.presentation.DetailsContent
@@ -35,7 +45,10 @@ fun RootContent(
     val settingsSlot by component.settingsSlot.subscribeAsState()
 
     val detailsSlotIsNotEmpty = detailsSlot.child != null
-    val settingsSlotIsNotEmpty = settingsSlot.child != null
+
+    val settingsChild = settingsSlot.child?.instance
+    val showSettingsInExtraPane = settingsChild != null && settingsChild.isLocalSettings
+    val showSettingsAsOverlay = settingsChild != null && !settingsChild.isLocalSettings
 
     val directive = calculatePaneScaffoldDirective(currentWindowAdaptiveInfo())
 
@@ -50,7 +63,8 @@ fun RootContent(
                 if (detailsSlot.child != null) {
                     add(ThreePaneScaffoldDestinationItem<Any>(pane = ListDetailPaneScaffoldRole.Detail))
                 }
-                if (settingsSlot.child != null) {
+
+                if (showSettingsInExtraPane) {
                     add(ThreePaneScaffoldDestinationItem<Any>(pane = ListDetailPaneScaffoldRole.Extra))
                 }
             }
@@ -64,34 +78,50 @@ fun RootContent(
             DialogsMainContent(it, settings)
         }
 
-        ListDetailPaneScaffold(
-            directive = directive,
-            value = remember(scaffoldValue, detailsSlotIsNotEmpty, settingsSlotIsNotEmpty) {
-                ThreePaneScaffoldValue(
-                    primary = if (detailsSlotIsNotEmpty) scaffoldValue.primary else PaneAdaptedValue.Hidden,
-                    secondary = scaffoldValue.secondary,
-                    tertiary = if (settingsSlotIsNotEmpty) scaffoldValue.tertiary else PaneAdaptedValue.Hidden
-                )
-            },
-            listPane = {
-                AnimatedPane {
-                    StockContent(component.stockComponent)
-                }
-            },
-            detailPane = {
-                AnimatedPane {
-                    detailsSlot.child?.instance?.let { child ->
-                        DetailsContent(child)
+        Box(modifier = Modifier.fillMaxSize()) {
+            ListDetailPaneScaffold(
+                directive = directive,
+                value = remember(scaffoldValue, detailsSlotIsNotEmpty, showSettingsInExtraPane) {
+                    ThreePaneScaffoldValue(
+                        primary = if (detailsSlotIsNotEmpty) scaffoldValue.primary else PaneAdaptedValue.Hidden,
+                        secondary = scaffoldValue.secondary,
+                        tertiary = if (showSettingsInExtraPane) scaffoldValue.tertiary else PaneAdaptedValue.Hidden
+                    )
+                },
+                listPane = {
+                    AnimatedPane {
+                        StockContent(component.stockComponent)
+                    }
+                },
+                detailPane = {
+                    AnimatedPane {
+                        detailsSlot.child?.instance?.also {
+                            DetailsContent(it)
+                        }
+                    }
+                },
+                extraPane = {
+                    AnimatedPane {
+                        if (showSettingsInExtraPane) { SettingsContent(settingsChild) }
                     }
                 }
-            },
-            extraPane = {
-                AnimatedPane {
-                    settingsSlot.child?.instance?.let { child ->
-                        SettingsContent(child)
+            )
+
+            AnimatedVisibility(
+                visible = showSettingsAsOverlay,
+                enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
+                exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    if (showSettingsAsOverlay) {
+                        SettingsContent(settingsChild)
                     }
                 }
             }
-        )
+        }
     }
 }

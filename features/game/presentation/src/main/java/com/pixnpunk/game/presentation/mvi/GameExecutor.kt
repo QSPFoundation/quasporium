@@ -17,16 +17,17 @@ import com.pixnpunk.dto.LibSaveItem
 import com.pixnpunk.dto.LibTypeDialog
 import com.pixnpunk.dto.LibTypePopup
 import com.pixnpunk.dto.LibTypeWindow
+import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.game.presentation.mvi.GameStore.Label.ShowDialog
 import com.pixnpunk.game.presentation.mvi.GameStore.Label.ShowLoadFilePicker
 import com.pixnpunk.game.presentation.mvi.GameStore.Label.ShowSaveFilePicker
 import com.pixnpunk.natives.NativeViewModel
-import com.pixnpunk.settings.SettingsRepository
 import com.pixnpunk.utils.FileUtil.isWritableDir
 import com.pixnpunk.utils.FileUtil.isWritableFile
 import com.pixnpunk.utils.PathUtil.getImageUriFromPath
 import com.pixnpunk.utils.PathUtil.normalizeContentPath
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNot
@@ -38,7 +39,7 @@ import kotlin.uuid.Uuid
 internal class GameExecutor(
     private val appContext: Context,
     private val service: NativeViewModel,
-    private val settingsRepo: SettingsRepository,
+    private val settingsState: StateFlow<SettingsEntity>,
     private val saveSlotDao: SaveSlotDao
 ) : CoroutineExecutor<GameStore.Intent, GameStore.Action, GameStore.State, GameStore.Message, GameStore.Label>() {
 
@@ -297,7 +298,7 @@ internal class GameExecutor(
 
             is GameStore.Action.StartGameSettingsFlow ->
                 scope.launch {
-                    settingsRepo.settingsFlow
+                    settingsState
                         .filter { it.isUseExecString }
                         .collect { dispatch(GameStore.Message.UpdateExecutorStatus(it.isUseExecString)) }
                 }

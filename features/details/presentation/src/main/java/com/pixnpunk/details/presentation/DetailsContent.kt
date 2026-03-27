@@ -3,6 +3,8 @@ package com.pixnpunk.details.presentation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -32,7 +34,8 @@ fun DetailsContent(
             modifier = Modifier
                 .padding(paddingValues)
                 .padding(top = 16.dp)
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 16.dp)
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             DetailsPrimaryInfo(entry)
@@ -44,6 +47,7 @@ fun DetailsContent(
                 gameType = entry.listId,
                 onShowSelectGameDialog = { component.showSelectGameDialog(entry) },
                 onShowEditGameDialog = { component.showEditGameDialog(entry) },
+                onShowSettingsGamePanel = { component.showSettingsGamePanel(entry) },
                 onShowDownloadGameDialog = { component.showDownloadGameDialog(entry) }
             )
             if (entry.listId == GameListType.Downloadable || entry.descUrl.isNotEmpty()) {

@@ -1,9 +1,9 @@
 package com.pixnpunk.stock.presentation.di
 
-import com.pixnpunk.stock.data.di.dataModule
-import com.pixnpunk.stock.domain.di.domainModule
+import com.pixnpunk.stock.data.di.stockDataModule
+import com.pixnpunk.stock.domain.di.stockDomainModule
 
 val featureStockModules = listOf(
-    dataModule,
-    domainModule
+    stockDataModule,
+    stockDomainModule
 )

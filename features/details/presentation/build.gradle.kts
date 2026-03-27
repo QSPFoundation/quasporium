@@ -30,11 +30,12 @@ dependencies {
 
     implementation(project(":features:stock:domain"))
 
-    implementation(project(":services:settings"))
+    implementation(project(":features:settings:data"))
 
     implementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(platform(libs.androidx.compose.bom))
 
+    implementation(libs.androidx.compose.adaptive)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.icons.extended)
     debugImplementation(libs.androidx.compose.ui.tooling)
@@ -53,6 +54,7 @@ dependencies {
     implementation(libs.prettytime)
 
     implementation(libs.essenty.lifecycle)
+    implementation(libs.essenty.coroutines)
     implementation(libs.decompose.core)
     implementation(libs.decompose.ext)
     implementation(libs.mvikotlin.core)

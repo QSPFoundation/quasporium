@@ -28,7 +28,7 @@ dependencies {
     implementation(project(":core:dto"))
     implementation(project(":core:utils"))
 
-    implementation(project(":services:settings"))
+    implementation(project(":features:settings:data"))
 
     implementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(platform(libs.androidx.compose.bom))

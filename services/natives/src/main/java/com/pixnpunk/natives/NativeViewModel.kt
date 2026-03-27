@@ -22,13 +22,14 @@ import com.pixnpunk.dto.NativeLibAuthors
 import com.pixnpunk.natives.impl.QSLibSDHImpl
 import com.pixnpunk.natives.impl.QSLibSNXImpl
 import com.pixnpunk.natives.impl.QSPLibImpl
-import com.pixnpunk.settings.SettingsRepository
+import com.pixnpunk.settings.data.repository.SettingsRepository
 import com.pixnpunk.utils.FileUtil.isWritableDir
 import com.pixnpunk.utils.FileUtil.isWritableFile
 import com.pixnpunk.utils.PathUtil.absToRelPath
 import com.pixnpunk.utils.PathUtil.normalizeContentPath
 import com.pixnpunk.utils.PathUtil.pathToFile
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -40,13 +41,11 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
-import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.contracts.ExperimentalContracts
 
 class NativeViewModel(
-    private val audioPlayer: AudioPlayerViewModel,
-    private val settingsRepo: SettingsRepository
+    private val audioPlayer: AudioPlayerViewModel
 ) : ViewModel(), GameInterface, KoinComponent {
 
     private var counterNativeByteJob: Job? = null
@@ -135,14 +134,14 @@ class NativeViewModel(
     }
 
     fun startService(
+        settingsRepository: SettingsRepository,
         gameId: Long,
         gameTitle: String,
         gameDirUriBox: String,
-        gameFileUriBox: String,
-        libAuthor: NativeLibAuthors
+        gameFileUriBox: String
     ) {
         this.gameDirUri = gameDirUriBox.toUri()
-        this.mLibAuthors = libAuthor
+        this.mLibAuthors = settingsRepository.currentSettings.nativeLibFrom
 
         when (mLibAuthors) {
             NativeLibAuthors.BYTE -> {
@@ -177,7 +176,7 @@ class NativeViewModel(
         }
 
         updateSettingsJob = viewModelScope.launch {
-            settingsRepo.settingsFlow.combine(gameUIConfFlow) { appSet, libSet ->
+            settingsRepository.settingsFlow.combine(gameUIConfFlow) { appSet, libSet ->
                 appSet.copy(
                     isUseHtml = libSet.useHtml,
                     textColor = if (!appSet.isTextColorOverride && libSet.fontColor != 0) {
@@ -201,7 +200,7 @@ class NativeViewModel(
                         appSet.fontSize
                     }
                 )
-            }.collect { settingsRepo.emitValue(it) }
+            }.collect { settingsRepository.emitValue(it) }
         }
     }
 
@@ -371,22 +370,19 @@ class NativeViewModel(
             return
         }
 
-        CompletableFuture
-            .supplyAsync {
-                gameDir.makeFile(
-                    get(),
-                    path.absToRelPath(get(), gameDir),
-                    BINARY_FILE,
-                    CreateMode.REUSE
-                )
+        viewModelScope.launch(Dispatchers.IO) {
+            val file = gameDir.makeFile(
+                get(),
+                path.absToRelPath(get(), gameDir),
+                BINARY_FILE,
+                CreateMode.REUSE
+            )
+            if (file.isWritableFile()) {
+                putReturnValue(LibReturnValue(filePath = file.uri.toString()))
+            } else {
+                putReturnValue(LibReturnValue(filePath = Uri.EMPTY.toString()))
             }
-            .thenApply {
-                if (it.isWritableFile()) {
-                    putReturnValue(LibReturnValue(filePath = it.uri.toString()))
-                } else {
-                    putReturnValue(LibReturnValue(filePath = Uri.EMPTY.toString()))
-                }
-            }
+        }
     }
 
     @OptIn(ExperimentalContracts::class)
@@ -438,7 +434,8 @@ class NativeViewModel(
             val docFile = path
                 .normalizeContentPath()
                 .pathToFile(get(), gameDir)
-            if (docFile.isWritableFile()) {
+            if (docFile.isWritableFile()
+                && !audioPlayer.isPlayingFile(docFile.uri)) {
                 audioPlayer.playFile(get(), docFile.uri, volume)
             }
         }

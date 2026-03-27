@@ -11,6 +11,7 @@ interface DetailsComponent {
 
     val showSelectGameDialog: (GameEntry) -> Unit
     val showEditGameDialog: (GameEntry) -> Unit
+    val showSettingsGamePanel: (GameEntry) -> Unit
     val showDownloadGameDialog: (GameEntry) -> Unit
     val onDismissed: () -> Unit
 

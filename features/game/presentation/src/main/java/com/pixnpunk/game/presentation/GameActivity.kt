@@ -8,10 +8,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.core.net.toUri
-import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -25,28 +23,18 @@ import com.anggrayudi.storage.file.MimeType.BINARY_FILE
 import com.anggrayudi.storage.file.getAbsolutePath
 import com.arkivanov.decompose.defaultComponentContext
 import com.pixnpunk.audio.AudioPlayerViewModel
-import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.game.presentation.mvi.GameStore
-import com.pixnpunk.settings.SettingsRepository
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
+import com.pixnpunk.settings.data.repository.SettingsRepository
 import org.koin.android.ext.android.get
 import org.koin.android.ext.android.inject
+import org.koin.core.parameter.parametersOf
 
 class GameActivity : ComponentActivity() {
+
     private lateinit var root: RealGameComponent
 
     private val audioPlayer: AudioPlayerViewModel by inject()
-    private val settingsRepo: SettingsRepository by inject()
-    private val settingsState: StateFlow<SettingsEntity> =
-        settingsRepo.settingsFlow.stateIn(
-            scope = CoroutineScope(Dispatchers.Main),
-            started = SharingStarted.Eagerly,
-            initialValue = settingsRepo.currentSettings
-        )
+    private val settingsRepository: SettingsRepository by inject { parametersOf(gameId) }
 
     private val requestCreateFile =
         registerForActivityResult(
@@ -90,10 +78,10 @@ class GameActivity : ComponentActivity() {
             }.onFailure { root.onFileCorruptResult() }
         }
 
-    private var gameId: Long = 1L
-    private var gameTitle: String = "Title"
-    private var gameDirUriBox: String = ""
-    private var gameFileUriBox: String = ""
+    private val gameId: Long by lazy { intent.getLongExtra("GAME_ID", -1L) }
+    private val gameTitle: String by lazy { intent.getStringExtra("gameTitle") ?: "Title" }
+    private val gameDirUriBox: String by lazy { intent.getStringExtra("gameDirUri") ?: "" }
+    private val gameFileUriBox: String by lazy { intent.getStringExtra("gameFileUri") ?: "" }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -101,23 +89,13 @@ class GameActivity : ComponentActivity() {
 
         lifecycle.addObserver(audioPlayer)
 
-        if (settingsState.value.isImmersModeEnabled) {
-            val windowInsetsController =
-                WindowCompat.getInsetsController(window, window.decorView)
+        val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
+        if (settingsRepository.currentSettings.isImmersModeEnabled) {
+            windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
             windowInsetsController.systemBarsBehavior =
                 WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-
-            ViewCompat.setOnApplyWindowInsetsListener(window.decorView) { view, windowInsets ->
-                windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
-                ViewCompat.onApplyWindowInsets(view, windowInsets)
-            }
-        }
-
-        intent?.let {
-            gameId = it.getLongExtra("gameId", 1L)
-            gameTitle = it.getStringExtra("gameTitle") ?: "Title"
-            gameDirUriBox = it.getStringExtra("gameDirUri") ?: ""
-            gameFileUriBox = it.getStringExtra("gameFileUri") ?: ""
+        } else {
+            windowInsetsController.show(WindowInsetsCompat.Type.systemBars())
         }
 
         root = RealGameComponent(
@@ -130,7 +108,7 @@ class GameActivity : ComponentActivity() {
             gameFileUriBox = gameFileUriBox
         )
 
-        root.doRunGame(settingsState.value.nativeLibFrom)
+        root.doRunGame()
 
         setContent {
             val snackbarHostState = remember { SnackbarHostState() }
@@ -187,7 +165,6 @@ class GameActivity : ComponentActivity() {
 
             GameContent(
                 component = root,
-                settings = settingsState.collectAsState().value,
                 snackbarHostState = snackbarHostState
             )
         }

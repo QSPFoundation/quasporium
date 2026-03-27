@@ -55,7 +55,8 @@ dependencies {
     implementation(project(":core:dto"))
     implementation(project(":core:utils"))
     implementation(project(":services:audio"))
-    implementation(project(":services:settings"))
+
+    implementation(project(":features:settings:data"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
@@ -73,7 +74,5 @@ dependencies {
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.perf)
 
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+    implementation(libs.decompose.core)
 }

@@ -31,7 +31,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.pixnpunk.dialogs.presentation.DialogsMainContent
-import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.extra.presentation.ExtraContent
 import com.pixnpunk.game.presentation.component.GameAppBar
 import com.pixnpunk.game.presentation.component.GameBottomBar
@@ -46,13 +45,14 @@ import kotlinx.coroutines.launch
 @Composable
 fun GameContent(
     component: GameComponent,
-    settings: SettingsEntity,
     snackbarHostState: SnackbarHostState
 ) {
     val state by component.model.collectAsStateWithLifecycle()
     val dialogSlot by component.dialogSlot.subscribeAsState()
     val extraSlot by component.extraSlot.subscribeAsState()
     val objectSlot by component.objectSlot.subscribeAsState()
+
+    val settings by component.settingsState.collectAsStateWithLifecycle()
 
     val extraSlotIsNotEmpty = extraSlot.child != null
     val objectSlotIsNotEmpty = objectSlot.child != null

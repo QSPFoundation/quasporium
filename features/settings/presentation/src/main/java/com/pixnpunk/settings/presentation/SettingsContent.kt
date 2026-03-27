@@ -17,6 +17,7 @@ import com.pixnpunk.settings.presentation.contents.SettingsImageContent
 import com.pixnpunk.settings.presentation.contents.SettingsRootContent
 import com.pixnpunk.settings.presentation.contents.SettingsTextContent
 import me.zhanghai.compose.preference.ProvidePreferenceLocals
+import me.zhanghai.compose.preference.createPreferenceFlow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,13 +28,17 @@ fun SettingsContent(
     val activeComponent = stack.active.instance
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
-    ProvidePreferenceLocals {
+    ProvidePreferenceLocals(
+        flow = createPreferenceFlow(component.preferences)
+    ) {
         Scaffold(
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             topBar = {
                 SettingsAppBar(
                     activeComponent = activeComponent,
                     scrollBehavior = scrollBehavior,
+                    isLocalSettings = component.isLocalSettings,
+                    gameTitle = component.gameTitle,
                     onClickBack = {
                         if (activeComponent is SettingsComponent.Child.RootChild) {
                             component.onDismissed()
@@ -56,10 +61,14 @@ fun SettingsContent(
                         SettingsAudioContent()
 
                     is SettingsComponent.Child.GeneralChild ->
-                        SettingsGeneralContent()
+                        SettingsGeneralContent(
+                            isLocalSettings = component.isLocalSettings
+                        )
 
                     is SettingsComponent.Child.PicturesChild ->
-                        SettingsImageContent(showInputDialog = component.showInputDialog)
+                        SettingsImageContent(
+                            showInputDialog = component.showInputDialog
+                        )
 
                     is SettingsComponent.Child.TextChild ->
                         SettingsTextContent(
@@ -68,7 +77,10 @@ fun SettingsContent(
                         )
 
                     is SettingsComponent.Child.RootChild ->
-                        SettingsRootContent(moveToChild = { component.moveToChild(it) })
+                        SettingsRootContent(
+                            isLocalSettings = component.isLocalSettings,
+                            moveToChild = { component.moveToChild(it) }
+                        )
                 }
             }
         }

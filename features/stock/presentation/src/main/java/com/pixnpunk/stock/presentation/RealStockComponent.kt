@@ -9,7 +9,6 @@ import com.arkivanov.mvikotlin.extensions.coroutines.stateFlow
 import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
 import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.dto.SettingsEntity
-import com.pixnpunk.settings.SettingsRepository
 import com.pixnpunk.stock.domain.model.SearchState
 import com.pixnpunk.stock.domain.model.SearchToken
 import com.pixnpunk.stock.domain.model.SortBy
@@ -21,12 +20,10 @@ import com.pixnpunk.stock.presentation.mvi.RealStockStore
 import com.pixnpunk.stock.presentation.mvi.StockStore
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -35,11 +32,11 @@ class RealStockComponent(
     override val showDialogAdd: () -> Unit,
     override val navigateToSettings: () -> Unit,
     override val navigateToDetails: (GameEntry) -> Unit,
+    override val settingsState: StateFlow<SettingsEntity>
 ) : ComponentContext by componentContext, StockComponent, KoinComponent {
 
     private val componentScope = coroutineScope()
 
-    private val settingsRepository: SettingsRepository by inject()
     private val getLocalGameEntriesUseCase: GetLocalGameEntriesUseCase by inject()
     private val getRemoteGameEntriesUseCase: GetRemoteGameEntriesExcludingLocalUseCase by inject()
     private val getAuthorSuggestionUseCase: GetAuthorSuggestionUseCase by inject()
@@ -51,13 +48,6 @@ class RealStockComponent(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override val model: StateFlow<StockStore.State> = store.stateFlow
-
-    override val settingsState: StateFlow<SettingsEntity> =
-        settingsRepository.settingsFlow.stateIn(
-            scope = componentScope,
-            started = SharingStarted.Eagerly,
-            initialValue = settingsRepository.currentSettings
-        )
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override val gameRemotePageFlow: Flow<PagingData<GameEntry>> =

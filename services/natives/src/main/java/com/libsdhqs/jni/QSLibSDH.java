@@ -2,10 +2,10 @@ package com.libsdhqs.jni;
 
 public abstract class QSLibSDH {
 
-    public record ListItem( String image,  String text) { }
-    public record ExecutionState( String loc, int actIndex, int lineNum) { }
-    public record VarValResp(boolean isSuccess,  String stringValue, int intValue) { }
-    public record ErrorData( String locName, int errorNum, int index, int line) { }
+    public record ListItem(String image,  String text) { }
+    public record ExecutionState(String loc, int actIndex, int lineNum) { }
+    public record VarValResp(boolean isSuccess, String stringValue, int intValue) { }
+    public record ErrorData(String locName, int errorNum, int index, int line) { }
 
     static {
         System.loadLibrary("qslibsdh");
@@ -66,9 +66,9 @@ public abstract class QSLibSDH {
     // --- Game ---
     public native boolean restartGame(boolean isRefresh);
 
-    public native boolean loadGameWorldFromData(byte[] data, String fileName);
-    public native boolean loadGameWorldFromFD(int fileDescriptor, String fileName);
-    public native boolean loadGameWorldFromPath(String filePath, String fileName);
+    public native boolean loadGameWorldFromData(byte[] data, String fileName, boolean isRefresh);
+    public native boolean loadGameWorldFromFD(int fileDescriptor, String fileName, boolean isRefresh);
+    public native boolean loadGameWorldFromPath(String filePath, String fileName, boolean isRefresh);
 
     public native byte[] saveGameAsData(boolean isRefresh);
     public native boolean saveGameByFD(int fileDescriptor, boolean isRefresh);
@@ -93,7 +93,7 @@ public abstract class QSLibSDH {
     public boolean onIsPlayingFile(String path) { return false; }
     public void onCloseFile(String path) {}
 
-    public int onOpenGame(String path) { return -1; }
+    public void onOpenGame(String file, boolean isNewGame) {}
     public void onOpenGameStatus(String filename) {}
     public void onSaveGameStatus(String filename) {}
 

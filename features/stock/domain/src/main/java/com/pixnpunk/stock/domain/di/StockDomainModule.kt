@@ -13,7 +13,7 @@ import com.pixnpunk.stock.domain.usecase.UpsertEntryUseCase
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
-val domainModule = module {
+val stockDomainModule = module {
     singleOf(::FillAndInsertEntryUseCase)
     singleOf(::DeleteLocalGameEntriesUseCase)
     singleOf(::DownloadGameArchUseCase)

@@ -32,7 +32,8 @@ dependencies {
 
     implementation(project(":services:audio"))
     implementation(project(":services:natives"))
-    implementation(project(":services:settings"))
+
+    implementation(project(":features:settings:data"))
 
     implementation(project(":features:dialogs:presentation"))
     implementation(project(":features:main:presentation"))
@@ -69,6 +70,7 @@ dependencies {
     implementation(libs.firebase.perf)
 
     implementation(libs.essenty.lifecycle)
+    implementation(libs.essenty.coroutines)
     implementation(libs.decompose.core)
     implementation(libs.decompose.ext)
     implementation(libs.decompose.ext.exp)

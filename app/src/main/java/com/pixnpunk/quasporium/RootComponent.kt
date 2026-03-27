@@ -20,7 +20,7 @@ sealed interface RootComponent {
 
     val stockComponent: StockComponent
     val detailsSlot: Value<ChildSlot<RealRootComponent.DetailsConfig, RealDetailsComponent>>
-    val settingsSlot: Value<ChildSlot<*, RealSettingsComponent>>
+    val settingsSlot: Value<ChildSlot<RealRootComponent.SettingsConfig, RealSettingsComponent>>
 
     fun doShowDialog()
     fun doShowDialog(state: DialogsState, entry: GameEntry)

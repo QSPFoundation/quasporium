@@ -28,8 +28,9 @@ dependencies {
     implementation(project(":core:dto"))
     implementation(project(":core:utils"))
 
-    implementation(project(":services:settings"))
     implementation(project(":services:natives"))
+
+    implementation(project(":features:settings:data"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
