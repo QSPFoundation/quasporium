@@ -17,6 +17,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.text.input.KeyboardType
@@ -61,19 +63,25 @@ fun DialogInputValueContent(
             keyboardOptions = keyboardOptions,
             supportingText = {
                 if (isError) {
+                    val annotatedError = remember(supportValue) {
+                        AnnotatedString.fromHtml(supportErrorValue)
+                    }
                     Text(
-                        modifier = Modifier.fillMaxWidth(),
-                        text = remember(supportValue) {
-                            AnnotatedString.fromHtml(supportErrorValue)
-                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clearAndSetSemantics { contentDescription = annotatedError.text },
+                        text = annotatedError,
                         color = MaterialTheme.colorScheme.error
                     )
                 } else if (supportValue.isNotBlank()) {
+                    val annotatedSupport = remember(supportValue) {
+                        AnnotatedString.fromHtml(supportValue)
+                    }
                     Text(
-                        modifier = Modifier.fillMaxWidth(),
-                        text = remember(supportValue) {
-                            AnnotatedString.fromHtml(supportValue)
-                        }
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clearAndSetSemantics { contentDescription = annotatedSupport.text },
+                        text = annotatedSupport
                     )
                 }
             }

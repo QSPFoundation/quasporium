@@ -36,6 +36,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.unit.dp
@@ -56,18 +58,20 @@ fun DialogOutputValueContent(
             modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            val annotatedMessage = remember(message) {
+                AnnotatedString.fromHtml(
+                    message
+                        .replace("\r\n", "<br>")
+                        .replace("\n", "<br>")
+                        .replace("\r", "<br>")
+                )
+            }
             Text(
                 modifier = Modifier
                     .weight(1f, fill = false)
-                    .verticalScroll(rememberScrollState()),
-                text = remember(message) {
-                    AnnotatedString.fromHtml(
-                        message
-                            .replace("\r\n", "<br>")
-                            .replace("\n", "<br>")
-                            .replace("\r", "<br>")
-                    )
-                },
+                    .verticalScroll(rememberScrollState())
+                    .clearAndSetSemantics { contentDescription = annotatedMessage.text },
+                text = annotatedMessage,
                 style = MaterialTheme.typography.bodyMedium
             )
             Row(

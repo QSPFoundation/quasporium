@@ -30,6 +30,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.text.style.TextOverflow
@@ -100,6 +102,7 @@ fun DetailsDescription(
                 label = "text_expansion_animation"
             ) { targetExpanded ->
                 Text(
+                    modifier = Modifier.clearAndSetSemantics { contentDescription = text.text },
                     text = text,
                     maxLines = if (targetExpanded) Int.MAX_VALUE else 3,
                     overflow = if (targetExpanded) TextOverflow.Clip else TextOverflow.Ellipsis,

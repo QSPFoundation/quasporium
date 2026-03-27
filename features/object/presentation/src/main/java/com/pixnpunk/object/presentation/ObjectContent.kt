@@ -23,6 +23,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLinkStyles
@@ -89,6 +91,9 @@ fun ObjectContent(
                     },
                     headlineContent = {
                         Text(
+                            modifier = Modifier.clearAndSetSemantics {
+                                contentDescription = annotatedText.text
+                            },
                             text = annotatedText,
                             style = LocalTextStyle.current.copy(
                                 color = Color(settings.textColor),

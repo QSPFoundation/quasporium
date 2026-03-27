@@ -17,6 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.unit.dp
@@ -62,6 +64,9 @@ fun DialogOutputListValueContent(
                         color = MaterialTheme.colorScheme.outlineVariant
                     )
                 } else {
+                    val annotatedText = remember(value.text) {
+                        AnnotatedString.fromHtml(value.text)
+                    }
                     ListItem(
                         modifier = Modifier.clickable(true) {
                             onConfirm(key)
@@ -84,9 +89,10 @@ fun DialogOutputListValueContent(
                         },
                         headlineContent = {
                             Text(
-                                text = remember(value.text) {
-                                    AnnotatedString.fromHtml(value.text)
-                                }
+                                modifier = Modifier.clearAndSetSemantics {
+                                    contentDescription = annotatedText.text
+                                },
+                                text = annotatedText
                             )
                         }
                     )
