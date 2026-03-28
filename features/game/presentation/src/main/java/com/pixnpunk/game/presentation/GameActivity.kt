@@ -17,6 +17,7 @@ import com.anggrayudi.storage.contract.FileCreationContract
 import com.anggrayudi.storage.contract.FileCreationResult
 import com.anggrayudi.storage.contract.FilePickerResult
 import com.anggrayudi.storage.contract.OpenFilePickerContract
+import com.anggrayudi.storage.extension.startActivitySafely
 import com.anggrayudi.storage.extension.toDocumentFile
 import com.anggrayudi.storage.file.FileFullPath
 import com.anggrayudi.storage.file.MimeType.BINARY_FILE
@@ -100,7 +101,7 @@ class GameActivity : ComponentActivity() {
 
         root = RealGameComponent(
             componentContext = defaultComponentContext(),
-            onStartActivity = { startActivity(it) },
+            onStartActivity = { startActivitySafely(it) },
             onFinishActivity = { killProcess(myPid()) },
             gameId = gameId,
             gameTitle = gameTitle,

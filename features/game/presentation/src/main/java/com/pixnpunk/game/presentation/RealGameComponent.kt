@@ -1,18 +1,9 @@
 package com.pixnpunk.game.presentation
 
-import android.content.ActivityNotFoundException
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.webkit.WebResourceRequest
-import android.webkit.WebResourceResponse
-import android.webkit.WebView
-import android.webkit.WebViewClient
 import androidx.core.net.toUri
 import androidx.webkit.WebViewAssetLoader
-import com.anggrayudi.storage.extension.toDocumentFile
-import com.anggrayudi.storage.file.MimeType
-import com.anggrayudi.storage.file.child
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
 import com.arkivanov.decompose.router.slot.ChildSlot
@@ -47,12 +38,6 @@ import com.pixnpunk.main.presentation.RealMainComponent
 import com.pixnpunk.natives.NativeViewModel
 import com.pixnpunk.`object`.presentation.RealObjectComponent
 import com.pixnpunk.settings.data.repository.SettingsRepository
-import com.pixnpunk.utils.Base64Util.decodeBase64
-import com.pixnpunk.utils.Base64Util.isBase64
-import com.pixnpunk.utils.FileUtil.isWritableDir
-import com.pixnpunk.utils.FileUtil.isWritableFile
-import com.pixnpunk.utils.HtmlUtil.isContainsHtmlTags
-import com.pixnpunk.utils.HtmlUtil.removeHtmlTags
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -62,8 +47,6 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import org.koin.core.component.inject
 import org.koin.core.parameter.parametersOf
-import java.io.FileNotFoundException
-import kotlin.contracts.ExperimentalContracts
 
 class RealGameComponent(
     private val componentContext: ComponentContext,
@@ -95,9 +78,19 @@ class RealGameComponent(
             initialValue = settingsRepository.currentSettings
         )
 
-    private val assetLoader = WebViewAssetLoader.Builder()
-        .addPathHandler("/game_files/", ExternalStoragePathHandler())
-        .build()
+    private val gameWebViewClient by lazy {
+        GameWebViewClient(
+            assetLoader =
+                WebViewAssetLoader.Builder()
+                    .addPathHandler(
+                        "/game_files/",
+                        ExternalStoragePathHandler(get(), gameDirUriBox)
+                    )
+                    .build(),
+            onExecValue = ::onExecValue,
+            onStartActivity = onStartActivity
+        )
+    }
 
     private val store =
         instanceKeeper.getStore {
@@ -142,7 +135,7 @@ class RealGameComponent(
         ) { _, ctx ->
             RealExtraComponent(
                 componentContext = ctx,
-                gameWebViewClient = GameWebViewClient(),
+                gameWebViewClient = gameWebViewClient,
                 settingsState = settingsState
             )
         }
@@ -162,7 +155,7 @@ class RealGameComponent(
 
     override val mainComponent: MainComponent = RealMainComponent(
         componentContext = childContext("MainComponent"),
-        gameWebViewClient = GameWebViewClient(),
+        gameWebViewClient = gameWebViewClient,
         settingsState = settingsState
     )
 
@@ -378,93 +371,4 @@ class RealGameComponent(
     }
 
     override fun doFinishGame() = onFinishActivity()
-
-    private inner class GameWebViewClient : WebViewClient() {
-        override fun shouldOverrideUrlLoading(
-            view: WebView,
-            request: WebResourceRequest
-        ): Boolean {
-            val uriScheme = request.url.scheme ?: return false
-            val uriDecode = Uri.decode(request.url.toString())
-
-            when (uriScheme) {
-                "exec" ->
-                    uriDecode.substring(5)
-                        .let {
-                            if (it.isBase64()) {
-                                it.decodeBase64()
-                            } else {
-                                it
-                            }
-                        }
-                        .let {
-                            if (it.isContainsHtmlTags()) {
-                                onExecValue(it.removeHtmlTags())
-                            } else {
-                                onExecValue(it)
-                            }
-                        }
-
-                "https", "http" ->
-                    Intent(
-                        Intent.ACTION_VIEW,
-                        uriDecode.toUri()
-                    ).apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK }.also {
-                        try {
-                            onStartActivity(it)
-                        } catch (_: ActivityNotFoundException) {
-
-                        }
-                    }
-
-                "file" ->
-                    Intent(
-                        Intent.ACTION_VIEW,
-                        uriScheme.replace("file:/", "https:").toUri()
-                    ).apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK }.also {
-                        try {
-                            onStartActivity(it)
-                        } catch (_: ActivityNotFoundException) {
-
-                        }
-                    }
-            }
-            return true
-        }
-
-        @OptIn(ExperimentalContracts::class)
-        override fun shouldInterceptRequest(
-            view: WebView,
-            request: WebResourceRequest
-        ) = runCatching {
-            val uriPath = request.url ?: throw NullPointerException()
-            assetLoader.shouldInterceptRequest(uriPath)
-        }.getOrElse { super.shouldInterceptRequest(view, request) }
-    }
-
-    private inner class ExternalStoragePathHandler : WebViewAssetLoader.PathHandler {
-        @OptIn(ExperimentalContracts::class)
-        override fun handle(path: String): WebResourceResponse? {
-            val mRootDir = store.state.gameDirUriBox.toUri().toDocumentFile(get())
-            if (!mRootDir.isWritableDir()) return null
-            return runCatching {
-                val mediaFile = mRootDir.child(get(), path)
-                if (!mediaFile.isWritableFile()) {
-                    throw FileNotFoundException()
-                } else {
-                    WebResourceResponse(
-                        MimeType.getMimeTypeFromFileName(mediaFile.name),
-                        null,
-                        200,
-                        "OK",
-                        mapOf(
-                            "Cache-Control" to "public, max-age=3600, immutable",
-                            "Access-Control-Allow-Origin" to "*"
-                        ),
-                        get<Context>().contentResolver.openInputStream(mediaFile.uri)
-                    )
-                }
-            }.getOrElse { null }
-        }
-    }
 }
