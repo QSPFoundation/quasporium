@@ -49,8 +49,8 @@ import kotlin.math.ln
 import kotlin.math.pow
 
 object FileUtil : KoinComponent {
-    const val NOMEDIA_FILENAME: String = ".nomedia"
-    const val NOSEARCH_FILENAME: String = ".nosearch"
+    private const val NOMEDIA_FILENAME: String = ".nomedia"
+    private const val NOSEARCH_FILENAME: String = ".nosearch"
 
     @ExperimentalContracts
     fun DocumentFile?.isWritableFile(): Boolean {
