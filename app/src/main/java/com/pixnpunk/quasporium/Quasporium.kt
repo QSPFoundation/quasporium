@@ -4,7 +4,6 @@ import android.app.Application
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import com.pixnpunk.audio.audioModule
 import com.pixnpunk.database.di.databaseModule
 import com.pixnpunk.game.presentation.di.featureGameModule
 import com.pixnpunk.logger.appLoggerModule
@@ -24,8 +23,7 @@ class Quasporium : Application() {
             workManagerFactory()
             modules(
                 appLoggerModule, databaseModule,
-                networkModule, audioModule,
-                notificationModule
+                networkModule, notificationModule
             )
             modules(featureGameModule)
             modules(featureSettingsModule)

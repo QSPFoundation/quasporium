@@ -30,8 +30,6 @@ dependencies {
     implementation(project(":core:dto"))
     implementation(project(":core:network"))
 
-    implementation(project(":services:audio"))
-
     implementation(project(":features:game:data"))
     implementation(project(":features:game:domain"))
 

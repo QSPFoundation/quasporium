@@ -55,7 +55,7 @@ android {
 dependencies {
     implementation(project(":core:dto"))
     implementation(project(":core:utils"))
-    implementation(project(":services:audio"))
+    implementation(project(":core:logger"))
 
     implementation(project(":features:game:domain"))
 

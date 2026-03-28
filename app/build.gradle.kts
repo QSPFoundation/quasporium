@@ -60,7 +60,6 @@ dependencies {
     implementation(project(":core:network"))
     implementation(project(":core:logger"))
 
-    implementation(project(":services:audio"))
     implementation(project(":services:notification"))
 
     implementation(project(":features:stock:data"))

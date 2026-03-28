@@ -23,7 +23,7 @@ import com.anggrayudi.storage.file.FileFullPath
 import com.anggrayudi.storage.file.MimeType.BINARY_FILE
 import com.anggrayudi.storage.file.getAbsolutePath
 import com.arkivanov.decompose.defaultComponentContext
-import com.pixnpunk.audio.AudioPlayerViewModel
+import com.pixnpunk.game.data.AudioPlayerViewModel
 import com.pixnpunk.game.presentation.mvi.GameStore
 import com.pixnpunk.settings.data.repository.SettingsRepository
 import org.koin.android.ext.android.get

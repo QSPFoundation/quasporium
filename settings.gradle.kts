@@ -39,6 +39,7 @@ include(
     ":features:dialogs:presentation",
     ":features:settings",
     ":features:settings:data",
+    ":features:settings:domain",
     ":features:settings:presentation",
     ":features:stock",
     ":features:stock:data",
@@ -56,7 +57,5 @@ include(
     ":features:object:presentation",
 
     ":services",
-    ":services:audio",
     ":services:notification"
 )
-include(":features:settings:domain")

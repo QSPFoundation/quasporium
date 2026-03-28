@@ -1,4 +1,4 @@
-package com.pixnpunk.audio
+package com.pixnpunk.game.data
 
 import android.content.Context
 import android.media.MediaPlayer
