@@ -3,7 +3,7 @@ package com.pixnpunk.extra.presentation.mvi
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
 import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.extra.presentation.mvi.ExtraStore.Message.UpdateExtraDesc
-import com.pixnpunk.natives.NativeViewModel
+import com.pixnpunk.game.data.NativeViewModel
 import com.pixnpunk.utils.HtmlUtil.appendPageTemplate
 import com.pixnpunk.utils.HtmlUtil.getCleanHtmlAndMedia
 import com.pixnpunk.utils.HtmlUtil.getCleanHtmlRemMedia

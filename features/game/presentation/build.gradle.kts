@@ -31,7 +31,9 @@ dependencies {
     implementation(project(":core:network"))
 
     implementation(project(":services:audio"))
-    implementation(project(":services:natives"))
+
+    implementation(project(":features:game:data"))
+    implementation(project(":features:game:domain"))
 
     implementation(project(":features:settings:data"))
 

@@ -45,6 +45,8 @@ include(
     ":features:stock:domain",
     ":features:stock:presentation",
     ":features:game",
+    ":features:game:data",
+    ":features:game:domain",
     ":features:game:presentation",
     ":features:main",
     ":features:main:presentation",
@@ -55,7 +57,6 @@ include(
 
     ":services",
     ":services:audio",
-    ":services:natives",
     ":services:notification"
 )
 include(":features:settings:domain")

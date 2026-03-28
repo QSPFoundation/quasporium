@@ -1,7 +1,7 @@
 package com.pixnpunk.`object`.presentation.mvi
 
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
-import com.pixnpunk.natives.NativeViewModel
+import com.pixnpunk.game.data.NativeViewModel
 import com.pixnpunk.`object`.presentation.mvi.ObjectStore.Message.UpdateObjects
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

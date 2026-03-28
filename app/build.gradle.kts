@@ -61,7 +61,6 @@ dependencies {
     implementation(project(":core:logger"))
 
     implementation(project(":services:audio"))
-    implementation(project(":services:natives"))
     implementation(project(":services:notification"))
 
     implementation(project(":features:stock:data"))

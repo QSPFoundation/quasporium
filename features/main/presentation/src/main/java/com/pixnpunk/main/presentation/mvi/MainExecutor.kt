@@ -1,12 +1,12 @@
 package com.pixnpunk.main.presentation.mvi
 
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
-import com.pixnpunk.dto.LibTypeWindow
 import com.pixnpunk.dto.SettingsEntity
+import com.pixnpunk.game.data.NativeViewModel
+import com.pixnpunk.game.domain.model.LibTypeWindow
 import com.pixnpunk.main.presentation.mvi.MainStore.Message.UpdateActions
 import com.pixnpunk.main.presentation.mvi.MainStore.Message.UpdateMainDesc
 import com.pixnpunk.main.presentation.mvi.MainStore.Message.UpdateVisActions
-import com.pixnpunk.natives.NativeViewModel
 import com.pixnpunk.utils.HtmlUtil.appendPageTemplate
 import com.pixnpunk.utils.HtmlUtil.getCleanHtmlAndMedia
 import com.pixnpunk.utils.HtmlUtil.getCleanHtmlRemMedia
