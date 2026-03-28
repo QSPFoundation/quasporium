@@ -2,34 +2,39 @@ package com.pixnpunk.game.data
 
 import android.content.Context
 import android.media.MediaPlayer
-import android.net.Uri
-import androidx.lifecycle.DefaultLifecycleObserver
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.core.net.toUri
+import com.arkivanov.essenty.instancekeeper.InstanceKeeper
+import com.pixnpunk.game.domain.model.AudioPlayerException
+import com.pixnpunk.game.domain.repository.AudioPlayer
 import com.pixnpunk.logger.AppLogger
-import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
 
-class AudioPlayerViewModel(
-    private val logger: AppLogger,
-) : ViewModel(), DefaultLifecycleObserver {
+class GameAudioComponent(
+    private val context: Context,
+    private val logger: AppLogger
+) : InstanceKeeper.Instance, AudioPlayer {
 
-    private val audioDispatcher: CoroutineDispatcher = Dispatchers.IO
-    private val mediaPlayers = ConcurrentHashMap<Uri, MediaPlayer>()
+    private val playerScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private val mediaPlayers = ConcurrentHashMap<String, MediaPlayer>()
+
     @Volatile private var isPaused = false
-    @Volatile var isSoundEnabled = true
+    @Volatile override var isSoundEnabled = true
 
-    fun isPlayingFile(fileUri: Uri?): Boolean {
-        return fileUri != null && fileUri != Uri.EMPTY && mediaPlayers.containsKey(fileUri)
+    override fun onDestroy() {
+        closeAllFilesSync()
+        playerScope.cancel()
     }
 
-    private fun runOnAudioContext(block: suspend () -> Unit): Job =
-        viewModelScope.launch(audioDispatcher) { block() }
+    override fun isPlayingFile(path: String): Boolean {
+        if (path.isBlank()) return false
+        return mediaPlayers[path]?.isPlaying == true
+    }
 
     private fun releasePlayer(player: MediaPlayer) {
         runCatching {
@@ -44,15 +49,15 @@ class AudioPlayerViewModel(
         }
     }
 
-    override fun onResume(owner: LifecycleOwner) {
+    override fun resumeAll() {
         if (isSoundEnabled && isPaused) {
             isPaused = false
-            runOnAudioContext {
+            playerScope.launch {
                 runCatching {
                     mediaPlayers.values.filterNot { it.isPlaying }.forEach { it.start() }
                 }.onFailure {
                     logger.recordNonFatalException(
-                        AudioPlayerException.PlaybackError(Uri.EMPTY, it)
+                        AudioPlayerException.PlaybackError(cause = it)
                     )
                     closeAllFilesSync()
                 }
@@ -60,15 +65,15 @@ class AudioPlayerViewModel(
         }
     }
 
-    override fun onPause(owner: LifecycleOwner) {
+    override fun pauseAll() {
         if (!isPaused) {
             isPaused = true
-            runOnAudioContext {
+            playerScope.launch {
                 runCatching {
                     mediaPlayers.values.filter { it.isPlaying }.forEach { it.pause() }
                 }.onFailure {
                     logger.recordNonFatalException(
-                        AudioPlayerException.PlaybackError(Uri.EMPTY, it)
+                        AudioPlayerException.PlaybackError(cause = it)
                     )
                     closeAllFilesSync()
                 }
@@ -76,12 +81,13 @@ class AudioPlayerViewModel(
         }
     }
 
-    fun playFile(
-        context: Context,
-        soundFileUri: Uri,
+    override fun playFile(
+        path: String,
         volume: Int
     ) {
-        runOnAudioContext {
+        if (path.isBlank()) return
+
+        playerScope.launch {
             runCatching {
                 val player = mediaPlayers.computeIfAbsent(soundFileUri) { keyUri ->
                     createNewSound(context, keyUri)
@@ -95,45 +101,42 @@ class AudioPlayerViewModel(
                 }
             }.onFailure {
                 logger.recordNonFatalException(
-                    AudioPlayerException.PlaybackError(soundFileUri, it)
+                    AudioPlayerException.PlaybackError(path, it)
                 )
-                closeFile(soundFileUri)
+                closeFile(path)
             }
         }
     }
 
     @Throws(IOException::class)
     private fun createNewSound(
-        context: Context,
-        filePath: Uri
+        path: String
     ) = MediaPlayer().apply {
-        setDataSource(context, filePath)
+        setDataSource(context, path.toUri())
         prepare()
         setOnCompletionListener {
-            runOnAudioContext {
-                mediaPlayers.remove(filePath, it)
-                runCatching { it.release() }.onFailure { error ->
-                    logger.recordNonFatalException(
-                        AudioPlayerException.InitializationError(filePath, error)
-                    )
+            playerScope.launch {
+                mediaPlayers.remove(path, it)
+                runCatching { it.release() }.getOrElse { error ->
+                    AudioPlayerException.InitializationError(
+                        path, error
+                    ).apply {
+                        logger.recordNonFatalException(this)
+                        throw this
+                    }
                 }
             }
         }
     }
 
-    fun closeFile(filePath: Uri) {
-        runOnAudioContext { mediaPlayers.remove(filePath)?.let { releasePlayer(it) } }
+    override fun closeFile(path: String) {
+        playerScope.launch { mediaPlayers.remove(path)?.let { releasePlayer(it) } }
     }
 
-    fun closeAllFiles() {
-        runOnAudioContext { closeAllFilesSync() }
+    override fun closeAllFiles() {
+        playerScope.launch { closeAllFilesSync() }
     }
 
     private fun closeAllFilesSync() =
         mediaPlayers.values.removeIf { releasePlayer(it); true }
-
-    override fun onCleared() {
-        closeAllFiles()
-        super.onCleared()
-    }
 }

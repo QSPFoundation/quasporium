@@ -30,8 +30,10 @@ import com.pixnpunk.dto.OutputState
 import com.pixnpunk.dto.OutputStateValue
 import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.extra.presentation.RealExtraComponent
+import com.pixnpunk.game.data.GameAudioComponent
 import com.pixnpunk.game.data.NativeViewModel
 import com.pixnpunk.game.domain.model.LibTypeDialog
+import com.pixnpunk.game.domain.repository.AudioPlayer
 import com.pixnpunk.game.presentation.mvi.GameStore
 import com.pixnpunk.game.presentation.mvi.RealGameStore
 import com.pixnpunk.main.presentation.MainComponent
@@ -59,6 +61,11 @@ class RealGameComponent(
 ) : ComponentContext by componentContext, GameComponent, KoinComponent {
 
     private val componentScope = coroutineScope()
+
+    val audioPlayer: AudioPlayer =
+        instanceKeeper.getOrCreate("audio_player_key") {
+            get<GameAudioComponent>()
+        }
 
     private val supervisorService: NativeViewModel by inject()
 

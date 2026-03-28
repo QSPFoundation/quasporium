@@ -44,7 +44,7 @@ import java.util.concurrent.atomic.AtomicLong
 import kotlin.contracts.ExperimentalContracts
 
 class NativeViewModel(
-    private val audioPlayer: AudioPlayerViewModel
+    private val audioPlayer: GameAudioComponent
 ) : ViewModel(), GameInterface, KoinComponent {
 
     private var counterNativeByteJob: Job? = null
@@ -285,6 +285,7 @@ class NativeViewModel(
     }
 
     fun onRestartGame() {
+        closeAllFiles()
         when (mLibAuthors) {
             NativeLibAuthors.BYTE -> {
                 libNativeByte.restartGame()
@@ -403,7 +404,7 @@ class NativeViewModel(
                 .normalizeContentPath()
                 .pathToFile(get(), gameDir)
             if (docFile.isWritableFile()) {
-                return audioPlayer.isPlayingFile(docFile.uri)
+                return audioPlayer.isPlayingFile(docFile.uri.toString())
             }
         }
         return false
@@ -421,7 +422,7 @@ class NativeViewModel(
                 .normalizeContentPath()
                 .pathToFile(get(), gameDir)
             if (docFile.isWritableFile()) {
-                audioPlayer.closeFile(docFile.uri)
+                audioPlayer.closeFile(docFile.uri.toString())
             }
         }
     }

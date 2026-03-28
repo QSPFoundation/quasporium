@@ -306,18 +306,21 @@ internal class GameExecutor(
             is GameStore.Action.StartGameDialogFlow ->
                 scope.launch {
                     service.gameDialogFlow.collect { items ->
-                        val payload = if (items.first == LibTypeDialog.DIALOG_PICTURE) {
-                            items.second
-                                .normalizeContentPath()
-                                .getImageUriFromPath(appContext, state().gameDirUriBox)
-                                .toString()
-                        } else {
-                            items.second
-                        }
                         scope.launch {
                             publish(
                                 ShowDialog(
-                                    payload,
+                                    when (items.first) {
+                                        LibTypeDialog.DIALOG_PICTURE ->
+                                            items.second
+                                                .normalizeContentPath()
+                                                .getImageUriFromPath(
+                                                    appContext,
+                                                    state().gameDirUriBox
+                                                )
+                                                .toString()
+
+                                        else -> items.second
+                                    },
                                     items.first,
                                     items.third
                                 )
