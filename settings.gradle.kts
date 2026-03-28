@@ -31,6 +31,7 @@ include(
     ":core:logger",
     ":core:network",
     ":core:utils",
+    ":core:notification",
 
     ":features",
     ":features:details",
@@ -55,7 +56,4 @@ include(
     ":features:extra:presentation",
     ":features:object",
     ":features:object:presentation",
-
-    ":services",
-    ":services:notification"
 )

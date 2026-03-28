@@ -59,8 +59,7 @@ dependencies {
     implementation(project(":core:dto"))
     implementation(project(":core:network"))
     implementation(project(":core:logger"))
-
-    implementation(project(":services:notification"))
+    implementation(project(":core:notification"))
 
     implementation(project(":features:stock:data"))
     implementation(project(":features:stock:domain"))

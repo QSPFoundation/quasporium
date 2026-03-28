@@ -1,7 +1,7 @@
 package com.pixnpunk.notification
 
 import androidx.work.ForegroundInfo
-import java.util.UUID
+import java.util.*
 
 interface NotificationProvider {
     fun createForegroundInfo(workId: UUID, title: String, progress: Float): ForegroundInfo
