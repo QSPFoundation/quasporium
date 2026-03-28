@@ -1,21 +1,26 @@
 package com.pixnpunk.utils
 
 import android.content.Context
+import android.net.Uri
 import android.os.Build
 import android.provider.DocumentsContract
 import android.provider.DocumentsContract.getDocumentMetadata
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
+import com.anggrayudi.storage.extension.toDocumentFile
 import com.anggrayudi.storage.file.DocumentFileCompat.fromUri
-import com.anggrayudi.storage.file.DocumentFileType
 import com.anggrayudi.storage.file.MimeType
 import com.anggrayudi.storage.file.StorageId
 import com.anggrayudi.storage.file.findParent
 import com.anggrayudi.storage.file.getStorageId
-import com.anggrayudi.storage.file.search
 import com.pixnpunk.utils.FileUtil.isWritableDir
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.yield
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import kotlin.contracts.ExperimentalContracts
@@ -30,63 +35,11 @@ object DirUtil : KoinComponent {
     }
 
     @OptIn(ExperimentalContracts::class)
-    suspend fun receiveGameDirFromFile(rootDirPath: String): DocumentFile? {
-        val gameDir = fromUri(get(), rootDirPath.toUri())
-        if (!gameDir.isWritableDir()) return null
-
-        val targetFile = gameDir.search(
-            recursive = true,
-            documentType = DocumentFileType.FILE,
-            mimeTypes = arrayOf(MimeType.BINARY_FILE),
-            regex = Regex(".*\\.(qsp|gam)$", RegexOption.IGNORE_CASE)
-        ).mapNotNull { it.firstOrNull() }.first()
-
-        return targetFile.findParent(get())
-    }
-
-    @OptIn(ExperimentalContracts::class)
-    suspend fun receiveGameFilesFromDir(rootDirPath: String): List<String> {
-        val gameDir = fromUri(get(), rootDirPath.toUri())
-        if (!gameDir.isWritableDir()) return listOf()
-
-        val files = gameDir.listFiles()
-        if (files.size <= 0) return listOf()
-
-        val gameFilesPath = mutableListOf<String>()
-        for (file in files) {
-            val fileName = file.name ?: continue
-            if (fileName.endsWith(suffix = "qsp", ignoreCase = true)
-                || fileName.endsWith(suffix = "gam", ignoreCase = true)
-            ) {
-                gameFilesPath.add(file.uri.toString())
-            }
-        }
-
-        if (gameFilesPath.isEmpty()) {
-            gameDir.search(
-                recursive = true,
-                documentType = DocumentFileType.FILE,
-                mimeTypes = arrayOf(MimeType.BINARY_FILE)
-            ).collect {
-                for (file in it) {
-                    val fileName = file.name ?: continue
-                    if (fileName.endsWith(suffix = ".qsp", ignoreCase = true)
-                        || fileName.endsWith(suffix = ".gam", ignoreCase = true)
-                    ) {
-                        gameFilesPath.add(file.uri.toString())
-                    }
-                }
-            }
-        }
-
-        return gameFilesPath.distinct()
-    }
-
-    @OptIn(ExperimentalContracts::class)
     fun tryReceiveDirSize(rootDirPath: String): Long {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             runCatching {
-                val dirMetadata = getDocumentMetadata(get<Context>().contentResolver, rootDirPath.toUri())
+                val dirMetadata =
+                    getDocumentMetadata(get<Context>().contentResolver, rootDirPath.toUri())
                 if (dirMetadata != null && dirMetadata.containsKey(DocumentsContract.METADATA_TREE_SIZE)) {
                     return dirMetadata.getLong(DocumentsContract.METADATA_TREE_SIZE, 0)
                 }
@@ -94,4 +47,112 @@ object DirUtil : KoinComponent {
         }
         return 0
     }
+
+    @OptIn(ExperimentalContracts::class)
+    suspend fun receiveGameDirFromFile(rootDirPath: String): DocumentFile? {
+        val gameDir = fromUri(get(), rootDirPath.toUri())
+        if (!gameDir.isWritableDir()) return null
+
+        val targetFile = get<Context>().findGameFiles(
+            rootTreeUri = gameDir.uri,
+            allowedMimeTypes = setOf(MimeType.BINARY_FILE),
+            nameRegex = Regex(".*\\.(qsp|gam)$", RegexOption.IGNORE_CASE)
+        ).first().toUri().toDocumentFile(get())
+
+        return targetFile?.findParent(get())
+    }
+
+    @OptIn(ExperimentalContracts::class)
+    suspend fun receiveGameFilesFromDir(rootDirPath: String): List<String> {
+        val gameDir = fromUri(get(), rootDirPath.toUri())
+        if (!gameDir.isWritableDir()) return listOf()
+
+        return get<Context>().findGameFiles(
+            rootTreeUri = gameDir.uri,
+            allowedMimeTypes = setOf(MimeType.BINARY_FILE),
+            nameRegex = Regex(".*\\.(qsp|gam)$", RegexOption.IGNORE_CASE)
+        ).toList(mutableListOf())
+    }
+
+    private fun Context.findGameFiles(
+        rootTreeUri: Uri,
+        allowedMimeTypes: Set<String> = emptySet(),
+        nameRegex: Regex? = null
+    ): Flow<String> = flow {
+        val dirIdQueue = ArrayDeque<String>()
+
+        dirIdQueue.addLast(
+            try {
+                DocumentsContract.getTreeDocumentId(rootTreeUri)
+            } catch (_: Exception) {
+                return@flow
+            }
+        )
+
+        while (dirIdQueue.isNotEmpty()) {
+            val currentDirId = dirIdQueue.removeFirst()
+
+            val childrenUri = try {
+                DocumentsContract.buildChildDocumentsUriUsingTree(
+                    rootTreeUri,
+                    currentDirId
+                )
+            } catch (_: Exception) {
+                continue
+            }
+
+            try {
+                contentResolver.query(
+                    childrenUri,
+                    arrayOf(
+                        DocumentsContract.Document.COLUMN_DOCUMENT_ID,
+                        DocumentsContract.Document.COLUMN_DISPLAY_NAME,
+                        DocumentsContract.Document.COLUMN_MIME_TYPE
+                    ),
+                    null,
+                    null,
+                    null
+                )?.use { cursor ->
+                    val idIndex =
+                        cursor.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DOCUMENT_ID)
+                    val nameIndex =
+                        cursor.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DISPLAY_NAME)
+                    val mimeIndex =
+                        cursor.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_MIME_TYPE)
+
+                    while (cursor.moveToNext()) {
+                        val childId = cursor.getString(idIndex)
+                        val childMime = cursor.getString(mimeIndex) ?: ""
+
+                        if (childMime == DocumentsContract.Document.MIME_TYPE_DIR) {
+                            dirIdQueue.addLast(childId)
+                            continue
+                        }
+
+                        if (allowedMimeTypes.isNotEmpty() && childMime !in allowedMimeTypes) {
+                            continue
+                        }
+
+                        if (nameRegex != null) {
+                            val childName = cursor.getString(nameIndex) ?: ""
+                            if (!nameRegex.matches(childName)) {
+                                continue
+                            }
+                        }
+
+                        emit(
+                            DocumentsContract.buildDocumentUriUsingTree(
+                                rootTreeUri,
+                                childId
+                            ).toString()
+                        )
+                    }
+                }
+            } catch (_: SecurityException) {
+            } catch (_: Exception) {
+            }
+
+            yield()
+        }
+    }.flowOn(Dispatchers.IO)
 }
