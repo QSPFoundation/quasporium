@@ -117,13 +117,12 @@ class GameAudioComponent(
         setOnCompletionListener {
             playerScope.launch {
                 mediaPlayers.remove(path, it)
-                runCatching { it.release() }.getOrElse { error ->
-                    AudioPlayerException.InitializationError(
-                        path, error
-                    ).apply {
-                        logger.recordNonFatalException(this)
-                        throw this
-                    }
+                runCatching { it.release() }.onFailure { error ->
+                    logger.recordNonFatalException(
+                        AudioPlayerException.InitializationError(
+                            path, error
+                        )
+                    )
                 }
             }
         }
