@@ -135,9 +135,8 @@ class AudioPlayerViewModel(
     }
 
     private fun closeAllFilesSync() {
-        val players = mediaPlayers.values
+        mediaPlayers.values.forEach { releasePlayer(it) }
         mediaPlayers.clear()
-        players.forEach { releasePlayer(it) }
     }
 
     override fun onCleared() {
