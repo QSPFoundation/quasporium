@@ -43,6 +43,7 @@ sealed interface GameComponent {
     fun clearAllSlot()
 
     fun cleanMainUpdates()
+    fun cleanActionsUpdates()
     fun cleanExtraUpdates()
     fun cleanObjectsUpdates()
 
