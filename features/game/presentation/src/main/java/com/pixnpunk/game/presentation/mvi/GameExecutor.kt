@@ -83,18 +83,19 @@ internal class GameExecutor(
 
             is GameStore.Intent.OnExecCode -> scope.launch { service.onCodeExec(intent.codeToExec) }
 
-            is GameStore.Intent.CleanMainSavedDesc -> {
+            is GameStore.Intent.CleanMainSavedDesc ->
                 dispatch(
                     GameStore.Message.UpdateIsMainDescUpdated(
                         state().isMainDescUpdated.copy(second = false)
                     )
                 )
+
+            GameStore.Intent.CleanActionsSavedList ->
                 dispatch(
                     GameStore.Message.UpdateIsActionsListUpdated(
                         state().isActionsListUpdated.copy(second = false)
                     )
                 )
-            }
 
             is GameStore.Intent.CleanExtraSavedDesc ->
                 dispatch(
@@ -102,7 +103,6 @@ internal class GameExecutor(
                         state().isExtraDescUpdated.copy(second = false)
                     )
                 )
-
 
             is GameStore.Intent.CleanObjectsSavedList ->
                 dispatch(

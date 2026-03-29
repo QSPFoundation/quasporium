@@ -345,6 +345,9 @@ class RealGameComponent(
     override fun cleanMainUpdates() =
         store.accept(GameStore.Intent.CleanMainSavedDesc)
 
+    override fun cleanActionsUpdates() =
+        store.accept(GameStore.Intent.CleanActionsSavedList)
+
     override fun cleanExtraUpdates() =
         store.accept(GameStore.Intent.CleanExtraSavedDesc)
 

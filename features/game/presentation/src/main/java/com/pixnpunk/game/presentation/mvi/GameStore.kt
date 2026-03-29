@@ -43,6 +43,7 @@ sealed interface GameStore : Store<GameStore.Intent, GameStore.State, GameStore.
         data object StartSaveFile : Intent
         data object StartLoadFile : Intent
         data object CleanMainSavedDesc : Intent
+        data object CleanActionsSavedList : Intent
         data object CleanExtraSavedDesc : Intent
         data object CleanObjectsSavedList : Intent
     }
