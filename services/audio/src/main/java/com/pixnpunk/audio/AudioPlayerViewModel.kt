@@ -111,16 +111,11 @@ class AudioPlayerViewModel(
         prepare()
         setOnCompletionListener {
             runOnAudioContext {
-                mediaPlayers.remove(filePath)
-                runCatching {
-                    it.release()
-                }.getOrElse { error ->
-                    AudioPlayerException.InitializationError(
-                        filePath, error
-                    ).apply {
-                        logger.recordNonFatalException(this)
-                        throw this
-                    }
+                mediaPlayers.remove(filePath, it)
+                runCatching { it.release() }.onFailure { error ->
+                    logger.recordNonFatalException(
+                        AudioPlayerException.InitializationError(filePath, error)
+                    )
                 }
             }
         }
@@ -134,10 +129,8 @@ class AudioPlayerViewModel(
         runOnAudioContext { closeAllFilesSync() }
     }
 
-    private fun closeAllFilesSync() {
-        mediaPlayers.values.forEach { releasePlayer(it) }
-        mediaPlayers.clear()
-    }
+    private fun closeAllFilesSync() =
+        mediaPlayers.values.removeIf { releasePlayer(it); true }
 
     override fun onCleared() {
         closeAllFiles()
