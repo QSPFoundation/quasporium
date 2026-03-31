@@ -78,7 +78,7 @@ class GameActivity : ComponentActivity() {
             }.onFailure { root.onFileCorruptResult() }
         }
 
-    private val gameId: Long by lazy { intent.getLongExtra("GAME_ID", -1L) }
+    private val gameId: Long by lazy { intent.getLongExtra("gameId", -1L) }
     private val gameTitle: String by lazy { intent.getStringExtra("gameTitle") ?: "Title" }
     private val gameDirUriBox: String by lazy { intent.getStringExtra("gameDirUri") ?: "" }
     private val gameFileUriBox: String by lazy { intent.getStringExtra("gameFileUri") ?: "" }
