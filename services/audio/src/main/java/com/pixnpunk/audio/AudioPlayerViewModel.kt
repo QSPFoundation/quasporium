@@ -83,8 +83,8 @@ class AudioPlayerViewModel(
     ) {
         runOnAudioContext {
             runCatching {
-                val player = mediaPlayers.getOrPut(soundFileUri) {
-                    createNewSound(context, soundFileUri)
+                val player = mediaPlayers.computeIfAbsent(soundFileUri) { keyUri ->
+                    createNewSound(context, keyUri)
                 }
 
                 val mediaPlayerVolume = volume / 100f
