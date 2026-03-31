@@ -1,8 +1,8 @@
 package com.pixnpunk.main.presentation
 
+import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.webkit.WebView
-import android.widget.LinearLayout
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -22,25 +22,26 @@ fun MainContentWebView(
         modifier = modifier
             .fillMaxSize()
             .padding(paddingValues),
-        update = { webView ->
-            webView.loadDataWithBaseURL(
-                "https://appassets.androidplatform.net/game_files/",
-                mainDesc,
-                "text/html", "UTF-8", null
-            )
-        },
         factory = { ctx ->
             setupWebClient(
                 WebView(ctx).apply {
                     setBackgroundColor(backColor)
-                    layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-                    loadDataWithBaseURL(
-                        "https://appassets.androidplatform.net/game_files/",
-                        mainDesc,
-                        "text/html", "UTF-8", null
+                    layoutParams = ViewGroup.LayoutParams(
+                        MATCH_PARENT,
+                        MATCH_PARENT
                     )
                 }
             )
+        },
+        update = { webView ->
+            if (webView.tag != mainDesc) {
+                webView.loadDataWithBaseURL(
+                    "https://appassets.androidplatform.net/game_files/",
+                    mainDesc,
+                    "text/html", "UTF-8", null
+                )
+                webView.tag = mainDesc
+            }
         }
     )
 }
