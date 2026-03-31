@@ -13,8 +13,6 @@ import androidx.activity.result.launch
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.anggrayudi.storage.SimpleStorage.Companion.cleanupRedundantUriPermissions
-import com.anggrayudi.storage.contract.FolderPickerResult
-import com.anggrayudi.storage.contract.OpenFolderPickerContract
 import com.anggrayudi.storage.contract.RequestStorageAccessContract
 import com.anggrayudi.storage.contract.RequestStorageAccessResult
 import com.anggrayudi.storage.contract.StoragePermissionContract
@@ -38,10 +36,27 @@ class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalContracts::class)
     private val dirPickerLauncher =
         registerForActivityResult(
-            OpenFolderPickerContract(get())
+            ActivityResultContracts.OpenDocumentTree()
         ) {
-            when (it) {
-                is FolderPickerResult.AccessDenied -> {
+            if (it != null) {
+                val contentResolver = applicationContext.contentResolver
+                contentResolver.takePersistableUriPermission(
+                    it,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                            or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                )
+
+                thread { cleanupRedundantUriPermissions(applicationContext) }
+
+                var newGameDir = it.toDocumentFile(get())
+                if (newGameDir.isWritableDir()) {
+                    val path = newGameDir.uri.toString()
+                    val dirName = newGameDir.name
+
+                    if (path.isNotEmpty() && dirName != null) {
+                        root.processPickedDir(dirName, path)
+                    }
+                } else {
                     root.doShowDialog(
                         outputValue = """
                             We require full access to your device storage so that you can easily select and add games from any folder where they are stored.
@@ -53,22 +68,6 @@ class MainActivity : ComponentActivity() {
                         """.trimIndent(),
                         outputState = OutputState.OUTPUT_REQUEST_PERM
                     )
-                }
-
-                is FolderPickerResult.CanceledByUser -> {
-
-                }
-
-                is FolderPickerResult.Picked -> {
-                    var newGameDir = it.folder
-                    if (newGameDir.isWritableDir()) {
-                        val path = newGameDir.uri.toString()
-                        val dirName = newGameDir.name
-
-                        if (path.isNotEmpty() && dirName != null) {
-                            root.processPickedDir(dirName, path)
-                        }
-                    }
                 }
             }
         }
@@ -197,11 +196,7 @@ class MainActivity : ComponentActivity() {
         root = RealRootComponent(
             componentContext = defaultComponentContext(),
             launchDirPicker = {
-                runCatching {
-                    dirPickerLauncher.launch(
-                        OpenFolderPickerContract.Options()
-                    )
-                }.onFailure {  }
+                dirPickerLauncher.launch(null)
             },
             launchFilePicker = {
                 filePickerLauncher.launch(arrayOf(MimeType.IMAGE))
