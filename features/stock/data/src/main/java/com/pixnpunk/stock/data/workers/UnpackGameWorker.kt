@@ -5,6 +5,8 @@ import androidx.core.net.toFile
 import androidx.core.net.toUri
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.anggrayudi.storage.extension.isRawFile
+import com.anggrayudi.storage.file.isRawFile
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.pixnpunk.dto.stringToEntry
 import com.pixnpunk.notification.NotificationProvider
@@ -54,13 +56,25 @@ class UnpackGameWorker(
 
             val newGameDir = receiveGameDirFromFile(destDirPath)
             if (newGameDir == null || destDirPath.toUri() == newGameDir.uri) {
-                localRepository.fillAndInsertEntry(
-                    gameEntry.copy(gameDirPath = destDirPath)
-                )
+                if (destDirPath.toUri().isRawFile) {
+                    localRepository.fillAndInsertInternalEntry(
+                        gameEntry.copy(gameDirPath = destDirPath)
+                    )
+                } else {
+                    localRepository.fillAndInsertEntry(
+                        gameEntry.copy(gameDirPath = destDirPath)
+                    )
+                }
             } else {
-                localRepository.fillAndInsertEntry(
-                    gameEntry.copy(gameDirPath = newGameDir.uri.toString())
-                )
+                if (newGameDir.isRawFile) {
+                    localRepository.fillAndInsertInternalEntry(
+                        gameEntry.copy(gameDirPath = newGameDir.uri.toString())
+                    )
+                } else {
+                    localRepository.fillAndInsertEntry(
+                        gameEntry.copy(gameDirPath = newGameDir.uri.toString())
+                    )
+                }
             }
 
             notificationProvider.showNotification(
