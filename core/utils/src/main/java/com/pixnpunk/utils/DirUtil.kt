@@ -66,6 +66,44 @@ object DirUtil : KoinComponent {
     }
 
     @OptIn(ExperimentalContracts::class)
+    suspend fun receiveGameFilesFromInternalDir(rootDirPath: String): List<String> {
+        val gameDir = fromUri(get(), rootDirPath.toUri())
+        if (!gameDir.isWritableDir()) return listOf()
+
+        val files = gameDir.listFiles()
+        if (files.size <= 0) return listOf()
+
+        val gameFilesPath = mutableListOf<String>()
+        for (file in files) {
+            val fileName = file.name ?: continue
+            if (fileName.endsWith(suffix = "qsp", ignoreCase = true)
+                || fileName.endsWith(suffix = "gam", ignoreCase = true)
+            ) {
+                gameFilesPath.add(file.uri.toString())
+            }
+        }
+
+        if (gameFilesPath.isEmpty()) {
+            gameDir.search(
+                recursive = true,
+                documentType = DocumentFileType.FILE,
+                mimeTypes = arrayOf(MimeType.BINARY_FILE)
+            ).collect {
+                for (file in it) {
+                    val fileName = file.name ?: continue
+                    if (fileName.endsWith(suffix = ".qsp", ignoreCase = true)
+                        || fileName.endsWith(suffix = ".gam", ignoreCase = true)
+                    ) {
+                        gameFilesPath.add(file.uri.toString())
+                    }
+                }
+            }
+        }
+
+        return gameFilesPath.distinct()
+    }
+
+    @OptIn(ExperimentalContracts::class)
     suspend fun receiveGameFilesFromDir(rootDirPath: String): List<String> {
         val gameDir = fromUri(get(), rootDirPath.toUri())
         if (!gameDir.isWritableDir()) return listOf()

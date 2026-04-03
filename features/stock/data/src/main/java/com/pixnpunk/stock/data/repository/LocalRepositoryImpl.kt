@@ -19,6 +19,7 @@ import com.pixnpunk.stock.domain.model.SearchTokenType
 import com.pixnpunk.stock.domain.model.SortOrder
 import com.pixnpunk.stock.domain.repository.LocalRepository
 import com.pixnpunk.utils.DirUtil.receiveGameFilesFromDir
+import com.pixnpunk.utils.DirUtil.receiveGameFilesFromInternalDir
 import com.pixnpunk.utils.DirUtil.tryReceiveDirSize
 import com.pixnpunk.utils.FileUtil.createSpecialFiles
 import kotlinx.coroutines.flow.Flow
@@ -140,6 +141,20 @@ class LocalRepositoryImpl(
             entry.copy(
                 listId = GameListType.Playable,
                 gameFilesPath = receiveGameFilesFromDir(gameDirPath),
+                fileSize =
+                    if (entry.fileSize != 0L) entry.fileSize
+                    else tryReceiveDirSize(gameDirPath)
+            )
+        )
+    }
+
+    override suspend fun fillAndInsertInternalEntry(entry: GameEntry) {
+        val gameDirPath = entry.gameDirPath
+        createSpecialFiles(gameDirPath)
+        insertDefaultEntry(
+            entry.copy(
+                listId = GameListType.Playable,
+                gameFilesPath = receiveGameFilesFromInternalDir(gameDirPath),
                 fileSize =
                     if (entry.fileSize != 0L) entry.fileSize
                     else tryReceiveDirSize(gameDirPath)

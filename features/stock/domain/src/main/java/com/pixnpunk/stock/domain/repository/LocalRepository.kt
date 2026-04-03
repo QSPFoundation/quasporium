@@ -15,4 +15,5 @@ interface LocalRepository {
     suspend fun updateOrInsertEntry(entry: GameEntry)
     suspend fun insertDefaultEntry(newEntry: GameEntry)
     suspend fun fillAndInsertEntry(entry: GameEntry)
+    suspend fun fillAndInsertInternalEntry(entry: GameEntry)
 }
