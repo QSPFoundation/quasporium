@@ -1,5 +1,6 @@
 package com.pixnpunk.utils
 
+import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
 import android.os.Build
@@ -16,16 +17,19 @@ import com.anggrayudi.storage.file.getStorageId
 import com.anggrayudi.storage.file.search
 import com.pixnpunk.utils.FileUtil.isWritableDir
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.yield
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import kotlin.contracts.ExperimentalContracts
+import kotlin.coroutines.cancellation.CancellationException
 
 object DirUtil : KoinComponent {
     @OptIn(ExperimentalContracts::class)
@@ -66,44 +70,6 @@ object DirUtil : KoinComponent {
     }
 
     @OptIn(ExperimentalContracts::class)
-    suspend fun receiveGameFilesFromInternalDir(rootDirPath: String): List<String> {
-        val gameDir = fromUri(get(), rootDirPath.toUri())
-        if (!gameDir.isWritableDir()) return listOf()
-
-        val files = gameDir.listFiles()
-        if (files.size <= 0) return listOf()
-
-        val gameFilesPath = mutableListOf<String>()
-        for (file in files) {
-            val fileName = file.name ?: continue
-            if (fileName.endsWith(suffix = "qsp", ignoreCase = true)
-                || fileName.endsWith(suffix = "gam", ignoreCase = true)
-            ) {
-                gameFilesPath.add(file.uri.toString())
-            }
-        }
-
-        if (gameFilesPath.isEmpty()) {
-            gameDir.search(
-                recursive = true,
-                documentType = DocumentFileType.FILE,
-                mimeTypes = arrayOf(MimeType.BINARY_FILE)
-            ).collect {
-                for (file in it) {
-                    val fileName = file.name ?: continue
-                    if (fileName.endsWith(suffix = ".qsp", ignoreCase = true)
-                        || fileName.endsWith(suffix = ".gam", ignoreCase = true)
-                    ) {
-                        gameFilesPath.add(file.uri.toString())
-                    }
-                }
-            }
-        }
-
-        return gameFilesPath.distinct()
-    }
-
-    @OptIn(ExperimentalContracts::class)
     suspend fun receiveGameFilesFromDir(rootDirPath: String): List<String> {
         val gameDir = fromUri(get(), rootDirPath.toUri())
         if (!gameDir.isWritableDir()) return listOf()
@@ -115,41 +81,93 @@ object DirUtil : KoinComponent {
         ).toList(mutableListOf())
     }
 
-    private fun Context.findGameFiles(
+    fun Context.findGameFiles(
         rootTreeUri: Uri,
         allowedMimeTypes: Set<String> = emptySet(),
         nameRegex: Regex? = null
     ): Flow<String> = flow {
-        val dirIdQueue = ArrayDeque<String>()
-
-        dirIdQueue.addLast(
-            try {
-                DocumentsContract.getTreeDocumentId(rootTreeUri)
-            } catch (_: Exception) {
-                return@flow
+        when (rootTreeUri.scheme) {
+            ContentResolver.SCHEME_FILE -> {
+                findFilesWithNio(rootTreeUri, nameRegex)
             }
+
+            ContentResolver.SCHEME_CONTENT -> {
+                findFilesWithSaf(
+                    this@findGameFiles,
+                    rootTreeUri,
+                    allowedMimeTypes,
+                    nameRegex
+                )
+            }
+
+            else -> {
+//                Log.w(TAG, "Unsupported URI scheme: ${rootUri.scheme}")
+            }
+        }
+    }.flowOn(Dispatchers.IO)
+
+    private suspend fun FlowCollector<String>.findFilesWithNio(
+        rootUri: Uri,
+        nameRegex: Regex?
+    ) {
+        val pathStr = rootUri.path ?: return
+        val rootFile = java.io.File(pathStr)
+
+        if (!rootFile.exists() || !rootFile.isDirectory) return
+
+        try {
+            rootFile.walkTopDown()
+                .filter { it.isFile }
+                .filter { nameRegex == null || nameRegex.matches(it.name) }
+                .forEach { file ->
+                    currentCoroutineContext().ensureActive()
+                    emit(file.toURI().toString())
+                }
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+//            Log.e(TAG, "File IO: Error walking directory tree", e)
+        }
+    }
+
+    private suspend fun FlowCollector<String>.findFilesWithSaf(
+        context: Context,
+        rootTreeUri: Uri,
+        allowedMimeTypes: Set<String>,
+        nameRegex: Regex?
+    ) {
+        val rootDocumentId = try {
+            DocumentsContract.getTreeDocumentId(rootTreeUri)
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+//            Log.e(TAG, "SAF: Invalid tree URI: $rootTreeUri", e)
+            return
+        }
+
+        val dirIdQueue = ArrayDeque<String>()
+        dirIdQueue.addLast(rootDocumentId)
+
+        val projection = arrayOf(
+            DocumentsContract.Document.COLUMN_DOCUMENT_ID,
+            DocumentsContract.Document.COLUMN_DISPLAY_NAME,
+            DocumentsContract.Document.COLUMN_MIME_TYPE
         )
 
         while (dirIdQueue.isNotEmpty()) {
-            val currentDirId = dirIdQueue.removeFirst()
+            currentCoroutineContext().ensureActive()
 
+            val currentDirId = dirIdQueue.removeFirst()
             val childrenUri = try {
-                DocumentsContract.buildChildDocumentsUriUsingTree(
-                    rootTreeUri,
-                    currentDirId
-                )
-            } catch (_: Exception) {
+                DocumentsContract.buildChildDocumentsUriUsingTree(rootTreeUri, currentDirId)
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
+//                Log.e(TAG, "SAF: Failed to build child URI for $currentDirId", e)
                 continue
             }
 
             try {
-                contentResolver.query(
+                context.contentResolver.query(
                     childrenUri,
-                    arrayOf(
-                        DocumentsContract.Document.COLUMN_DOCUMENT_ID,
-                        DocumentsContract.Document.COLUMN_DISPLAY_NAME,
-                        DocumentsContract.Document.COLUMN_MIME_TYPE
-                    ),
+                    projection,
                     null,
                     null,
                     null
@@ -162,8 +180,11 @@ object DirUtil : KoinComponent {
                         cursor.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_MIME_TYPE)
 
                     while (cursor.moveToNext()) {
+                        currentCoroutineContext().ensureActive()
+
                         val childId = cursor.getString(idIndex)
                         val childMime = cursor.getString(mimeIndex) ?: ""
+                        val childName = cursor.getString(nameIndex) ?: ""
 
                         if (childMime == DocumentsContract.Document.MIME_TYPE_DIR) {
                             dirIdQueue.addLast(childId)
@@ -174,26 +195,21 @@ object DirUtil : KoinComponent {
                             continue
                         }
 
-                        if (nameRegex != null) {
-                            val childName = cursor.getString(nameIndex) ?: ""
-                            if (!nameRegex.matches(childName)) {
-                                continue
-                            }
+                        if (nameRegex != null && !nameRegex.matches(childName)) {
+                            continue
                         }
 
                         emit(
                             DocumentsContract.buildDocumentUriUsingTree(
-                                rootTreeUri,
-                                childId
+                                rootTreeUri, childId
                             ).toString()
                         )
                     }
                 }
-            } catch (_: SecurityException) {
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
+//                Log.e(TAG, "SAF: Error querying children for dir: $currentDirId", e)
             }
-
-            yield()
         }
-    }.flowOn(Dispatchers.IO)
+    }
 }
