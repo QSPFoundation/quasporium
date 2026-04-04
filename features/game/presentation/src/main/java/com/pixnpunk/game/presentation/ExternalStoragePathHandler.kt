@@ -2,13 +2,12 @@ package com.pixnpunk.game.presentation
 
 import android.content.Context
 import android.webkit.WebResourceResponse
-import androidx.core.net.toUri
 import androidx.webkit.WebViewAssetLoader
 import com.anggrayudi.storage.extension.toDocumentFile
 import com.anggrayudi.storage.file.MimeType
-import com.anggrayudi.storage.file.child
-import com.pixnpunk.utils.FileUtil.isWritableDir
 import com.pixnpunk.utils.FileUtil.isWritableFile
+import com.pixnpunk.utils.PathUtil.getImageUriFromPath
+import com.pixnpunk.utils.PathUtil.normalizeContentPath
 import java.io.FileNotFoundException
 import kotlin.contracts.ExperimentalContracts
 
@@ -17,11 +16,14 @@ internal class ExternalStoragePathHandler(
     private val gameDirUriBox: String
 ) : WebViewAssetLoader.PathHandler {
     @OptIn(ExperimentalContracts::class)
-    override fun handle(path: String): WebResourceResponse? {
-        val mRootDir = gameDirUriBox.toUri().toDocumentFile(context)
-        if (!mRootDir.isWritableDir()) return null
-        return runCatching {
-            val mediaFile = mRootDir.child(context, path)
+    override fun handle(path: String): WebResourceResponse? =
+        runCatching {
+            val mediaFile = path
+                .normalizeContentPath()
+                .getImageUriFromPath(
+                    context = context,
+                    rootDirUriBox = gameDirUriBox,
+                ).toDocumentFile(context)
             if (!mediaFile.isWritableFile()) {
                 throw FileNotFoundException()
             } else {
@@ -38,5 +40,4 @@ internal class ExternalStoragePathHandler(
                 )
             }
         }.getOrElse { null }
-    }
 }
