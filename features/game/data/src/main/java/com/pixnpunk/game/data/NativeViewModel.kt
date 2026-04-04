@@ -422,7 +422,9 @@ class NativeViewModel(
                 .normalizeContentPath()
                 .pathToFile(get(), gameDir)
             if (docFile.isWritableFile()) {
-                audioPlayer.closeFile(docFile.uri.toString())
+                audioPlayer.closeFile(
+                    docFile.uri.toString()
+                )
             }
         }
     }
@@ -435,7 +437,10 @@ class NativeViewModel(
                 .normalizeContentPath()
                 .pathToFile(get(), gameDir)
             if (docFile.isWritableFile()) {
-                audioPlayer.playFile(get(), docFile.uri, volume)
+                audioPlayer.playFile(
+                    docFile.uri.toString(),
+                    volume
+                )
             }
         }
     }

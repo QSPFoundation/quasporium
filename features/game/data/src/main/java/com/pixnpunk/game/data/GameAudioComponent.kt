@@ -89,8 +89,8 @@ class GameAudioComponent(
 
         playerScope.launch {
             runCatching {
-                val player = mediaPlayers.computeIfAbsent(soundFileUri) { keyUri ->
-                    createNewSound(context, keyUri)
+                val player = mediaPlayers.computeIfAbsent(path) { keyUri ->
+                    createNewSound(keyUri)
                 }
 
                 val mediaPlayerVolume = volume / 100f
