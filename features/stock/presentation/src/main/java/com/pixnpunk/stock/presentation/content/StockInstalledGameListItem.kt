@@ -1,5 +1,6 @@
 package com.pixnpunk.stock.presentation.content
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -66,7 +67,8 @@ fun StockInstalledGameListItem(
             AsyncImage(
                 modifier = Modifier
                     .size(56.dp)
-                    .clip(MaterialTheme.shapes.medium),
+                    .clip(MaterialTheme.shapes.medium)
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
                 model = gameEntry.gameIconPath,
                 error = rememberVectorPainter(Icons.Outlined.BrokenImage),
                 contentScale = ContentScale.Crop,
