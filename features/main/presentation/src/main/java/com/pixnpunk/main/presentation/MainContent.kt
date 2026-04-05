@@ -15,6 +15,9 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.fromHtml
+import com.pixnpunk.main.presentation.model.ParsedActionItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,13 +51,23 @@ fun MainContent(
                 setupWebClient = component::getDefaultWebClient
             )
         } else {
+            val parsedActions = remember(state.actions) {
+                state.actions.map { item ->
+                    ParsedActionItem(
+                        original = item,
+                        annotatedText = AnnotatedString.fromHtml(item.text),
+                        hasImage = item.imagePath.isNotBlank()
+                    )
+                }
+            }
+
             BottomSheetScaffold(
                 modifier = Modifier.padding(paddingValues),
                 sheetContent = {
                     MainContentActionsList(
                         countActsVis = settings.visActsCount,
                         settings = settings,
-                        actions = state.actions,
+                        actions = parsedActions,
                         onActionClicked = component.onActionClicked,
                         gridState = lazyStaggeredGridState
                     )
