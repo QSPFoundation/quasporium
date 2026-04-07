@@ -5,7 +5,6 @@ include(FetchContent)
 
 if (BUILD_PRIVATE_CONTENT)
     add_subdirectory(QSLibSDH)
-    add_subdirectory(QSLibSNX)
     add_subdirectory(qsp)
 else ()
     FetchContent_Declare(qsp-external
@@ -17,16 +16,6 @@ else ()
             BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/qsp-build"
     )
     FetchContent_MakeAvailable(qsp-external)
-
-    FetchContent_Declare(qslibsnx-external
-            GIT_REPOSITORY https://github.com/l3ger0j/QSLibSNX.git
-            GIT_TAG 245578dcd5d5ebf520791a2c4d947b2086012fa7
-            GIT_PROGRESS true
-            SUBBUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/qslibsnx-download"
-            SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/qslibsnx-src"
-            BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/qslibsnx-build"
-    )
-    FetchContent_MakeAvailable(qslibsnx-external)
 
     FetchContent_Declare(qslibsdh-external
             GIT_REPOSITORY https://github.com/l3ger0j/QSLibSDH.git

@@ -12,7 +12,6 @@ import com.anggrayudi.storage.file.makeFile
 import com.pixnpunk.dto.LibGenItem
 import com.pixnpunk.dto.NativeLibAuthors
 import com.pixnpunk.game.data.impl.QSLibSDHImpl
-import com.pixnpunk.game.data.impl.QSLibSNXImpl
 import com.pixnpunk.game.data.impl.QSPLibImpl
 import com.pixnpunk.game.domain.model.LibGameState
 import com.pixnpunk.game.domain.model.LibReturnValue
@@ -55,7 +54,6 @@ class NativeViewModel(
     private var mLibAuthors: NativeLibAuthors = NativeLibAuthors.BYTE
 
     private val libNativeByte = QSPLibImpl(get(), this)
-    private val libNativeSonnix = QSLibSNXImpl(get(), this)
     private val libNativeSeedharta = QSLibSDHImpl(get(), this)
 
     private var gameDirUri: Uri = Uri.EMPTY
@@ -76,12 +74,6 @@ class NativeViewModel(
     private val counterNativeByteTask: suspend CoroutineScope.() -> Unit = {
         while (isActive) {
             libNativeByte.executeCounter()
-            delay(counterInterval.get())
-        }
-    }
-    private val counterNativeSonnixTask: suspend CoroutineScope.() -> Unit = {
-        while (isActive) {
-            libNativeSonnix.executeCounter()
             delay(counterInterval.get())
         }
     }
@@ -108,11 +100,6 @@ class NativeViewModel(
                         GameInterface.UserCancelledException()
                     )
 
-                NativeLibAuthors.SONNIX ->
-                    libNativeSonnix.returnValueFuture.completeExceptionally(
-                        GameInterface.UserCancelledException()
-                    )
-
                 NativeLibAuthors.SEEDHARTHA ->
                     libNativeSeedharta.returnValueFuture.completeExceptionally(
                         GameInterface.UserCancelledException()
@@ -122,9 +109,6 @@ class NativeViewModel(
             when (mLibAuthors) {
                 NativeLibAuthors.BYTE ->
                     libNativeByte.returnValueFuture.complete(returnValue)
-
-                NativeLibAuthors.SONNIX ->
-                    libNativeSonnix.returnValueFuture.complete(returnValue)
 
                 NativeLibAuthors.SEEDHARTHA ->
                     libNativeSeedharta.returnValueFuture.complete(returnValue)
@@ -146,16 +130,6 @@ class NativeViewModel(
             NativeLibAuthors.BYTE -> {
                 libNativeByte.startLibThread()
                 libNativeByte.runGame(
-                    gameId,
-                    gameTitle,
-                    gameDirUriBox,
-                    gameFileUriBox
-                )
-            }
-
-            NativeLibAuthors.SONNIX -> {
-                libNativeSonnix.startLibThread()
-                libNativeSonnix.runGame(
                     gameId,
                     gameTitle,
                     gameDirUriBox,
@@ -208,7 +182,6 @@ class NativeViewModel(
 
         listOf(
             libNativeByte,
-            libNativeSonnix,
             libNativeSeedharta
         ).forEach { it.stopLibThread() }
 
@@ -224,10 +197,6 @@ class NativeViewModel(
                 libNativeByte.onInputAreaClicked(inputString)
             }
 
-            NativeLibAuthors.SONNIX -> {
-                libNativeSonnix.onInputAreaClicked(inputString)
-            }
-
             NativeLibAuthors.SEEDHARTHA -> {
                 libNativeSeedharta.onInputAreaClicked(inputString)
             }
@@ -238,10 +207,6 @@ class NativeViewModel(
         when (mLibAuthors) {
             NativeLibAuthors.BYTE -> {
                 libNativeByte.saveGameState(fileUri.toString())
-            }
-
-            NativeLibAuthors.SONNIX -> {
-                libNativeSonnix.saveGameState(fileUri.toString())
             }
 
             NativeLibAuthors.SEEDHARTHA -> {
@@ -257,10 +222,6 @@ class NativeViewModel(
                     libNativeByte.loadGameState(fileUri.toString())
                 }
 
-                NativeLibAuthors.SONNIX -> {
-                    libNativeSonnix.loadGameState(fileUri.toString())
-                }
-
                 NativeLibAuthors.SEEDHARTHA -> {
                     libNativeSeedharta.loadGameState(fileUri.toString())
                 }
@@ -272,10 +233,6 @@ class NativeViewModel(
         when (mLibAuthors) {
             NativeLibAuthors.BYTE -> {
                 libNativeByte.execute(execCode)
-            }
-
-            NativeLibAuthors.SONNIX -> {
-                libNativeSonnix.execute(execCode)
             }
 
             NativeLibAuthors.SEEDHARTHA -> {
@@ -291,11 +248,6 @@ class NativeViewModel(
                 libNativeByte.restartGame()
             }
 
-            NativeLibAuthors.SONNIX -> {
-                libNativeSonnix.restartGame()
-
-            }
-
             NativeLibAuthors.SEEDHARTHA -> {
                 libNativeSeedharta.restartGame()
             }
@@ -308,10 +260,6 @@ class NativeViewModel(
                 libNativeByte.onActionClicked(index)
             }
 
-            NativeLibAuthors.SONNIX -> {
-                libNativeSonnix.onActionClicked(index)
-            }
-
             NativeLibAuthors.SEEDHARTHA -> {
                 libNativeSeedharta.onActionClicked(index)
             }
@@ -322,10 +270,6 @@ class NativeViewModel(
         when (mLibAuthors) {
             NativeLibAuthors.BYTE -> {
                 libNativeByte.onObjectSelected(index)
-            }
-
-            NativeLibAuthors.SONNIX -> {
-                libNativeSonnix.onObjectSelected(index)
             }
 
             NativeLibAuthors.SEEDHARTHA -> {
@@ -486,13 +430,6 @@ class NativeViewModel(
                 runnable.run()
                 counterNativeByteJob =
                     viewModelScope.launch(block = counterNativeByteTask)
-            }
-
-            NativeLibAuthors.SONNIX -> {
-                counterNativeSonnixJob?.cancel()
-                runnable.run()
-                counterNativeSonnixJob =
-                    viewModelScope.launch(block = counterNativeSonnixTask)
             }
 
             NativeLibAuthors.SEEDHARTHA -> {
