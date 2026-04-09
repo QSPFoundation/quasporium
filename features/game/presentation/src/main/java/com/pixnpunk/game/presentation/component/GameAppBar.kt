@@ -19,6 +19,7 @@ fun GameAppBar(
     titleText: String,
     isInputExecutorVis: Boolean,
     isAppBarMenuVis: Boolean,
+    isSaveMenuItemVis: Boolean,
     showDialog: () -> Unit,
     doCloseGame: () -> Unit,
     doSaveFile: () -> Unit,
@@ -54,6 +55,7 @@ fun GameAppBar(
             }
             if (isAppBarMenuVis) {
                 RootAppBarMenu(
+                    isSaveMenuItemVis = isSaveMenuItemVis,
                     doCreateSaveIntent = doSaveFile,
                     doCreateLoadIntent = doLoadFile
                 )

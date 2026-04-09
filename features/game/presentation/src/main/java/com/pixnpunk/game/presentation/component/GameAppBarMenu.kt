@@ -1,5 +1,6 @@
 package com.pixnpunk.game.presentation.component
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
@@ -13,16 +14,21 @@ import com.pixnpunk.game.presentation.R
 
 @Composable
 fun RootAppBarMenu(
+    isSaveMenuItemVis: Boolean,
     doCreateSaveIntent: () -> Unit,
     doCreateLoadIntent: () -> Unit
 ) {
     Row {
-        Box {
-            IconButton(onClick = doCreateSaveIntent) {
-                Icon(
-                    imageVector = Icons.Default.Download,
-                    contentDescription = stringResource(R.string.save_button_description)
-                )
+        AnimatedVisibility(
+            visible = isSaveMenuItemVis
+        ) {
+            Box {
+                IconButton(onClick = doCreateSaveIntent) {
+                    Icon(
+                        imageVector = Icons.Default.Download,
+                        contentDescription = stringResource(R.string.save_button_description)
+                    )
+                }
             }
         }
         Box {

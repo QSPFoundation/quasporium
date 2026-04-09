@@ -29,7 +29,6 @@ import com.pixnpunk.utils.PathUtil.normalizeContentPath
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.launch
 import kotlin.contracts.ExperimentalContracts
@@ -298,12 +297,10 @@ internal class GameExecutor(
 
             is GameStore.Action.StartGameSettingsFlow ->
                 scope.launch {
-                    settingsState
-                        .filter { it.isUseExecString || it.isNoSave }
-                        .collect {
-                            dispatch(GameStore.Message.UpdateExecutorStatus(it.isUseExecString))
-                            dispatch(GameStore.Message.UpdateIsSaveDisable(it.isNoSave))
-                        }
+                    settingsState.collect {
+                        dispatch(GameStore.Message.UpdateExecutorStatus(it.isUseExecString))
+                        dispatch(GameStore.Message.UpdateIsSaveDisable(it.isNoSave))
+                    }
                 }
 
             is GameStore.Action.StartGameDialogFlow ->

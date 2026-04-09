@@ -33,6 +33,7 @@ class RealGameStore(
                 GameStore.Action.StartGameStateFlow,
                 GameStore.Action.StartGamePopupFlow,
                 GameStore.Action.StartGameElementVisFlow,
+                GameStore.Action.StartGameSettingsFlow,
                 GameStore.Action.StartGameDialogFlow
             ),
             executorFactory = {

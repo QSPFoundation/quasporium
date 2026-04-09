@@ -188,7 +188,8 @@ fun GameContent(
                                 GameAppBar(
                                     titleText = stringResource(R.string.main_tab_title),
                                     isInputExecutorVis = state.isInputEnabled || state.isExecutorEnabled,
-                                    isAppBarMenuVis = state.isGameRunning && !state.isSaveDisable,
+                                    isAppBarMenuVis = state.isGameRunning,
+                                    isSaveMenuItemVis = !state.isSaveDisable,
                                     showDialog = component::doShowDialog,
                                     doCloseGame = {
                                         if (clickJob?.isActive == true) {

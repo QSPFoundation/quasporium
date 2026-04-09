@@ -53,7 +53,7 @@ sealed interface GameStore : Store<GameStore.Intent, GameStore.State, GameStore.
         data class UpdateVisObjElement(val isObjectsEnabled: Boolean) : Message
         data class UpdateVisExtraElement(val isExtraEnabled: Boolean) : Message
         data class UpdateVisInputElement(val isInputEnabled: Boolean) : Message
-        data class UpdateExecutorStatus(val isExecutorEnabled: Boolean) : Message
+        data class UpdateExecutorStatus(val isUseExecString: Boolean) : Message
         data class UpdateIsMainDescUpdated(val isMainDescUpdated: Pair<Int, Boolean>) : Message
         data class UpdateIsExtraDescUpdated(val isExtraDescUpdated: Pair<Int, Boolean>) : Message
         data class UpdateIsObjsListUpdated(val isObjsListUpdated: Pair<Int, Boolean>) : Message
