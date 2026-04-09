@@ -11,7 +11,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -30,12 +29,6 @@ fun MainContent(
     val settings by component.settingsState.collectAsState()
 
     val lazyStaggeredGridState = rememberLazyStaggeredGridState()
-    val isLazyColumnAtTop by remember {
-        derivedStateOf {
-            lazyStaggeredGridState.firstVisibleItemIndex == 0
-                    && lazyStaggeredGridState.firstVisibleItemScrollOffset == 0
-        }
-    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -72,7 +65,9 @@ fun MainContent(
                         gridState = lazyStaggeredGridState
                     )
                 },
-                sheetSwipeEnabled = isLazyColumnAtTop
+                sheetSwipeEnabled =
+                    !lazyStaggeredGridState.canScrollBackward
+                            && !lazyStaggeredGridState.canScrollForward
             ) { sheetValues ->
                 MainContentWebView(
                     mainDesc = state.mainDesc,
