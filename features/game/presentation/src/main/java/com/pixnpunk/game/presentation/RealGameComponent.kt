@@ -94,6 +94,7 @@ class RealGameComponent(
                         ExternalStoragePathHandler(get(), gameDirUriBox)
                     )
                     .build(),
+            isEnableAutoscroll = settingsState.value.isYesScroll,
             onExecValue = ::onExecValue,
             onStartActivity = onStartActivity
         )

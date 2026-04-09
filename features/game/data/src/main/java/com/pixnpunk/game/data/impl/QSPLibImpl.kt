@@ -225,11 +225,13 @@ class QSPLibImpl(
     private fun loadUIConfiguration() {
         gameInterface.setUIConfig(
             LibUIConfig(
-                useHtml = getNumVarValue("USEHTML", 0) != 0L,
+                isNoSave = getNumVarValue("NOSAVE", 0) != 0L,
+                isUseHtml = getNumVarValue("USEHTML", 0) != 0L,
+                isYesScroll = getNumVarValue("DISABLESCROLL", 0) == 0L,
                 fontSize = getNumVarValue("FSIZE", 0).toInt(),
                 backColor = getNumVarValue("BCOLOR", 0).toInt(),
                 fontColor = getNumVarValue("FCOLOR", 0).toInt(),
-                linkColor = getNumVarValue("LCOLOR", 0).toInt()
+                linkColor = getNumVarValue("LCOLOR", 0).toInt(),
             )
         )
     }

@@ -194,7 +194,9 @@ class QSLibSDHImpl(
     private fun loadUIConfiguration() {
         gameInterface.setUIConfig(
             LibUIConfig(
-                useHtml = getVarValues("USEHTML", 0)?.intValue != 0,
+                isNoSave = getVarValues("NOSAVE", 0)?.intValue != 0,
+                isUseHtml = getVarValues("USEHTML", 0)?.intValue != 0,
+                isYesScroll = getVarValues("DISABLESCROLL", 0)?.intValue == 0,
                 fontSize = getVarValues("FSIZE", 0)?.intValue ?: 0,
                 backColor = getVarValues("BCOLOR", 0)?.intValue ?: 0,
                 fontColor = getVarValues("FCOLOR", 0)?.intValue ?: 0,

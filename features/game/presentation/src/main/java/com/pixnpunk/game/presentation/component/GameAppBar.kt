@@ -10,26 +10,21 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.res.stringResource
-import com.pixnpunk.game.presentation.GameComponent
 import com.pixnpunk.game.presentation.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GameAppBar(
     titleText: String,
-    component: GameComponent,
+    isInputExecutorVis: Boolean,
+    isAppBarMenuVis: Boolean,
     showDialog: () -> Unit,
     doCloseGame: () -> Unit,
     doSaveFile: () -> Unit,
-    doLoadFile: () -> Unit
+    doLoadFile: () -> Unit,
+    doRestartGame: () -> Unit
 ) {
-    val state by component.model.collectAsState()
-
-    val isInputExecutorVis = state.isInputEnabled || state.isExecutorEnabled
-
     TopAppBar(
         title = { Text(titleText) },
         navigationIcon = {
@@ -41,7 +36,7 @@ fun GameAppBar(
             }
         },
         actions = {
-            IconButton(onClick = { component.doRestartGame() }) {
+            IconButton(onClick = doRestartGame) {
                 Icon(
                     imageVector = Icons.Default.RestartAlt,
                     contentDescription = stringResource(R.string.restart_button_description)
@@ -57,7 +52,7 @@ fun GameAppBar(
                     )
                 }
             }
-            if (state.isGameRunning) {
+            if (isAppBarMenuVis) {
                 RootAppBarMenu(
                     doCreateSaveIntent = doSaveFile,
                     doCreateLoadIntent = doLoadFile

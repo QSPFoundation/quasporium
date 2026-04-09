@@ -187,7 +187,8 @@ fun GameContent(
                             topAppBar = {
                                 GameAppBar(
                                     titleText = stringResource(R.string.main_tab_title),
-                                    component = component,
+                                    isInputExecutorVis = state.isInputEnabled || state.isExecutorEnabled,
+                                    isAppBarMenuVis = state.isGameRunning && !state.isSaveDisable,
                                     showDialog = component::doShowDialog,
                                     doCloseGame = {
                                         if (clickJob?.isActive == true) {
@@ -204,7 +205,8 @@ fun GameContent(
                                         }
                                     },
                                     doSaveFile = component::doSaveFile,
-                                    doLoadFile = component::doLoadFile
+                                    doLoadFile = component::doLoadFile,
+                                    doRestartGame = component::doRestartGame
                                 )
                             },
                             snackbarHostState = snackbarHostState

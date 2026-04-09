@@ -235,7 +235,7 @@ internal class GameExecutor(
                 scope.launch(Dispatchers.IO) {
                     service.gameStateFlow.collect { state ->
                         scope.launch {
-                            dispatch(GameStore.Message.UpdateGameStatus(state.gameRunning))
+                            dispatch(GameStore.Message.UpdateIsGameRunning(state.gameRunning))
 
                             if (state.mainDesc.isNotBlank()) {
                                 if (state().isMainDescUpdated.first != state.mainDesc.hashCode()) {
@@ -299,8 +299,11 @@ internal class GameExecutor(
             is GameStore.Action.StartGameSettingsFlow ->
                 scope.launch {
                     settingsState
-                        .filter { it.isUseExecString }
-                        .collect { dispatch(GameStore.Message.UpdateExecutorStatus(it.isUseExecString)) }
+                        .filter { it.isUseExecString || it.isNoSave }
+                        .collect {
+                            dispatch(GameStore.Message.UpdateExecutorStatus(it.isUseExecString))
+                            dispatch(GameStore.Message.UpdateIsSaveDisable(it.isNoSave))
+                        }
                 }
 
             is GameStore.Action.StartGameDialogFlow ->
