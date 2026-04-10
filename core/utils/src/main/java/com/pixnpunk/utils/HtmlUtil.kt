@@ -91,21 +91,17 @@ object HtmlUtil {
      * Bring the HTML code `html` obtained from the library to
      * HTML code acceptable for display in [android.webkit.WebView].
      */
-    fun String.getCleanHtmlAndMedia(settings: SettingsEntity): String {
-        return Jsoup.parse(this).apply {
-            outputSettings().prettyPrint(true)
+    fun String.getCleanHtmlAndMedia(settings: SettingsEntity): String =
+        Jsoup.parse(this).apply {
             body().handleImagesInHtml(settings)
             body().handleVideosInHtml(settings)
         }.html()
-    }
 
-    fun String.getCleanHtmlRemMedia(): String {
-        return Jsoup.parse(this).apply {
-            outputSettings().prettyPrint(true)
+    fun String.getCleanHtmlRemMedia(): String =
+        Jsoup.parse(this).apply {
             body().select("img").remove()
             body().select("video").remove()
         }.html()
-    }
 
     fun String.getSrcDir(): String =
         Jsoup.parse(this)
