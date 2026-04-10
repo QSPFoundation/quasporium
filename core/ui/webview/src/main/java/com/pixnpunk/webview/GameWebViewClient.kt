@@ -13,9 +13,9 @@ import com.pixnpunk.utils.HtmlUtil.isContainsHtmlTags
 import com.pixnpunk.utils.HtmlUtil.removeHtmlTags
 import kotlin.contracts.ExperimentalContracts
 
-class GameWebViewClient(
+internal class GameWebViewClient(
     private val assetLoader: WebViewAssetLoader,
-    private val isEnableAutoscroll: Boolean,
+    private val isEnableAutoscroll: () -> Boolean,
     private val onExecValue: (String) -> Unit,
     private val onStartActivity: (Intent) -> Unit
 ) : WebViewClient() {
@@ -59,7 +59,7 @@ class GameWebViewClient(
 
     override fun onPageFinished(view: WebView, url: String?) {
         super.onPageFinished(view, url)
-        if (isEnableAutoscroll) {
+        if (isEnableAutoscroll()) {
             view.evaluateJavascript(
                 """
                 (function() { 

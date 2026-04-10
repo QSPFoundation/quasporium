@@ -5,6 +5,8 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.webkit.WebView
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.webkit.WebViewAssetLoader
@@ -16,9 +18,12 @@ fun GameWebView(
     gameDirUriBox: String,
     backColor: Int,
     isVideoMute: Boolean = true,
-    isEnableAutoscroll: Boolean = false,
+    isEnableAutoscroll: Boolean = true,
     onExecValue: (String) -> Unit
 ) {
+    val currentVideoMute by rememberUpdatedState(isVideoMute)
+    val currentAutoscroll by rememberUpdatedState(isEnableAutoscroll)
+
     AndroidView(
         modifier = modifier,
         update = { webView ->
@@ -43,7 +48,7 @@ fun GameWebView(
                     javaScriptEnabled = true
                     blockNetworkLoads = true
                     domStorageEnabled = true
-                    if (isVideoMute) {
+                    if (currentVideoMute) {
                         settings.mediaPlaybackRequiresUserGesture = false
                     }
                 }
@@ -56,7 +61,7 @@ fun GameWebView(
                                 ExternalStoragePathHandler(ctx, gameDirUriBox)
                             )
                             .build(),
-                    isEnableAutoscroll = isEnableAutoscroll,
+                    isEnableAutoscroll = { currentAutoscroll },
                     onExecValue = onExecValue,
                     onStartActivity = { runCatching { ctx.startActivity(it) } }
                 )

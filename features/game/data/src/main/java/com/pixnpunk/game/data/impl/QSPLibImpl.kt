@@ -163,7 +163,7 @@ class QSPLibImpl(
     }
 
     override fun onRefreshInt(isForced: Boolean, isNewDesc: Boolean) {
-        loadUIConfiguration()
+        loadUIConfiguration(isNewDesc)
         delegate.gameState = delegate.gameState.copy(
             mainDesc = mainDesc.orEmpty(),
             varsDesc = varsDesc.orEmpty(),
@@ -173,17 +173,18 @@ class QSPLibImpl(
         gameInterface.setGameState(delegate.gameState)
     }
 
-    override fun onShowWindow(type: Int, toShow: Boolean) {
-        val windowType = when {
-            type and Window.ACTS != 0 -> LibTypeWindow.ACTS
-            type and Window.OBJS != 0 -> LibTypeWindow.OBJS
-            type and Window.VARS != 0 -> LibTypeWindow.VARS
-            type and Window.INPUT != 0 -> LibTypeWindow.INPUT
-            type and Window.VIEW != 0 -> LibTypeWindow.VIEW
-            else -> LibTypeWindow.MAIN
-        }
-        gameInterface.changeVisWindow(windowType, toShow)
-    }
+    override fun onShowWindow(type: Int, toShow: Boolean) =
+        gameInterface.changeVisWindow(
+            when {
+                type and Window.ACTS != 0 -> LibTypeWindow.ACTS
+                type and Window.OBJS != 0 -> LibTypeWindow.OBJS
+                type and Window.VARS != 0 -> LibTypeWindow.VARS
+                type and Window.INPUT != 0 -> LibTypeWindow.INPUT
+                type and Window.VIEW != 0 -> LibTypeWindow.VIEW
+                else -> LibTypeWindow.MAIN
+            },
+            toShow
+        )
 
     override fun onShowImage(file: String?) = delegate.handleShowImage(file)
     override fun onSetTimer(msecs: Int) = delegate.handleSetTimer(msecs)
@@ -221,18 +222,16 @@ class QSPLibImpl(
     override fun onSaveGameStatus(file: String?) =
         delegate.handleSaveGameStatus(file, ::saveGameState)
 
-
-    private fun loadUIConfiguration() {
+    private fun loadUIConfiguration(isNewDesc: Boolean) =
         gameInterface.setUIConfig(
             LibUIConfig(
                 isNoSave = getNumVarValue("NOSAVE", 0) != 0L,
                 isUseHtml = getNumVarValue("USEHTML", 0) != 0L,
-                isYesScroll = getNumVarValue("DISABLESCROLL", 0) == 0L,
+                isYesScroll = getNumVarValue("DISABLESCROLL", 0) == 0L && !isNewDesc,
                 fontSize = getNumVarValue("FSIZE", 0).toInt(),
                 backColor = getNumVarValue("BCOLOR", 0).toInt(),
                 fontColor = getNumVarValue("FCOLOR", 0).toInt(),
                 linkColor = getNumVarValue("LCOLOR", 0).toInt(),
             )
         )
-    }
 }
