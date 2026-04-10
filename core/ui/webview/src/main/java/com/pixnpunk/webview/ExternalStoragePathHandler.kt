@@ -1,4 +1,4 @@
-package com.pixnpunk.game.presentation
+package com.pixnpunk.webview
 
 import android.content.Context
 import android.webkit.WebResourceResponse

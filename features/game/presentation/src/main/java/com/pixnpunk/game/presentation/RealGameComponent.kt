@@ -1,9 +1,7 @@
 package com.pixnpunk.game.presentation
 
-import android.content.Intent
 import android.net.Uri
 import androidx.core.net.toUri
-import androidx.webkit.WebViewAssetLoader
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
 import com.arkivanov.decompose.router.slot.ChildSlot
@@ -52,7 +50,6 @@ import org.koin.core.parameter.parametersOf
 
 class RealGameComponent(
     private val componentContext: ComponentContext,
-    private val onStartActivity: (Intent) -> Unit,
     private val onFinishActivity: () -> Unit,
     private val gameId: Long = -1L,
     private val gameTitle: String = "Title",
@@ -84,21 +81,6 @@ class RealGameComponent(
             started = SharingStarted.Eagerly,
             initialValue = settingsRepository.currentSettings
         )
-
-    private val gameWebViewClient by lazy {
-        GameWebViewClient(
-            assetLoader =
-                WebViewAssetLoader.Builder()
-                    .addPathHandler(
-                        "/game_files/",
-                        ExternalStoragePathHandler(get(), gameDirUriBox)
-                    )
-                    .build(),
-            isEnableAutoscroll = settingsState.value.isYesScroll,
-            onExecValue = ::onExecValue,
-            onStartActivity = onStartActivity
-        )
-    }
 
     private val store =
         instanceKeeper.getStore {
@@ -143,8 +125,9 @@ class RealGameComponent(
         ) { _, ctx ->
             RealExtraComponent(
                 componentContext = ctx,
-                gameWebViewClient = gameWebViewClient,
-                settingsState = settingsState
+                settingsState = settingsState,
+                gameDirUriBox = gameDirUriBox,
+                onExecValue = ::onExecValue
             )
         }
 
@@ -163,8 +146,9 @@ class RealGameComponent(
 
     override val mainComponent: MainComponent = RealMainComponent(
         componentContext = childContext("MainComponent"),
-        gameWebViewClient = gameWebViewClient,
-        settingsState = settingsState
+        settingsState = settingsState,
+        gameDirUriBox = gameDirUriBox,
+        onExecValue = ::onExecValue
     )
 
     fun onSaveFileResult(fileUri: Uri) {

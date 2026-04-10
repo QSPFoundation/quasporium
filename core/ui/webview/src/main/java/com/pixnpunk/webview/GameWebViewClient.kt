@@ -1,4 +1,4 @@
-package com.pixnpunk.game.presentation
+package com.pixnpunk.webview
 
 import android.content.Intent
 import android.net.Uri
@@ -13,7 +13,7 @@ import com.pixnpunk.utils.HtmlUtil.isContainsHtmlTags
 import com.pixnpunk.utils.HtmlUtil.removeHtmlTags
 import kotlin.contracts.ExperimentalContracts
 
-internal class GameWebViewClient(
+class GameWebViewClient(
     private val assetLoader: WebViewAssetLoader,
     private val isEnableAutoscroll: Boolean,
     private val onExecValue: (String) -> Unit,
@@ -65,7 +65,7 @@ internal class GameWebViewClient(
                 (function() { 
                   window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); 
                 })();
-            """.trimIndent(),
+                """.trimIndent(),
                 null
             )
         }

@@ -1,6 +1,5 @@
 package com.pixnpunk.main.presentation
 
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
@@ -17,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.fromHtml
 import com.pixnpunk.main.presentation.model.ParsedActionItem
+import com.pixnpunk.webview.GameWebView
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,14 +35,18 @@ fun MainContent(
         topBar = topAppBar,
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
-        if (!state.isActionsVis || !state.actions.isNotEmpty()) {
-            MainContentWebView(
-                modifier = Modifier.padding(paddingValues),
-                mainDesc = state.mainDesc,
-                backColor = settings.backColor,
-                paddingValues = PaddingValues(),
-                setupWebClient = component::getDefaultWebClient
-            )
+        if (!state.isActionsVis || state.actions.isEmpty()) {
+                GameWebView(
+                    modifier = Modifier
+                        .padding(paddingValues)
+                        .fillMaxSize(),
+                    htmlContent = state.mainDesc,
+                    backColor = settings.backColor,
+                    isVideoMute = settings.isVideoMute,
+                    isEnableAutoscroll = settings.isYesScroll,
+                    gameDirUriBox = component.gameDirUriBox,
+                    onExecValue = component.onExecValue
+                )
         } else {
             val parsedActions = remember(state.actions) {
                 state.actions.map { item ->
@@ -69,11 +73,16 @@ fun MainContent(
                     !lazyStaggeredGridState.canScrollBackward
                             && !lazyStaggeredGridState.canScrollForward
             ) { sheetValues ->
-                MainContentWebView(
-                    mainDesc = state.mainDesc,
+                GameWebView(
+                    modifier = Modifier
+                        .padding(sheetValues)
+                        .fillMaxSize(),
+                    htmlContent = state.mainDesc,
                     backColor = settings.backColor,
-                    paddingValues = sheetValues,
-                    setupWebClient = { component.getDefaultWebClient(it) }
+                    isVideoMute = settings.isVideoMute,
+                    isEnableAutoscroll = settings.isYesScroll,
+                    gameDirUriBox = component.gameDirUriBox,
+                    onExecValue = component.onExecValue
                 )
             }
         }
