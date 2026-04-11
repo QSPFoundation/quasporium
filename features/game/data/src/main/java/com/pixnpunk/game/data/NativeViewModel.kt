@@ -151,7 +151,8 @@ class NativeViewModel(
         updateSettingsJob = viewModelScope.launch {
             settingsRepository.settingsFlow.combine(gameUIConfFlow) { appSet, libSet ->
                 appSet.copy(
-                    isYesScroll = libSet.isYesScroll,
+                    isYesScrollMain = libSet.isYesScrollMain,
+                    isYesScrollExtra = libSet.isYesScrollExtra,
                     isNoSave = libSet.isNoSave,
                     isUseHtml = libSet.isUseHtml,
                     textColor = if (!appSet.isTextColorOverride && libSet.fontColor != 0) {

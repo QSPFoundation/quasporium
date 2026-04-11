@@ -37,7 +37,9 @@ data class SettingsEntity(
     @Transient
     val binaryPref: BinaryPrefFormat = BinaryPrefFormat.SI,
     @Transient
-    val isYesScroll: Boolean = true,
+    val isYesScrollMain: Boolean = true,
+    @Transient
+    val isYesScrollExtra: Boolean = true,
     @Transient
     val isNoSave: Boolean = false,
     @Transient

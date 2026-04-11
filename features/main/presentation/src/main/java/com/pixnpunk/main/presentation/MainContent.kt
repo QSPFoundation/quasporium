@@ -82,7 +82,7 @@ fun MainContent(
             htmlContent = state.mainDesc,
             backColor = settings.backColor,
             isVideoMute = settings.isVideoMute,
-            isEnableAutoscroll = settings.isYesScroll,
+            isEnableAutoscroll = settings.isYesScrollMain,
             gameDirUriBox = component.gameDirUriBox,
             onExecValue = component.onExecValue
         )

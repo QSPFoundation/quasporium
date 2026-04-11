@@ -47,7 +47,7 @@ fun ExtraContent(
             htmlContent = state.extraDesc,
             backColor = settings.backColor,
             isVideoMute = settings.isVideoMute,
-            isEnableAutoscroll = settings.isYesScroll,
+            isEnableAutoscroll = settings.isYesScrollExtra,
             gameDirUriBox = component.gameDirUriBox,
             onExecValue = component.onExecValue
         )
