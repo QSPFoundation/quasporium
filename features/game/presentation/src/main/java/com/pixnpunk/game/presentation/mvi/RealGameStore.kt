@@ -4,6 +4,7 @@ import com.arkivanov.mvikotlin.core.store.SimpleBootstrapper
 import com.arkivanov.mvikotlin.core.store.Store
 import com.arkivanov.mvikotlin.core.store.StoreFactory
 import com.pixnpunk.dto.SettingsEntity
+import com.pixnpunk.game.data.GameNativeEngine
 import com.pixnpunk.utils.DirUtil.isGameDirIsInternal
 import kotlinx.coroutines.flow.StateFlow
 import org.koin.core.component.KoinComponent
@@ -11,6 +12,7 @@ import org.koin.core.component.get
 
 class RealGameStore(
     private val storeFactory: StoreFactory,
+    private val gameNativeEngine: GameNativeEngine,
     private val settingsState: StateFlow<SettingsEntity>,
     private val gameId: Long,
     private val gameTitle: String,
@@ -38,8 +40,10 @@ class RealGameStore(
             ),
             executorFactory = {
                 GameExecutor(
-                    get(), get(),
-                    settingsState, get()
+                    get(),
+                    gameNativeEngine,
+                    settingsState,
+                    get()
                 )
             },
             reducer = GameReducer

@@ -2,7 +2,7 @@ package com.pixnpunk.main.presentation.mvi
 
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
 import com.pixnpunk.dto.SettingsEntity
-import com.pixnpunk.game.data.NativeViewModel
+import com.pixnpunk.game.data.GameNativeEngine
 import com.pixnpunk.game.domain.model.LibTypeWindow
 import com.pixnpunk.main.presentation.mvi.MainStore.Message.UpdateActions
 import com.pixnpunk.main.presentation.mvi.MainStore.Message.UpdateMainDesc
@@ -18,13 +18,13 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 
 class MainExecutor(
-    private val nativeProxy: NativeViewModel,
+    private val gameNativeEngine: GameNativeEngine,
     private val settingsState: StateFlow<SettingsEntity>
 ) : CoroutineExecutor<MainStore.Intent, MainStore.Action, MainStore.State, MainStore.Message, MainStore.Label>() {
 
     override fun executeIntent(intent: MainStore.Intent) {
         when (intent) {
-            is MainStore.Intent.ActionClick -> nativeProxy.onActionClicked(intent.index)
+            is MainStore.Intent.ActionClick -> gameNativeEngine.onActionClicked(intent.index)
         }
     }
 
@@ -32,7 +32,7 @@ class MainExecutor(
         when (action) {
             is MainStore.Action.StartActionsVisFlow ->
                 scope.launch(Dispatchers.IO) {
-                    nativeProxy.gameElementVis
+                    gameNativeEngine.gameElementVis
                         .distinctUntilChanged()
                         .filter { it.first == LibTypeWindow.ACTS }
                         .collect { scope.launch { dispatch(UpdateVisActions(it.second)) } }
@@ -40,7 +40,7 @@ class MainExecutor(
 
             is MainStore.Action.StartContentFlow ->
                 scope.launch(Dispatchers.IO) {
-                    nativeProxy.gameStateFlow
+                    gameNativeEngine.gameStateFlow
                         .combine(settingsState) { state, settings -> state to settings }
                         .collect { (state, settings) ->
                             scope.launch {

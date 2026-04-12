@@ -14,7 +14,7 @@ import com.pixnpunk.database.model.SaveSlotEntity
 import com.pixnpunk.dto.InputState
 import com.pixnpunk.dto.LibSaveItem
 import com.pixnpunk.dto.SettingsEntity
-import com.pixnpunk.game.data.NativeViewModel
+import com.pixnpunk.game.data.GameNativeEngine
 import com.pixnpunk.game.domain.model.LibReturnValue
 import com.pixnpunk.game.domain.model.LibTypeDialog
 import com.pixnpunk.game.domain.model.LibTypePopup
@@ -37,7 +37,7 @@ import kotlin.uuid.Uuid
 
 internal class GameExecutor(
     private val appContext: Context,
-    private val service: NativeViewModel,
+    private val gameNativeEngine: GameNativeEngine,
     private val settingsState: StateFlow<SettingsEntity>,
     private val saveSlotDao: SaveSlotDao
 ) : CoroutineExecutor<GameStore.Intent, GameStore.Action, GameStore.State, GameStore.Message, GameStore.Label>() {
@@ -45,14 +45,14 @@ internal class GameExecutor(
     @OptIn(ExperimentalContracts::class, ExperimentalUuidApi::class)
     override fun executeIntent(intent: GameStore.Intent) {
         when (intent) {
-            is GameStore.Intent.OnDismissDialog -> service.putReturnValue(null)
+            is GameStore.Intent.OnDismissDialog -> gameNativeEngine.putReturnValue(null)
 
             is GameStore.Intent.OnLoadFile ->
                 if (state().isUserChooseSave) {
                     dispatch(GameStore.Message.UpdateIsUserChooseSave(false))
-                    service.onLoadFile(intent.fileUri)
+                    gameNativeEngine.onLoadFile(intent.fileUri)
                 } else {
-                    service.putReturnValue(
+                    gameNativeEngine.putReturnValue(
                         LibReturnValue(
                             filePath = intent.fileUri.toString()
                         )
@@ -62,9 +62,9 @@ internal class GameExecutor(
             is GameStore.Intent.OnSaveFile ->
                 if (state().isUserChooseSave) {
                     dispatch(GameStore.Message.UpdateIsUserChooseSave(false))
-                    service.onSaveFile(intent.fileUri)
+                    gameNativeEngine.onSaveFile(intent.fileUri)
                 } else {
-                    service.putReturnValue(
+                    gameNativeEngine.putReturnValue(
                         LibReturnValue(
                             filePath = intent.fileUri.toString()
                         )
@@ -74,13 +74,13 @@ internal class GameExecutor(
             is GameStore.Intent.OnCorruptFile -> {
                 dispatch(GameStore.Message.UpdateIsUserChooseSave(false))
                 if (intent.isCancelUser) {
-                    service.putReturnValue(null)
+                    gameNativeEngine.putReturnValue(null)
                 } else {
-                    service.putReturnValue(LibReturnValue())
+                    gameNativeEngine.putReturnValue(LibReturnValue())
                 }
             }
 
-            is GameStore.Intent.OnExecCode -> scope.launch { service.onCodeExec(intent.codeToExec) }
+            is GameStore.Intent.OnExecCode -> scope.launch { gameNativeEngine.onCodeExec(intent.codeToExec) }
 
             is GameStore.Intent.CleanMainSavedDesc ->
                 dispatch(
@@ -111,7 +111,7 @@ internal class GameExecutor(
                 )
 
             is GameStore.Intent.OnSelectMenuItem ->
-                service.putReturnValue(
+                gameNativeEngine.putReturnValue(
                     LibReturnValue(dialogNumValue = intent.index)
                 )
 
@@ -162,10 +162,10 @@ internal class GameExecutor(
             is GameStore.Intent.OnInputValue ->
                 when (intent.state) {
                     InputState.INPUT_WITH_MESSAGE_AREA ->
-                        service.onUseInputArea(intent.inputString)
+                        gameNativeEngine.onUseInputArea(intent.inputString)
 
                     InputState.INPUT_WITH_MESSAGE_BOX ->
-                        service.putReturnValue(
+                        gameNativeEngine.putReturnValue(
                             LibReturnValue(dialogTextValue = intent.inputString)
                         )
 
@@ -216,14 +216,14 @@ internal class GameExecutor(
                                     }
                                 }
                                 scope.launch {
-                                    service.onSaveFile(newSaveFile.uri)
+                                    gameNativeEngine.onSaveFile(newSaveFile.uri)
                                     publish(GameStore.Label.ShowSnackBar("Game saved!"))
                                 }
                             }
                         }
                     }
 
-                    else -> service.onCodeExec(intent.inputString)
+                    else -> gameNativeEngine.onCodeExec(intent.inputString)
                 }
         }
     }
@@ -232,7 +232,7 @@ internal class GameExecutor(
         when (action) {
             is GameStore.Action.StartGameStateFlow ->
                 scope.launch(Dispatchers.IO) {
-                    service.gameStateFlow.collect { state ->
+                    gameNativeEngine.gameStateFlow.collect { state ->
                         scope.launch {
                             dispatch(GameStore.Message.UpdateIsGameRunning(state.gameRunning))
 
@@ -305,7 +305,7 @@ internal class GameExecutor(
 
             is GameStore.Action.StartGameDialogFlow ->
                 scope.launch {
-                    service.gameDialogFlow.collect { items ->
+                    gameNativeEngine.gameDialogFlow.collect { items ->
                         scope.launch {
                             publish(
                                 ShowDialog(
@@ -331,7 +331,7 @@ internal class GameExecutor(
 
             is GameStore.Action.StartGameElementVisFlow ->
                 scope.launch(Dispatchers.IO) {
-                    service.gameElementVis
+                    gameNativeEngine.gameElementVis
                         .distinctUntilChanged()
                         .filterNot { (window, _) -> window == LibTypeWindow.ACTS }
                         .collect { (window, bool) ->
@@ -359,7 +359,7 @@ internal class GameExecutor(
 
             is GameStore.Action.StartGamePopupFlow ->
                 scope.launch(Dispatchers.IO) {
-                    service.gamePopupFlow.collect { type ->
+                    gameNativeEngine.gamePopupFlow.collect { type ->
                         scope.launch {
                             when (type) {
                                 LibTypePopup.POPUP_SAVE -> publish(ShowSaveFilePicker)

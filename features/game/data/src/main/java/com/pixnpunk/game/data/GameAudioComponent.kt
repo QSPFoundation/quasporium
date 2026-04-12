@@ -18,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap
 class GameAudioComponent(
     private val context: Context,
     private val logger: AppLogger
-) : InstanceKeeper.Instance, AudioPlayer {
+) : AudioPlayer, InstanceKeeper.Instance {
 
     private val playerScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private val mediaPlayers = ConcurrentHashMap<String, MediaPlayer>()

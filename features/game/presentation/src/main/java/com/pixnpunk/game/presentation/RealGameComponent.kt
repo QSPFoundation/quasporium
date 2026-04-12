@@ -29,7 +29,7 @@ import com.pixnpunk.dto.OutputStateValue
 import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.extra.presentation.RealExtraComponent
 import com.pixnpunk.game.data.GameAudioComponent
-import com.pixnpunk.game.data.NativeViewModel
+import com.pixnpunk.game.data.GameNativeEngine
 import com.pixnpunk.game.domain.model.LibTypeDialog
 import com.pixnpunk.game.domain.repository.AudioPlayer
 import com.pixnpunk.game.presentation.mvi.GameStore
@@ -45,7 +45,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.serialization.serializer
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
-import org.koin.core.component.inject
 import org.koin.core.parameter.parametersOf
 
 class RealGameComponent(
@@ -64,7 +63,7 @@ class RealGameComponent(
             get<GameAudioComponent>()
         }
 
-    private val supervisorService: NativeViewModel by inject()
+    private val engine = instanceKeeper.getOrCreate("NativeGameEngine") { get<GameNativeEngine>() }
 
     private val dialogNavigation = SlotNavigation<DialogsConfig>()
     private val extraNavigation = SlotNavigation<Unit>()
@@ -90,6 +89,7 @@ class RealGameComponent(
                 gameDirUriBox = gameDirUriBox,
                 gameFileUriBox = gameFileUriBox,
                 storeFactory = DefaultStoreFactory(),
+                gameNativeEngine = engine,
                 settingsState = settingsState
             ).create()
         }
@@ -125,6 +125,7 @@ class RealGameComponent(
         ) { _, ctx ->
             RealExtraComponent(
                 componentContext = ctx,
+                gameNativeEngine = engine,
                 settingsState = settingsState,
                 gameDirUriBox = gameDirUriBox,
                 onExecValue = ::onExecValue
@@ -140,12 +141,14 @@ class RealGameComponent(
         ) { _, ctx ->
             RealObjectComponent(
                 componentContext = ctx,
+                gameNativeEngine = engine,
                 settingsState = settingsState
             )
         }
 
     override val mainComponent: MainComponent = RealMainComponent(
         componentContext = childContext("MainComponent"),
+        gameNativeEngine = engine,
         settingsState = settingsState,
         gameDirUriBox = gameDirUriBox,
         onExecValue = ::onExecValue
@@ -169,7 +172,7 @@ class RealGameComponent(
 
     private fun onConfirmMessage(value: OutputStateValue) {
         when (value.state) {
-            OutputState.OUTPUT_RESTART_GAME -> supervisorService.onRestartGame()
+            OutputState.OUTPUT_RESTART_GAME -> engine.onRestartGame()
 
             OutputState.OUTPUT_LIST_MENU ->
                 store.accept(GameStore.Intent.OnSelectMenuItem(value.menuIndex))
@@ -342,7 +345,7 @@ class RealGameComponent(
     override fun doRunGame() {
         val currState = store.state
         if (!currState.isGameRunning) {
-            supervisorService.startService(
+            engine.startService(
                 settingsRepository,
                 currState.gameId,
                 currState.gameTitle,

@@ -3,7 +3,7 @@ package com.pixnpunk.extra.presentation.mvi
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
 import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.extra.presentation.mvi.ExtraStore.Message.UpdateExtraDesc
-import com.pixnpunk.game.data.NativeViewModel
+import com.pixnpunk.game.data.GameNativeEngine
 import com.pixnpunk.utils.HtmlUtil.appendPageTemplate
 import com.pixnpunk.utils.HtmlUtil.getCleanHtmlAndMedia
 import com.pixnpunk.utils.HtmlUtil.getCleanHtmlRemMedia
@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
 class ExtraExecutor(
-    private val service: NativeViewModel,
+    private val gameNativeEngine: GameNativeEngine,
     private val settingsState: StateFlow<SettingsEntity>,
 ) : CoroutineExecutor<ExtraStore.Intent, ExtraStore.Action, ExtraStore.State, ExtraStore.Message, ExtraStore.Label>() {
 
@@ -21,7 +21,7 @@ class ExtraExecutor(
         when (action) {
             is ExtraStore.Action.StartExtraReceiveFlow -> {
                 scope.launch(Dispatchers.IO) {
-                    service.gameStateFlow
+                    gameNativeEngine.gameStateFlow
                         .combine(settingsState) { state, settings -> state to settings }
                         .collect { (state, settings) ->
                             scope.launch {

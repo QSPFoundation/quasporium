@@ -5,6 +5,7 @@ import com.arkivanov.mvikotlin.core.instancekeeper.getStore
 import com.arkivanov.mvikotlin.extensions.coroutines.stateFlow
 import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
 import com.pixnpunk.dto.SettingsEntity
+import com.pixnpunk.game.data.GameNativeEngine
 import com.pixnpunk.main.presentation.mvi.MainStore
 import com.pixnpunk.main.presentation.mvi.RealMainStore
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -13,6 +14,7 @@ import org.koin.core.component.KoinComponent
 
 class RealMainComponent(
     private val componentContext: ComponentContext,
+    private val gameNativeEngine: GameNativeEngine,
     override val settingsState: StateFlow<SettingsEntity>,
     override val gameDirUriBox: String,
     override val onExecValue: (String) -> Unit
@@ -21,6 +23,7 @@ class RealMainComponent(
     private val store = instanceKeeper.getStore {
         RealMainStore(
             storeFactory = DefaultStoreFactory(),
+            gameNativeEngine = gameNativeEngine,
             stateKeeper = stateKeeper,
             settingsState = settingsState
         ).create()

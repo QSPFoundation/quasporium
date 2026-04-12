@@ -3,11 +3,12 @@ package com.pixnpunk.`object`.presentation.mvi
 import com.arkivanov.mvikotlin.core.store.SimpleBootstrapper
 import com.arkivanov.mvikotlin.core.store.Store
 import com.arkivanov.mvikotlin.core.store.StoreFactory
+import com.pixnpunk.game.data.GameNativeEngine
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.get
 
 class RealObjectStore(
-    private val storeFactory: StoreFactory
+    private val storeFactory: StoreFactory,
+    private val gameNativeEngine: GameNativeEngine
 ) : KoinComponent {
     internal fun create(): ObjectStore = ObjectImpl()
 
@@ -16,7 +17,7 @@ class RealObjectStore(
             name = "ObjectStore",
             initialState = ObjectStore.State(),
             bootstrapper = SimpleBootstrapper(ObjectStore.Action.StartObjectsFlow),
-            executorFactory = { ObjectExecutor(get()) },
+            executorFactory = { ObjectExecutor(gameNativeEngine) },
             reducer = ObjectReducer
         )
 }
