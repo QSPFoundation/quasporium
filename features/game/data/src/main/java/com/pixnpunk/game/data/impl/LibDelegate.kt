@@ -130,6 +130,13 @@ class LibDelegate(
         }
     }
 
+    private fun resolveImagePath(gameDir: DocumentFile, imagePath: String): String {
+        if (imagePath.isBlank()) return imagePath
+        val normalizedPath = imagePath.getFilename().normalizeContentPath()
+        val file = gameDir.child(context, normalizedPath)
+        return if (file.isWritableFile()) file.uri.toString() else imagePath
+    }
+
     fun buildGameItemsList(rawItems: List<LibRawItem>): List<LibGenItem> {
         val gameDir = currGameDir
         if (!gameDir.isWritableDir()) return emptyList()
@@ -141,7 +148,13 @@ class LibDelegate(
                 var text = item.text
 
                 if (text.contains("<img")) {
-                    imagePath = resolveImageFromHtml(gameDir, text, imagePath)
+                    val file = gameDir.child(
+                        context,
+                        text.getSrcDir()
+                    )
+                    if (file.isWritableFile()) {
+                        imagePath = file.uri.toString()
+                    }
                     text = text.removeImgTags()
                 }
 
@@ -161,23 +174,6 @@ class LibDelegate(
                     gameDir.child(context, it.imagePath)?.uri.toString()
                 )
             }
-    }
-
-    private fun resolveImagePath(gameDir: DocumentFile, imagePath: String): String {
-        if (imagePath.isBlank()) return imagePath
-        val normalizedPath = imagePath.getFilename().normalizeContentPath()
-        val file = gameDir.child(context, normalizedPath)
-        return if (file.isWritableFile()) file.uri.toString() else imagePath
-    }
-
-    private fun resolveImageFromHtml(
-        gameDir: DocumentFile,
-        text: String,
-        fallbackImagePath: String
-    ): String {
-        val htmlPath = if (!text.isContainsHtmlTags()) text else text.getSrcDir()
-        val file = gameDir.child(context, htmlPath)
-        return if (file.isWritableFile()) file.uri.toString() else fallbackImagePath
     }
 
     fun handleShowImage(path: String?) {
