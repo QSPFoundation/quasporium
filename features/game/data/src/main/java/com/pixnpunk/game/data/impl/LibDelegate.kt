@@ -24,6 +24,18 @@ import com.pixnpunk.utils.HtmlUtil.isContainsHtmlTags
 import com.pixnpunk.utils.HtmlUtil.removeImgTags
 import com.pixnpunk.utils.PathUtil.getFilename
 import com.pixnpunk.utils.PathUtil.normalizeContentPath
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.newSingleThreadContext
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
@@ -38,66 +50,81 @@ class LibDelegate(
     private val initLib: () -> Unit,
     private val terminateLib: () -> Unit,
 ) {
-    val libLock = ReentrantLock()
-    private var libThread: Thread? = null
-    val libQueue: ArrayBlockingQueue<Runnable> = ArrayBlockingQueue(1)
+    @OptIn(DelicateCoroutinesApi::class, ExperimentalCoroutinesApi::class)
+    private val libDispatcher = newSingleThreadContext("NativeLibThread")
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val libScope = CoroutineScope(libDispatcher + SupervisorJob())
+    @Volatile private var nativeThread: Thread? = null
 
-    @Volatile lateinit var libHandler: Handler
+    private val libMutex = Mutex()
+    private val libChannel = Channel<Runnable>(Channel.UNLIMITED)
+
     @Volatile var libThreadInit = false
     @Volatile var gameStartTime: Long = 0L
     @Volatile var lastMsCountCallTime: Long = 0L
 
     var gameState: LibGameState = LibGameState()
-    var returnValueFuture: CompletableFuture<LibReturnValue> = CompletableFuture()
+    var returnValueDeferred = CompletableDeferred<LibReturnValue>()
 
     val currGameDir: DocumentFile?
         get() = fromUri(context, gameState.gameDirPath.toUri())
 
     val mutableMenuItemList: MutableList<LibGenItem> = mutableListOf()
 
-    fun startLibThread(threadName: String) {
-        libThread = thread(name = threadName) {
+    fun startLibThread() {
+        libScope.launch {
+            nativeThread = Thread.currentThread()
             initLib()
-            Looper.prepare()
-            libHandler = Handler(Looper.myLooper()!!)
             libThreadInit = true
-            while (!libQueue.isEmpty()) {
-                libQueue.poll()?.run()
+
+            for (task in libChannel) {
+                libMutex.withLock { task.run() }
             }
-            Looper.loop()
-            terminateLib()
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     fun stopLibThread() {
-        if (libThreadInit) {
-            libHandler.looper.quitSafely()
-            libThreadInit = false
+        libThreadInit = false
+        libChannel.close()
+        libScope.launch {
+            terminateLib()
+            libScope.cancel()
+            libDispatcher.close()
         }
-        libThread?.interrupt()
-        libThread = null
+    }
+
+    fun executeOnLibThread(block: () -> Unit) {
+        if (Thread.currentThread() == nativeThread) {
+            block()
+        } else {
+            if (libThreadInit) {
+                returnValueDeferred.cancel()
+                libScope.launch { block() }
+            } else {
+                libChannel.trySend(Runnable { block() })
+            }
+        }
     }
 
     fun runActionOnLibThread(runnable: Runnable) {
-        if (libThreadInit) {
-            returnValueFuture.cancel(true)
-            libHandler.post {
-                libLock.withLock { runnable.run() }
-            }
+        if (!libThreadInit) {
+            libChannel.trySend(runnable)
         } else {
-            libQueue.offer(runnable)
+            returnValueDeferred.cancel()
+            libScope.launch { libMutex.withLock { runnable.run() } }
         }
     }
 
     fun runCounterOnLibThread(runnable: Runnable) {
-        if (!libThreadInit || libLock.isLocked) return
-
-        libHandler.post {
-            if (libLock.tryLock()) {
+        if (!libThreadInit || libMutex.isLocked) return
+        libScope.launch {
+            if (libMutex.tryLock()) {
                 try {
                     runnable.run()
-                } finally {
-                    libLock.unlock()
+                }
+                finally {
+                    libMutex.unlock()
                 }
             }
         }
@@ -165,12 +192,12 @@ class LibDelegate(
 
     fun handleShowMessage(message: String?) {
         runCatching {
-            returnValueFuture = CompletableFuture()
+            returnValueDeferred = CompletableDeferred()
             gameInterface.showLibDialog(
                 dialogType = LibTypeDialog.DIALOG_MESSAGE,
                 inputString = message.orEmpty()
             )
-            returnValueFuture.get()
+            runBlocking { returnValueDeferred.await() }
         }
     }
 
@@ -227,23 +254,23 @@ class LibDelegate(
 
     fun handleInputBox(prompt: String?): String {
         return runCatching {
-            returnValueFuture = CompletableFuture()
+            returnValueDeferred = CompletableDeferred()
             gameInterface.showLibDialog(
                 dialogType = LibTypeDialog.DIALOG_INPUT_BOX,
                 inputString = prompt.orEmpty()
             )
-            returnValueFuture.get().dialogTextValue
+            runBlocking { returnValueDeferred.await() }.dialogTextValue
         }.getOrDefault("")
     }
 
     fun handleShowMenu(items: List<LibGenItem>): Int =
         runCatching {
-            returnValueFuture = CompletableFuture()
+            returnValueDeferred = CompletableDeferred()
             gameInterface.showLibDialog(
                 dialogType = LibTypeDialog.DIALOG_MENU,
                 menuItems = buildGameMenuList(items)
             )
-            returnValueFuture.get().dialogNumValue
+            runBlocking { returnValueDeferred.await() }.dialogNumValue
         }.getOrDefault(-1)
 
     fun handleOpenGameStatus(
@@ -251,13 +278,13 @@ class LibDelegate(
         loadGameState: (String) -> Unit
     ) {
         runCatching {
-            returnValueFuture = CompletableFuture()
+            returnValueDeferred = CompletableDeferred()
             if (filename.isNullOrBlank()) {
                 gameInterface.requestReceiveFile()
             } else {
                 gameInterface.requestReceiveFile(filename)
             }
-            returnValueFuture.get().filePath
+            runBlocking { returnValueDeferred.await() }.filePath
         }.onSuccess { path ->
             if (path.isNotEmpty()) {
                 gameInterface.doWithCounterDisabled { loadGameState(path) }
@@ -281,9 +308,9 @@ class LibDelegate(
     fun handleOpenGameStatus(
         filename: String
     ) = runCatching {
-        returnValueFuture = CompletableFuture()
+        returnValueDeferred = CompletableDeferred()
         gameInterface.requestReceiveFile(filename)
-        returnValueFuture.get().filePath
+        runBlocking { returnValueDeferred.await() }.filePath
     }.onFailure { error ->
         val cause = (error as? ExecutionException)?.cause ?: error
         if (cause !is GameInterface.UserCancelledException) {
@@ -299,13 +326,13 @@ class LibDelegate(
         saveGameState: (String) -> Unit
     ) {
         runCatching {
-            returnValueFuture = CompletableFuture()
+            returnValueDeferred = CompletableDeferred()
             if (filename.isNullOrBlank()) {
                 gameInterface.requestCreateFile()
             } else {
                 gameInterface.requestCreateFile(filename)
             }
-            returnValueFuture.get().filePath
+            runBlocking { returnValueDeferred.await() }.filePath
         }.onSuccess { path ->
             if (path.isNotEmpty()) {
                 saveGameState(path)

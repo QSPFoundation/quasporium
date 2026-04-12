@@ -19,6 +19,7 @@ import com.pixnpunk.game.domain.repository.GameInterface
 import com.pixnpunk.game.domain.repository.LibIProxy
 import com.pixnpunk.utils.FileUtil.isWritableFile
 import com.pixnpunk.utils.ThreadUtil.isSameThread
+import kotlinx.coroutines.CompletableDeferred
 import java.util.concurrent.CompletableFuture
 import kotlin.contracts.ExperimentalContracts
 
@@ -38,9 +39,9 @@ class QSLibSDHImpl(
         get() = delegate.gameState
         set(value) { delegate.gameState = value }
 
-    override var returnValueFuture: CompletableFuture<LibReturnValue>
-        get() = delegate.returnValueFuture
-        set(value) { delegate.returnValueFuture = value }
+    override var returnValueDeferred: CompletableDeferred<LibReturnValue>
+        get() = delegate.returnValueDeferred
+        set(value) { delegate.returnValueDeferred = value }
 
     private inline fun executeQspCommand(block: () -> Boolean): Boolean =
         if (block()) true else { showLastLibError(); false }
@@ -89,7 +90,7 @@ class QSLibSDHImpl(
             getObjects().orEmpty().filterNotNull().map { it.toLibRawItem() }
         )
 
-    override fun startLibThread() = delegate.startLibThread("libNDKQSP")
+    override fun startLibThread() = delegate.startLibThread()
     override fun stopLibThread() = delegate.stopLibThread()
 
     override fun runGame(
@@ -129,29 +130,23 @@ class QSLibSDHImpl(
     }
 
     override fun loadGameState(path: String) {
-        if (!isSameThread(delegate.libHandler.looper.thread)) {
-            delegate.runActionOnLibThread { loadGameState(path) }
-            return
+        delegate.executeOnLibThread {
+            runCatching {
+                context.contentResolver.openFileDescriptor(path.toUri(), "r")?.use {
+                    executeQspCommand { openSavedGameFromFD(it.fd, true) }
+                }
+            }.onFailure {  }
         }
-
-        runCatching {
-            context.contentResolver.openFileDescriptor(path.toUri(), "r")?.use {
-                executeQspCommand { openSavedGameFromFD(it.fd, true) }
-            }
-        }.onFailure {  }
     }
 
     override fun saveGameState(path: String) {
-        if (!isSameThread(delegate.libHandler.looper.thread)) {
-            delegate.runActionOnLibThread { saveGameState(path) }
-            return
+        delegate.executeOnLibThread {
+            runCatching {
+                context.contentResolver.openFileDescriptor(path.toUri(), "w")?.use {
+                    executeQspCommand { saveGameByFD(it.fd, false) }
+                }
+            }.onFailure { }
         }
-
-        runCatching {
-            context.contentResolver.openFileDescriptor(path.toUri(), "w")?.use {
-                executeQspCommand { saveGameByFD(it.fd, false) }
-            }
-        }.onFailure { }
     }
 
     override fun onActionClicked(index: Int) {

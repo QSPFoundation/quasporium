@@ -21,6 +21,7 @@ import com.pixnpunk.utils.FileUtil.isWritableFile
 import com.pixnpunk.utils.FileUtil.readFileContents
 import com.pixnpunk.utils.FileUtil.writeFileContents
 import com.pixnpunk.utils.ThreadUtil.isSameThread
+import kotlinx.coroutines.CompletableDeferred
 import java.util.concurrent.CompletableFuture
 import kotlin.contracts.ExperimentalContracts
 
@@ -40,9 +41,9 @@ class QSPLibImpl(
         get() = delegate.gameState
         set(value) { delegate.gameState = value }
 
-    override var returnValueFuture: CompletableFuture<LibReturnValue>
-        get() = delegate.returnValueFuture
-        set(value) { delegate.returnValueFuture = value }
+    override var returnValueDeferred: CompletableDeferred<LibReturnValue>
+        get() = delegate.returnValueDeferred
+        set(value) { delegate.returnValueDeferred = value }
 
     private inline fun executeQspCommand(block: () -> Boolean): Boolean {
         return if (block()) true else {
@@ -80,7 +81,7 @@ class QSPLibImpl(
             getObjects().orEmpty().filterNotNull().map { it.toLibRawItem() }
         )
 
-    override fun startLibThread() = delegate.startLibThread("libQSP")
+    override fun startLibThread() = delegate.startLibThread()
     override fun stopLibThread() = delegate.stopLibThread()
 
     override fun runGame(
@@ -120,20 +121,18 @@ class QSPLibImpl(
     }
 
     override fun loadGameState(path: String) {
-        if (!isSameThread(delegate.libHandler.looper.thread)) {
-            delegate.runActionOnLibThread { loadGameState(path) }
-            return
+        delegate.executeOnLibThread {
+            val gameData = path.toUri().readFileContents() ?: return@executeOnLibThread
+            executeQspCommand { openSavedGameFromData(gameData, true) }
         }
-        val gameData = path.toUri().readFileContents() ?: return
-        executeQspCommand { openSavedGameFromData(gameData, true) }
     }
 
     override fun saveGameState(path: String) {
-        if (!isSameThread(delegate.libHandler.looper.thread)) {
-            delegate.runActionOnLibThread { saveGameState(path) }
-            return
+        delegate.executeOnLibThread {
+            path.toUri().writeFileContents(
+                saveGameAsData(false) ?: return@executeOnLibThread
+            )
         }
-        path.toUri().writeFileContents(saveGameAsData(false) ?: return)
     }
 
     override fun onActionClicked(index: Int) {

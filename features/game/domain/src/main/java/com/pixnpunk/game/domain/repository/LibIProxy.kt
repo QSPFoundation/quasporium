@@ -2,7 +2,7 @@ package com.pixnpunk.game.domain.repository
 
 import com.pixnpunk.game.domain.model.LibGameState
 import com.pixnpunk.game.domain.model.LibReturnValue
-import java.util.concurrent.CompletableFuture
+import kotlinx.coroutines.CompletableDeferred
 
 interface LibIProxy {
     /**
@@ -34,5 +34,5 @@ interface LibIProxy {
     fun executeCounter()
     val gameState: LibGameState
     val gameInterface: GameInterface
-    var returnValueFuture: CompletableFuture<LibReturnValue>
+    var returnValueDeferred: CompletableDeferred<LibReturnValue>
 }
