@@ -30,8 +30,8 @@ dependencies {
     implementation(project(":core:dto"))
     implementation(project(":core:network"))
 
-    implementation(project(":services:audio"))
-    implementation(project(":services:natives"))
+    implementation(project(":features:game:data"))
+    implementation(project(":features:game:domain"))
 
     implementation(project(":features:settings:data"))
 
@@ -51,13 +51,11 @@ dependencies {
     implementation(libs.androidx.compose.material.icons.extended)
     debugImplementation(libs.androidx.compose.ui.tooling)
     implementation(libs.androidx.compose.ui.tooling.preview)
-    implementation(libs.androidx.compose.ui.text.google.fonts)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation(libs.androidx.webkit)
 
     implementation(libs.storage)
 

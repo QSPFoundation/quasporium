@@ -5,7 +5,7 @@ import com.arkivanov.mvikotlin.core.store.Store
 import com.pixnpunk.dto.InputState
 import com.pixnpunk.dto.LibGenItem
 import com.pixnpunk.dto.LibSaveItem
-import com.pixnpunk.dto.LibTypeDialog
+import com.pixnpunk.game.domain.model.LibTypeDialog
 import kotlinx.serialization.Serializable
 
 sealed interface GameStore : Store<GameStore.Intent, GameStore.State, GameStore.Label> {
@@ -16,6 +16,7 @@ sealed interface GameStore : Store<GameStore.Intent, GameStore.State, GameStore.
         val isInputEnabled: Boolean = true,
         val isExecutorEnabled: Boolean = false,
         val isGameRunning: Boolean = false,
+        val isSaveDisable: Boolean = false,
 
         val isUserChooseSave: Boolean = false,
 
@@ -49,17 +50,18 @@ sealed interface GameStore : Store<GameStore.Intent, GameStore.State, GameStore.
     }
 
     sealed interface Message {
-        data class UpdateGameStatus(val isGameRunning: Boolean) : Message
         data class UpdateVisObjElement(val isObjectsEnabled: Boolean) : Message
         data class UpdateVisExtraElement(val isExtraEnabled: Boolean) : Message
         data class UpdateVisInputElement(val isInputEnabled: Boolean) : Message
-        data class UpdateExecutorStatus(val isExecutorEnabled: Boolean) : Message
+        data class UpdateExecutorStatus(val isUseExecString: Boolean) : Message
         data class UpdateIsMainDescUpdated(val isMainDescUpdated: Pair<Int, Boolean>) : Message
         data class UpdateIsExtraDescUpdated(val isExtraDescUpdated: Pair<Int, Boolean>) : Message
         data class UpdateIsObjsListUpdated(val isObjsListUpdated: Pair<Int, Boolean>) : Message
         data class UpdateIsActionsListUpdated(val isActionsListUpdated: Pair<Int, Boolean>) : Message
         data class UpdateIsUserChooseSave(val isUserChooseSave: Boolean) : Message
         data class UpdateIsGameDirInternal(val isGameDirInternal: Boolean) : Message
+        data class UpdateIsGameRunning(val isGameRunning: Boolean) : Message
+        data class UpdateIsSaveDisable(val isSaveDisable: Boolean) : Message
     }
 
     sealed interface Label {

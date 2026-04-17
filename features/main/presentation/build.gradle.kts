@@ -27,8 +27,10 @@ android {
 dependencies {
     implementation(project(":core:dto"))
     implementation(project(":core:utils"))
+    implementation(project(":core:ui:webview"))
 
-    implementation(project(":services:natives"))
+    implementation(project(":features:game:data"))
+    implementation(project(":features:game:domain"))
 
     implementation(project(":features:settings:data"))
 
@@ -40,6 +42,7 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(platform(libs.androidx.compose.bom))
 
+    implementation(libs.androidx.compose.adaptive)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.icons.extended)
     debugImplementation(libs.androidx.compose.ui.tooling)

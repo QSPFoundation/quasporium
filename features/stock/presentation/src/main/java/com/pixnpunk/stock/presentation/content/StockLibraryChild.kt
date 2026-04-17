@@ -1,5 +1,8 @@
 package com.pixnpunk.stock.presentation.content
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -43,7 +46,11 @@ fun StockLibraryChild(
         lazyPagingItems.loadState.refresh is LoadState.Error && lazyPagingItems.itemCount == 0
 
     Box(modifier = Modifier.fillMaxSize()) {
-        if (!isFirstLoad && !isInitialError) {
+        AnimatedVisibility(
+            visible = !isFirstLoad && !isInitialError,
+            enter = fadeIn(),
+            exit = fadeOut(),
+        ) {
             LazyVerticalGrid(
                 state = gridState,
                 columns = GridCells.Adaptive(minSize = 150.dp),

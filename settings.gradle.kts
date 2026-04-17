@@ -31,6 +31,9 @@ include(
     ":core:logger",
     ":core:network",
     ":core:utils",
+    ":core:notification",
+    ":core:ui",
+    ":core:ui:webview",
 
     ":features",
     ":features:details",
@@ -39,12 +42,15 @@ include(
     ":features:dialogs:presentation",
     ":features:settings",
     ":features:settings:data",
+    ":features:settings:domain",
     ":features:settings:presentation",
     ":features:stock",
     ":features:stock:data",
     ":features:stock:domain",
     ":features:stock:presentation",
     ":features:game",
+    ":features:game:data",
+    ":features:game:domain",
     ":features:game:presentation",
     ":features:main",
     ":features:main:presentation",
@@ -52,10 +58,4 @@ include(
     ":features:extra:presentation",
     ":features:object",
     ":features:object:presentation",
-
-    ":services",
-    ":services:audio",
-    ":services:natives",
-    ":services:notification"
 )
-include(":features:settings:domain")

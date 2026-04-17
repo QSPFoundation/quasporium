@@ -13,6 +13,8 @@ import androidx.core.net.toUri
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import com.anggrayudi.storage.contract.FileCreationContract
 import com.anggrayudi.storage.contract.FileCreationResult
 import com.anggrayudi.storage.contract.FilePickerResult
@@ -22,7 +24,6 @@ import com.anggrayudi.storage.file.FileFullPath
 import com.anggrayudi.storage.file.MimeType.BINARY_FILE
 import com.anggrayudi.storage.file.getAbsolutePath
 import com.arkivanov.decompose.defaultComponentContext
-import com.pixnpunk.audio.AudioPlayerViewModel
 import com.pixnpunk.game.presentation.mvi.GameStore
 import com.pixnpunk.settings.data.repository.SettingsRepository
 import org.koin.android.ext.android.get
@@ -31,9 +32,8 @@ import org.koin.core.parameter.parametersOf
 
 class GameActivity : ComponentActivity() {
 
-    private lateinit var root: RealGameComponent
+    private lateinit var rootComponent: RealGameComponent
 
-    private val audioPlayer: AudioPlayerViewModel by inject()
     private val settingsRepository: SettingsRepository by inject { parametersOf(gameId) }
 
     private val requestCreateFile =
@@ -43,18 +43,18 @@ class GameActivity : ComponentActivity() {
             runCatching {
                 when (it) {
                     is FileCreationResult.StoragePermissionDenied -> {
-                        root.onFileCorruptResult()
+                        rootComponent.onFileCorruptResult()
                     }
 
                     is FileCreationResult.CanceledByUser -> {
-                        root.onFileCorruptResult(true)
+                        rootComponent.onFileCorruptResult(true)
                     }
 
                     is FileCreationResult.Created -> {
-                        root.onSaveFileResult(it.file.uri)
+                        rootComponent.onSaveFileResult(it.file.uri)
                     }
                 }
-            }.onFailure { root.onFileCorruptResult() }
+            }.onFailure { rootComponent.onFileCorruptResult() }
         }
 
     private val requestOpenFile =
@@ -64,18 +64,18 @@ class GameActivity : ComponentActivity() {
             runCatching {
                 when (it) {
                     is FilePickerResult.StoragePermissionDenied -> {
-                        root.onFileCorruptResult()
+                        rootComponent.onFileCorruptResult()
                     }
 
                     is FilePickerResult.CanceledByUser -> {
-                        root.onFileCorruptResult(true)
+                        rootComponent.onFileCorruptResult(true)
                     }
 
                     is FilePickerResult.Picked -> {
-                        root.onLoadFileResult(it.files.first().uri)
+                        rootComponent.onLoadFileResult(it.files.first().uri)
                     }
                 }
-            }.onFailure { root.onFileCorruptResult() }
+            }.onFailure { rootComponent.onFileCorruptResult() }
         }
 
     private val gameId: Long by lazy { intent.getLongExtra("gameId", -1L) }
@@ -87,8 +87,6 @@ class GameActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
-        lifecycle.addObserver(audioPlayer)
-
         val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
         if (settingsRepository.currentSettings.isImmersModeEnabled) {
             windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
@@ -98,9 +96,8 @@ class GameActivity : ComponentActivity() {
             windowInsetsController.show(WindowInsetsCompat.Type.systemBars())
         }
 
-        root = RealGameComponent(
+        rootComponent = RealGameComponent(
             componentContext = defaultComponentContext(),
-            onStartActivity = { startActivity(it) },
             onFinishActivity = { killProcess(myPid()) },
             gameId = gameId,
             gameTitle = gameTitle,
@@ -108,23 +105,33 @@ class GameActivity : ComponentActivity() {
             gameFileUriBox = gameFileUriBox
         )
 
-        root.doRunGame()
+        rootComponent.doRunGame()
+
+        lifecycle.addObserver(object : DefaultLifecycleObserver {
+            override fun onResume(owner: LifecycleOwner) {
+                rootComponent.audioPlayer.resumeAll()
+            }
+
+            override fun onPause(owner: LifecycleOwner) {
+                rootComponent.audioPlayer.pauseAll()
+            }
+        })
 
         setContent {
             val snackbarHostState = remember { SnackbarHostState() }
 
             LaunchedEffect(Unit) {
-                root.label.collect {
+                rootComponent.label.collect {
                     when (it) {
                         is GameStore.Label.ShowDialog ->
-                            root.doShowDialog(
+                            rootComponent.doShowDialog(
                                 it.dialogState,
                                 it.inputString,
                                 it.inputListItems ?: emptyList()
                             )
 
                         is GameStore.Label.ShowListSavesDialog ->
-                            root.doShowDialog(it.inputListItems)
+                            rootComponent.doShowDialog(it.inputListItems)
 
                         is GameStore.Label.ShowSnackBar ->
                             snackbarHostState.showSnackbar(it.inputString)
@@ -164,7 +171,7 @@ class GameActivity : ComponentActivity() {
             }
 
             GameContent(
-                component = root,
+                component = rootComponent,
                 snackbarHostState = snackbarHostState
             )
         }

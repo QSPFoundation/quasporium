@@ -1,14 +1,11 @@
 package com.pixnpunk.main.presentation
 
-import android.annotation.SuppressLint
-import android.view.View
-import android.webkit.WebView
-import android.webkit.WebViewClient
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.mvikotlin.core.instancekeeper.getStore
 import com.arkivanov.mvikotlin.extensions.coroutines.stateFlow
 import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
 import com.pixnpunk.dto.SettingsEntity
+import com.pixnpunk.game.data.GameNativeEngine
 import com.pixnpunk.main.presentation.mvi.MainStore
 import com.pixnpunk.main.presentation.mvi.RealMainStore
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -17,13 +14,16 @@ import org.koin.core.component.KoinComponent
 
 class RealMainComponent(
     private val componentContext: ComponentContext,
-    private val gameWebViewClient: WebViewClient,
-    override val settingsState: StateFlow<SettingsEntity>
+    private val gameNativeEngine: GameNativeEngine,
+    override val settingsState: StateFlow<SettingsEntity>,
+    override val gameDirUriBox: String,
+    override val onExecValue: (String) -> Unit
 ) : ComponentContext by componentContext, MainComponent, KoinComponent {
 
     private val store = instanceKeeper.getStore {
         RealMainStore(
             storeFactory = DefaultStoreFactory(),
+            gameNativeEngine = gameNativeEngine,
             stateKeeper = stateKeeper,
             settingsState = settingsState
         ).create()
@@ -42,18 +42,4 @@ class RealMainComponent(
     override val onActionClicked: (Int) -> Unit = { index ->
         store.accept(MainStore.Intent.ActionClick(index))
     }
-
-    @SuppressLint("SetJavaScriptEnabled")
-    override fun getDefaultWebClient(view: WebView): WebView =
-        view.apply {
-            settings.allowFileAccess = false
-            settings.javaScriptEnabled = true
-            settings.blockNetworkLoads = true
-            settings.domStorageEnabled = true
-            if (settingsState.value.isVideoMute) {
-                settings.mediaPlaybackRequiresUserGesture = false
-            }
-            setOverScrollMode(View.OVER_SCROLL_NEVER)
-            setWebViewClient(gameWebViewClient)
-        }
 }

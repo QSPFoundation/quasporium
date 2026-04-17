@@ -27,8 +27,7 @@ dependencies {
     implementation(project(":core:database"))
     implementation(project(":core:dto"))
     implementation(project(":core:network"))
-
-    implementation(project(":services:notification"))
+    implementation(project(":core:notification"))
 
     implementation(project(":features:stock:domain"))
 

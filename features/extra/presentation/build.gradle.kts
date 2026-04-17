@@ -27,8 +27,10 @@ android {
 dependencies {
     implementation(project(":core:dto"))
     implementation(project(":core:utils"))
+    implementation(project(":core:ui:webview"))
 
-    implementation(project(":services:natives"))
+    implementation(project(":features:game:data"))
+    implementation(project(":features:game:domain"))
 
     implementation(project(":features:settings:data"))
 

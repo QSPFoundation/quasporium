@@ -5,9 +5,9 @@ import com.arkivanov.decompose.value.Value
 import com.pixnpunk.dialogs.presentation.DialogsComponent
 import com.pixnpunk.dto.LibGenItem
 import com.pixnpunk.dto.LibSaveItem
-import com.pixnpunk.dto.LibTypeDialog
 import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.extra.presentation.RealExtraComponent
+import com.pixnpunk.game.domain.model.LibTypeDialog
 import com.pixnpunk.game.presentation.mvi.GameStore
 import com.pixnpunk.main.presentation.MainComponent
 import com.pixnpunk.`object`.presentation.RealObjectComponent

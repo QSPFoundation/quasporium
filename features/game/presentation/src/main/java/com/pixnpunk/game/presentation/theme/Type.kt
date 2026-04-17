@@ -1,28 +1,35 @@
 package com.pixnpunk.game.presentation.theme
 
 import androidx.compose.material3.Typography
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.googlefonts.Font
-import androidx.compose.ui.text.googlefonts.GoogleFont
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import com.pixnpunk.game.presentation.R
-
-val provider = GoogleFont.Provider(
-    providerAuthority = "com.google.android.gms.fonts",
-    providerPackage = "com.google.android.gms",
-    certificates = R.array.com_google_android_gms_fonts_certs
-)
 
 val bodyFontFamily = FontFamily(
     Font(
-        googleFont = GoogleFont("Roboto"),
-        fontProvider = provider,
+        resId = R.font.roboto_regular,
+        weight = FontWeight.Normal
+    ),
+    Font(
+        resId = R.font.roboto_italic,
+        weight = FontWeight.Normal,
+        style = FontStyle.Italic
+    ),
+    Font(
+        resId = R.font.roboto_medium,
+        weight = FontWeight.Medium
+    ),
+    Font(
+        resId = R.font.roboto_bold,
+        weight = FontWeight.Bold
     )
 )
 
 val displayFontFamily = FontFamily(
     Font(
-        googleFont = GoogleFont("Yusei Magic"),
-        fontProvider = provider,
+        resId = R.font.yusei_magic_regular
     )
 )
 

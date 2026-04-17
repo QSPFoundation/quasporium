@@ -82,7 +82,6 @@ fun SettingsGeneralContent(
                 AnnotatedString(
                     when (NativeLibAuthors.valueOf(it)) {
                         NativeLibAuthors.SEEDHARTHA -> "5.7.0 (by seedHarta)"
-                        NativeLibAuthors.SONNIX -> "5.8.0 (by Sonnix)"
                         NativeLibAuthors.BYTE -> "5.9.5 (by Byte)"
                     }
                 )

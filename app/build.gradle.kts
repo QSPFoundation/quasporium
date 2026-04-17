@@ -62,10 +62,7 @@ dependencies {
     implementation(project(":core:dto"))
     implementation(project(":core:network"))
     implementation(project(":core:logger"))
-
-    implementation(project(":services:audio"))
-    implementation(project(":services:natives"))
-    implementation(project(":services:notification"))
+    implementation(project(":core:notification"))
 
     implementation(project(":features:stock:data"))
     implementation(project(":features:stock:domain"))
@@ -87,7 +84,6 @@ dependencies {
     implementation(libs.androidx.compose.material.icons.extended)
     debugImplementation(libs.androidx.compose.ui.tooling)
     implementation(libs.androidx.compose.ui.tooling.preview)
-    implementation(libs.androidx.compose.ui.text.google.fonts)
 
     implementation(libs.material)
     implementation(libs.androidx.activity.compose)

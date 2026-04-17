@@ -65,7 +65,7 @@ object HtmlUtil {
     private const val PAGE_BODY_TEMPLATE: String = "<body>REPLACETEXT</body>"
 
     fun appendPageTemplate(settings: SettingsEntity, body: String): String {
-        var fixBody = body.replaceIndent("<br>")
+        var fixBody = body.replace("\n", "<br>")
 
         if (settings.isUseHtml) {
             if (fixBody.contains("\\\"")) {
@@ -91,21 +91,23 @@ object HtmlUtil {
      * Bring the HTML code `html` obtained from the library to
      * HTML code acceptable for display in [android.webkit.WebView].
      */
-    fun String.getCleanHtmlAndMedia(settings: SettingsEntity): String {
-        return Jsoup.parse(this).apply {
-            outputSettings().prettyPrint(true)
-            body().handleImagesInHtml(settings)
-            body().handleVideosInHtml(settings)
+    fun String.getCleanHtmlAndMedia(settings: SettingsEntity): String =
+        Jsoup.parse(this).apply {
+            outputSettings().prettyPrint(false)
+            body().apply {
+                handleImagesInHtml(settings)
+                handleVideosInHtml(settings)
+            }
         }.html()
-    }
 
-    fun String.getCleanHtmlRemMedia(): String {
-        return Jsoup.parse(this).apply {
-            outputSettings().prettyPrint(true)
-            body().select("img").remove()
-            body().select("video").remove()
+    fun String.getCleanHtmlRemMedia(): String =
+        Jsoup.parse(this).apply {
+            outputSettings().prettyPrint(false)
+            body().apply {
+                select("img").remove()
+                select("video").remove()
+            }
         }.html()
-    }
 
     fun String.getSrcDir(): String =
         Jsoup.parse(this)

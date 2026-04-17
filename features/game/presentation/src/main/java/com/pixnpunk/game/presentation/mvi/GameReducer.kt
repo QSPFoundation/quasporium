@@ -5,17 +5,18 @@ import com.arkivanov.mvikotlin.core.store.Reducer
 object GameReducer : Reducer<GameStore.State, GameStore.Message> {
     override fun GameStore.State.reduce(msg: GameStore.Message): GameStore.State {
         return when (msg) {
-            is GameStore.Message.UpdateGameStatus -> copy(isGameRunning = msg.isGameRunning)
             is GameStore.Message.UpdateVisExtraElement -> copy(isExtraEnabled = msg.isExtraEnabled)
             is GameStore.Message.UpdateVisInputElement -> copy(isInputEnabled = msg.isInputEnabled)
             is GameStore.Message.UpdateVisObjElement -> copy(isObjectsEnabled = msg.isObjectsEnabled)
-            is GameStore.Message.UpdateExecutorStatus -> copy(isExecutorEnabled = msg.isExecutorEnabled)
+            is GameStore.Message.UpdateExecutorStatus -> copy(isExecutorEnabled = msg.isUseExecString)
             is GameStore.Message.UpdateIsExtraDescUpdated -> copy(isExtraDescUpdated = msg.isExtraDescUpdated)
             is GameStore.Message.UpdateIsMainDescUpdated -> copy(isMainDescUpdated = msg.isMainDescUpdated)
             is GameStore.Message.UpdateIsObjsListUpdated -> copy(isObjectsListUpdated = msg.isObjsListUpdated)
             is GameStore.Message.UpdateIsActionsListUpdated -> copy(isActionsListUpdated = msg.isActionsListUpdated)
             is GameStore.Message.UpdateIsUserChooseSave -> copy(isUserChooseSave = msg.isUserChooseSave)
             is GameStore.Message.UpdateIsGameDirInternal -> copy(isGameDirInternal = msg.isGameDirInternal)
+            is GameStore.Message.UpdateIsGameRunning -> copy(isGameRunning = msg.isGameRunning)
+            is GameStore.Message.UpdateIsSaveDisable -> copy(isSaveDisable = msg.isSaveDisable)
         }
     }
 }

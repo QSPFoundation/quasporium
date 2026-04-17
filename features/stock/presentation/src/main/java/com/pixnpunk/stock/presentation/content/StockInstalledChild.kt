@@ -1,6 +1,8 @@
 package com.pixnpunk.stock.presentation.content
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -46,7 +48,9 @@ fun StockInstalledChild(
 
     Box(modifier = Modifier.fillMaxSize()) {
         AnimatedVisibility(
-            visible = !isFirstLoad && !isInitialError
+            visible = !isFirstLoad && !isInitialError,
+            enter = fadeIn(),
+            exit = fadeOut(),
         ) {
             LazyColumn(
                 state = listState,

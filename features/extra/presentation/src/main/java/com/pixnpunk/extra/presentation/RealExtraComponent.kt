@@ -1,9 +1,5 @@
 package com.pixnpunk.extra.presentation
 
-import android.annotation.SuppressLint
-import android.view.View
-import android.webkit.WebView
-import android.webkit.WebViewClient
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.mvikotlin.core.instancekeeper.getStore
 import com.arkivanov.mvikotlin.extensions.coroutines.stateFlow
@@ -11,19 +7,24 @@ import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
 import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.extra.presentation.mvi.ExtraStore
 import com.pixnpunk.extra.presentation.mvi.RealExtraStore
+import com.pixnpunk.game.data.GameNativeEngine
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.serialization.serializer
 import org.koin.core.component.KoinComponent
 
 class RealExtraComponent(
     private val componentContext: ComponentContext,
-    private val gameWebViewClient: WebViewClient,
-    override val settingsState: StateFlow<SettingsEntity>
+    private val gameNativeEngine: GameNativeEngine,
+    override val settingsState: StateFlow<SettingsEntity>,
+    override val gameDirUriBox: String,
+    override val onExecValue: (String) -> Unit
 ) : ComponentContext by componentContext, ExtraComponent, KoinComponent {
 
     private val store = instanceKeeper.getStore {
         RealExtraStore(
             storeFactory = DefaultStoreFactory(),
+            gameNativeEngine = gameNativeEngine,
             stateKeeper = stateKeeper,
             settingsState = settingsState
         ).create()
@@ -32,25 +33,11 @@ class RealExtraComponent(
     init {
         stateKeeper.register(
             key = "ExtraStoreSavedState",
-            strategy = ExtraStore.State.serializer(),
+            strategy = serializer(),
             supplier = { store.state }
         )
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override val model: StateFlow<ExtraStore.State> = store.stateFlow
-
-    @SuppressLint("SetJavaScriptEnabled")
-    override fun getDefaultWebClient(view: WebView): WebView =
-        view.apply {
-            settings.allowFileAccess = false
-            settings.javaScriptEnabled = true
-            settings.blockNetworkLoads = true
-            settings.domStorageEnabled = true
-            if (settingsState.value.isVideoMute) {
-                settings.mediaPlaybackRequiresUserGesture = false
-            }
-            setOverScrollMode(View.OVER_SCROLL_NEVER)
-            setWebViewClient(gameWebViewClient)
-        }
 }
