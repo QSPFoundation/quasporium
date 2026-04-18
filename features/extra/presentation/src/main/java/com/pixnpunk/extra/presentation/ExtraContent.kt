@@ -44,9 +44,9 @@ fun ExtraContent(
             modifier = Modifier
                 .padding(paddingValues)
                 .fillMaxSize(),
-            htmlContent = state.extraDesc,
+            rawHtmlContent = state.extraDesc,
             backColor = settings.backColor,
-            isVideoMute = settings.isVideoMute,
+            settingsEntity = settings,
             isEnableAutoscroll = settings.isYesScrollExtra,
             gameDirUriBox = component.gameDirUriBox,
             onExecValue = component.onExecValue

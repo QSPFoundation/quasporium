@@ -12,8 +12,7 @@ import org.koin.core.component.KoinComponent
 class RealExtraStore(
     private val storeFactory: StoreFactory,
     private val gameNativeEngine: GameNativeEngine,
-    private val stateKeeper: StateKeeper,
-    private val settingsState: StateFlow<SettingsEntity>
+    private val stateKeeper: StateKeeper
 ) : KoinComponent {
     internal fun create(): ExtraStore = ExtraImpl()
 
@@ -28,12 +27,7 @@ class RealExtraStore(
             bootstrapper = SimpleBootstrapper(
                 ExtraStore.Action.StartExtraReceiveFlow
             ),
-            executorFactory = {
-                ExtraExecutor(
-                    gameNativeEngine = gameNativeEngine,
-                    settingsState = settingsState
-                )
-            },
+            executorFactory = { ExtraExecutor(gameNativeEngine) },
             reducer = ExtraReducer
         )
 }

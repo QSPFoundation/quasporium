@@ -79,9 +79,9 @@ fun MainContent(
             modifier = Modifier
                 .padding(paddingValues)
                 .fillMaxSize(),
-            htmlContent = state.mainDesc,
+            rawHtmlContent = state.mainDesc,
             backColor = settings.backColor,
-            isVideoMute = settings.isVideoMute,
+            settingsEntity = settings,
             isEnableAutoscroll = settings.isYesScrollMain,
             gameDirUriBox = component.gameDirUriBox,
             onExecValue = component.onExecValue

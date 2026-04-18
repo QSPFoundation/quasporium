@@ -17,7 +17,7 @@ sealed interface MainStore : Store<MainStore.Intent, MainStore.State, MainStore.
     }
 
     sealed interface Message {
-        data class UpdateMainDesc(val description: String) : Message
+        data class UpdateMainDesc(val mainDesc: String) : Message
         data class UpdateActions(val actions: List<LibGenItem>) : Message
         data class UpdateVisActions(val isActionsVis: Boolean) : Message
     }

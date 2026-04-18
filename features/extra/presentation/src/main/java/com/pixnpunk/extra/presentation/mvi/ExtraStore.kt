@@ -12,7 +12,7 @@ interface ExtraStore : Store<ExtraStore.Intent, ExtraStore.State, ExtraStore.Lab
     sealed interface Intent
 
     sealed interface Message {
-        data class UpdateExtraDesc(val description: String) : Message
+        data class UpdateExtraDesc(val extraDesc: String) : Message
     }
 
     sealed interface Label
