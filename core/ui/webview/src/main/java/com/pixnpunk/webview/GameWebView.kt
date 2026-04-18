@@ -10,30 +10,43 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.webkit.WebViewAssetLoader
+import com.pixnpunk.dto.SettingsEntity
+import com.pixnpunk.utils.HtmlUtil.appendPageTemplate
+import com.pixnpunk.utils.HtmlUtil.getCleanHtmlAndMedia
+import com.pixnpunk.utils.HtmlUtil.getCleanHtmlRemMedia
 
 @Composable
 fun GameWebView(
     modifier: Modifier = Modifier,
-    htmlContent: String,
+    rawHtmlContent: String,
     gameDirUriBox: String,
     backColor: Int,
-    isVideoMute: Boolean = true,
+    settingsEntity: SettingsEntity,
     isEnableAutoscroll: Boolean = true,
     onExecValue: (String) -> Unit
 ) {
-    val currentVideoMute by rememberUpdatedState(isVideoMute)
+    val currentVideoMute by rememberUpdatedState(settingsEntity.isVideoMute)
     val currentAutoscroll by rememberUpdatedState(isEnableAutoscroll)
 
     AndroidView(
         modifier = modifier,
         update = { webView ->
-            if (webView.tag != htmlContent) {
+            if (webView.tag != rawHtmlContent) {
                 webView.loadDataWithBaseURL(
                     "https://appassets.androidplatform.net/game_files/",
-                    htmlContent,
+                    appendPageTemplate(
+                        settingsEntity,
+                        rawHtmlContent
+                    ).let { s ->
+                        if (settingsEntity.isImgLoadDis) {
+                            s.getCleanHtmlRemMedia()
+                        } else {
+                            s.getCleanHtmlAndMedia(settingsEntity)
+                        }
+                    },
                     "text/html", "UTF-8", null
                 )
-                webView.tag = htmlContent
+                webView.tag = rawHtmlContent
             }
         },
         factory = { ctx ->

@@ -12,8 +12,7 @@ import org.koin.core.component.KoinComponent
 class RealMainStore(
     private val storeFactory: StoreFactory,
     private val gameNativeEngine: GameNativeEngine,
-    private val stateKeeper: StateKeeper,
-    private val settingsState: StateFlow<SettingsEntity>
+    private val stateKeeper: StateKeeper
 ) : KoinComponent {
     internal fun create(): MainStore = MainImpl()
 
@@ -29,12 +28,7 @@ class RealMainStore(
                 MainStore.Action.StartContentFlow,
                 MainStore.Action.StartActionsVisFlow
             ),
-            executorFactory = {
-                MainExecutor(
-                    gameNativeEngine = gameNativeEngine,
-                    settingsState = settingsState
-                )
-            },
+            executorFactory = { MainExecutor(gameNativeEngine) },
             reducer = MainReducer
         )
 }

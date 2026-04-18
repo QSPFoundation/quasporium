@@ -25,8 +25,7 @@ class RealExtraComponent(
         RealExtraStore(
             storeFactory = DefaultStoreFactory(),
             gameNativeEngine = gameNativeEngine,
-            stateKeeper = stateKeeper,
-            settingsState = settingsState
+            stateKeeper = stateKeeper
         ).create()
     }
 
