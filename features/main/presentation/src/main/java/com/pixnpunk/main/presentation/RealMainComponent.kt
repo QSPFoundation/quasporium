@@ -24,8 +24,7 @@ class RealMainComponent(
         RealMainStore(
             storeFactory = DefaultStoreFactory(),
             gameNativeEngine = gameNativeEngine,
-            stateKeeper = stateKeeper,
-            settingsState = settingsState
+            stateKeeper = stateKeeper
         ).create()
     }
 
