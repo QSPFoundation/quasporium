@@ -15,7 +15,7 @@ import kotlin.contracts.ExperimentalContracts
 
 internal class GameWebViewClient(
     private val assetLoader: WebViewAssetLoader,
-    private val isEnableAutoscroll: () -> Boolean,
+    private val onPageLoaded: (WebView) -> Unit,
     private val onExecValue: (String) -> Unit,
     private val onStartActivity: (Intent) -> Unit
 ) : WebViewClient() {
@@ -59,16 +59,7 @@ internal class GameWebViewClient(
 
     override fun onPageFinished(view: WebView, url: String?) {
         super.onPageFinished(view, url)
-        if (isEnableAutoscroll()) {
-            view.evaluateJavascript(
-                """
-                (function() { 
-                  window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); 
-                })();
-                """.trimIndent(),
-                null
-            )
-        }
+        onPageLoaded(view)
     }
 
     @OptIn(ExperimentalContracts::class)
