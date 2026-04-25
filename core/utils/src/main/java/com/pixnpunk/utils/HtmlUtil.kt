@@ -62,9 +62,14 @@ object HtmlUtil {
             </style>
             </head>
         """
-    private const val PAGE_BODY_TEMPLATE: String = "<body>REPLACETEXT</body>"
+    private const val PAGE_BODY_TEMPLATE: String = "<body BODYSTYLE>REPLACETEXTSCROLLSCRIPT</body>"
 
-    fun appendPageTemplate(settings: SettingsEntity, body: String): String {
+    fun appendPageTemplate(
+        settings: SettingsEntity,
+        body: String,
+        autoscroll: Boolean = false,
+        restoreScrollY: Int = 0
+    ): String {
         var fixBody = body.replace("\n", "<br>")
 
         if (settings.isUseHtml) {
@@ -84,7 +89,109 @@ object HtmlUtil {
             .replace("QSPFONTSTYLE", settings.typeface.name.lowercase())
             .replace("QSPFONTSIZE", settings.fontSize.toString())
 
-        return pageHeadTemplate + PAGE_BODY_TEMPLATE.replace("REPLACETEXT", fixBody)
+        val needsInitialScroll = autoscroll || restoreScrollY > 0
+        val bodyStyle = if (needsInitialScroll) {
+            "style=\"visibility:hidden\""
+        } else {
+            ""
+        }
+        val scrollScript = if (needsInitialScroll) buildInitialScrollScript(
+            autoscroll = autoscroll,
+            restoreScrollY = restoreScrollY
+        ) else ""
+
+        val pageBody = PAGE_BODY_TEMPLATE
+            .replace("BODYSTYLE", bodyStyle)
+            .replace("REPLACETEXT", fixBody)
+            .replace("SCROLLSCRIPT", scrollScript)
+
+        return pageHeadTemplate + pageBody
+    }
+
+    private fun buildInitialScrollScript(
+        autoscroll: Boolean,
+        restoreScrollY: Int
+    ): String {
+        val scrollExpr = when {
+            autoscroll -> "window.scrollTo(0, document.documentElement.scrollHeight);"
+            restoreScrollY > 0 -> "window.scrollTo(0, $restoreScrollY);"
+            else -> ""
+        }
+        val chase = if (autoscroll) "true" else "false"
+        return """
+            <script>
+            (function () {
+              var chase = $chase;
+              var revealed = false;
+              var stableTimer = null;
+
+              function applyScroll() { $scrollExpr }
+              
+              function reveal() {
+                if (revealed) return;
+                revealed = true;
+                if (document.body) document.body.style.visibility = 'visible';
+              }
+              
+              function scheduleReveal(delay) {
+                if (stableTimer) clearTimeout(stableTimer);
+                stableTimer = setTimeout(function () {
+                  applyScroll();
+                  reveal();
+                }, delay);
+              }
+
+              function hookImages() {
+                var imgs = document.images || [];
+                for (var i = 0; i < imgs.length; i++) {
+                  var img = imgs[i];
+                  if (chase && img.getAttribute('loading') === 'lazy') {
+                    img.setAttribute('loading', 'eager');
+                  }
+                  if (img.complete) continue;
+                  var onDone = function () {
+                    applyScroll();
+                    if (chase) scheduleReveal(120);
+                  };
+                  img.addEventListener('load', onDone, { once: true });
+                  img.addEventListener('error', onDone, { once: true });
+                }
+              }
+
+              function init() {
+                hookImages();
+                applyScroll();
+
+                if (chase && typeof ResizeObserver !== 'undefined' && document.documentElement) {
+                  var ro = new ResizeObserver(function () {
+                    applyScroll();
+                    scheduleReveal(120);
+                  });
+                  ro.observe(document.documentElement);
+                  if (document.body) ro.observe(document.body);
+                }
+
+                scheduleReveal(chase ? 250 : 60);
+              }
+
+              if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+              } else {
+                init();
+              }
+              window.addEventListener('load', function () {
+                hookImages();
+                applyScroll();
+                scheduleReveal(120);
+              });
+
+              setTimeout(function () {
+                applyScroll();
+                reveal();
+              }, 2000);
+            })();
+            </script>
+        """.trimIndent()
     }
 
     /**
