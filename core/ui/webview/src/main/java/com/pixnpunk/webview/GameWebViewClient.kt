@@ -15,7 +15,6 @@ import kotlin.contracts.ExperimentalContracts
 
 internal class GameWebViewClient(
     private val assetLoader: WebViewAssetLoader,
-    private val onPageLoaded: (WebView) -> Unit,
     private val onExecValue: (String) -> Unit,
     private val onStartActivity: (Intent) -> Unit
 ) : WebViewClient() {
@@ -55,11 +54,6 @@ internal class GameWebViewClient(
                     .also(onStartActivity)
         }
         return true
-    }
-
-    override fun onPageFinished(view: WebView, url: String?) {
-        super.onPageFinished(view, url)
-        onPageLoaded(view)
     }
 
     @OptIn(ExperimentalContracts::class)

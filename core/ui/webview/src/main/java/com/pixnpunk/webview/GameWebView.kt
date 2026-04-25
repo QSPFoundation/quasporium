@@ -3,6 +3,7 @@ package com.pixnpunk.webview
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.webkit.WebView
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -38,12 +39,17 @@ fun GameWebView(
         modifier = modifier,
         update = { webView ->
             if (webView.tag != rawHtmlContent) {
-                webView.isPageLoaded = false
+                val isNewContent = currentContentHash != lastScrolledHash
+                val targetRestoreY = if (!isNewContent) savedScrollY else 0
+                val doAutoscroll = isNewContent && currentAutoscroll
+
                 webView.loadDataWithBaseURL(
                     "https://appassets.androidplatform.net/game_files/",
                     appendPageTemplate(
-                        settingsEntity,
-                        rawHtmlContent
+                        settings = settingsEntity,
+                        body = rawHtmlContent,
+                        autoscroll = doAutoscroll,
+                        restoreScrollY = targetRestoreY
                     ).let { s ->
                         if (settingsEntity.isImgLoadDis) {
                             s.getCleanHtmlRemMedia()
@@ -54,10 +60,15 @@ fun GameWebView(
                     "text/html", "UTF-8", null
                 )
                 webView.tag = rawHtmlContent
+
+                if (isNewContent) {
+                    savedScrollY = 0
+                    lastScrolledHash = currentContentHash
+                }
             }
         },
         factory = { ctx ->
-            StatefulWebView(ctx).apply {
+            WebView(ctx).apply {
                 setBackgroundColor(backColor)
                 layoutParams = ViewGroup.LayoutParams(
                     MATCH_PARENT,
@@ -73,11 +84,6 @@ fun GameWebView(
                     }
                 }
                 overScrollMode = View.OVER_SCROLL_NEVER
-                onScrollStateChanged = { newScrollY ->
-                    if (currentContentHash == lastScrolledHash) {
-                        savedScrollY = newScrollY
-                    }
-                }
                 webViewClient = GameWebViewClient(
                     assetLoader =
                         WebViewAssetLoader.Builder()
@@ -86,35 +92,6 @@ fun GameWebView(
                                 ExternalStoragePathHandler(ctx, gameDirUriBox)
                             )
                             .build(),
-                    onPageLoaded = { view ->
-                        val webView = view as StatefulWebView
-
-                        if (currentContentHash == lastScrolledHash) {
-                            if (savedScrollY > 0) {
-                                webView.postDelayed({
-                                    webView.scrollTo(0, savedScrollY)
-                                }, 100)
-                            }
-                        } else {
-                            savedScrollY = 0
-                            lastScrolledHash = currentContentHash
-
-                            if (currentAutoscroll) {
-                                webView.evaluateJavascript(
-                                    """
-                                    (function() { 
-                                      setTimeout(function() {
-                                          window.scrollTo({ top: document.body.scrollHeight, behavior: 'instant' }); 
-                                      }, 100);
-                                    })();
-                                    """.trimIndent(),
-                                    null
-                                )
-                            }
-                        }
-
-                        webView.isPageLoaded = true
-                    },
                     onExecValue = onExecValue,
                     onStartActivity = { runCatching { ctx.startActivity(it) } }
                 )
