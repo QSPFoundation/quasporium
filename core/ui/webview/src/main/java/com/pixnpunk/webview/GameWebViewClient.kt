@@ -9,8 +9,8 @@ import androidx.core.net.toUri
 import androidx.webkit.WebViewAssetLoader
 import com.pixnpunk.utils.Base64Util.decodeBase64
 import com.pixnpunk.utils.Base64Util.isBase64
-import com.pixnpunk.utils.HtmlUtil.isContainsHtmlTags
-import com.pixnpunk.utils.HtmlUtil.removeHtmlTags
+import com.pixnpunk.webview.HtmlEngine.isContainsHtmlTags
+import com.pixnpunk.webview.HtmlEngine.removeHtmlTags
 import kotlin.contracts.ExperimentalContracts
 
 internal class GameWebViewClient(

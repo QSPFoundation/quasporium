@@ -79,12 +79,7 @@ fun MainContent(
             modifier = Modifier
                 .padding(paddingValues)
                 .fillMaxSize(),
-            rawHtmlContent = state.mainDesc,
-            backColor = settings.backColor,
-            settingsEntity = settings,
-            isEnableAutoscroll = settings.isYesScrollMain,
-            gameDirUriBox = component.gameDirUriBox,
-            onExecValue = component.onExecValue
+            component = component.gameWebViewComponent
         )
     }
 }

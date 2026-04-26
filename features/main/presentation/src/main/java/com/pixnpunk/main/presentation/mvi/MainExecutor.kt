@@ -4,7 +4,6 @@ import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
 import com.pixnpunk.game.data.GameNativeEngine
 import com.pixnpunk.game.domain.model.LibTypeWindow
 import com.pixnpunk.main.presentation.mvi.MainStore.Message.UpdateActions
-import com.pixnpunk.main.presentation.mvi.MainStore.Message.UpdateMainDesc
 import com.pixnpunk.main.presentation.mvi.MainStore.Message.UpdateVisActions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -33,12 +32,8 @@ class MainExecutor(
 
             is MainStore.Action.StartContentFlow ->
                 scope.launch(Dispatchers.IO) {
-                    gameNativeEngine.gameStateFlow.collect { state ->
-                        scope.launch {
-                            dispatch(UpdateMainDesc(state.mainDesc))
-                            dispatch(UpdateActions(state.actionsList))
-                        }
-                    }
+                    gameNativeEngine.gameStateFlow
+                        .collect { scope.launch { dispatch(UpdateActions(it.actionsList)) } }
                 }
         }
     }
