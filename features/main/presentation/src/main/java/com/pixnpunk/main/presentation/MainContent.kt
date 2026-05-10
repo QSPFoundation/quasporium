@@ -37,8 +37,7 @@ fun MainContent(
     val hasActions = state.isActionsVis && state.actions.isNotEmpty()
 
     val parsedActions = remember(state.actions) {
-        if (!hasActions) emptyList()
-        else state.actions.map { item ->
+        state.actions.map { item ->
             ParsedActionItem(
                 original = item,
                 annotatedText = AnnotatedString.fromHtml(item.text),
@@ -69,9 +68,6 @@ fun MainContent(
                     onActionClicked = component.onActionClicked,
                     gridState = lazyStaggeredGridState
                 )
-            } else {
-                // Stub. Prevents measurement crashes in some versions of Material 3
-                Box(modifier = Modifier.fillMaxWidth().height(1.dp))
             }
         }
     ) { paddingValues ->

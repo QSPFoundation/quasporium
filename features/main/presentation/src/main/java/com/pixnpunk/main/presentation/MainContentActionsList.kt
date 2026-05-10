@@ -66,7 +66,9 @@ fun MainContentActionsList(
             background = Color(settings.backColor)
         )
     )
-    val cardBackgroundColor = Color(settings.backColor)
+    val cardBackgroundColor =
+        if (settings.isBackColorOverride) Color(settings.backColor)
+        else MaterialTheme.colorScheme.surfaceContainer
 
     BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
         val columnCount = remember(maxWidth, maxHeight) {
@@ -119,16 +121,16 @@ fun MainContentActionsList(
         ) {
             itemsIndexed(
                 items = actions,
-                key = { _, item -> item.original.text },
+                key = { index, item -> "$index:${item.original.text}" },
                 span = { index, _ ->
-                    if (spanMap[index] == true) StaggeredGridItemSpan.FullLine
+                    if (spanMap[index]) StaggeredGridItemSpan.FullLine
                     else StaggeredGridItemSpan.SingleLane
                 },
             ) { index, item ->
                 GridCell(
                     modifier = Modifier.animateItem(),
                     item = item,
-                    isFullLine = spanMap[index] == true,
+                    isFullLine = spanMap[index],
                     onItemClick = { onActionClicked(index) },
                     textStyle = textStyle,
                     cardBackgroundColor = cardBackgroundColor
@@ -170,10 +172,10 @@ private fun calculateSpans(
     textMeasurer: TextMeasurer,
     textStyle: TextStyle,
     density: Density
-): Map<Int, Boolean> {
-    if (columnCount <= 1) return items.indices.associateWith { true }
+): BooleanArray {
+    if (columnCount <= 1) return booleanArrayOf(false)
 
-    val spans = HashMap<Int, Boolean>(items.size)
+    val spans = BooleanArray(items.size)
     val imageOverheadPx = with(density) { 104.dp.toPx() }
     val noImageOverheadPx = with(density) { 32.dp.toPx() }
 
@@ -192,24 +194,17 @@ private fun calculateSpans(
         spans[index] = (textWidth + overheadPx > columnWidthPx)
     }
 
-    var currentGroupSize = 0
-    val buffer = mutableListOf<Int>()
-    items.indices.forEach { index ->
-        if (spans[index] == true) {
-            buffer.forEach { spans[it] = true }
-            buffer.clear()
-            currentGroupSize = 0
-        } else {
-            buffer.add(index)
-            currentGroupSize++
-            if (currentGroupSize == columnCount) {
-                buffer.clear()
-                currentGroupSize = 0
-            }
+    var groupStart = 0
+    for (i in items.indices) {
+        if (spans[i]) {
+            for (j in groupStart until i) spans[j] = true
+            groupStart = i + 1
+        } else if (i - groupStart + 1 == columnCount) {
+            groupStart = i + 1
         }
     }
 
-    buffer.forEach { spans[it] = true }
+    for (j in groupStart until items.size) spans[j] = true
 
     return spans
 }
