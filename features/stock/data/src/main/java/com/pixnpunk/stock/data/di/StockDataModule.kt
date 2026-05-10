@@ -16,9 +16,11 @@ val stockDataModule = module {
     single { WorkManager.getInstance(get()) }
     workerOf(::DownloadGameWorker)
     workerOf(::UnpackGameWorker)
+
     singleOf(::LocalRepositoryImpl) {
         bind<LocalRepository>()
     }
+
     singleOf(::RemoteRepositoryImpl) {
         bind<RemoteRepository>()
     }
