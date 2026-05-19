@@ -115,39 +115,41 @@ fun DialogEditGameContent(
             )
         }
 
-        HorizontalDivider()
+        if (!entry.gameDirPath.startsWith("file", true)) {
+            HorizontalDivider()
 
-        FlowRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            if (entry.gameDirPath.isNotEmpty()) {
-                entry.gameFilesPath.forEach { filePath ->
-                    InputChip(
-                        selected = true,
-                        onClick = { deselectFile(filePath) },
-                        label = { Text(filePath.receiveFileRelPath()) },
-                        avatar = {
-                            Icon(
-                                Icons.AutoMirrored.Filled.InsertDriveFile,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        },
-                        trailingIcon = { Icon(Icons.Default.Close, contentDescription = null) },
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                if (entry.gameDirPath.isNotEmpty()) {
+                    entry.gameFilesPath.forEach { filePath ->
+                        InputChip(
+                            selected = true,
+                            onClick = { deselectFile(filePath) },
+                            label = { Text(filePath.receiveFileRelPath()) },
+                            avatar = {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.InsertDriveFile,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            },
+                            trailingIcon = { Icon(Icons.Default.Close, contentDescription = null) },
+                        )
+                    }
+
+                    AssistChip(
+                        onClick = selectFiles,
+                        label = { Text(stringResource(R.string.file_selector_title)) },
+                        leadingIcon = { Icon(Icons.Default.Add, contentDescription = null) }
                     )
                 }
-
-                AssistChip(
-                    onClick = selectFiles,
-                    label = { Text(stringResource(R.string.file_selector_title)) },
-                    leadingIcon = { Icon(Icons.Default.Add, contentDescription = null) }
-                )
             }
-        }
 
-        Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(8.dp))
+        }
 
         Row(
             modifier = Modifier.fillMaxWidth(),
