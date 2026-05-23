@@ -66,9 +66,6 @@ fun MainContentActionsList(
             background = Color(settings.backColor)
         )
     )
-    val cardBackgroundColor =
-        if (settings.isBackColorOverride) Color(settings.backColor)
-        else MaterialTheme.colorScheme.surfaceContainer
 
     BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
         val columnCount = remember(maxWidth, maxHeight) {
@@ -133,7 +130,7 @@ fun MainContentActionsList(
                     isFullLine = spanMap[index],
                     onItemClick = { onActionClicked(index) },
                     textStyle = textStyle,
-                    cardBackgroundColor = cardBackgroundColor
+                    cardBackgroundColor = Color(settings.backColor)
                 )
             }
         }
