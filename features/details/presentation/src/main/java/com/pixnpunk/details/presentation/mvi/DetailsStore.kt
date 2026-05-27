@@ -16,7 +16,9 @@ sealed interface DetailsStore : Store<DetailsStore.Intent, DetailsStore.State, D
         data class UpdateEntry(val entry: GameEntry) : Message
     }
 
-    sealed interface Label
+    sealed interface Label {
+        data object NullUpdateReceived : Label
+    }
 
     sealed interface Action {
         data class StartEntryFlow(val entry: GameEntry) : Action

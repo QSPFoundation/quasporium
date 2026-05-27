@@ -59,7 +59,7 @@ interface GameDao {
     fun getGameWithSaves(gameId: Long): Flow<GameWithSaves>
 
     @Query("SELECT * FROM game WHERE id LIKE :id")
-    fun subscribeById(id: Long): Flow<GameEntity>
+    fun subscribeById(id: Long): Flow<GameEntity?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(game: GameEntity)

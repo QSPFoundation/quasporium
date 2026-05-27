@@ -33,8 +33,8 @@ class LocalRepositoryImpl(
     override fun observeEntryUrls(): Flow<List<String>> =
         gameDao.getByUrl().distinctUntilChanged()
 
-    override fun observeEntryById(entryId: Long): Flow<GameEntry> =
-        gameDao.subscribeById(entryId).distinctUntilChanged().map { it.toDomain() }
+    override fun observeEntryById(entryId: Long): Flow<GameEntry?> =
+        gameDao.subscribeById(entryId).distinctUntilChanged().map { it?.toDomain() }
 
     override suspend fun deleteGameEntries(idsDelete: Set<Long>): Int {
         val entriesDelete = gameDao.getByIds(idsDelete).apply {

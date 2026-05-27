@@ -2,6 +2,7 @@ package com.pixnpunk.details.presentation
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.mvikotlin.core.instancekeeper.getStore
+import com.arkivanov.mvikotlin.extensions.coroutines.labels
 import com.arkivanov.mvikotlin.extensions.coroutines.stateFlow
 import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
 import com.pixnpunk.details.presentation.mvi.DetailsStore
@@ -9,6 +10,7 @@ import com.pixnpunk.details.presentation.mvi.RealDetailsStore
 import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.dto.SettingsEntity
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import org.koin.core.component.KoinComponent
 import org.ocpsoft.prettytime.PrettyTime
@@ -36,6 +38,7 @@ class RealDetailsComponent(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override val model: StateFlow<DetailsStore.State> = store.stateFlow
+    override val label: Flow<DetailsStore.Label> = store.labels
 
     override fun convEntryData(
         entry: GameEntry
