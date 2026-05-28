@@ -204,6 +204,9 @@ class MainActivity : ComponentActivity() {
             launchFilesPicker = {
                 filesPickerLauncher.launch(arrayOf(MimeType.BINARY_FILE))
             },
+            launchFontPicker = {
+                filePickerLauncher.launch(arrayOf(MimeType.FONT))
+            },
             launchStorageAccess = {
                 runCatching {
                     storageAccessLauncher.launch(

@@ -13,10 +13,12 @@
     <string name="image_path_switch_title">Image path debugger</string>
     <string name="font_style_list_title">Game font style</string>
     <string name="font_size_list_title">Game font size</string>
+    <string name="font_custom_switch_title">Custom game font</string>
     <string name="font_color_switch_title">Custom game text color</string>
     <string name="back_color_switch_title">Custom game background color</string>
     <string name="link_color_switch_title">Custom game link color</string>
     <string name="string_exec_switch_title">Use input field for debugging</string>
+    <string name="font_custom_switch_summary">Specify font</string>
     <string name="font_color_switch_summary">Specify text color</string>
     <string name="back_color_switch_summary">Specify background color</string>
     <string name="link_color_switch_summary">Specify link color</string>

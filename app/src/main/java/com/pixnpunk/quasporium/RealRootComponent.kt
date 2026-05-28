@@ -41,6 +41,7 @@ class RealRootComponent(
     private val launchDirPicker: () -> Unit,
     private val launchFilePicker: () -> Unit,
     private val launchFilesPicker: () -> Unit,
+    private val launchFontPicker: () -> Unit,
     private val launchStorageAccess: () -> Unit,
     private val launchEngineIntent: (Pair<GameEntry, Int>) -> Unit,
 ) : ComponentContext by componentContext, RootComponent, KoinComponent {
@@ -239,6 +240,7 @@ class RealRootComponent(
                 showColorDialog = ::doShowDialog,
                 resetToDefault = { store.accept(RootStore.Intent.RestoreColorConfig(state = it)) },
                 showInputDialog = ::doShowDialog,
+                showFontDialog = launchFontPicker,
                 onDismissed = { settingsNavigation.dismiss() }
             )
         }
