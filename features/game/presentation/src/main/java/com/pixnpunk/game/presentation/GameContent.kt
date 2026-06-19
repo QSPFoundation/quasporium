@@ -1,10 +1,15 @@
 package com.pixnpunk.game.presentation
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
+import androidx.compose.material3.Button
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDragHandle
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
@@ -40,6 +45,7 @@ import com.pixnpunk.`object`.presentation.ObjectContent
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalDecomposeApi::class, ExperimentalMaterial3AdaptiveApi::class)
 @Composable
@@ -65,6 +71,8 @@ fun GameContent(
     val coroutineScope = rememberCoroutineScope()
     val doubleTapTimeout = LocalViewConfiguration.current.doubleTapTimeoutMillis
     var clickJob by remember { mutableStateOf<Job?>(null) }
+
+    var showDialog by remember { mutableStateOf(false) }
 
     val directive = calculatePaneScaffoldDirective(currentWindowAdaptiveInfo())
 
@@ -106,6 +114,8 @@ fun GameContent(
         }
     }
 
+    BackHandler { showDialog = true }
+
     val baseScaffoldValue = calculateThreePaneScaffoldValue(
         maxHorizontalPartitions = directive.maxHorizontalPartitions,
         maxVerticalPartitions = directive.maxVerticalPartitions,
@@ -130,6 +140,28 @@ fun GameContent(
     ) {
         dialogSlot.child?.instance?.also {
             DialogsMainContent(it, settings)
+        }
+
+        if (showDialog) {
+            AlertDialog(
+                onDismissRequest = { showDialog = false },
+                title = { Text("Exit without saving?") },
+                confirmButton = {
+                    Button(onClick = {
+                        showDialog = false
+                        component.doFinishGame()
+                    }) {
+                        Text("Yes")
+                    }
+                },
+                dismissButton = {
+                    OutlinedButton(onClick = {
+                        showDialog = false
+                    }) {
+                        Text("No")
+                    }
+                }
+            )
         }
 
         GameBottomBar(
@@ -197,7 +229,7 @@ fun GameContent(
                                             component.doFinishGame()
                                         } else {
                                             clickJob = coroutineScope.launch {
-                                                delay(doubleTapTimeout)
+                                                delay(doubleTapTimeout.milliseconds)
                                                 snackbarHostState.showSnackbar(
                                                     message = "Press back again to close",
                                                     duration = SnackbarDuration.Short
