@@ -105,6 +105,10 @@ class RealRootComponent(
                     )
                 )
             )
+        } else {
+            store.accept(
+                RootStore.Intent.UpdateCustomFontPath(filePath)
+            )
         }
     }
 

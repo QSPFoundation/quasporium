@@ -4,6 +4,9 @@ object PrefKeys {
     const val FONT_STYLE = "fontStylePref"
     const val FONT_SIZE = "fontSizePref"
 
+    const val CUSTOM_FONT_ENABLED = "customFontPref"
+    const val CUSTOM_FONT_PATH = "customFontPathPref"
+
     const val TEXT_COLOR_OVERRIDE = "customTextColorPref"
     const val TEXT_COLOR = "textColor"
     const val BACK_COLOR_OVERRIDE = "customBackColorPref"
