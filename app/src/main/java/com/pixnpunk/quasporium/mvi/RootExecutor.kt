@@ -40,6 +40,9 @@ class RootExecutor(
 
             is RootStore.Intent.UpdateImageConfig ->
                 settingsRepository.updateImageSize(intent.state, intent.input.toInt())
+
+            is RootStore.Intent.UpdateCustomFontPath ->
+                settingsRepository.updateCustomFontPath(intent.path)
         }
     }
 }

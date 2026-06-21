@@ -25,6 +25,7 @@ class RealSettingsComponent(
     override val showColorDialog: (ColorPickerState) -> Unit,
     override val resetToDefault: (ColorPickerState) -> Unit,
     override val showInputDialog: (InputState) -> Unit,
+    override val showFontDialog: () -> Unit,
     override val onDismissed: () -> Unit
 ) : ComponentContext by componentContext, SettingsComponent, KoinComponent {
 

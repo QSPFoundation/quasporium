@@ -14,6 +14,9 @@ data class HtmlConfig(
     val backColor: Int = 0xFFBDBDBD.toInt(),
     val linkColor: Int = 0xFF0000FF.toInt(),
 
+    val isUseCustomFont: Boolean = false,
+    val customFontPath: String = "",
+
     val isImgLoadDis: Boolean = false,
     val isAutoWidthImage: Boolean = true,
     val imageWidth: Int = 400,

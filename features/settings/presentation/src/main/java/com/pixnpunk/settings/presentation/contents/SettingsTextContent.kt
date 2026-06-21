@@ -2,6 +2,7 @@ package com.pixnpunk.settings.presentation.contents
 
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Abc
 import androidx.compose.material.icons.filled.BorderColor
 import androidx.compose.material.icons.filled.FormatColorFill
 import androidx.compose.material.icons.filled.FormatPaint
@@ -23,7 +24,8 @@ import me.zhanghai.compose.preference.twoTargetSwitchPreference
 @Composable
 fun SettingsTextContent(
     showColorDialog: (ColorPickerState) -> Unit,
-    resetToDefault: (ColorPickerState) -> Unit
+    resetToDefault: (ColorPickerState) -> Unit,
+    showFontDialog: () -> Unit
 ) {
     LazyColumn {
         listPreference(
@@ -59,6 +61,27 @@ fun SettingsTextContent(
             defaultValue = 16,
             values = listOf(12, 14, 16, 18, 20, 22),
             title = { Text(stringResource(R.string.font_size_list_title)) }
+        )
+        twoTargetSwitchPreference(
+            key = "customFontPref",
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Abc,
+                    contentDescription = null
+                )
+            },
+            defaultValue = false,
+            title = { Text(stringResource(R.string.font_custom_switch_title)) },
+            summary = {
+                if (it) {
+                    Text(stringResource(R.string.font_custom_switch_summary))
+                }
+            },
+            onClick = {
+                if (it) {
+                    showFontDialog()
+                }
+            },
         )
         twoTargetSwitchPreference(
             key = "customTextColorPref",

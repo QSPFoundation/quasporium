@@ -18,6 +18,7 @@ sealed interface RootStore : Store<RootStore.Intent, RootStore.State, RootStore.
         data class RestoreColorConfig(val state: ColorPickerState) : Intent
         data class UpdateColorConfig(val state: ColorPickerState, val color: Color) : Intent
         data class UpdateImageConfig(val state: InputState, val input: String) : Intent
+        data class UpdateCustomFontPath(val path: String) : Intent
     }
 
     sealed interface Message

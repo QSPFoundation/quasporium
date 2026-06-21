@@ -66,6 +66,9 @@ class SettingsRepository(
     private fun readSettings() = SettingsEntity(
         fontSize = getIntMerged(PrefKeys.FONT_SIZE, defValue.fontSize),
 
+        isUseCustomFont = getBooleanMerged(PrefKeys.CUSTOM_FONT_ENABLED, defValue.isUseCustomFont),
+        customFontPath = getStringMerged(PrefKeys.CUSTOM_FONT_PATH, defValue.customFontPath),
+
         isTextColorOverride = getBooleanMerged(PrefKeys.TEXT_COLOR_OVERRIDE, defValue.isTextColorOverride),
         textColor = getIntMerged(PrefKeys.TEXT_COLOR, defValue.textColor),
 
@@ -140,5 +143,9 @@ class SettingsRepository(
             if (state == InputState.INPUT_IMAGE_WIDTH) putInt(PrefKeys.IMG_MANUAL_WIDTH, value)
             if (state == InputState.INPUT_IMAGE_HEIGHT) putInt(PrefKeys.IMG_MANUAL_HEIGHT, value)
         }
+    }
+
+    fun updateCustomFontPath(filePath: String) {
+        targetPrefsToEdit.edit { putString(PrefKeys.CUSTOM_FONT_PATH, filePath) }
     }
 }

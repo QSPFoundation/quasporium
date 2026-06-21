@@ -2,6 +2,7 @@ package com.pixnpunk.webview
 
 import android.content.Context
 import android.util.Base64
+import com.pixnpunk.dto.FontTypeface
 import com.pixnpunk.utils.Base64Util.encodeBase64
 import com.pixnpunk.utils.ColorUtil.toHexColorStr
 import com.pixnpunk.webview.model.HtmlConfig
@@ -10,6 +11,7 @@ import org.jsoup.nodes.Element
 import org.jsoup.safety.Safelist
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
+import java.io.File
 import java.util.regex.Pattern
 
 object HtmlEngine : KoinComponent {
@@ -28,6 +30,13 @@ object HtmlEngine : KoinComponent {
         restoreScrollY: Int = 0
     ): String {
         var fixBody = body.replace("\n", "<br>")
+        var customFontFaceRule = ""
+        var cssFontFamily = when (config.typeface) {
+            FontTypeface.SANS_SERIF -> "sans-serif"
+            FontTypeface.SERIF -> "serif"
+            FontTypeface.MONOSPACE -> "monospace"
+            else -> "sans-serif"
+        }
 
         if (config.isUseHtml) {
             if (fixBody.contains("\\\"")) {
@@ -45,6 +54,17 @@ object HtmlEngine : KoinComponent {
             }
         }
 
+        if (config.isUseCustomFont && config.customFontPath.isNotEmpty()) {
+            val fontFile = File(config.customFontPath).name
+            customFontFaceRule = """
+                @font-face {
+                    font-family: 'AppCustomFont';
+                    src: url('https://appassets.androidplatform.net/fonts/$fontFile');
+                }
+            """.trimIndent()
+            cssFontFamily = "'AppCustomFont', sans-serif"
+        }
+
         val needsInitialScroll = autoscroll || restoreScrollY > 0
         val bodyStyle = if (needsInitialScroll) {
             "style=\"visibility:hidden\""
@@ -60,7 +80,8 @@ object HtmlEngine : KoinComponent {
             .replace("QSPTEXTCOLOR", config.textColor.toHexColorStr())
             .replace("QSPBACKCOLOR", config.backColor.toHexColorStr())
             .replace("QSPLINKCOLOR", config.linkColor.toHexColorStr())
-            .replace("QSPFONTSTYLE", config.typeface.name.lowercase())
+            .replace("QSPCUSTOMFONTFACE", customFontFaceRule)
+            .replace("QSPFONTSTYLE", cssFontFamily)
             .replace("QSPFONTSIZE", config.fontSize.toString())
             .replace("BODYSTYLE", bodyStyle)
             .replace("REPLACETEXT", fixBody)

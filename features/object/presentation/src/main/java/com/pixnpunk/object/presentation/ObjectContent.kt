@@ -1,5 +1,6 @@
 package com.pixnpunk.`object`.presentation
 
+import android.graphics.Typeface
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -32,7 +33,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
-import com.pixnpunk.utils.ViewUtil.toTypeface
+import com.pixnpunk.utils.ViewUtil.toComposeFamily
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,8 +45,22 @@ fun ObjectContent(
     val state by component.model.collectAsState()
     val settings by component.settingsState.collectAsState()
 
-    val customFontFamily = remember(settings.typeface) {
-        FontFamily(settings.typeface.toTypeface())
+    val customFontFamily = remember(
+        settings.isUseCustomFont,
+        settings.customFontPath,
+        settings.typeface
+    ) {
+        if (settings.isUseCustomFont && settings.customFontPath.isNotEmpty()) {
+            File(settings.customFontPath).let {
+                if (it.exists()) {
+                    FontFamily(Typeface.createFromFile(it))
+                } else {
+                    settings.typeface.toComposeFamily()
+                }
+            }
+        } else {
+            settings.typeface.toComposeFamily()
+        }
     }
 
     Scaffold(

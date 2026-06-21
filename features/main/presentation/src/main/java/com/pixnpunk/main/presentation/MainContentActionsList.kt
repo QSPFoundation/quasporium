@@ -1,5 +1,6 @@
 package com.pixnpunk.main.presentation
 
+import android.graphics.Typeface
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -45,7 +46,8 @@ import coil3.compose.AsyncImage
 import com.pixnpunk.dto.LibGenItem
 import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.main.presentation.model.ParsedActionItem
-import com.pixnpunk.utils.ViewUtil.toTypeface
+import com.pixnpunk.utils.ViewUtil.toComposeFamily
+import java.io.File
 
 @Composable
 fun MainContentActionsList(
@@ -55,9 +57,24 @@ fun MainContentActionsList(
     onActionClicked: (Int) -> Unit,
     gridState: LazyStaggeredGridState
 ) {
-    val customFontFamily = remember(settings.typeface) {
-        FontFamily(settings.typeface.toTypeface())
+    val customFontFamily = remember(
+        settings.isUseCustomFont,
+        settings.customFontPath,
+        settings.typeface
+    ) {
+        if (settings.isUseCustomFont && settings.customFontPath.isNotEmpty()) {
+            File(settings.customFontPath).let {
+                if (it.exists()) {
+                    FontFamily(Typeface.createFromFile(it))
+                } else {
+                    settings.typeface.toComposeFamily()
+                }
+            }
+        } else {
+            settings.typeface.toComposeFamily()
+        }
     }
+
     val textStyle = MaterialTheme.typography.bodyLarge.merge(
         TextStyle(
             color = Color(settings.textColor),

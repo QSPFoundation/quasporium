@@ -35,12 +35,14 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
+import java.io.File
 
 class RealRootComponent(
     private val componentContext: ComponentContext,
     private val launchDirPicker: () -> Unit,
     private val launchFilePicker: () -> Unit,
     private val launchFilesPicker: () -> Unit,
+    private val launchFontPicker: () -> Unit,
     private val launchStorageAccess: () -> Unit,
     private val launchEngineIntent: (Pair<GameEntry, Int>) -> Unit,
 ) : ComponentContext by componentContext, RootComponent, KoinComponent {
@@ -105,6 +107,19 @@ class RealRootComponent(
                 )
             )
         }
+    }
+
+    fun processPickedFont(fontPath: String) {
+        val oldCustomFontPath = settingsState.value.customFontPath
+
+        if (oldCustomFontPath.isNotEmpty() && oldCustomFontPath != fontPath) {
+            val oldFile = File(oldCustomFontPath)
+            if (oldFile.exists()) { oldFile.delete() }
+        }
+
+        store.accept(
+            RootStore.Intent.UpdateCustomFontPath(fontPath)
+        )
     }
 
     fun processPickedFiles(filePaths: List<String>) {
@@ -239,6 +254,7 @@ class RealRootComponent(
                 showColorDialog = ::doShowDialog,
                 resetToDefault = { store.accept(RootStore.Intent.RestoreColorConfig(state = it)) },
                 showInputDialog = ::doShowDialog,
+                showFontDialog = launchFontPicker,
                 onDismissed = { settingsNavigation.dismiss() }
             )
         }
