@@ -7,13 +7,10 @@ import android.webkit.WebView
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.webkit.WebViewAssetLoader
+import java.io.File
 
 @Composable
 fun GameWebView(
@@ -59,6 +56,13 @@ fun GameWebView(
                                 ExternalStoragePathHandler(
                                     ctx,
                                     component.gameDirUriBox
+                                )
+                            )
+                            .addPathHandler(
+                                "/fonts/",
+                                WebViewAssetLoader.InternalStoragePathHandler(
+                                    ctx,
+                                    File(ctx.filesDir, "custom_fonts")
                                 )
                             )
                             .build(),

@@ -29,6 +29,8 @@ class GameWebViewExecutor(
                                         textColor = it.textColor,
                                         backColor = it.backColor,
                                         linkColor = it.linkColor,
+                                        isUseCustomFont = it.isUseCustomFont,
+                                        customFontPath = it.customFontPath,
                                         isImgLoadDis = it.isImgLoadDis,
                                         isAutoWidthImage = it.isAutoWidthImage,
                                         imageWidth = it.imageWidth,
