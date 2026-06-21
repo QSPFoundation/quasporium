@@ -19,6 +19,7 @@ import com.anggrayudi.storage.contract.StoragePermissionContract
 import com.anggrayudi.storage.extension.startActivitySafely
 import com.anggrayudi.storage.extension.toDocumentFile
 import com.anggrayudi.storage.file.MimeType
+import com.anggrayudi.storage.file.openInputStream
 import com.arkivanov.decompose.defaultComponentContext
 import com.pixnpunk.dto.OutputState
 import com.pixnpunk.game.presentation.GameActivity
@@ -26,6 +27,8 @@ import com.pixnpunk.utils.AddonsUtils
 import com.pixnpunk.utils.FileUtil.isWritableDir
 import com.pixnpunk.utils.FileUtil.isWritableFile
 import org.koin.android.ext.android.get
+import java.io.File
+import java.io.FileOutputStream
 import kotlin.concurrent.thread
 import kotlin.contracts.ExperimentalContracts
 
@@ -97,6 +100,33 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+    private val fontPickerLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.OpenDocument()
+        ) { uri ->
+            if (uri != null) {
+                val customFont = uri.toDocumentFile(this) ?: return@registerForActivityResult
+                if (customFont.isFile && customFont.canRead()) {
+                    File(
+                        File(filesDir, "custom_fonts").apply { mkdirs() },
+                        customFont.name ?: "custom_font_${System.currentTimeMillis()}.ttf"
+                    ).let { cachedFontFile ->
+                        runCatching {
+                            customFont.openInputStream(this)!!.use { inputStream ->
+                                FileOutputStream(cachedFontFile).use { outputStream ->
+                                    inputStream.copyTo(outputStream)
+                                }
+                            }
+                        }.onSuccess {
+                            val path = cachedFontFile.absolutePath
+                            if (path.isNotEmpty()) {
+                                root.processPickedFont(path)
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
     @OptIn(ExperimentalContracts::class)
     private val filesPickerLauncher =
@@ -205,14 +235,14 @@ class MainActivity : ComponentActivity() {
                 filesPickerLauncher.launch(arrayOf(MimeType.BINARY_FILE))
             },
             launchFontPicker = {
-                filePickerLauncher.launch(arrayOf(MimeType.FONT))
+                fontPickerLauncher.launch(arrayOf(MimeType.FONT))
             },
             launchStorageAccess = {
                 runCatching {
                     storageAccessLauncher.launch(
                         RequestStorageAccessContract.Options()
                     )
-                }.onFailure {  }
+                }.onFailure { }
             },
             launchEngineIntent = { (entry, i) ->
                 startActivitySafely(
