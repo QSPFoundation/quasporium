@@ -11,7 +11,6 @@ sealed interface GameWebViewStore : Store<GameWebViewStore.Intent, GameWebViewSt
     data class State(
         val htmlContentHash: Int = 0,
         val scrollYpos: Int = 0,
-
         val htmlContent: String = "",
         val htmlConfig: HtmlConfig = HtmlConfig()
     )
