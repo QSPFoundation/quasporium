@@ -9,8 +9,8 @@ import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.game.data.GameNativeEngine
 import com.pixnpunk.main.presentation.mvi.MainStore
 import com.pixnpunk.main.presentation.mvi.RealMainStore
-import com.pixnpunk.webview.GameWebViewComponent
-import com.pixnpunk.webview.RealGameWebViewComponent
+import com.pixnpunk.webview.WebViewComponent
+import com.pixnpunk.webview.RealWebViewComponent
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -32,8 +32,8 @@ class RealMainComponent(
         ).create()
     }
 
-    override val gameWebViewComponent: GameWebViewComponent =
-        RealGameWebViewComponent(
+    override val gameWebViewComponent: WebViewComponent =
+        RealWebViewComponent(
             componentContext = childContext("MainGameWebViewComponent"),
             htmlContentFlow = gameNativeEngine.gameStateFlow.map { it.mainDesc }.distinctUntilChanged(),
             settingsStateFlow = settingsState,

@@ -11,6 +11,7 @@ import com.pixnpunk.network.networkModule
 import com.pixnpunk.notification.notificationModule
 import com.pixnpunk.settings.presentation.di.featureSettingsModule
 import com.pixnpunk.stock.presentation.di.featureStockModules
+import com.pixnpunk.webview.di.featureWebViewModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.workmanager.koin.workManagerFactory
 import org.koin.core.context.startKoin
@@ -28,6 +29,7 @@ class Quasporium : Application() {
             modules(featureGameModule)
             modules(featureSettingsModule)
             modules(featureStockModules)
+            modules(featureWebViewModule)
         }
 
         WorkManager.getInstance(this).enqueueUniqueWork(

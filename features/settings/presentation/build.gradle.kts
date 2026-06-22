@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.pixnpunk.settings.presentation"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig { minSdk = 26 }
 

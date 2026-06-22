@@ -1,7 +1,7 @@
 package com.pixnpunk.extra.presentation
 
-import com.pixnpunk.webview.GameWebViewComponent
+import com.pixnpunk.webview.WebViewComponent
 
 interface ExtraComponent {
-    val gameWebViewComponent: GameWebViewComponent
+    val gameWebViewComponent: WebViewComponent
 }

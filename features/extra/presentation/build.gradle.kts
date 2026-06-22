@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "com.pixnpunk.extra.presentation"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig { minSdk = 26 }
 
@@ -27,7 +27,8 @@ android {
 dependencies {
     implementation(project(":core:dto"))
     implementation(project(":core:utils"))
-    implementation(project(":core:ui:webview"))
+
+    implementation(project(":features:webview:presentation"))
 
     implementation(project(":features:game:data"))
     implementation(project(":features:game:domain"))

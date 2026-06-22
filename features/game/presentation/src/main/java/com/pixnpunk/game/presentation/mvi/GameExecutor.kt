@@ -80,7 +80,9 @@ internal class GameExecutor(
                 }
             }
 
-            is GameStore.Intent.OnExecCode -> scope.launch { gameNativeEngine.onCodeExec(intent.codeToExec) }
+            is GameStore.Intent.OnExecCode -> scope.launch(Dispatchers.Default) {
+                gameNativeEngine.onCodeExec(intent.codeToExec)
+            }
 
             is GameStore.Intent.CleanMainSavedDesc ->
                 dispatch(
