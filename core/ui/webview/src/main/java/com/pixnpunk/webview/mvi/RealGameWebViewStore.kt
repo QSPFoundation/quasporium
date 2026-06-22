@@ -39,15 +39,9 @@ class RealGameWebViewStore(
                 )
             ),
             bootstrapper = SimpleBootstrapper(
-                GameWebViewStore.Action.StartSettingsConv,
-                GameWebViewStore.Action.StartHtmlParsingFlow,
+                GameWebViewStore.Action.StartHtmlParsingFlow
             ),
-            executorFactory = {
-                GameWebViewExecutor(
-                    htmlContentFlow,
-                    settingsStateFlow
-                )
-            },
+            executorFactory = { GameWebViewExecutor(htmlContentFlow) },
             reducer = GameWebViewReducer
         )
 }

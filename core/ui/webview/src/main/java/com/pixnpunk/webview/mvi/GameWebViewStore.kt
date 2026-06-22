@@ -27,7 +27,6 @@ sealed interface GameWebViewStore : Store<GameWebViewStore.Intent, GameWebViewSt
     sealed interface Label
 
     sealed interface Action {
-        data object StartSettingsConv : Action
         data object StartHtmlParsingFlow : Action
     }
 }
