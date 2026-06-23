@@ -1,10 +1,17 @@
 package com.pixnpunk.game.presentation
 
+import android.graphics.Typeface
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
+import androidx.compose.material3.Button
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Typography
+import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDragHandle
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
@@ -27,6 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
@@ -34,12 +42,15 @@ import com.pixnpunk.dialogs.presentation.DialogsMainContent
 import com.pixnpunk.extra.presentation.ExtraContent
 import com.pixnpunk.game.presentation.component.GameAppBar
 import com.pixnpunk.game.presentation.component.GameBottomBar
+import com.pixnpunk.game.presentation.theme.AppTypography
 import com.pixnpunk.game.presentation.theme.QuasporiumTheme
+import com.pixnpunk.game.presentation.theme.withDefaultFontFamily
 import com.pixnpunk.main.presentation.MainContent
 import com.pixnpunk.`object`.presentation.ObjectContent
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalDecomposeApi::class, ExperimentalMaterial3AdaptiveApi::class)
 @Composable
@@ -65,6 +76,8 @@ fun GameContent(
     val coroutineScope = rememberCoroutineScope()
     val doubleTapTimeout = LocalViewConfiguration.current.doubleTapTimeoutMillis
     var clickJob by remember { mutableStateOf<Job?>(null) }
+
+    var showDialog by remember { mutableStateOf(false) }
 
     val directive = calculatePaneScaffoldDirective(currentWindowAdaptiveInfo())
 
@@ -106,6 +119,8 @@ fun GameContent(
         }
     }
 
+    BackHandler { showDialog = true }
+
     val baseScaffoldValue = calculateThreePaneScaffoldValue(
         maxHorizontalPartitions = directive.maxHorizontalPartitions,
         maxVerticalPartitions = directive.maxVerticalPartitions,
@@ -126,10 +141,48 @@ fun GameContent(
     )
 
     QuasporiumTheme(
-        themeMode = settings.appThemeMode
+        themeMode = settings.appThemeMode,
+        typography = remember(
+            settings.isUseCustomFont,
+            settings.customFontPath
+        ) {
+            if (!settings.isUseCustomFont) {
+                AppTypography
+            } else {
+                Typography().withDefaultFontFamily(
+                    FontFamily(
+                        Typeface.createFromFile(
+                            settings.customFontPath
+                        )
+                    )
+                )
+            }
+        }
     ) {
         dialogSlot.child?.instance?.also {
             DialogsMainContent(it, settings)
+        }
+
+        if (showDialog) {
+            AlertDialog(
+                onDismissRequest = { showDialog = false },
+                title = { Text("Exit without saving?") },
+                confirmButton = {
+                    Button(onClick = {
+                        showDialog = false
+                        component.doFinishGame()
+                    }) {
+                        Text("Yes")
+                    }
+                },
+                dismissButton = {
+                    OutlinedButton(onClick = {
+                        showDialog = false
+                    }) {
+                        Text("No")
+                    }
+                }
+            )
         }
 
         GameBottomBar(
@@ -197,7 +250,7 @@ fun GameContent(
                                             component.doFinishGame()
                                         } else {
                                             clickJob = coroutineScope.launch {
-                                                delay(doubleTapTimeout)
+                                                delay(doubleTapTimeout.milliseconds)
                                                 snackbarHostState.showSnackbar(
                                                     message = "Press back again to close",
                                                     duration = SnackbarDuration.Short

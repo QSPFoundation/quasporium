@@ -8,6 +8,8 @@ data class SettingsEntity(
     val typeface: FontTypeface = FontTypeface.DEFAULT,
     val fontSize: Int = 16,
     val isUseGameFont: Boolean = false,
+    val isUseCustomFont: Boolean = false,
+    val customFontPath: String = "",
     val isTextColorOverride: Boolean = false,
     val textColor: Int = 0xFF000000.toInt(),
     val isBackColorOverride: Boolean = false,

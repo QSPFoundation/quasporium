@@ -7,7 +7,6 @@ import com.pixnpunk.dto.LibGenItem
 sealed interface MainStore : Store<MainStore.Intent, MainStore.State, MainStore.Label> {
     @Serializable
     data class State(
-        val mainDesc: String = "",
         val isActionsVis: Boolean = true,
         val actions: List<LibGenItem> = listOf(LibGenItem()),
     )
@@ -17,7 +16,6 @@ sealed interface MainStore : Store<MainStore.Intent, MainStore.State, MainStore.
     }
 
     sealed interface Message {
-        data class UpdateMainDesc(val mainDesc: String) : Message
         data class UpdateActions(val actions: List<LibGenItem>) : Message
         data class UpdateVisActions(val isActionsVis: Boolean) : Message
     }

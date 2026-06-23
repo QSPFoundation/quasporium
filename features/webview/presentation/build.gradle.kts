@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "com.pixnpunk.ui.webview"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig { minSdk = 26 }
 
@@ -28,6 +28,9 @@ dependencies {
     implementation(project(":core:utils"))
     implementation(project(":core:dto"))
 
+    implementation(project(":features:webview:data"))
+    implementation(project(":features:webview:domain"))
+
     implementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(platform(libs.androidx.compose.bom))
 
@@ -43,7 +46,17 @@ dependencies {
     implementation(libs.androidx.webkit)
 
     implementation(libs.storage)
+    implementation(libs.jsoup)
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin.android)
+
+    implementation(libs.essenty.lifecycle)
+    implementation(libs.essenty.coroutines)
+    implementation(libs.decompose.core)
+    implementation(libs.decompose.ext)
+    implementation(libs.decompose.ext.exp)
+    implementation(libs.mvikotlin.core)
+    implementation(libs.mvikotlin.main)
+    implementation(libs.mvikotlin.coro.ext)
 }

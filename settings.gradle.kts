@@ -32,8 +32,6 @@ include(
     ":core:network",
     ":core:utils",
     ":core:notification",
-    ":core:ui",
-    ":core:ui:webview",
 
     ":features",
     ":features:details",
@@ -58,4 +56,8 @@ include(
     ":features:extra:presentation",
     ":features:object",
     ":features:object:presentation",
+    ":features:webview",
+    ":features:webview:data",
+    ":features:webview:domain",
+    ":features:webview:presentation",
 )

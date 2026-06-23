@@ -14,6 +14,7 @@ sealed interface SettingsComponent {
     val showColorDialog: (ColorPickerState) -> Unit
     val resetToDefault: (ColorPickerState) -> Unit
     val showInputDialog: (InputState) -> Unit
+    val showFontDialog: () -> Unit
 
     val preferences: SharedPreferences
     val repository: SettingsRepository

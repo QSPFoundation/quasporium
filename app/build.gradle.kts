@@ -11,7 +11,7 @@ plugins {
 
 android {
     namespace = "com.pixnpunk.quasporium"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.pixnpunk.quasporium"
@@ -73,6 +73,7 @@ dependencies {
     implementation(project(":features:settings:data"))
     implementation(project(":features:settings:presentation"))
     implementation(project(":features:game:presentation"))
+    implementation(project(":features:webview:presentation"))
 
     implementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(platform(libs.androidx.compose.bom))

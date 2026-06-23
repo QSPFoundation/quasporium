@@ -1,17 +1,17 @@
 package com.pixnpunk.utils
 
-import android.graphics.Typeface
+import androidx.compose.ui.text.font.FontFamily
 import com.pixnpunk.dto.FontTypeface
 import java.util.*
 import java.util.concurrent.TimeUnit
 
 object ViewUtil {
-    fun FontTypeface.toTypeface(): Typeface =
+    fun FontTypeface.toComposeFamily(): FontFamily =
         when (this) {
-            FontTypeface.DEFAULT -> Typeface.DEFAULT
-            FontTypeface.SANS_SERIF -> Typeface.SANS_SERIF
-            FontTypeface.SERIF -> Typeface.SERIF
-            FontTypeface.MONOSPACE -> Typeface.MONOSPACE
+            FontTypeface.DEFAULT -> FontFamily.Default
+            FontTypeface.SANS_SERIF -> FontFamily.SansSerif
+            FontTypeface.SERIF -> FontFamily.Serif
+            FontTypeface.MONOSPACE -> FontFamily.Monospace
         }
 
     fun Long.formatEta(): String {

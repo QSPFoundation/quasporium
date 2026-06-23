@@ -16,7 +16,11 @@ class DetailsExecutor(
                 if (action.entry.listId == GameListType.Playable) {
                     scope.launch(Dispatchers.IO) {
                         observeEntryByIdUseCase.execute(action.entry.id).collect { entry ->
-                            scope.launch { dispatch(DetailsStore.Message.UpdateEntry(entry)) }
+                            if (entry != null) {
+                                scope.launch { dispatch(DetailsStore.Message.UpdateEntry(entry)) }
+                            } else {
+                                scope.launch { publish(DetailsStore.Label.NullUpdateReceived) }
+                            }
                         }
                     }
                 }

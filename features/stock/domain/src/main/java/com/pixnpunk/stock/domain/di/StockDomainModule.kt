@@ -10,18 +10,19 @@ import com.pixnpunk.stock.domain.usecase.GetTranslatorSuggestionUseCase
 import com.pixnpunk.stock.domain.usecase.ObserveEntryByIdUseCase
 import com.pixnpunk.stock.domain.usecase.SyncDictionariesUseCase
 import com.pixnpunk.stock.domain.usecase.UpsertEntryUseCase
+import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
 val stockDomainModule = module {
-    singleOf(::FillAndInsertEntryUseCase)
-    singleOf(::DeleteLocalGameEntriesUseCase)
-    singleOf(::DownloadGameArchUseCase)
-    singleOf(::ObserveEntryByIdUseCase)
-    singleOf(::UpsertEntryUseCase)
-    singleOf(::SyncDictionariesUseCase)
-    singleOf(::GetLocalGameEntriesUseCase)
-    singleOf(::GetRemoteGameEntriesExcludingLocalUseCase)
-    singleOf(::GetAuthorSuggestionUseCase)
-    singleOf(::GetTranslatorSuggestionUseCase)
+    factoryOf(::FillAndInsertEntryUseCase)
+    factoryOf(::DeleteLocalGameEntriesUseCase)
+    factoryOf(::DownloadGameArchUseCase)
+    factoryOf(::ObserveEntryByIdUseCase)
+    factoryOf(::UpsertEntryUseCase)
+    factoryOf(::SyncDictionariesUseCase)
+    factoryOf(::GetLocalGameEntriesUseCase)
+    factoryOf(::GetRemoteGameEntriesExcludingLocalUseCase)
+    factoryOf(::GetAuthorSuggestionUseCase)
+    factoryOf(::GetTranslatorSuggestionUseCase)
 }

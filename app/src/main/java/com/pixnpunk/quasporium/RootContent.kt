@@ -79,33 +79,37 @@ fun RootContent(
         }
 
         Box(modifier = Modifier.fillMaxSize()) {
-            ListDetailPaneScaffold(
-                directive = directive,
-                value = remember(scaffoldValue, detailsSlotIsNotEmpty, showSettingsInExtraPane) {
-                    ThreePaneScaffoldValue(
-                        primary = if (detailsSlotIsNotEmpty) scaffoldValue.primary else PaneAdaptedValue.Hidden,
-                        secondary = scaffoldValue.secondary,
-                        tertiary = if (showSettingsInExtraPane) scaffoldValue.tertiary else PaneAdaptedValue.Hidden
-                    )
-                },
-                listPane = {
-                    AnimatedPane {
-                        StockContent(component.stockComponent)
-                    }
-                },
-                detailPane = {
-                    AnimatedPane {
-                        detailsSlot.child?.instance?.also {
-                            DetailsContent(it)
+            Surface(
+                color = MaterialTheme.colorScheme.background
+            ) {
+                ListDetailPaneScaffold(
+                    directive = directive,
+                    value = remember(scaffoldValue, detailsSlotIsNotEmpty, showSettingsInExtraPane) {
+                        ThreePaneScaffoldValue(
+                            primary = if (detailsSlotIsNotEmpty) scaffoldValue.primary else PaneAdaptedValue.Hidden,
+                            secondary = scaffoldValue.secondary,
+                            tertiary = if (showSettingsInExtraPane) scaffoldValue.tertiary else PaneAdaptedValue.Hidden
+                        )
+                    },
+                    listPane = {
+                        AnimatedPane {
+                            StockContent(component.stockComponent)
+                        }
+                    },
+                    detailPane = {
+                        AnimatedPane {
+                            detailsSlot.child?.instance?.also {
+                                DetailsContent(it)
+                            }
+                        }
+                    },
+                    extraPane = {
+                        AnimatedPane {
+                            if (showSettingsInExtraPane) { SettingsContent(settingsChild) }
                         }
                     }
-                },
-                extraPane = {
-                    AnimatedPane {
-                        if (showSettingsInExtraPane) { SettingsContent(settingsChild) }
-                    }
-                }
-            )
+                )
+            }
 
             AnimatedVisibility(
                 visible = showSettingsAsOverlay,

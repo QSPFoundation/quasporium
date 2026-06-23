@@ -1,42 +1,30 @@
 package com.pixnpunk.extra.presentation
 
 import com.arkivanov.decompose.ComponentContext
-import com.arkivanov.mvikotlin.core.instancekeeper.getStore
-import com.arkivanov.mvikotlin.extensions.coroutines.stateFlow
-import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
+import com.arkivanov.decompose.childContext
 import com.pixnpunk.dto.SettingsEntity
-import com.pixnpunk.extra.presentation.mvi.ExtraStore
-import com.pixnpunk.extra.presentation.mvi.RealExtraStore
 import com.pixnpunk.game.data.GameNativeEngine
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import com.pixnpunk.webview.WebViewComponent
+import com.pixnpunk.webview.RealWebViewComponent
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.serialization.serializer
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import org.koin.core.component.KoinComponent
 
 class RealExtraComponent(
     private val componentContext: ComponentContext,
     private val gameNativeEngine: GameNativeEngine,
-    override val settingsState: StateFlow<SettingsEntity>,
-    override val gameDirUriBox: String,
-    override val onExecValue: (String) -> Unit
+    private val settingsState: StateFlow<SettingsEntity>,
+    private val gameDirUriBox: String,
+    private val onExecValue: (String) -> Unit
 ) : ComponentContext by componentContext, ExtraComponent, KoinComponent {
 
-    private val store = instanceKeeper.getStore {
-        RealExtraStore(
-            storeFactory = DefaultStoreFactory(),
-            gameNativeEngine = gameNativeEngine,
-            stateKeeper = stateKeeper
-        ).create()
-    }
-
-    init {
-        stateKeeper.register(
-            key = "ExtraStoreSavedState",
-            strategy = serializer(),
-            supplier = { store.state }
+    override val gameWebViewComponent: WebViewComponent =
+        RealWebViewComponent(
+            componentContext = childContext("ExtraGameWebViewComponent"),
+            htmlContentFlow = gameNativeEngine.gameStateFlow.map { it.varsDesc }.distinctUntilChanged(),
+            settingsStateFlow = settingsState,
+            gameDirUriBox = gameDirUriBox,
+            onExecValue = onExecValue,
         )
-    }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    override val model: StateFlow<ExtraStore.State> = store.stateFlow
 }

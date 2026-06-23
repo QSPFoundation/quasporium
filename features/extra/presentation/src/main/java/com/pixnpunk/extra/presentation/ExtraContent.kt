@@ -11,8 +11,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import com.pixnpunk.webview.GameWebView
 
@@ -22,9 +20,6 @@ fun ExtraContent(
     component: ExtraComponent,
     dismiss: () -> Unit
 ) {
-    val state by component.model.collectAsState()
-    val settings by component.settingsState.collectAsState()
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -44,12 +39,7 @@ fun ExtraContent(
             modifier = Modifier
                 .padding(paddingValues)
                 .fillMaxSize(),
-            rawHtmlContent = state.extraDesc,
-            backColor = settings.backColor,
-            settingsEntity = settings,
-            isEnableAutoscroll = settings.isYesScrollExtra,
-            gameDirUriBox = component.gameDirUriBox,
-            onExecValue = component.onExecValue
+            component = component.gameWebViewComponent
         )
     }
 }

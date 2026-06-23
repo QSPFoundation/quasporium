@@ -5,12 +5,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.content.edit
 import com.arkivanov.essenty.instancekeeper.InstanceKeeper
-import com.pixnpunk.dto.AppThemeMode
-import com.pixnpunk.dto.BinaryPrefFormat
 import com.pixnpunk.dto.ColorPickerState
-import com.pixnpunk.dto.FontTypeface
 import com.pixnpunk.dto.InputState
-import com.pixnpunk.dto.NativeLibAuthors
 import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.settings.dto.model.PrefKeys
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -63,8 +59,14 @@ class SettingsRepository(
             globalPrefs.getString(key, default) ?: default
         }
 
+    private inline fun <reified T : Enum<T>> parseEnumSafety(value: String, default: T): T =
+        enumValues<T>().find { it.name == value } ?: default
+
     private fun readSettings() = SettingsEntity(
         fontSize = getIntMerged(PrefKeys.FONT_SIZE, defValue.fontSize),
+
+        isUseCustomFont = getBooleanMerged(PrefKeys.CUSTOM_FONT_ENABLED, defValue.isUseCustomFont),
+        customFontPath = getStringMerged(PrefKeys.CUSTOM_FONT_PATH, defValue.customFontPath),
 
         isTextColorOverride = getBooleanMerged(PrefKeys.TEXT_COLOR_OVERRIDE, defValue.isTextColorOverride),
         textColor = getIntMerged(PrefKeys.TEXT_COLOR, defValue.textColor),
@@ -93,21 +95,25 @@ class SettingsRepository(
         visActsCount = getIntMerged(PrefKeys.ACTS_COUNT, defValue.visActsCount),
         language = getStringMerged(PrefKeys.APP_LANG, defValue.language),
 
-        typeface = runCatching {
-            FontTypeface.valueOf(getStringMerged(PrefKeys.FONT_STYLE, defValue.typeface.name))
-        }.getOrDefault(defValue.typeface),
+        typeface = parseEnumSafety(
+            getStringMerged(PrefKeys.FONT_STYLE, defValue.typeface.name),
+            defValue.typeface
+        ),
 
-        nativeLibFrom = runCatching {
-            NativeLibAuthors.valueOf(getStringMerged(PrefKeys.LIB_VERSION, defValue.nativeLibFrom.name))
-        }.getOrDefault (defValue.nativeLibFrom),
+        nativeLibFrom = parseEnumSafety(
+            getStringMerged(PrefKeys.LIB_VERSION, defValue.nativeLibFrom.name),
+            defValue.nativeLibFrom
+        ),
 
-        appThemeMode = runCatching {
-            AppThemeMode.valueOf(getStringMerged(PrefKeys.APP_THEME, defValue.appThemeMode.name))
-        }.getOrDefault(defValue.appThemeMode),
+        appThemeMode = parseEnumSafety(
+            getStringMerged(PrefKeys.APP_THEME, defValue.appThemeMode.name),
+            defValue.appThemeMode
+        ),
 
-        binaryPref = runCatching {
-            BinaryPrefFormat.valueOf(getStringMerged(PrefKeys.BINARY_PREF, defValue.binaryPref.name))
-        }.getOrDefault(defValue.binaryPref),
+        binaryPref = parseEnumSafety(
+            getStringMerged(PrefKeys.BINARY_PREF, defValue.binaryPref.name),
+            defValue.binaryPref
+        ),
     )
 
     fun emitValue(newSettings: SettingsEntity) {
@@ -140,5 +146,9 @@ class SettingsRepository(
             if (state == InputState.INPUT_IMAGE_WIDTH) putInt(PrefKeys.IMG_MANUAL_WIDTH, value)
             if (state == InputState.INPUT_IMAGE_HEIGHT) putInt(PrefKeys.IMG_MANUAL_HEIGHT, value)
         }
+    }
+
+    fun updateCustomFontPath(filePath: String) {
+        targetPrefsToEdit.edit { putString(PrefKeys.CUSTOM_FONT_PATH, filePath) }
     }
 }

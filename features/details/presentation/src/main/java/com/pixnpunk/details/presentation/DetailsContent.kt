@@ -7,6 +7,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -16,6 +17,7 @@ import com.pixnpunk.details.presentation.content.DetailsButtonsSet
 import com.pixnpunk.details.presentation.content.DetailsDescription
 import com.pixnpunk.details.presentation.content.DetailsPrimaryInfo
 import com.pixnpunk.details.presentation.content.DetailsSecondaryInfo
+import com.pixnpunk.details.presentation.mvi.DetailsStore
 import com.pixnpunk.dto.GameListType
 
 @Composable
@@ -26,6 +28,14 @@ fun DetailsContent(
     val settings by component.settingsState.collectAsState()
 
     val entry = state.gameEntry
+
+    LaunchedEffect(Unit) {
+        component.label.collect {
+            when (it) {
+                DetailsStore.Label.NullUpdateReceived -> component.onDismissed()
+            }
+        }
+    }
 
     Scaffold(
         topBar = { DetailsAppBar(component) }

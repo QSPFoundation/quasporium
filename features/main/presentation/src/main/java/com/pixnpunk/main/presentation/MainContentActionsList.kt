@@ -1,5 +1,6 @@
 package com.pixnpunk.main.presentation
 
+import android.graphics.Typeface
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -45,7 +46,8 @@ import coil3.compose.AsyncImage
 import com.pixnpunk.dto.LibGenItem
 import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.main.presentation.model.ParsedActionItem
-import com.pixnpunk.utils.ViewUtil.toTypeface
+import com.pixnpunk.utils.ViewUtil.toComposeFamily
+import java.io.File
 
 @Composable
 fun MainContentActionsList(
@@ -55,9 +57,24 @@ fun MainContentActionsList(
     onActionClicked: (Int) -> Unit,
     gridState: LazyStaggeredGridState
 ) {
-    val customFontFamily = remember(settings.typeface) {
-        FontFamily(settings.typeface.toTypeface())
+    val customFontFamily = remember(
+        settings.isUseCustomFont,
+        settings.customFontPath,
+        settings.typeface
+    ) {
+        if (settings.isUseCustomFont && settings.customFontPath.isNotEmpty()) {
+            File(settings.customFontPath).let {
+                if (it.exists()) {
+                    FontFamily(Typeface.createFromFile(it))
+                } else {
+                    settings.typeface.toComposeFamily()
+                }
+            }
+        } else {
+            settings.typeface.toComposeFamily()
+        }
     }
+
     val textStyle = MaterialTheme.typography.bodyLarge.merge(
         TextStyle(
             color = Color(settings.textColor),
@@ -66,7 +83,6 @@ fun MainContentActionsList(
             background = Color(settings.backColor)
         )
     )
-    val cardBackgroundColor = Color(settings.backColor)
 
     BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
         val columnCount = remember(maxWidth, maxHeight) {
@@ -119,19 +135,19 @@ fun MainContentActionsList(
         ) {
             itemsIndexed(
                 items = actions,
-                key = { _, item -> item.original.text },
+                key = { index, item -> "$index:${item.original.text}" },
                 span = { index, _ ->
-                    if (spanMap[index] == true) StaggeredGridItemSpan.FullLine
+                    if (spanMap[index]) StaggeredGridItemSpan.FullLine
                     else StaggeredGridItemSpan.SingleLane
                 },
             ) { index, item ->
                 GridCell(
                     modifier = Modifier.animateItem(),
                     item = item,
-                    isFullLine = spanMap[index] == true,
+                    isFullLine = spanMap[index],
                     onItemClick = { onActionClicked(index) },
                     textStyle = textStyle,
-                    cardBackgroundColor = cardBackgroundColor
+                    cardBackgroundColor = Color(settings.backColor)
                 )
             }
         }
@@ -170,10 +186,10 @@ private fun calculateSpans(
     textMeasurer: TextMeasurer,
     textStyle: TextStyle,
     density: Density
-): Map<Int, Boolean> {
-    if (columnCount <= 1) return items.indices.associateWith { true }
+): BooleanArray {
+    if (columnCount <= 1) return booleanArrayOf(false)
 
-    val spans = HashMap<Int, Boolean>(items.size)
+    val spans = BooleanArray(items.size)
     val imageOverheadPx = with(density) { 104.dp.toPx() }
     val noImageOverheadPx = with(density) { 32.dp.toPx() }
 
@@ -192,24 +208,17 @@ private fun calculateSpans(
         spans[index] = (textWidth + overheadPx > columnWidthPx)
     }
 
-    var currentGroupSize = 0
-    val buffer = mutableListOf<Int>()
-    items.indices.forEach { index ->
-        if (spans[index] == true) {
-            buffer.forEach { spans[it] = true }
-            buffer.clear()
-            currentGroupSize = 0
-        } else {
-            buffer.add(index)
-            currentGroupSize++
-            if (currentGroupSize == columnCount) {
-                buffer.clear()
-                currentGroupSize = 0
-            }
+    var groupStart = 0
+    for (i in items.indices) {
+        if (spans[i]) {
+            for (j in groupStart until i) spans[j] = true
+            groupStart = i + 1
+        } else if (i - groupStart + 1 == columnCount) {
+            groupStart = i + 1
         }
     }
 
-    buffer.forEach { spans[it] = true }
+    for (j in groupStart until items.size) spans[j] = true
 
     return spans
 }

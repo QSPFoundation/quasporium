@@ -7,10 +7,10 @@ import kotlinx.coroutines.flow.Flow
 
 interface LocalRepository {
     fun observeEntryUrls(): Flow<List<String>>
-    fun observeEntryById(entryId: Long): Flow<GameEntry>
+    fun observeEntryById(entryId: Long): Flow<GameEntry?>
+    fun getGameEntriesPager(searchState: SearchState): Flow<PagingData<GameEntry>>
     suspend fun deleteGameEntries(idsDelete: Set<Long>): Int
     suspend fun getGameEntryById(entryId: Long): GameEntry
-    fun getGameEntriesPager(searchState: SearchState): Flow<PagingData<GameEntry>>
     suspend fun updateEntry(entry: GameEntry)
     suspend fun updateOrInsertEntry(entry: GameEntry)
     suspend fun insertDefaultEntry(newEntry: GameEntry)

@@ -9,11 +9,9 @@ import androidx.core.net.toUri
 import androidx.webkit.WebViewAssetLoader
 import com.pixnpunk.utils.Base64Util.decodeBase64
 import com.pixnpunk.utils.Base64Util.isBase64
-import com.pixnpunk.utils.HtmlUtil.isContainsHtmlTags
-import com.pixnpunk.utils.HtmlUtil.removeHtmlTags
 import kotlin.contracts.ExperimentalContracts
 
-internal class GameWebViewClient(
+internal class WebViewClient(
     private val assetLoader: WebViewAssetLoader,
     private val onExecValue: (String) -> Unit,
     private val onStartActivity: (Intent) -> Unit
@@ -36,11 +34,7 @@ internal class GameWebViewClient(
                         }
                     }
                     .let {
-                        if (it.isContainsHtmlTags()) {
-                            onExecValue(it.removeHtmlTags())
-                        } else {
-                            onExecValue(it)
-                        }
+                        onExecValue(it)
                     }
 
             "https", "http" ->

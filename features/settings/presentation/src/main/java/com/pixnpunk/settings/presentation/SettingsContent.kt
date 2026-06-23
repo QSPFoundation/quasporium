@@ -73,7 +73,8 @@ fun SettingsContent(
                     is SettingsComponent.Child.TextChild ->
                         SettingsTextContent(
                             showColorDialog = component.showColorDialog,
-                            resetToDefault = component.resetToDefault
+                            resetToDefault = component.resetToDefault,
+                            showFontDialog = component.showFontDialog
                         )
 
                     is SettingsComponent.Child.RootChild ->

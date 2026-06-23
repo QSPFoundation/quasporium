@@ -3,8 +3,6 @@
 package com.pixnpunk.game.data.impl
 
 import android.content.Context
-import android.os.Handler
-import android.os.Looper
 import android.os.SystemClock
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
@@ -20,7 +18,6 @@ import com.pixnpunk.game.domain.repository.GameInterface
 import com.pixnpunk.utils.FileUtil.isWritableDir
 import com.pixnpunk.utils.FileUtil.isWritableFile
 import com.pixnpunk.utils.HtmlUtil.getSrcDir
-import com.pixnpunk.utils.HtmlUtil.isContainsHtmlTags
 import com.pixnpunk.utils.HtmlUtil.removeImgTags
 import com.pixnpunk.utils.PathUtil.getFilename
 import com.pixnpunk.utils.PathUtil.normalizeContentPath
@@ -36,12 +33,7 @@ import kotlinx.coroutines.newSingleThreadContext
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import java.util.concurrent.ArrayBlockingQueue
-import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
-import java.util.concurrent.locks.ReentrantLock
-import kotlin.concurrent.thread
-import kotlin.concurrent.withLock
 import kotlin.contracts.ExperimentalContracts
 
 class LibDelegate(
