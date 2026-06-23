@@ -9,14 +9,13 @@ import com.pixnpunk.webview.domain.repository.HtmlProcessorRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import java.io.File
 
 class HtmlProcessorRepositoryImpl(
     private val context: Context
 ) : HtmlProcessorRepository {
-    private val execLinkMatcher: Regex =
-        Regex("href=\"exec:([\\s\\S]*?)\"", RegexOption.IGNORE_CASE)
 
     private val template by lazy {
         context.assets.open("webview-template.html").bufferedReader().use { it.readText() }
@@ -26,10 +25,20 @@ class HtmlProcessorRepositoryImpl(
         rawBody: String,
         config: HtmlConfig
     ): String = withContext(Dispatchers.IO) {
+        var preCleanedBody = rawBody.replace("\n", "<br>")
+        if (config.isUseHtml && preCleanedBody.contains("\\\"")) {
+            preCleanedBody = preCleanedBody.replace("\\\"", "'")
+        }
+
         val document = Jsoup.parse(
-            applyTemplate(rawBody, config)
-        ).apply {
-            outputSettings().prettyPrint(false)
+            applyTemplate(
+                bodyContent = preCleanedBody,
+                config = config
+            )
+        ).apply { outputSettings().prettyPrint(false) }
+
+        if (config.isUseHtml) {
+            document.encodeExecLinks()
         }
 
         if (config.isImgLoadDis) {
@@ -44,8 +53,10 @@ class HtmlProcessorRepositoryImpl(
         document.html()
     }
 
-    private fun applyTemplate(body: String, config: HtmlConfig): String {
-        var fixBody = body.replace("\n", "<br>")
+    private fun applyTemplate(
+        bodyContent: String,
+        config: HtmlConfig
+    ): String {
         var customFontFaceRule = ""
 
         var cssFontFamily = when (config.typeface) {
@@ -53,23 +64,6 @@ class HtmlProcessorRepositoryImpl(
             FontTypeface.SERIF -> "serif"
             FontTypeface.MONOSPACE -> "monospace"
             else -> "sans-serif"
-        }
-
-        if (config.isUseHtml) {
-            if (fixBody.contains("\\\"")) {
-                fixBody = fixBody.replace("\\\"", "'")
-            }
-
-            if (execLinkMatcher.containsMatchIn(fixBody)) {
-                fixBody = execLinkMatcher.replace(fixBody) { match ->
-                    """href="exec:${
-                        Base64.encodeToString(
-                            match.groupValues[2].replace("\\", "/").encodeToByteArray(),
-                            Base64.NO_WRAP
-                        )
-                    }"""
-                }
-            }
         }
 
         if (config.isUseCustomFont && config.customFontPath.isNotEmpty()) {
@@ -90,7 +84,27 @@ class HtmlProcessorRepositoryImpl(
             .replace("QSPFONTSIZE", config.fontSize.toString())
             .replace("QSPCUSTOMFONTFACE", customFontFaceRule)
             .replace("QSPFONTSTYLE", cssFontFamily)
-            .replace("REPLACETEXT", fixBody)
+            .replace("REPLACETEXT", bodyContent)
+    }
+
+    private fun Document.encodeExecLinks(
+
+    ) = select("[href]").forEach { element ->
+        element.attr("href").let { href ->
+            if (href.startsWith("exec:", ignoreCase = true)) {
+                element.attr(
+                    "href", "exec:${
+                        Base64.encodeToString(
+                            href
+                                .substring(5)
+                                .replace("\\", "/")
+                                .encodeToByteArray(),
+                            Base64.NO_WRAP
+                        )
+                    }"
+                )
+            }
+        }
     }
 
     private fun Element.handleImagesInHtml(
