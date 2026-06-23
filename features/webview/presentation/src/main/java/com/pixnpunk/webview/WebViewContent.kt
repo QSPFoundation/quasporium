@@ -12,6 +12,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.webkit.WebViewAssetLoader
+import com.pixnpunk.ui.webview.R
+import com.pixnpunk.utils.ColorUtil.toHexColorStr
 import java.io.File
 
 @Composable
@@ -24,14 +26,32 @@ fun GameWebView(
     AndroidView(
         modifier = modifier,
         update = { webView ->
-            if (webView.tag != state.htmlContentHash) {
+            val contentHash = state.htmlContentHash
+            val themeHash = arrayOf(
+                state.htmlConfig.backColor,
+                state.htmlConfig.textColor,
+                state.htmlConfig.linkColor
+            ).contentHashCode()
+
+            if (webView.getTag(R.id.tag_content_hash) != contentHash) {
                 webView.loadDataWithBaseURL(
                     "https://appassets.androidplatform.net/game_files/",
                     state.htmlContent,
                     "text/html", "UTF-8", null
                 )
-
-                webView.tag = state.htmlContentHash
+                webView.setTag(R.id.tag_content_hash, contentHash)
+                webView.setTag(R.id.tag_theme_hash, themeHash)
+            } else if (webView.getTag(R.id.tag_theme_hash) != themeHash) {
+                webView.evaluateJavascript(
+                    """
+                        document.documentElement.style.setProperty('--qsp-bg-color', '${state.htmlConfig.backColor.toHexColorStr()}');
+                        document.documentElement.style.setProperty('--qsp-text-color', '${state.htmlConfig.textColor.toHexColorStr()}');
+                        document.documentElement.style.setProperty('--qsp-link-color', '${state.htmlConfig.linkColor.toHexColorStr()}');
+                        document.documentElement.style.setProperty('--qsp-font-size', '${state.htmlConfig.fontSize}');
+                    """.trimIndent(),
+                    null
+                )
+                webView.setTag(R.id.tag_theme_hash, themeHash)
             }
         },
         factory = { ctx ->

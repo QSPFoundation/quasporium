@@ -6,19 +6,27 @@
     <style type="text/css">
         QSPCUSTOMFONTFACE
 
+        :root {
+            --qsp-bg-color: QSPBACKCOLOR;
+            --qsp-text-color: QSPTEXTCOLOR;
+            --qsp-link-color: QSPLINKCOLOR;
+            --qsp-font-size: QSPFONTSIZE;
+            --qsp-font-style: QSPFONTSTYLE;
+        }
+
         body {
           margin: 0;
           padding: 0.5em;
-          color: QSPTEXTCOLOR;
-          background-color: QSPBACKCOLOR;
-          font-size: QSPFONTSIZE;
-          font-family: QSPFONTSTYLE;
+          color: var(--qsp-text-color);
+          background-color: var(--qsp-bg-color);
+          font-size: var(--qsp-font-size);
+          font-family: var(--qsp-font-style);
           overflow-wrap: break-word;
           word-wrap: break-word;
         }
 
-        a { color: QSPLINKCOLOR; }
-        a:link { color: QSPLINKCOLOR; }
+        a { color: var(--qsp-link-color); }
+        a:link { color: var(--qsp-link-color); }
 
         img {
           max-width: 100%;
@@ -26,13 +34,7 @@
           content-visibility: auto;
         }
 
-        video, iframe {
-            max-width: 100%;
-        }
-
-        table {
-            max-width: 100%;
-        }
+        video, iframe, table { max-width: 100%; }
 
         ::-webkit-scrollbar {
             width: 6px;
@@ -47,5 +49,5 @@
         }
     </style>
 </head>
-<body BODYSTYLE>REPLACETEXTSCROLLSCRIPT</body>
+<body>REPLACETEXT</body>
 </html>

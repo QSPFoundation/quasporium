@@ -2,6 +2,7 @@ package com.pixnpunk.webview.domain.model
 
 import com.pixnpunk.dto.FontTypeface
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 @Serializable
 data class HtmlConfig(

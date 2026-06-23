@@ -83,73 +83,69 @@ class HtmlProcessorRepositoryImpl(
             cssFontFamily = "'AppCustomFont', sans-serif"
         }
 
-        println(config.backColor.toHexColorStr())
-
         return template
             .replace("QSPTEXTCOLOR", config.textColor.toHexColorStr())
             .replace("QSPBACKCOLOR", config.backColor.toHexColorStr())
             .replace("QSPLINKCOLOR", config.linkColor.toHexColorStr())
+            .replace("QSPFONTSIZE", config.fontSize.toString())
             .replace("QSPCUSTOMFONTFACE", customFontFaceRule)
             .replace("QSPFONTSTYLE", cssFontFamily)
-            .replace("QSPFONTSIZE", config.fontSize.toString())
-            .replace("BODYSTYLE", "")
             .replace("REPLACETEXT", fixBody)
-            .replace("SCROLLSCRIPT", "")
     }
 
-    private fun Element.handleImagesInHtml(config: HtmlConfig) {
-        select("img").forEach { img ->
-            img.attr("loading", "lazy")
+    private fun Element.handleImagesInHtml(
+        config: HtmlConfig
+    ) = select("img").forEach { img ->
+        img.attr("loading", "lazy")
 
-            if (config.isUseFullscreenImages) {
-                val parent = img.parent()
-                val isInsideLink = parent != null && parent.tagName() == "a"
-                if (!isInsideLink && !img.hasAttr("onclick")) {
-                    img.attr("onclick", "img.onClickImage(this.src);")
-                }
+        if (config.isUseFullscreenImages) {
+            val parent = img.parent()
+            val isInsideLink = parent != null && parent.tagName() == "a"
+            if (!isInsideLink && !img.hasAttr("onclick")) {
+                img.attr("onclick", "img.onClickImage(this.src);")
             }
-
-            val styleBuilder = StringBuilder()
-            val oldStyle = img.attr("style")
-            if (oldStyle.isNotBlank()) {
-                styleBuilder.append(oldStyle)
-                if (!oldStyle.trim().endsWith(";")) styleBuilder.append(";")
-            }
-
-            if (config.isAutoWidthImage && config.isAutoHeightImage) {
-                styleBuilder.append(" display: inline; height: auto; max-width: 100%;")
-            } else {
-                if (!config.isAutoWidthImage) {
-                    styleBuilder.append(" max-width: ${config.imageWidth}px;")
-                }
-                if (!config.isAutoHeightImage) {
-                    styleBuilder.append(" max-height: ${config.imageHeight}px;")
-                }
-            }
-
-            img.attr("style", styleBuilder.toString())
         }
+
+        val styleBuilder = StringBuilder()
+        val oldStyle = img.attr("style")
+        if (oldStyle.isNotBlank()) {
+            styleBuilder.append(oldStyle)
+            if (!oldStyle.trim().endsWith(";")) styleBuilder.append(";")
+        }
+
+        if (config.isAutoWidthImage && config.isAutoHeightImage) {
+            styleBuilder.append(" display: inline; height: auto; max-width: 100%;")
+        } else {
+            if (!config.isAutoWidthImage) {
+                styleBuilder.append(" max-width: ${config.imageWidth}px;")
+            }
+            if (!config.isAutoHeightImage) {
+                styleBuilder.append(" max-height: ${config.imageHeight}px;")
+            }
+        }
+
+        img.attr("style", styleBuilder.toString())
     }
 
-    private fun Element.handleVideosInHtml(config: HtmlConfig) {
-        select("video").forEach { video ->
-            val oldStyle = video.attr("style")
-            if (!oldStyle.contains("max-width")) {
-                video.attr("style", "$oldStyle max-width: 100%; height: auto;")
-            }
+    private fun Element.handleVideosInHtml(
+        config: HtmlConfig
+    ) = select("video").forEach { video ->
+        val oldStyle = video.attr("style")
+        if (!oldStyle.contains("max-width")) {
+            video.attr("style", "$oldStyle max-width: 100%; height: auto;")
+        }
 
-            video.attr("loop", "")
-            video.attr("playsinline", "")
-            video.attr("webkit-playsinline", "")
+        video.attr("loop", "")
+        video.attr("playsinline", "")
+        video.attr("webkit-playsinline", "")
 
-            if (!config.isVideoMute) {
-                video.removeAttr("muted")
-                video.attr("controls", "")
-            } else {
-                video.attr("autoplay", "")
-                video.attr("muted", "")
-                video.removeAttr("controls")
-            }
+        if (!config.isVideoMute) {
+            video.removeAttr("muted")
+            video.attr("controls", "")
+        } else {
+            video.attr("autoplay", "")
+            video.attr("muted", "")
+            video.removeAttr("controls")
         }
     }
 }
