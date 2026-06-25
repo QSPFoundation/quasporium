@@ -42,14 +42,11 @@ class MainActivity : ComponentActivity() {
             ActivityResultContracts.OpenDocumentTree()
         ) {
             if (it != null) {
-                val contentResolver = applicationContext.contentResolver
                 contentResolver.takePersistableUriPermission(
                     it,
                     Intent.FLAG_GRANT_READ_URI_PERMISSION
                             or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                 )
-
-                thread { cleanupRedundantUriPermissions(applicationContext) }
 
                 var newGameDir = it.toDocumentFile(get())
                 if (newGameDir.isWritableDir()) {
@@ -81,14 +78,11 @@ class MainActivity : ComponentActivity() {
             ActivityResultContracts.OpenDocument()
         ) {
             if (it != null) {
-                val contentResolver = applicationContext.contentResolver
                 contentResolver.takePersistableUriPermission(
                     it,
                     Intent.FLAG_GRANT_READ_URI_PERMISSION
                             or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                 )
-
-                thread { cleanupRedundantUriPermissions(applicationContext) }
 
                 var newGameDir = it.toDocumentFile(this)
                 if (newGameDir.isWritableFile()) {
