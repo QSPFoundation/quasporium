@@ -45,7 +45,7 @@ fun MainContent(
 
     val isSwipeEnabled by remember {
         derivedStateOf {
-            !lazyStaggeredGridState.canScrollForward &&
+            !lazyStaggeredGridState.canScrollBackward &&
                     !lazyStaggeredGridState.isScrollInProgress
         }
     }
