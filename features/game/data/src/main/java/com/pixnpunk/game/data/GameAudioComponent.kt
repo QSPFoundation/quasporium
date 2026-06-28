@@ -2,7 +2,9 @@ package com.pixnpunk.game.data
 
 import android.content.Context
 import android.media.MediaPlayer
+import androidx.core.net.toFile
 import androidx.core.net.toUri
+import com.anggrayudi.storage.extension.isRawFile
 import com.arkivanov.essenty.instancekeeper.InstanceKeeper
 import com.pixnpunk.game.domain.model.AudioPlayerException
 import com.pixnpunk.game.domain.repository.AudioPlayer
@@ -12,6 +14,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import java.io.File
+import java.io.FileInputStream
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
 
@@ -112,8 +116,17 @@ class GameAudioComponent(
     private fun createNewSound(
         path: String
     ) = MediaPlayer().apply {
-        setDataSource(context, path.toUri())
-        prepare()
+        path.toUri().let { uri ->
+            if (!uri.isRawFile) {
+                setDataSource(context, uri)
+                prepare()
+            } else {
+                FileInputStream(uri.toFile()).use { inputStream ->
+                    setDataSource(inputStream.fd)
+                    prepare()
+                }
+            }
+        }
         setOnCompletionListener {
             playerScope.launch {
                 mediaPlayers.remove(path, it)
