@@ -3,13 +3,13 @@ package com.pixnpunk.webview.data.repository
 import android.content.Context
 import android.util.Base64
 import com.pixnpunk.dto.FontTypeface
+import com.pixnpunk.utils.Base64Util.encodeBase64
 import com.pixnpunk.utils.ColorUtil.toHexColorStr
 import com.pixnpunk.webview.domain.model.HtmlConfig
 import com.pixnpunk.webview.domain.repository.HtmlProcessorRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import java.io.File
 
@@ -17,6 +17,11 @@ class HtmlProcessorRepositoryImpl(
     private val context: Context
 ) : HtmlProcessorRepository {
 
+    private val execLinkMatcher: Regex =
+        Regex(
+            pattern = "href\\s*=\\s*([\"'])exec:(.*?)\\1",
+            options = setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL)
+        )
     private val template by lazy {
         context.assets.open("webview-template.html").bufferedReader().use { it.readText() }
     }
@@ -26,8 +31,14 @@ class HtmlProcessorRepositoryImpl(
         config: HtmlConfig
     ): String = withContext(Dispatchers.IO) {
         var preCleanedBody = rawBody.replace("\n", "<br>")
-        if (config.isUseHtml && preCleanedBody.contains("\\\"")) {
-            preCleanedBody = preCleanedBody.replace("\\\"", "'")
+
+        if (config.isUseHtml) {
+            if (preCleanedBody.contains("\\\"")) {
+                preCleanedBody = preCleanedBody.replace(
+                    "\\\"", "'"
+                )
+            }
+            preCleanedBody = preCleanedBody.encodeExecLinks()
         }
 
         val document = Jsoup.parse(
@@ -36,10 +47,6 @@ class HtmlProcessorRepositoryImpl(
                 config = config
             )
         ).apply { outputSettings().prettyPrint(false) }
-
-        if (config.isUseHtml) {
-            document.encodeExecLinks()
-        }
 
         if (config.isImgLoadDis) {
             document.body().select("img, video").remove()
@@ -87,23 +94,17 @@ class HtmlProcessorRepositoryImpl(
             .replace("REPLACETEXT", bodyContent)
     }
 
-    private fun Document.encodeExecLinks(
+    private fun String.encodeExecLinks(): String {
+        if (!this.contains("exec:", ignoreCase = true)) return this
+        return execLinkMatcher.replace(this) { match ->
+            val quote = match.groupValues[1]
+            val command = match.groupValues[2]
 
-    ) = select("[href]").forEach { element ->
-        element.attr("href").let { href ->
-            if (href.startsWith("exec:", ignoreCase = true)) {
-                element.attr(
-                    "href", "exec:${
-                        Base64.encodeToString(
-                            href
-                                .substring(5)
-                                .replace("\\", "/")
-                                .encodeToByteArray(),
-                            Base64.NO_WRAP
-                        )
-                    }"
-                )
-            }
+            "href=${quote}exec:${
+                command
+                    .replace('\\', '/')
+                    .encodeBase64(Base64.NO_WRAP)
+            }${quote}"
         }
     }
 
