@@ -21,6 +21,11 @@ class RealMainStore(
                 MainStore.Action.StartActionsVisFlow
             ),
             executorFactory = { MainExecutor(gameNativeEngine) },
-            reducer = MainReducer
+            reducer = { msg ->
+                when (msg) {
+                    is MainStore.Message.UpdateActions -> copy(actions = msg.actions)
+                    is MainStore.Message.UpdateVisActions -> copy(isActionsVis = msg.isActionsVis)
+                }
+            }
         )
 }
