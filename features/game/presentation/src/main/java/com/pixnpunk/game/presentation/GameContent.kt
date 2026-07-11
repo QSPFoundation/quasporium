@@ -10,8 +10,8 @@ import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Typography
 import androidx.compose.material3.Text
+import androidx.compose.material3.Typography
 import androidx.compose.material3.VerticalDragHandle
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
@@ -149,13 +149,17 @@ fun GameContent(
             if (!settings.isUseCustomFont) {
                 AppTypography
             } else {
-                Typography().withDefaultFontFamily(
-                    FontFamily(
-                        Typeface.createFromFile(
-                            settings.customFontPath
+                if (settings.customFontPath.isBlank()) {
+                    AppTypography
+                } else {
+                    Typography().withDefaultFontFamily(
+                        FontFamily(
+                            Typeface.createFromFile(
+                                settings.customFontPath
+                            )
                         )
                     )
-                )
+                }
             }
         }
     ) {
