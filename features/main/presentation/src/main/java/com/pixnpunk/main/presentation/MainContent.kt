@@ -3,6 +3,7 @@ package com.pixnpunk.main.presentation
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -17,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pixnpunk.main.presentation.model.ParsedActionItem
 import com.pixnpunk.webview.GameWebView
 
@@ -27,27 +29,15 @@ fun MainContent(
     topAppBar: @Composable (() -> Unit),
     snackbarHostState: SnackbarHostState
 ) {
-    val state by component.model.collectAsState()
-    val settings by component.settingsState.collectAsState()
+    val uiState by component.uiState.collectAsStateWithLifecycle()
+    val fontFamily by component.fontFamilyState.collectAsStateWithLifecycle()
+    val settings by component.settingsState.collectAsStateWithLifecycle()
 
-    val lazyStaggeredGridState = rememberLazyStaggeredGridState()
-    val hasActions = state.isActionsVis && state.actions.isNotEmpty()
-
-    val parsedActions = remember(state.actions) {
-        state.actions.map { item ->
-            ParsedActionItem(
-                original = item,
-                annotatedText = AnnotatedString.fromHtml(item.text),
-                hasImage = item.imagePath.isNotBlank()
-            )
-        }
-    }
+    val hasActions = uiState.isActionsVis && uiState.parsedActions.isNotEmpty()
+    val scrollState = rememberScrollState()
 
     val isSwipeEnabled by remember {
-        derivedStateOf {
-            !lazyStaggeredGridState.canScrollBackward &&
-                    !lazyStaggeredGridState.isScrollInProgress
-        }
+        derivedStateOf { scrollState.value == 0 }
     }
 
     BottomSheetScaffold(
@@ -61,9 +51,10 @@ fun MainContent(
                 MainContentActionsList(
                     countActsVis = settings.visActsCount,
                     settings = settings,
-                    actions = parsedActions,
+                    fontFamily = fontFamily,
+                    actions = uiState.parsedActions,
                     onActionClicked = component.onActionClicked,
-                    gridState = lazyStaggeredGridState
+                    scrollState = scrollState
                 )
             }
         }
