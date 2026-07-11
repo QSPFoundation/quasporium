@@ -14,9 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import java.io.File
 import java.io.FileInputStream
-import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
 
 class GameAudioComponent(
@@ -24,46 +22,29 @@ class GameAudioComponent(
     private val logger: AppLogger
 ) : AudioPlayer, InstanceKeeper.Instance {
 
-    private val playerScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private val playerDispatcher = Dispatchers.IO.limitedParallelism(1)
+    private val playerScope = CoroutineScope(playerDispatcher + SupervisorJob())
+
     private val mediaPlayers = ConcurrentHashMap<String, MediaPlayer>()
 
     @Volatile private var isPaused = false
     @Volatile override var isSoundEnabled = true
 
     override fun onDestroy() {
-        closeAllFilesSync()
         playerScope.cancel()
+        closeAllFilesSync()
     }
 
-    override fun isPlayingFile(path: String): Boolean {
-        if (path.isBlank()) return false
-        return mediaPlayers[path]?.isPlaying == true
-    }
-
-    private fun releasePlayer(player: MediaPlayer) {
-        runCatching {
-            if (player.isPlaying) {
-                player.stop()
-            }
-            player.release()
-        }.onFailure {
-            logger.recordNonFatalException(
-                AudioPlayerException.ReleaseError(it)
-            )
-        }
-    }
+    override fun isPlayingFile(path: String): Boolean =
+        path.isNotBlank() && mediaPlayers[path]?.safeIsPlaying == true
 
     override fun resumeAll() {
         if (isSoundEnabled && isPaused) {
             isPaused = false
+
             playerScope.launch {
-                runCatching {
-                    mediaPlayers.values.filterNot { it.isPlaying }.forEach { it.start() }
-                }.onFailure {
-                    logger.recordNonFatalException(
-                        AudioPlayerException.PlaybackError(cause = it)
-                    )
-                    closeAllFilesSync()
+                mediaPlayers.values.forEach { player ->
+                    player.safeAction { if (!safeIsPlaying) start() }
                 }
             }
         }
@@ -72,14 +53,10 @@ class GameAudioComponent(
     override fun pauseAll() {
         if (!isPaused) {
             isPaused = true
+
             playerScope.launch {
-                runCatching {
-                    mediaPlayers.values.filter { it.isPlaying }.forEach { it.pause() }
-                }.onFailure {
-                    logger.recordNonFatalException(
-                        AudioPlayerException.PlaybackError(cause = it)
-                    )
-                    closeAllFilesSync()
+                mediaPlayers.values.forEach { player ->
+                    player.safeAction { if (safeIsPlaying) pause() }
                 }
             }
         }
@@ -93,9 +70,10 @@ class GameAudioComponent(
 
         playerScope.launch {
             runCatching {
-                val player = mediaPlayers.computeIfAbsent(path) { keyUri ->
-                    createNewSound(keyUri)
-                }
+                val player = mediaPlayers.computeIfAbsent(
+                    path,
+                    ::createNewSound
+                )
 
                 val mediaPlayerVolume = volume / 100f
                 player.setVolume(mediaPlayerVolume, mediaPlayerVolume)
@@ -107,48 +85,87 @@ class GameAudioComponent(
                 logger.recordNonFatalException(
                     AudioPlayerException.PlaybackError(path, it)
                 )
-                closeFile(path)
+                closeFileSync(path)
             }
         }
     }
 
-    @Throws(IOException::class)
-    private fun createNewSound(
-        path: String
-    ) = MediaPlayer().apply {
-        path.toUri().let { uri ->
-            if (!uri.isRawFile) {
-                setDataSource(context, uri)
-                prepare()
-            } else {
-                FileInputStream(uri.toFile()).use { inputStream ->
-                    setDataSource(inputStream.fd)
-                    prepare()
+    private fun createNewSound(path: String): MediaPlayer =
+        MediaPlayer().apply {
+            runCatching {
+                path.toUri().also {
+                    if (!it.isRawFile) {
+                        setDataSource(context, it)
+                        prepare()
+                    } else {
+                        FileInputStream(it.toFile()).use { inputStream ->
+                            setDataSource(inputStream.fd)
+                            prepare()
+                        }
+                    }
                 }
+            }.onFailure { error ->
+                runCatching { release() }
+                throw error
             }
-        }
-        setOnCompletionListener {
-            playerScope.launch {
-                mediaPlayers.remove(path, it)
-                runCatching { it.release() }.onFailure { error ->
-                    logger.recordNonFatalException(
-                        AudioPlayerException.InitializationError(
-                            path, error
-                        )
+
+            setOnErrorListener { _, what, extra ->
+                logger.recordNonFatalException(
+                    RuntimeException(
+                        "MediaPlayer async error: what=$what extra=$extra path=$path"
                     )
+                )
+                closeFile(path)
+                true
+            }
+
+            setOnCompletionListener { p ->
+                playerScope.launch {
+                    mediaPlayers.remove(path, p)
+                    p.safeRelease()
                 }
             }
         }
-    }
 
     override fun closeFile(path: String) {
-        playerScope.launch { mediaPlayers.remove(path)?.let { releasePlayer(it) } }
+        playerScope.launch { closeFileSync(path) }
     }
 
     override fun closeAllFiles() {
         playerScope.launch { closeAllFilesSync() }
     }
 
-    private fun closeAllFilesSync() =
-        mediaPlayers.values.removeIf { releasePlayer(it); true }
+    private fun closeFileSync(path: String) {
+        mediaPlayers.remove(path)?.safeRelease()
+    }
+
+    private fun closeAllFilesSync() {
+        mediaPlayers.values.forEach { it.safeRelease() }
+        mediaPlayers.clear()
+    }
+
+    private val MediaPlayer.safeIsPlaying: Boolean
+        get() = runCatching { isPlaying }.getOrDefault(false)
+
+    private inline fun MediaPlayer.safeAction(
+        action: MediaPlayer.() -> Unit
+    ) = runCatching { action() }.onFailure { error ->
+        logger.recordNonFatalException(
+            AudioPlayerException.PlaybackError(cause = error)
+        )
+    }
+
+    private fun MediaPlayer.safeRelease() {
+        runCatching {
+            setOnErrorListener(null)
+            setOnCompletionListener(null)
+            if (safeIsPlaying) stop()
+        }
+
+        runCatching { release() }.onFailure { error ->
+            logger.recordNonFatalException(
+                AudioPlayerException.ReleaseError(error)
+            )
+        }
+    }
 }
