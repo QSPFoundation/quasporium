@@ -120,7 +120,7 @@ class DownloadGameWorker(
             }
         } catch (e: Exception) {
             FirebaseCrashlytics.getInstance().apply {
-                log("Failed to unpack file")
+                log("Failed to download file")
                 recordException(e)
             }
             notificationProvider.showNotification(
