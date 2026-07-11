@@ -14,7 +14,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
-import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
+import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -108,13 +108,16 @@ fun MainContentActionsList(
         val density = LocalDensity.current
         val textMeasurer = rememberTextMeasurer()
 
-        val spanMap = remember(actions, maxWidth, columnCount, textStyle, density) {
+        val actionsWithSpans = remember(actions, maxWidth, columnCount, textStyle, density) {
             val columnWidthPx = with(density) {
                 val gridPadding = 32.dp // 16.dp * 2
                 val innerSpacing = 8.dp * (columnCount - 1)
                 (maxWidth - gridPadding - innerSpacing).toPx() / columnCount
             }
-            calculateSpans(actions, columnCount, columnWidthPx, textMeasurer, textStyle, density)
+            val spans = calculateSpans(actions, columnCount, columnWidthPx, textMeasurer, textStyle, density)
+            actions.mapIndexed { index, item ->
+                ActionWithSpan(item, spans[index], index)
+            }
         }
 
         LazyVerticalStaggeredGrid(
@@ -133,19 +136,16 @@ fun MainContentActionsList(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalItemSpacing = 8.dp
         ) {
-            itemsIndexed(
-                items = actions,
-                key = { index, item -> "$index:${item.original.text}" },
-                span = { index, _ ->
-                    if (spanMap[index]) StaggeredGridItemSpan.FullLine
-                    else StaggeredGridItemSpan.SingleLane
-                },
-            ) { index, item ->
+            items(
+                items = actionsWithSpans,
+                key = { it.item.original.text + it.originalIndex },
+                span = { if (it.isFullLine) StaggeredGridItemSpan.FullLine else StaggeredGridItemSpan.SingleLane },
+            ) { actionWithSpan ->
                 GridCell(
                     modifier = Modifier.animateItem(),
-                    item = item,
-                    isFullLine = spanMap[index],
-                    onItemClick = { onActionClicked(index) },
+                    item = actionWithSpan.item,
+                    isFullLine = actionWithSpan.isFullLine,
+                    onItemClick = { onActionClicked(actionWithSpan.originalIndex) },
                     textStyle = textStyle,
                     cardBackgroundColor = Color(settings.backColor)
                 )
@@ -232,6 +232,12 @@ private fun calculateGridHeight(
     if (visibleRows <= 0) return 0.dp
     (72 * fontScale).dp * visibleRows + spacingDp * (visibleRows - 1) + contentPaddingDp
 }
+
+private data class ActionWithSpan(
+    val item: ParsedActionItem,
+    val isFullLine: Boolean,
+    val originalIndex: Int
+)
 
 @Composable
 private fun GridCell(
