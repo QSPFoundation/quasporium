@@ -5,6 +5,7 @@ import io.ktor.client.engine.okhttp.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.kotlinx.json.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.json.Json
 import okhttp3.Cache
 import okhttp3.OkHttpClient
@@ -28,6 +29,7 @@ val networkModule = module {
         HttpClient(OkHttp) {
             engine {
                 preconfigured = get()
+                dispatcher = Dispatchers.IO
             }
             install(HttpTimeout) {
                 requestTimeoutMillis = 15_000
