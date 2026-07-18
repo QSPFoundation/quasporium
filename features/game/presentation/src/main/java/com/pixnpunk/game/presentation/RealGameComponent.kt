@@ -17,7 +17,6 @@ import com.arkivanov.mvikotlin.core.instancekeeper.getStore
 import com.arkivanov.mvikotlin.extensions.coroutines.labels
 import com.arkivanov.mvikotlin.extensions.coroutines.stateFlow
 import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
-import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.pixnpunk.dialogs.presentation.DialogsComponent
 import com.pixnpunk.dialogs.presentation.DialogsConfig
 import com.pixnpunk.dialogs.presentation.DialogsState
@@ -29,7 +28,6 @@ import com.pixnpunk.dto.OutputState
 import com.pixnpunk.dto.OutputStateValue
 import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.extra.presentation.RealExtraComponent
-import com.pixnpunk.game.data.GameAudioComponent
 import com.pixnpunk.game.data.GameNativeEngine
 import com.pixnpunk.game.domain.model.LibTypeDialog
 import com.pixnpunk.game.domain.repository.AudioPlayer
@@ -59,11 +57,7 @@ class RealGameComponent(
 
     private val componentScope = coroutineScope()
 
-    val audioPlayer: AudioPlayer =
-        instanceKeeper.getOrCreate("audio_player_key") {
-            get<GameAudioComponent>()
-        }
-
+    internal val audioPlayer: AudioPlayer = get()
     private val engine = instanceKeeper.getOrCreate("NativeGameEngine") { get<GameNativeEngine>() }
 
     private val dialogNavigation = SlotNavigation<DialogsConfig>()
@@ -91,6 +85,7 @@ class RealGameComponent(
                 gameFileUriBox = gameFileUriBox,
                 storeFactory = DefaultStoreFactory(),
                 gameNativeEngine = engine,
+                audioPlayer = audioPlayer,
                 settingsState = settingsState
             ).create()
         }

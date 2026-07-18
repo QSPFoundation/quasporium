@@ -9,11 +9,13 @@ import com.pixnpunk.game.data.impl.QSPLibImpl
 import com.pixnpunk.game.domain.repository.AudioPlayer
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.factoryOf
+import org.koin.core.module.dsl.singleOf
 import org.koin.core.parameter.parametersOf
 import org.koin.dsl.module
+import org.koin.dsl.onClose
 
 val gameDataModule = module {
-    factoryOf(::GameAudioComponent) { bind<AudioPlayer>() }
+    singleOf(::GameAudioComponent) { bind<AudioPlayer>() } onClose { it?.close() }
 
     factoryOf(::QSPLibImpl) { bind<QSPLib>() }
     factoryOf(::QSLibSDHImpl) { bind<QSLibSDH>() }

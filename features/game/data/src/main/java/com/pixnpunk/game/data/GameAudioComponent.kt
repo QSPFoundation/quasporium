@@ -5,7 +5,6 @@ import android.media.MediaPlayer
 import androidx.core.net.toFile
 import androidx.core.net.toUri
 import com.anggrayudi.storage.extension.isRawFile
-import com.arkivanov.essenty.instancekeeper.InstanceKeeper
 import com.pixnpunk.game.domain.model.AudioPlayerException
 import com.pixnpunk.game.domain.repository.AudioPlayer
 import com.pixnpunk.logger.AppLogger
@@ -20,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap
 class GameAudioComponent(
     private val context: Context,
     private val logger: AppLogger
-) : AudioPlayer, InstanceKeeper.Instance {
+) : AudioPlayer {
 
     private val playerDispatcher = Dispatchers.IO.limitedParallelism(1)
     private val playerScope = CoroutineScope(playerDispatcher + SupervisorJob())
@@ -30,7 +29,7 @@ class GameAudioComponent(
     @Volatile private var isPaused = false
     @Volatile override var isSoundEnabled = true
 
-    override fun onDestroy() {
+    internal fun close() {
         playerScope.cancel()
         closeAllFilesSync()
     }

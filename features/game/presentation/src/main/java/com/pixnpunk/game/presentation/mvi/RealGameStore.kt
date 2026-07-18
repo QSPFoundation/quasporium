@@ -5,6 +5,7 @@ import com.arkivanov.mvikotlin.core.store.Store
 import com.arkivanov.mvikotlin.core.store.StoreFactory
 import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.game.data.GameNativeEngine
+import com.pixnpunk.game.domain.repository.AudioPlayer
 import com.pixnpunk.utils.DirUtil.isGameDirIsInternal
 import kotlinx.coroutines.flow.StateFlow
 import org.koin.core.component.KoinComponent
@@ -14,6 +15,7 @@ class RealGameStore(
     private val storeFactory: StoreFactory,
     private val gameNativeEngine: GameNativeEngine,
     private val settingsState: StateFlow<SettingsEntity>,
+    private val audioPlayer: AudioPlayer,
     private val gameId: Long,
     private val gameTitle: String,
     private val gameDirUriBox: String,
@@ -42,6 +44,7 @@ class RealGameStore(
                 GameExecutor(
                     get(),
                     gameNativeEngine,
+                    audioPlayer,
                     settingsState,
                     get()
                 )

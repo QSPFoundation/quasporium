@@ -19,6 +19,7 @@ import com.pixnpunk.game.domain.model.LibReturnValue
 import com.pixnpunk.game.domain.model.LibTypeDialog
 import com.pixnpunk.game.domain.model.LibTypePopup
 import com.pixnpunk.game.domain.model.LibTypeWindow
+import com.pixnpunk.game.domain.repository.AudioPlayer
 import com.pixnpunk.game.presentation.mvi.GameStore.Label.ShowDialog
 import com.pixnpunk.game.presentation.mvi.GameStore.Label.ShowLoadFilePicker
 import com.pixnpunk.game.presentation.mvi.GameStore.Label.ShowSaveFilePicker
@@ -38,6 +39,7 @@ import kotlin.uuid.Uuid
 internal class GameExecutor(
     private val appContext: Context,
     private val gameNativeEngine: GameNativeEngine,
+    private val audioPlayer: AudioPlayer,
     private val settingsState: StateFlow<SettingsEntity>,
     private val saveSlotDao: SaveSlotDao
 ) : CoroutineExecutor<GameStore.Intent, GameStore.Action, GameStore.State, GameStore.Message, GameStore.Label>() {
@@ -300,6 +302,13 @@ internal class GameExecutor(
             is GameStore.Action.StartGameSettingsFlow ->
                 scope.launch {
                     settingsState.collect {
+                        audioPlayer.isSoundEnabled = it.isSoundEnabled
+                        if (!it.isSoundEnabled) {
+                            audioPlayer.pauseAll()
+                        } else {
+                            audioPlayer.resumeAll()
+                        }
+
                         dispatch(GameStore.Message.UpdateExecutorStatus(it.isUseExecString))
                         dispatch(GameStore.Message.UpdateIsSaveDisable(it.isNoSave))
                     }
