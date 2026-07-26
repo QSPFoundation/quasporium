@@ -17,7 +17,6 @@ interface GameInterface {
     fun closeAllFiles(): Result<Unit>
     fun closeFile(filePath: String)
     fun playFile(path: String, volume: Int)
-    fun changeGameDir(filePath: String)
     fun showLibDialog(
         dialogType: LibTypeDialog,
         inputString: String = "",

@@ -61,8 +61,6 @@ class LibDelegate(
     val currGameDir: DocumentFile?
         get() = fromUri(context, gameState.gameDirPath.toUri())
 
-    val mutableMenuItemList: MutableList<LibGenItem> = mutableListOf()
-
     fun startLibThread() {
         libScope.launch {
             nativeThread = Thread.currentThread()

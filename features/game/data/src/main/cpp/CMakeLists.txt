@@ -4,12 +4,12 @@ project(qspbuild)
 include(FetchContent)
 
 if (BUILD_PRIVATE_CONTENT)
-    add_subdirectory(QSLibSDH)
+    add_subdirectory(qsp-legacy)
     add_subdirectory(qsp)
 else ()
     FetchContent_Declare(qsp-external
             GIT_REPOSITORY https://github.com/QSPFoundation/qsp.git
-            GIT_TAG 0445921b0640c68bc7e7ab03393fc15e8373c8e9
+            GIT_TAG d4b6fac90aee1977612b588b3ab07223558cd2fb
             GIT_PROGRESS true
             SUBBUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/qsp-download"
             SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/qsp-src"
@@ -17,13 +17,13 @@ else ()
     )
     FetchContent_MakeAvailable(qsp-external)
 
-    FetchContent_Declare(qslibsdh-external
-            GIT_REPOSITORY https://github.com/l3ger0j/QSLibSDH.git
-            GIT_TAG 78c32c1e81da05c3c623a54ba04b5a0d48f6ec8b
+    FetchContent_Declare(qsplegacy-external
+            GIT_REPOSITORY https://github.com/QSPFoundation/qsp-legacy.git
+            GIT_TAG 14fab55cfc4b3611fd8cef586f77d665bc41df3e
             GIT_PROGRESS true
-            SUBBUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/qslibsdh-download"
-            SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/qslibsdh-src"
-            BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/qslibsdh-build"
+            SUBBUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/qsplegacy-download"
+            SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/qsplegacy-src"
+            BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/qsplegacy-build"
     )
-    FetchContent_MakeAvailable(qslibsdh-external)
+    FetchContent_MakeAvailable(qsplegacy-external)
 endif ()

@@ -1,7 +1,7 @@
 package com.pixnpunk.game.data.mapper
 
 import com.libqsp.jni.QSPLib
-import com.libsdhqs.jni.QSLibSDH
+import com.libqsplegacy.jni.QSPLegacyLib
 import com.pixnpunk.game.domain.model.LibRawItem
 
 fun QSPLib.ListItem.toLibRawItem() = LibRawItem(
@@ -14,7 +14,7 @@ fun QSPLib.ObjectItem.toLibRawItem() = LibRawItem(
     image = image.orEmpty()
 )
 
-fun QSLibSDH.ListItem.toLibRawItem() = LibRawItem(
+fun QSPLegacyLib.ListItem.toLibRawItem() = LibRawItem(
     text = text.orEmpty(),
     image = image.orEmpty()
 )

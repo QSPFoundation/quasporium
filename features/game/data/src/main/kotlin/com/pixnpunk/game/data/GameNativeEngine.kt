@@ -44,8 +44,8 @@ import kotlin.contracts.ExperimentalContracts
 class GameNativeEngine(
     private val context: Context,
     private val audioPlayer: GameAudioComponent,
-    private val libByteFactory: (GameInterface) -> LibIProxy,
-    private val libSeedhartaFactory: (GameInterface) -> LibIProxy
+    private val libNewFactory: (GameInterface) -> LibIProxy,
+    private val libOldFactory: (GameInterface) -> LibIProxy,
 ) : GameInterface, InstanceKeeper.Instance {
 
     private val engineScope = CoroutineScope(Dispatchers.Main.immediate + SupervisorJob())
@@ -55,13 +55,13 @@ class GameNativeEngine(
 
     private var mLibAuthors: NativeLibAuthors = NativeLibAuthors.BYTE
 
-    private val libNativeByte by lazy { libByteFactory(this) }
-    private val libNativeSeedharta by lazy { libSeedhartaFactory(this) }
+    private val libNativeNew by lazy { libNewFactory(this) }
+    private val libNativeOld by lazy { libOldFactory(this) }
 
     private val activeLib: LibIProxy
         get() = when (mLibAuthors) {
-            NativeLibAuthors.BYTE -> libNativeByte
-            NativeLibAuthors.SEEDHARTHA -> libNativeSeedharta
+            NativeLibAuthors.BYTE -> libNativeNew
+            NativeLibAuthors.SEEDHARTHA -> libNativeOld
         }
 
     private var gameDirUri: Uri = Uri.EMPTY
@@ -134,8 +134,8 @@ class GameNativeEngine(
     }
 
     override fun onDestroy() {
-        runCatching { libNativeByte.stopLibThread() }
-        runCatching { libNativeSeedharta.stopLibThread() }
+        runCatching { libNativeNew.stopLibThread() }
+        runCatching { libNativeOld.stopLibThread() }
         engineScope.cancel()
     }
 
@@ -149,11 +149,11 @@ class GameNativeEngine(
         doWithCounterDisabled {
             when (mLibAuthors) {
                 NativeLibAuthors.BYTE -> {
-                    libNativeByte.loadGameState(fileUri.toString())
+                    libNativeNew.loadGameState(fileUri.toString())
                 }
 
                 NativeLibAuthors.SEEDHARTHA -> {
-                    libNativeSeedharta.loadGameState(fileUri.toString())
+                    libNativeOld.loadGameState(fileUri.toString())
                 }
             }
         }
@@ -273,11 +273,6 @@ class GameNativeEngine(
                 )
             }
         }
-    }
-
-    @OptIn(ExperimentalContracts::class)
-    override fun changeGameDir(filePath: String) {
-        // do nothing
     }
 
     override fun showLibDialog(
