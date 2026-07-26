@@ -1,6 +1,7 @@
 package com.pixnpunk.quasporium
 
 import android.Manifest
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -221,16 +222,52 @@ class MainActivity : ComponentActivity() {
         root = RealRootComponent(
             componentContext = defaultComponentContext(),
             launchDirPicker = {
-                dirPickerLauncher.launch(null)
+                try {
+                    dirPickerLauncher.launch(null)
+                } catch (_: ActivityNotFoundException) {
+                    root.doShowDialog(
+                        outputValue = """
+                            No app was found on your device to choose folders. Please make sure the system Files app is enabled in your device settings.
+                        """.trimIndent(),
+                        outputState = OutputState.OUTPUT_SIMPLE_MSG
+                    )
+                }
             },
             launchFilePicker = {
-                filePickerLauncher.launch(arrayOf(MimeType.IMAGE))
+                try {
+                    filePickerLauncher.launch(arrayOf(MimeType.IMAGE))
+                } catch (_: ActivityNotFoundException) {
+                    root.doShowDialog(
+                        outputValue = """
+                            No app was found on your device to choose folders. Please make sure the system Files app is enabled in your device settings.
+                        """.trimIndent(),
+                        outputState = OutputState.OUTPUT_SIMPLE_MSG
+                    )
+                }
             },
             launchFilesPicker = {
-                filesPickerLauncher.launch(arrayOf(MimeType.BINARY_FILE))
+                try {
+                    filesPickerLauncher.launch(arrayOf(MimeType.BINARY_FILE))
+                } catch (_: ActivityNotFoundException) {
+                    root.doShowDialog(
+                        outputValue = """
+                            No app was found on your device to choose folders. Please make sure the system Files app is enabled in your device settings.
+                        """.trimIndent(),
+                        outputState = OutputState.OUTPUT_SIMPLE_MSG
+                    )
+                }
             },
             launchFontPicker = {
-                fontPickerLauncher.launch(arrayOf(MimeType.FONT))
+                try {
+                    fontPickerLauncher.launch(arrayOf(MimeType.FONT))
+                } catch (_: ActivityNotFoundException) {
+                    root.doShowDialog(
+                        outputValue = """
+                            No app was found on your device to choose folders. Please make sure the system Files app is enabled in your device settings.
+                        """.trimIndent(),
+                        outputState = OutputState.OUTPUT_SIMPLE_MSG
+                    )
+                }
             },
             launchStorageAccess = {
                 runCatching {
