@@ -9,7 +9,7 @@ if (BUILD_PRIVATE_CONTENT)
 else ()
     FetchContent_Declare(qsp-external
             GIT_REPOSITORY https://github.com/QSPFoundation/qsp.git
-            GIT_TAG d4b6fac90aee1977612b588b3ab07223558cd2fb
+            GIT_TAG 0445921b0640c68bc7e7ab03393fc15e8373c8e9
             GIT_PROGRESS true
             SUBBUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/qsp-download"
             SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/qsp-src"
