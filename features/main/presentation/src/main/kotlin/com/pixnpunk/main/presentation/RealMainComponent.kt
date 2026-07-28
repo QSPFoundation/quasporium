@@ -17,8 +17,8 @@ import com.pixnpunk.main.presentation.model.ParsedActionItem
 import com.pixnpunk.main.presentation.mvi.MainStore
 import com.pixnpunk.main.presentation.mvi.RealMainStore
 import com.pixnpunk.utils.ViewUtil.toComposeFamily
-import com.pixnpunk.webview.RealWebViewComponent
-import com.pixnpunk.webview.WebViewComponent
+import com.pixnpunk.webview.presentation.RealWebViewComponent
+import com.pixnpunk.webview.presentation.WebViewComponent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
@@ -48,9 +48,12 @@ class RealMainComponent(
     override val gameWebViewComponent: WebViewComponent =
         RealWebViewComponent(
             componentContext = childContext("MainGameWebViewComponent"),
-            htmlContentFlow = gameNativeEngine.gameStateFlow.map { it.mainDesc }
-                .distinctUntilChanged(),
+            htmlContentFlow =
+                gameNativeEngine.gameStateFlow
+                    .map { it.mainDesc }
+                    .distinctUntilChanged(),
             settingsStateFlow = settingsState,
+            engineSettingsStateFlow = gameNativeEngine.gameUIConfFlow,
             gameDirUriBox = gameDirUriBox,
             onExecValue = onExecValue,
         )

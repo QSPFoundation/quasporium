@@ -1,11 +1,10 @@
 package com.pixnpunk.main.presentation
 
-import android.graphics.Typeface
 import androidx.compose.ui.text.font.FontFamily
 import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.main.presentation.model.MainUIState
 import com.pixnpunk.main.presentation.mvi.MainStore
-import com.pixnpunk.webview.WebViewComponent
+import com.pixnpunk.webview.presentation.WebViewComponent
 import kotlinx.coroutines.flow.StateFlow
 
 sealed interface MainComponent {
