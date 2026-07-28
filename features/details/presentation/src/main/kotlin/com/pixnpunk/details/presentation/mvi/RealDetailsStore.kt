@@ -21,6 +21,10 @@ class RealDetailsStore(
                 DetailsStore.Action.StartEntryFlow(entry)
             ),
             executorFactory = { DetailsExecutor(get()) },
-            reducer = DetailsReducer
+            reducer = { msg ->
+                when (msg) {
+                    is DetailsStore.Message.UpdateEntry -> copy(gameEntry = msg.entry)
+                }
+            }
         )
 }
