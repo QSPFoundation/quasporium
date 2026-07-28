@@ -4,8 +4,8 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
 import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.game.data.GameNativeEngine
-import com.pixnpunk.webview.WebViewComponent
-import com.pixnpunk.webview.RealWebViewComponent
+import com.pixnpunk.webview.presentation.WebViewComponent
+import com.pixnpunk.webview.presentation.RealWebViewComponent
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -22,8 +22,12 @@ class RealExtraComponent(
     override val gameWebViewComponent: WebViewComponent =
         RealWebViewComponent(
             componentContext = childContext("ExtraGameWebViewComponent"),
-            htmlContentFlow = gameNativeEngine.gameStateFlow.map { it.varsDesc }.distinctUntilChanged(),
+            htmlContentFlow =
+                gameNativeEngine.gameStateFlow
+                    .map { it.varsDesc }
+                    .distinctUntilChanged(),
             settingsStateFlow = settingsState,
+            engineSettingsStateFlow = gameNativeEngine.gameUIConfFlow,
             gameDirUriBox = gameDirUriBox,
             onExecValue = onExecValue,
         )
