@@ -23,6 +23,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -65,9 +66,12 @@ class RealMainComponent(
     }
 
     override val uiState: StateFlow<MainUIState> = model
-        .map { state ->
+        .combine(settingsState) { state, settings ->
             MainUIState(
                 isActionsVis = state.isActionsVis,
+                textColor = settings.textColor,
+                fontSize = settings.fontSize,
+                backColor = settings.backColor,
                 parsedActions = state.actions.map { item ->
                     ParsedActionItem(
                         original = item,

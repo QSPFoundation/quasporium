@@ -47,14 +47,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.takeOrElse
 import coil3.compose.AsyncImage
-import com.pixnpunk.dto.SettingsEntity
+import com.pixnpunk.main.presentation.model.MainUIState
 import com.pixnpunk.main.presentation.model.ParsedActionItem
 
 @OptIn(ExperimentalFlexBoxApi::class)
 @Composable
 fun MainContentActionsList(
     countActsVis: Int,
-    settings: SettingsEntity,
+    uiState: MainUIState,
     fontFamily: FontFamily,
     actions: List<ParsedActionItem>,
     onActionClicked: (Int) -> Unit,
@@ -62,10 +62,10 @@ fun MainContentActionsList(
 ) {
     val textStyle = MaterialTheme.typography.bodyLarge.merge(
         TextStyle(
-            color = Color(settings.textColor),
-            fontSize = settings.fontSize.sp,
+            color = Color(uiState.textColor),
+            fontSize = uiState.fontSize.sp,
             fontFamily = fontFamily,
-            background = Color(settings.backColor)
+            background = Color(uiState.backColor)
         )
     )
 
@@ -116,7 +116,7 @@ fun MainContentActionsList(
                                 .widthIn(min = 140.dp),
                         item = item,
                         textStyle = textStyle,
-                        cardBackgroundColor = Color(settings.backColor),
+                        cardBackgroundColor = Color(uiState.backColor),
                         onItemClick = { onActionClicked(index) }
                     )
                 }

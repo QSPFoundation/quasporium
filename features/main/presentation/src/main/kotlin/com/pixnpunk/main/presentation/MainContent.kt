@@ -45,7 +45,7 @@ fun MainContent(
             if (hasActions) {
                 MainContentActionsList(
                     countActsVis = settings.visActsCount,
-                    settings = settings,
+                    uiState = uiState,
                     fontFamily = fontFamily,
                     actions = uiState.parsedActions,
                     onActionClicked = component.onActionClicked,
