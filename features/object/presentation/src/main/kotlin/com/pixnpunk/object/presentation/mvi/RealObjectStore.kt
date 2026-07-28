@@ -18,6 +18,10 @@ class RealObjectStore(
             initialState = ObjectStore.State(),
             bootstrapper = SimpleBootstrapper(ObjectStore.Action.StartObjectsFlow),
             executorFactory = { ObjectExecutor(gameNativeEngine) },
-            reducer = ObjectReducer
+            reducer = { msg ->
+                when (msg) {
+                    is ObjectStore.Message.UpdateObjects -> copy(objects = msg.objects)
+                }
+            }
         )
 }
