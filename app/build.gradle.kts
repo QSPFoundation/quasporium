@@ -4,6 +4,13 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.detekt)
+}
+
+detekt {
+    parallel = true
+    config.setFrom(files("$rootDir/config/detekt/detekt.yml"))
+    buildUponDefaultConfig = true
 }
 
 kotlin {
@@ -106,4 +113,7 @@ dependencies {
     implementation(libs.mvikotlin.coro.ext)
 
     implementation(libs.preference)
+
+    detektPlugins(libs.detekt.formatting)
+    detektPlugins(libs.detekt.rules.compose)
 }

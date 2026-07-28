@@ -2,6 +2,13 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.library)
+    alias(libs.plugins.detekt)
+}
+
+detekt {
+    parallel = true
+    config.setFrom(files("$rootDir/config/detekt/detekt.yml"))
+    buildUponDefaultConfig = true
 }
 
 android {
@@ -73,4 +80,7 @@ dependencies {
     implementation(libs.storage)
 
     implementation(libs.decompose.core)
+
+    detektPlugins(libs.detekt.formatting)
+    detektPlugins(libs.detekt.rules.compose)
 }
