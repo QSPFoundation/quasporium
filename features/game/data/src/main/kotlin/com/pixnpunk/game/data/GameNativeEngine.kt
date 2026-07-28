@@ -19,7 +19,7 @@ import com.pixnpunk.game.domain.model.LibTypeWindow
 import com.pixnpunk.game.domain.model.LibUIConfig
 import com.pixnpunk.game.domain.repository.GameInterface
 import com.pixnpunk.game.domain.repository.LibIProxy
-import com.pixnpunk.settings.data.repository.SettingsRepository
+import com.pixnpunk.settings.dto.repository.SettingsRepository
 import com.pixnpunk.utils.FileUtil.isWritableDir
 import com.pixnpunk.utils.FileUtil.isWritableFile
 import com.pixnpunk.utils.PathUtil.absToRelPath
@@ -35,7 +35,6 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicLong
@@ -46,12 +45,12 @@ class GameNativeEngine(
     private val audioPlayer: GameAudioComponent,
     private val libNewFactory: (GameInterface) -> LibIProxy,
     private val libOldFactory: (GameInterface) -> LibIProxy,
+    private val settingsRepository: SettingsRepository
 ) : GameInterface, InstanceKeeper.Instance {
 
     private val engineScope = CoroutineScope(Dispatchers.Main.immediate + SupervisorJob())
 
     private var counterJob: Job? = null
-    private var updateSettingsJob: Job? = null
 
     private var mLibAuthors: NativeLibAuthors = NativeLibAuthors.BYTE
 
@@ -99,14 +98,13 @@ class GameNativeEngine(
     }
 
     fun startService(
-        settingsRepository: SettingsRepository,
         gameId: Long,
         gameTitle: String,
         gameDirUriBox: String,
         gameFileUriBox: String
     ) {
         this.gameDirUri = gameDirUriBox.toUri()
-        this.mLibAuthors = settingsRepository.currentSettings.nativeLibFrom
+        this.mLibAuthors = settingsRepository.settingsFlow.value.nativeLibFrom
 
         activeLib.startLibThread()
         activeLib.runGame(
@@ -115,22 +113,6 @@ class GameNativeEngine(
             gameDirUriBox,
             gameFileUriBox
         )
-
-        updateSettingsJob = engineScope.launch {
-            settingsRepository.settingsFlow
-                .combine(gameUIConfFlow) { appSet, libSet ->
-                    appSet.copy(
-                        isYesScrollMain = libSet.isYesScrollMain,
-                        isYesScrollExtra = libSet.isYesScrollExtra,
-                        isNoSave = libSet.isNoSave,
-                        isUseHtml = libSet.isUseHtml,
-                        textColor = libSet.fontColor.takeIf { !appSet.isTextColorOverride && it != 0 } ?: appSet.textColor,
-                        backColor = libSet.backColor.takeIf { !appSet.isBackColorOverride && it != 0 } ?: appSet.backColor,
-                        linkColor = libSet.linkColor.takeIf { !appSet.isLinkColorOverride && it != 0 } ?: appSet.linkColor,
-                        fontSize = libSet.fontSize.takeIf { appSet.isUseGameFont && it != 0 } ?: appSet.fontSize
-                    )
-                }.collect { settingsRepository.emitValue(it) }
-        }
     }
 
     override fun onDestroy() {

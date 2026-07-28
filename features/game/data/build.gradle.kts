@@ -59,7 +59,7 @@ dependencies {
 
     implementation(project(":features:game:domain"))
 
-    implementation(project(":features:settings:data"))
+    implementation(project(":features:settings:domain"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

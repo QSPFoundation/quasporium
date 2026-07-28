@@ -27,7 +27,8 @@ val gameDataModule = module {
             },
             libOldFactory = { engineThis ->
                 get<QSPLegacyLibImpl> { parametersOf(engineThis) }
-            }
+            },
+            settingsRepository = get()
         )
     }
 }
