@@ -1,5 +1,6 @@
 package com.pixnpunk.dialogs.presentation
 
+import androidx.compose.runtime.Immutable
 import com.pixnpunk.dto.ColorPickerState
 import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.dto.InputState
@@ -8,6 +9,7 @@ import com.pixnpunk.dto.LibSaveItem
 import com.pixnpunk.dto.OutputState
 import kotlinx.serialization.Serializable
 
+@Immutable
 @Serializable
 data class DialogsConfig(
     val dialogsState: DialogsState,

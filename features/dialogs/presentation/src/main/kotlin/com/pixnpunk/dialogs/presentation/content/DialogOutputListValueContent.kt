@@ -34,6 +34,7 @@ fun DialogOutputListValueContent(
     saveItems: List<LibSaveItem> = emptyList(),
     onConfirm: (Int) -> Unit = { },
     onConfirmFile: (String) -> Unit = { },
+    onRemoveFile: (LibSaveItem) -> Unit = { },
     onDismiss: () -> Unit = { }
 ) {
     LazyColumn(
