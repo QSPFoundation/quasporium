@@ -46,6 +46,7 @@ dependencies {
     implementation(libs.koin.android)
 
     implementation(libs.essenty.lifecycle)
+    implementation(libs.essenty.coroutines)
     implementation(libs.decompose.core)
     implementation(libs.decompose.ext)
     implementation(libs.decompose.ext.exp)
