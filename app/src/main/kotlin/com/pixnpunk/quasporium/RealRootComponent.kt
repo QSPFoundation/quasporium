@@ -9,7 +9,6 @@ import com.arkivanov.decompose.router.slot.child
 import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
 import com.arkivanov.decompose.value.Value
-import com.arkivanov.essenty.instancekeeper.getOrCreate
 import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
 import com.arkivanov.mvikotlin.core.instancekeeper.getStore
 import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
@@ -25,16 +24,14 @@ import com.pixnpunk.dto.OutputState
 import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.quasporium.mvi.RealRootStore
 import com.pixnpunk.quasporium.mvi.RootStore
-import com.pixnpunk.settings.data.repository.SettingsRepository
+import com.pixnpunk.settings.dto.repository.SettingsRepository
 import com.pixnpunk.settings.presentation.RealSettingsComponent
 import com.pixnpunk.stock.presentation.RealStockComponent
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.get
+import org.koin.core.component.inject
 import java.io.File
 
 class RealRootComponent(
@@ -47,29 +44,18 @@ class RealRootComponent(
     private val launchEngineIntent: (Pair<GameEntry, Int>) -> Unit,
 ) : ComponentContext by componentContext, RootComponent, KoinComponent {
 
-    private val componentScope = coroutineScope()
-
     private val dialogsNavigation = SlotNavigation<DialogsConfig>()
     private val detailsNavigation = SlotNavigation<DetailsConfig>()
     private val settingsNavigation = SlotNavigation<SettingsConfig>()
 
-    private val settingsRepository: SettingsRepository =
-        instanceKeeper.getOrCreate {
-            get<SettingsRepository>()
-        }
+    private val settingsRepository: SettingsRepository by inject()
 
-    override val settingsState: StateFlow<SettingsEntity> =
-        settingsRepository.settingsFlow.stateIn(
-            scope = componentScope,
-            started = SharingStarted.Eagerly,
-            initialValue = settingsRepository.currentSettings
-        )
+    override val settingsState: StateFlow<SettingsEntity> = settingsRepository.settingsFlow
 
     private val store =
         instanceKeeper.getStore {
             RealRootStore(
-                storeFactory = DefaultStoreFactory(),
-                settingsRepository = settingsRepository
+                storeFactory = DefaultStoreFactory()
             ).create()
         }
 
@@ -114,7 +100,9 @@ class RealRootComponent(
 
         if (oldCustomFontPath.isNotEmpty() && oldCustomFontPath != fontPath) {
             val oldFile = File(oldCustomFontPath)
-            if (oldFile.exists()) { oldFile.delete() }
+            if (oldFile.exists()) {
+                oldFile.delete()
+            }
         }
 
         store.accept(

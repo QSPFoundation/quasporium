@@ -65,10 +65,11 @@ dependencies {
     implementation(project(":features:stock:domain"))
     implementation(project(":features:stock:presentation"))
 
+    implementation(project(":features:settings:domain"))
+    implementation(project(":features:settings:presentation"))
+
     implementation(project(":features:dialogs:presentation"))
     implementation(project(":features:details:presentation"))
-    implementation(project(":features:settings:data"))
-    implementation(project(":features:settings:presentation"))
     implementation(project(":features:game:presentation"))
     implementation(project(":features:webview:presentation"))
 

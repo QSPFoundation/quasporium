@@ -1,7 +1,11 @@
 package com.pixnpunk.quasporium.mvi
 
+import androidx.compose.ui.graphics.toArgb
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
-import com.pixnpunk.settings.data.repository.SettingsRepository
+import com.pixnpunk.settings.dto.usecase.RestoreColorValueUseCase
+import com.pixnpunk.settings.dto.usecase.UpdateColorUseCase
+import com.pixnpunk.settings.dto.usecase.UpdateCustomFontPathUseCase
+import com.pixnpunk.settings.dto.usecase.UpdateImageSizeUseCase
 import com.pixnpunk.stock.domain.usecase.DownloadGameArchUseCase
 import com.pixnpunk.stock.domain.usecase.FillAndInsertEntryUseCase
 import com.pixnpunk.stock.domain.usecase.UpsertEntryUseCase
@@ -12,7 +16,10 @@ class RootExecutor(
     private val fillAndInsertEntryUseCase: FillAndInsertEntryUseCase,
     private val upsertEntryUseCase: UpsertEntryUseCase,
     private val downloadGameArchUseCase: DownloadGameArchUseCase,
-    private val settingsRepository: SettingsRepository
+    private val updateColorUseCase: UpdateColorUseCase,
+    private val restoreColorValueUseCase: RestoreColorValueUseCase,
+    private val updateImageSizeUseCase: UpdateImageSizeUseCase,
+    private val updateCustomFontPathUseCase: UpdateCustomFontPathUseCase
 ) : CoroutineExecutor<RootStore.Intent, RootStore.Action, RootStore.State, RootStore.Message, RootStore.Label>() {
     override fun executeIntent(intent: RootStore.Intent) {
         when (intent) {
@@ -33,16 +40,16 @@ class RootExecutor(
             }
 
             is RootStore.Intent.RestoreColorConfig ->
-                settingsRepository.restoreColorValue(intent.state)
+                scope.launch { restoreColorValueUseCase(intent.state) }
 
             is RootStore.Intent.UpdateColorConfig ->
-                settingsRepository.updateColorValue(intent.state, intent.color)
+                scope.launch { updateColorUseCase(intent.state, intent.color.toArgb()) }
 
             is RootStore.Intent.UpdateImageConfig ->
-                settingsRepository.updateImageSize(intent.state, intent.input.toInt())
+                scope.launch { updateImageSizeUseCase(intent.state, intent.input.toInt()) }
 
             is RootStore.Intent.UpdateCustomFontPath ->
-                settingsRepository.updateCustomFontPath(intent.path)
+                scope.launch { updateCustomFontPathUseCase(intent.path) }
         }
     }
 }
