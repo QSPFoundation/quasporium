@@ -2,19 +2,21 @@ package com.pixnpunk.webview.presentation
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
-import com.arkivanov.mvikotlin.core.instancekeeper.getStore
-import com.arkivanov.mvikotlin.extensions.coroutines.stateFlow
-import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
 import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.game.domain.model.LibUIConfig
-import com.pixnpunk.webview.presentation.mvi.RealWebViewStore
-import com.pixnpunk.webview.presentation.mvi.WebViewStore
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import com.pixnpunk.webview.domain.model.HtmlConfig
+import com.pixnpunk.webview.domain.usecase.FormatGameHtmlUseCase
+import com.pixnpunk.webview.presentation.model.WebViewState
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 
@@ -22,41 +24,67 @@ class RealWebViewComponent(
     private val componentContext: ComponentContext,
     private val htmlContentFlow: Flow<String>,
     private val settingsStateFlow: StateFlow<SettingsEntity>,
-    private val engineSettingsStateFlow: StateFlow<LibUIConfig>,
+    private val engineSettingsStateFlow: Flow<LibUIConfig>,
     override val gameDirUriBox: String,
     override val onExecValue: (String) -> Unit
 ) : ComponentContext by componentContext, WebViewComponent, KoinComponent {
 
     private val scope = coroutineScope()
 
-    private val modSettingsFlow: StateFlow<SettingsEntity> =
-        settingsStateFlow
-            .combine(engineSettingsStateFlow) { appSet, libSet ->
-                appSet.copy(
-                    isUseHtml = libSet.isUseHtml,
-                    textColor = libSet.fontColor.takeIf { !appSet.isTextColorOverride && it != 0 } ?: appSet.textColor,
-                    backColor = libSet.backColor.takeIf { !appSet.isBackColorOverride && it != 0 } ?: appSet.backColor,
-                    linkColor = libSet.linkColor.takeIf { !appSet.isLinkColorOverride && it != 0 } ?: appSet.linkColor,
-                    fontSize = libSet.fontSize.takeIf { appSet.isUseGameFont && it != 0 } ?: appSet.fontSize
-                )
-            }.stateIn(
-                scope = scope,
-                started = SharingStarted.Eagerly,
-                initialValue = settingsStateFlow.value
-            )
+    private val formatGameHtmlUseCase: FormatGameHtmlUseCase = get()
 
-    private val store = instanceKeeper.getStore {
-        RealWebViewStore(
-            storeFactory = DefaultStoreFactory(),
-            htmlContentFlow = htmlContentFlow,
-            settingsStateFlow = modSettingsFlow,
-            formatGameHtmlUseCase = get()
-        ).create()
+    private val _model = MutableStateFlow(WebViewState())
+    override val model: StateFlow<WebViewState> = _model.asStateFlow()
+
+    init {
+        startHtmlProcessingPipeline()
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    override val model: StateFlow<WebViewStore.State> = store.stateFlow
+    private fun startHtmlProcessingPipeline() {
+        val configFlow = combine(
+            settingsStateFlow,
+            engineSettingsStateFlow
+        ) { appSet, libSet ->
+            HtmlConfig(
+                typeface = appSet.typeface,
+                fontSize = libSet.fontSize.takeIf { appSet.isUseGameFont && it != 0 }
+                    ?: appSet.fontSize,
+                textColor = libSet.fontColor.takeIf { !appSet.isTextColorOverride && it != 0 }
+                    ?: appSet.textColor,
+                backColor = libSet.backColor.takeIf { !appSet.isBackColorOverride && it != 0 }
+                    ?: appSet.backColor,
+                linkColor = libSet.linkColor.takeIf { !appSet.isLinkColorOverride && it != 0 }
+                    ?: appSet.linkColor,
+                isUseHtml = libSet.isUseHtml,
+                isAutoscroll = appSet.isYesScrollMain
+            )
+        }.distinctUntilChanged()
 
-    override fun onUserTouched() =
-        store.accept(WebViewStore.Intent.OnUserTouchedWebView)
+        scope.launch {
+            combine(htmlContentFlow, configFlow) { rawHtml, config -> rawHtml to config }
+                .flowOn(Dispatchers.Default)
+                .collect { (rawHtml, config) ->
+                    val newHash = rawHtml.hashCode()
+
+                    _model.update { current ->
+                        val isNewContent = current.htmlContentHash != newHash
+
+                        current.copy(
+                            htmlConfig = config,
+                            htmlContent = formatGameHtmlUseCase(rawHtml, config),
+                            htmlContentHash = newHash,
+                            isAutoScrollActive = if (isNewContent) config.isAutoscroll else current.isAutoScrollActive,
+                            restoreScrollY = if (!isNewContent) current.restoreScrollY else 0
+                        )
+                    }
+                }
+        }
+    }
+
+    override fun onUserTouched() {
+        val current = _model.value
+        if (current.isAutoScrollActive || current.restoreScrollY > 0) {
+            _model.update { it.copy(isAutoScrollActive = false, restoreScrollY = 0) }
+        }
+    }
 }

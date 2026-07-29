@@ -1,12 +1,9 @@
 package com.pixnpunk.`object`.presentation
 
-import com.pixnpunk.dto.SettingsEntity
-import com.pixnpunk.`object`.presentation.mvi.ObjectStore
+import com.pixnpunk.`object`.presentation.model.ObjectUIState
 import kotlinx.coroutines.flow.StateFlow
 
 interface ObjectComponent {
-    val model: StateFlow<ObjectStore.State>
-    val settingsState: StateFlow<SettingsEntity>
-
+    val uiState: StateFlow<ObjectUIState>
     val onObjectSelected: (Int) -> Unit
 }

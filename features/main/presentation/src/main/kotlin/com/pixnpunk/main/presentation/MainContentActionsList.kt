@@ -108,7 +108,7 @@ fun MainContentActionsList(
             }
         ) {
             animatedActions.forEachIndexed { index, item ->
-                key(item.original.text + index) {
+                key(item.original.title + index) {
                     ActionCell(
                         modifier =
                             Modifier

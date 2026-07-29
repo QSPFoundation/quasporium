@@ -72,6 +72,7 @@ dependencies {
     implementation(libs.androidx.appcompat)
 
     implementation(libs.kotlinx.coroutines.android)
+    implementation("org.jetbrains.kotlinx:atomicfu:0.33.0")
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin.core)

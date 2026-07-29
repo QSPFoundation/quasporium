@@ -38,6 +38,12 @@ class RealSettingsComponent(
 
     private val settingsRepository: SettingsRepository by inject()
 
+    override val isLocalSettings: Boolean = gameId != null
+
+    override val preferencesState = MutableStateFlow<Preferences>(
+        createProxyPreferences(SettingsEntity())
+    )
+
     init {
         scope.launch {
             settingsRepository.settingsFlow.collect { entity ->
@@ -45,12 +51,6 @@ class RealSettingsComponent(
             }
         }
     }
-
-    override val isLocalSettings: Boolean = gameId != null
-
-    override val preferencesState = MutableStateFlow<Preferences>(
-        createProxyPreferences(SettingsEntity())
-    )
 
     override fun moveToChild(config: ChildConfig) = navigation.pushNew(config)
 

@@ -1,6 +1,6 @@
 package com.pixnpunk.game.domain.repository
 
-interface AudioPlayer {
+interface AudioPlayerInteractor {
     var isSoundEnabled: Boolean
 
     fun isPlayingFile(path: String): Boolean

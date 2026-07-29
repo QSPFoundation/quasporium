@@ -23,14 +23,14 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.pixnpunk.dto.LibGenItem
 import com.pixnpunk.dto.LibSaveItem
+import com.pixnpunk.game.domain.model.InteractableItem
 import org.ocpsoft.prettytime.PrettyTime
 import java.util.*
 
 @Composable
 fun DialogOutputListValueContent(
-    menuItems: List<LibGenItem> = emptyList(),
+    menuItems: List<InteractableItem> = emptyList(),
     saveItems: List<LibSaveItem> = emptyList(),
     onConfirm: (Int) -> Unit = { },
     onConfirmFile: (String) -> Unit = { },
@@ -59,14 +59,14 @@ fun DialogOutputListValueContent(
 
         if (menuItems.isNotEmpty()) {
             itemsIndexed(menuItems) { key, value ->
-                if (value.text == "-") {
+                if (value.title == "-") {
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 8.dp),
                         color = MaterialTheme.colorScheme.outlineVariant
                     )
                 } else {
-                    val annotatedText = remember(value.text) {
-                        AnnotatedString.fromHtml(value.text)
+                    val annotatedText = remember(value.title) {
+                        AnnotatedString.fromHtml(value.title)
                     }
                     ListItem(
                         modifier = Modifier.clickable(true) {
@@ -77,12 +77,13 @@ fun DialogOutputListValueContent(
                             containerColor = Color.Transparent
                         ),
                         leadingContent = {
-                            if (value.imagePath.isNotEmpty()) {
+                            val path = value.imagePath
+                            if (path != null) {
                                 AsyncImage(
                                     modifier = Modifier
                                         .size(40.dp)
                                         .clip(MaterialTheme.shapes.medium),
-                                    model = value.imagePath,
+                                    model = path.value,
                                     contentScale = ContentScale.Crop,
                                     contentDescription = null
                                 )

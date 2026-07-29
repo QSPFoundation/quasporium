@@ -40,8 +40,10 @@ import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.pixnpunk.dialogs.presentation.DialogsMainContent
 import com.pixnpunk.extra.presentation.ExtraContent
+import com.pixnpunk.game.domain.model.GameState
 import com.pixnpunk.game.presentation.component.GameAppBar
 import com.pixnpunk.game.presentation.component.GameBottomBar
+import com.pixnpunk.game.presentation.model.GameUIState
 import com.pixnpunk.game.presentation.theme.AppTypography
 import com.pixnpunk.game.presentation.theme.QuasporiumTheme
 import com.pixnpunk.game.presentation.theme.withDefaultFontFamily
@@ -56,22 +58,26 @@ import kotlin.time.Duration.Companion.milliseconds
 @Composable
 fun GameContent(
     component: GameComponent,
+    state: GameUIState,
     snackbarHostState: SnackbarHostState
 ) {
-    val state by component.model.collectAsStateWithLifecycle()
     val dialogSlot by component.dialogSlot.subscribeAsState()
     val extraSlot by component.extraSlot.subscribeAsState()
     val objectSlot by component.objectSlot.subscribeAsState()
 
     val settings by component.settingsState.collectAsStateWithLifecycle()
 
+    val badges by component.badgesState.collectAsStateWithLifecycle()
+
+    val engineState by component.engineState.collectAsStateWithLifecycle()
+
     val extraSlotIsNotEmpty = extraSlot.child != null
     val objectSlotIsNotEmpty = objectSlot.child != null
 
-    val isMainDescUpdated = state.isMainDescUpdated.second
-    val isExtraDescUpdated = state.isExtraDescUpdated.second
-    val isObjectsListUpdated = state.isObjectsListUpdated.second
-    val isActionsListUpdated = state.isActionsListUpdated.second
+    val isMainDescUpdated = badges.hasNewMain
+    val isExtraDescUpdated = badges.hasNewExtra
+    val isObjectsListUpdated = badges.hasNewObjects
+    val isActionsListUpdated = badges.hasNewActions
 
     val coroutineScope = rememberCoroutineScope()
     val doubleTapTimeout = LocalViewConfiguration.current.doubleTapTimeoutMillis
@@ -88,6 +94,19 @@ fun GameContent(
     }
 
     val currentIsMain = currentRole == SupportingPaneScaffoldRole.Main
+
+    LaunchedEffect(component) {
+        component.events.collect { event ->
+            when (event) {
+                is GameEvent.ShowSnackbar -> {
+                    snackbarHostState.showSnackbar(
+                        message = event.message,
+                        duration = SnackbarDuration.Short
+                    )
+                }
+            }
+        }
+    }
 
     LaunchedEffect(isMainDescUpdated, currentIsMain) {
         if (currentIsMain && isMainDescUpdated) {
@@ -245,7 +264,7 @@ fun GameContent(
                                 GameAppBar(
                                     titleText = stringResource(R.string.main_tab_title),
                                     isInputExecutorVis = state.isInputEnabled || state.isExecutorEnabled,
-                                    isAppBarMenuVis = state.isGameRunning,
+                                    isAppBarMenuVis = engineState is GameState.Running,
                                     isSaveMenuItemVis = !state.isSaveDisable,
                                     showDialog = component::doShowDialog,
                                     doCloseGame = {

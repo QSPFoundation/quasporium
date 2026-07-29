@@ -1,14 +1,11 @@
 package com.pixnpunk.webview.presentation
 
-import com.pixnpunk.webview.presentation.mvi.WebViewStore
+import com.pixnpunk.webview.presentation.model.WebViewState
 import kotlinx.coroutines.flow.StateFlow
 
 sealed interface WebViewComponent {
-    val model: StateFlow<WebViewStore.State>
-
     fun onUserTouched()
-
+    val model: StateFlow<WebViewState>
     val gameDirUriBox: String
-
     val onExecValue: (String) -> Unit
 }

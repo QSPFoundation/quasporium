@@ -7,7 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.core.net.toUri
 import androidx.core.view.WindowCompat
@@ -15,6 +15,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.anggrayudi.storage.contract.FileCreationContract
 import com.anggrayudi.storage.contract.FileCreationResult
 import com.anggrayudi.storage.contract.FilePickerResult
@@ -24,8 +25,10 @@ import com.anggrayudi.storage.file.FileFullPath
 import com.anggrayudi.storage.file.MimeType.BINARY_FILE
 import com.anggrayudi.storage.file.getAbsolutePath
 import com.arkivanov.decompose.defaultComponentContext
-import com.pixnpunk.game.presentation.mvi.GameStore
+import com.arkivanov.decompose.retainedComponent
+import com.pixnpunk.game.domain.model.VfsPath
 import com.pixnpunk.settings.dto.repository.SettingsRepository
+import com.pixnpunk.utils.DirUtil.isGameDirIsInternal
 import org.koin.android.ext.android.get
 import org.koin.android.ext.android.inject
 
@@ -42,18 +45,18 @@ class GameActivity : ComponentActivity() {
             runCatching {
                 when (it) {
                     is FileCreationResult.StoragePermissionDenied -> {
-                        rootComponent.onFileCorruptResult()
+                        rootComponent.onSaveFilePicked(null)
                     }
 
                     is FileCreationResult.CanceledByUser -> {
-                        rootComponent.onFileCorruptResult(true)
+                        rootComponent.onSaveFilePicked(null)
                     }
 
                     is FileCreationResult.Created -> {
-                        rootComponent.onSaveFileResult(it.file.uri)
+                        rootComponent.onSaveFilePicked(VfsPath(it.file.uri.toString()))
                     }
                 }
-            }.onFailure { rootComponent.onFileCorruptResult() }
+            }.onFailure { rootComponent.onSaveFilePicked(null) }
         }
 
     private val requestOpenFile =
@@ -63,18 +66,22 @@ class GameActivity : ComponentActivity() {
             runCatching {
                 when (it) {
                     is FilePickerResult.StoragePermissionDenied -> {
-                        rootComponent.onFileCorruptResult()
+                        rootComponent.onLoadFilePicked(null)
                     }
 
                     is FilePickerResult.CanceledByUser -> {
-                        rootComponent.onFileCorruptResult(true)
+                        rootComponent.onLoadFilePicked(null)
                     }
 
                     is FilePickerResult.Picked -> {
-                        rootComponent.onLoadFileResult(it.files.first().uri)
+                        rootComponent.onLoadFilePicked(
+                            VfsPath(
+                                it.files.first().uri.toString()
+                            )
+                        )
                     }
                 }
-            }.onFailure { rootComponent.onFileCorruptResult() }
+            }.onFailure { rootComponent.onLoadFilePicked(null) }
         }
 
     private val gameId: Long by lazy { intent.getLongExtra("gameId", -1L) }
@@ -95,16 +102,19 @@ class GameActivity : ComponentActivity() {
             windowInsetsController.show(WindowInsetsCompat.Type.systemBars())
         }
 
-        rootComponent = RealGameComponent(
-            componentContext = defaultComponentContext(),
-            onFinishActivity = { killProcess(myPid()) },
-            gameId = gameId,
-            gameTitle = gameTitle,
-            gameDirUriBox = gameDirUriBox,
-            gameFileUriBox = gameFileUriBox
-        )
+        println(settingsRepository.settingsFlow.value.nativeLibFrom)
 
-        rootComponent.doRunGame()
+        rootComponent = retainedComponent {
+            RealGameComponent(
+                componentContext = it,
+                libAuthors = settingsRepository.settingsFlow.value.nativeLibFrom,
+                onFinishActivity = { killProcess(myPid()) },
+                gameId = gameId,
+                gameTitle = gameTitle,
+                gameDirUriBox = gameDirUriBox,
+                gameFileUriBox = gameFileUriBox
+            )
+        }
 
         lifecycle.addObserver(object : DefaultLifecycleObserver {
             override fun onResume(owner: LifecycleOwner) {
@@ -117,60 +127,80 @@ class GameActivity : ComponentActivity() {
         })
 
         setContent {
+            val state by rootComponent.model.collectAsStateWithLifecycle()
+
             val snackbarHostState = remember { SnackbarHostState() }
 
-            LaunchedEffect(Unit) {
-                rootComponent.label.collect {
-                    when (it) {
-                        is GameStore.Label.ShowDialog ->
-                            rootComponent.doShowDialog(
-                                it.dialogState,
-                                it.inputString,
-                                it.inputListItems ?: emptyList()
+            if (state.isUserChooseSave) {
+                if (!isGameDirIsInternal(gameDirUriBox)) {
+                    runCatching {
+                        val rootDir =
+                            gameDirUriBox.toUri().toDocumentFile(this@GameActivity)!!
+                        requestCreateFile.launch(
+                            FileCreationContract.Options(
+                                mimeType = BINARY_FILE,
+                                fileName = "${(UInt.MIN_VALUE..UInt.MAX_VALUE).random()}.sav",
+                                initialPath = FileFullPath(
+                                    context = this@GameActivity,
+                                    fullPath = rootDir.getAbsolutePath(this@GameActivity)
+                                )
                             )
-
-                        is GameStore.Label.ShowListSavesDialog ->
-                            rootComponent.doShowDialog(it.inputListItems)
-
-                        is GameStore.Label.ShowSnackBar ->
-                            snackbarHostState.showSnackbar(it.inputString)
-
-                        is GameStore.Label.ShowLoadFilePicker ->
-                            runCatching {
-                                val rootDir =
-                                    gameDirUriBox.toUri().toDocumentFile(this@GameActivity)!!
-                                requestOpenFile.launch(
-                                    OpenFilePickerContract.Options(
-                                        initialPath = FileFullPath(
-                                            context = this@GameActivity,
-                                            fullPath = rootDir.getAbsolutePath(this@GameActivity)
-                                        ),
-                                        filterMimeTypes = setOf(BINARY_FILE)
-                                    )
-                                )
-                            }
-
-                        is GameStore.Label.ShowSaveFilePicker ->
-                            runCatching {
-                                val rootDir =
-                                    gameDirUriBox.toUri().toDocumentFile(this@GameActivity)!!
-                                requestCreateFile.launch(
-                                    FileCreationContract.Options(
-                                        mimeType = BINARY_FILE,
-                                        fileName = "${(UInt.MIN_VALUE..UInt.MAX_VALUE).random()}.sav",
-                                        initialPath = FileFullPath(
-                                            context = this@GameActivity,
-                                            fullPath = rootDir.getAbsolutePath(this@GameActivity)
-                                        )
-                                    )
-                                )
-                            }
+                        )
                     }
+                } else {
+//                    scope.launch(Dispatchers.IO) {
+//                        val savesCount = saveSlotDao.getSavesCount(state().gameId)
+//                        scope.launch {
+//                            publish(
+//                                ShowDialog(
+//                                    inputString = "Save ${savesCount + 1}",
+//                                    dialogState = LibTypeDialog.DIALOG_SAVEGAME
+//                                )
+//                            )
+//                        }
+//                    }
+                }
+            }
+
+            if (state.isUserChooseLoad) {
+                if (!isGameDirIsInternal(gameDirUriBox)) {
+                    runCatching {
+                        val rootDir =
+                            gameDirUriBox.toUri().toDocumentFile(this@GameActivity)!!
+                        requestOpenFile.launch(
+                            OpenFilePickerContract.Options(
+                                initialPath = FileFullPath(
+                                    context = this@GameActivity,
+                                    fullPath = rootDir.getAbsolutePath(this@GameActivity)
+                                ),
+                                filterMimeTypes = setOf(BINARY_FILE)
+                            )
+                        )
+                    }
+                } else {
+//                    scope.launch(Dispatchers.IO) {
+//                        saveSlotDao.getAllSaves(state().gameId).map {
+//                            LibSaveItem(
+//                                it.userTitle,
+//                                it.timestamp,
+//                                it.filePath
+//                            )
+//                        }.let {
+//                            scope.launch {
+//                                if (it.isEmpty()) {
+//                                    publish(GameStore.Label.ShowSnackBar("No saved games!"))
+//                                } else {
+//                                    publish(GameStore.Label.ShowListSavesDialog(it))
+//                                }
+//                            }
+//                        }
+//                    }
                 }
             }
 
             GameContent(
                 component = rootComponent,
+                state = state,
                 snackbarHostState = snackbarHostState
             )
         }

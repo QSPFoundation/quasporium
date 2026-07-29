@@ -4,9 +4,9 @@ import androidx.compose.runtime.Immutable
 import com.pixnpunk.dto.ColorPickerState
 import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.dto.InputState
-import com.pixnpunk.dto.LibGenItem
 import com.pixnpunk.dto.LibSaveItem
 import com.pixnpunk.dto.OutputState
+import com.pixnpunk.game.domain.model.InteractableItem
 import kotlinx.serialization.Serializable
 
 @Immutable
@@ -22,6 +22,6 @@ data class DialogsConfig(
     val initialValue: String = "",
     val supportValue: String = "",
     val supportErrorValue: String = "",
-	val menuItems: List<LibGenItem> = emptyList(),
+    val menuItems: List<InteractableItem> = emptyList(),
     val saveItems: List<LibSaveItem> = emptyList()
 )

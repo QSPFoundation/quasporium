@@ -2,32 +2,37 @@ package com.pixnpunk.game.data
 
 import android.content.Context
 import android.media.MediaPlayer
-import androidx.core.net.toFile
 import androidx.core.net.toUri
-import com.anggrayudi.storage.extension.isRawFile
+import com.pixnpunk.game.data.vfs.FileSystemProvider
+import com.pixnpunk.game.data.vfs.impl.DirectVirtualFile
 import com.pixnpunk.game.domain.model.AudioPlayerException
-import com.pixnpunk.game.domain.repository.AudioPlayer
+import com.pixnpunk.game.domain.model.VfsPath
+import com.pixnpunk.game.domain.repository.AudioPlayerInteractor
 import com.pixnpunk.logger.AppLogger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import java.io.File
 import java.io.FileInputStream
 import java.util.concurrent.ConcurrentHashMap
 
-class GameAudioComponent(
+internal class GameAudioComponent(
     private val context: Context,
-    private val logger: AppLogger
-) : AudioPlayer {
+    private val logger: AppLogger,
+    private val vfsProvider: FileSystemProvider
+) : AudioPlayerInteractor {
 
     private val playerDispatcher = Dispatchers.IO.limitedParallelism(1)
     private val playerScope = CoroutineScope(playerDispatcher + SupervisorJob())
 
     private val mediaPlayers = ConcurrentHashMap<String, MediaPlayer>()
 
-    @Volatile private var isPaused = false
-    @Volatile override var isSoundEnabled = true
+    @Volatile
+    private var isPaused = false
+    @Volatile
+    override var isSoundEnabled = true
 
     internal fun close() {
         playerScope.cancel()
@@ -92,15 +97,19 @@ class GameAudioComponent(
     private fun createNewSound(path: String): MediaPlayer =
         MediaPlayer().apply {
             runCatching {
-                path.toUri().also {
-                    if (!it.isRawFile) {
-                        setDataSource(context, it)
-                        prepare()
-                    } else {
-                        FileInputStream(it.toFile()).use { inputStream ->
+                vfsProvider.resolve(
+                    VfsPath(path)
+                )?.let {
+                    if (it is DirectVirtualFile) {
+                        FileInputStream(
+                            File(path)
+                        ).use { inputStream ->
                             setDataSource(inputStream.fd)
                             prepare()
                         }
+                    } else {
+                        setDataSource(context, path.toUri())
+                        prepare()
                     }
                 }
             }.onFailure { error ->

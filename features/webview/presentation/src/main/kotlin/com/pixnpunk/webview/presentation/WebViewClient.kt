@@ -27,14 +27,12 @@ internal class WebViewClient(
             "exec" ->
                 uriDecode.substring(5)
                     .let {
-                        if (it.isBase64()) {
-                            it.decodeBase64()
-                        } else {
-                            it
-                        }
-                    }
-                    .let {
-                        onExecValue(it)
+                        println(it)
+                        onExecValue(
+                            runCatching {
+                                it.decodeBase64()
+                            }.getOrDefault(it)
+                        )
                     }
 
             "https", "http" ->

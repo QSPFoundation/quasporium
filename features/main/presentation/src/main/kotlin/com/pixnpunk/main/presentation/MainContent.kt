@@ -25,8 +25,6 @@ fun MainContent(
     snackbarHostState: SnackbarHostState
 ) {
     val uiState by component.uiState.collectAsStateWithLifecycle()
-    val fontFamily by component.fontFamilyState.collectAsStateWithLifecycle()
-    val settings by component.settingsState.collectAsStateWithLifecycle()
 
     val hasActions = uiState.isActionsVis && uiState.parsedActions.isNotEmpty()
     val scrollState = rememberScrollState()
@@ -44,9 +42,9 @@ fun MainContent(
         sheetContent = {
             if (hasActions) {
                 MainContentActionsList(
-                    countActsVis = settings.visActsCount,
+                    countActsVis = uiState.visActsCount,
                     uiState = uiState,
-                    fontFamily = fontFamily,
+                    fontFamily = uiState.fontFamily,
                     actions = uiState.parsedActions,
                     onActionClicked = component.onActionClicked,
                     scrollState = scrollState

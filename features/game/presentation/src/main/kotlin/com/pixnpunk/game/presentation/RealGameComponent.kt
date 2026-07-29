@@ -1,7 +1,5 @@
 package com.pixnpunk.game.presentation
 
-import android.net.Uri
-import androidx.core.net.toUri
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
 import com.arkivanov.decompose.router.slot.ChildSlot
@@ -11,40 +9,60 @@ import com.arkivanov.decompose.router.slot.child
 import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
 import com.arkivanov.decompose.value.Value
-import com.arkivanov.essenty.instancekeeper.getOrCreate
-import com.arkivanov.mvikotlin.core.instancekeeper.getStore
-import com.arkivanov.mvikotlin.extensions.coroutines.labels
-import com.arkivanov.mvikotlin.extensions.coroutines.stateFlow
-import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
+import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
+import com.arkivanov.essenty.lifecycle.doOnCreate
+import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.pixnpunk.dialogs.presentation.DialogsComponent
 import com.pixnpunk.dialogs.presentation.DialogsConfig
 import com.pixnpunk.dialogs.presentation.DialogsState
 import com.pixnpunk.dialogs.presentation.RealDialogsComponent
 import com.pixnpunk.dto.InputState
-import com.pixnpunk.dto.LibGenItem
 import com.pixnpunk.dto.LibSaveItem
+import com.pixnpunk.dto.NativeLibAuthors
 import com.pixnpunk.dto.OutputState
 import com.pixnpunk.dto.OutputStateValue
 import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.extra.presentation.RealExtraComponent
-import com.pixnpunk.game.data.GameNativeEngine
+import com.pixnpunk.game.domain.model.EngineDialog
+import com.pixnpunk.game.domain.model.GameId
+import com.pixnpunk.game.domain.model.GameState
+import com.pixnpunk.game.domain.model.InteractableItem
 import com.pixnpunk.game.domain.model.LibTypeDialog
-import com.pixnpunk.game.domain.repository.AudioPlayer
-import com.pixnpunk.game.presentation.mvi.GameStore
-import com.pixnpunk.game.presentation.mvi.RealGameStore
+import com.pixnpunk.game.domain.model.VfsPath
+import com.pixnpunk.game.domain.model.WindowType
+import com.pixnpunk.game.domain.repository.AudioPlayerInteractor
+import com.pixnpunk.game.domain.repository.EngineCommand
+import com.pixnpunk.game.domain.repository.GameEngineInteractor
+import com.pixnpunk.game.presentation.model.BadgesHashes
+import com.pixnpunk.game.presentation.model.BadgesState
+import com.pixnpunk.game.presentation.model.GameUIState
 import com.pixnpunk.main.presentation.MainComponent
 import com.pixnpunk.main.presentation.RealMainComponent
 import com.pixnpunk.`object`.presentation.RealObjectComponent
 import com.pixnpunk.settings.dto.repository.SettingsRepository
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlinx.serialization.serializer
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import org.koin.core.component.inject
+import org.koin.core.parameter.parametersOf
 
 class RealGameComponent(
     private val componentContext: ComponentContext,
+    private val libAuthors: NativeLibAuthors,
     private val onFinishActivity: () -> Unit,
     private val gameId: Long = -1L,
     private val gameTitle: String = "Title",
@@ -52,34 +70,48 @@ class RealGameComponent(
     private val gameFileUriBox: String = ""
 ) : ComponentContext by componentContext, GameComponent, KoinComponent {
 
-    internal val audioPlayer: AudioPlayer = get()
-    private val engine = instanceKeeper.getOrCreate("NativeGameEngine") { get<GameNativeEngine>() }
+    private val componentScope = coroutineScope()
+
+    internal val audioPlayer: AudioPlayerInteractor = get()
+    private val engineInteractor: GameEngineInteractor by inject { parametersOf(libAuthors) }
+    private val settingsRepository: SettingsRepository = get()
+
+    override val settingsState: StateFlow<SettingsEntity> = settingsRepository.settingsFlow
+    override val engineState: StateFlow<GameState> = engineInteractor.state
+
+    private val _uiState = MutableStateFlow(
+        GameUIState(
+            gameId = GameId(gameId),
+            gameTitle = gameTitle,
+            gameDirUriBox = VfsPath(gameDirUriBox),
+            gameFileUriBox = VfsPath(gameFileUriBox)
+        )
+    )
+    override val model: StateFlow<GameUIState> = _uiState.asStateFlow()
+
+    private val lastHashes = MutableStateFlow(BadgesHashes())
+    override val badgesState: StateFlow<BadgesState> = combine(
+        engineState.filterIsInstance<GameState.Running>(),
+        lastHashes
+    ) { engine, hashes ->
+        BadgesState(
+            hasNewMain = engine.mainDescription.hashCode() != hashes.mainHash,
+            hasNewActions = engine.actions.hashCode() != hashes.actionsHash,
+            hasNewExtra = engine.varsDescription.hashCode() != hashes.extraHash,
+            hasNewObjects = engine.objects.hashCode() != hashes.objectsHash
+        )
+    }.stateIn(
+        componentScope,
+        SharingStarted.Eagerly,
+        BadgesState()
+    )
+
+    private val _events = Channel<GameEvent>(Channel.BUFFERED)
+    override val events: Flow<GameEvent> = _events.receiveAsFlow()
 
     private val dialogNavigation = SlotNavigation<DialogsConfig>()
     private val extraNavigation = SlotNavigation<Unit>()
     private val objectNavigation = SlotNavigation<Unit>()
-
-    private val settingsRepository: SettingsRepository by inject()
-
-    override val settingsState: StateFlow<SettingsEntity> = settingsRepository.settingsFlow
-
-    private val store =
-        instanceKeeper.getStore {
-            RealGameStore(
-                gameId = gameId,
-                gameTitle = gameTitle,
-                gameDirUriBox = gameDirUriBox,
-                gameFileUriBox = gameFileUriBox,
-                storeFactory = DefaultStoreFactory(),
-                gameNativeEngine = engine,
-                audioPlayer = audioPlayer,
-                settingsState = settingsState
-            ).create()
-        }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    override val model: StateFlow<GameStore.State> = store.stateFlow
-    override val label = store.labels
 
     override val dialogSlot: Value<ChildSlot<*, DialogsComponent>> =
         childSlot(
@@ -93,7 +125,7 @@ class RealGameComponent(
                 inputValue = ::onInputValue,
                 confirmMessage = ::onConfirmMessage,
                 onDismissed = {
-                    store.accept(GameStore.Intent.OnDismissDialog)
+                    engineInteractor.submitCommand(EngineCommand.DismissDialog)
                     dialogNavigation.dismiss()
                 }
             )
@@ -108,7 +140,7 @@ class RealGameComponent(
         ) { _, ctx ->
             RealExtraComponent(
                 componentContext = ctx,
-                gameNativeEngine = engine,
+                engineInteractor = engineInteractor,
                 settingsState = settingsState,
                 gameDirUriBox = gameDirUriBox,
                 onExecValue = ::onExecValue
@@ -124,61 +156,157 @@ class RealGameComponent(
         ) { _, ctx ->
             RealObjectComponent(
                 componentContext = ctx,
-                gameNativeEngine = engine,
+                engineInteractor = engineInteractor,
                 settingsState = settingsState
             )
         }
 
     override val mainComponent: MainComponent = RealMainComponent(
         componentContext = childContext("MainComponent"),
-        gameNativeEngine = engine,
+        engineInteractor = engineInteractor,
         settingsState = settingsState,
         gameDirUriBox = gameDirUriBox,
         onExecValue = ::onExecValue
     )
 
-    fun onSaveFileResult(fileUri: Uri) {
-        store.accept(GameStore.Intent.OnSaveFile(fileUri))
+    private fun updateUiVisibilityFromEngine(state: GameState.Running) {
+        _uiState.update { current ->
+            current.copy(
+                isObjectsEnabled = state.activeWindows.contains(WindowType.OBJS),
+                isExtraEnabled = state.activeWindows.contains(WindowType.VARS),
+                isInputEnabled = state.activeWindows.contains(WindowType.INPUT)
+            )
+        }
     }
 
-    fun onLoadFileResult(fileUri: Uri) {
-        store.accept(GameStore.Intent.OnLoadFile(fileUri))
+    init {
+        lifecycle.doOnCreate {
+            engineInteractor.submitCommand(
+                EngineCommand.LoadGame(
+                    VfsPath(
+                        gameFileUriBox
+                    )
+                )
+            )
+        }
+
+        lifecycle.doOnDestroy {
+            engineInteractor.shutdown()
+        }
+
+        settingsState
+            .onEach { settings ->
+                _uiState.update {
+                    it.copy(
+                        isExecutorEnabled = settings.isUseExecString,
+                        isSaveDisable = settings.isNoSave
+                    )
+                }
+            }
+            .launchIn(componentScope)
+
+        engineState
+            .onEach { state ->
+                if (state is GameState.Running) {
+                    updateUiVisibilityFromEngine(state)
+                    when (val dialog = state.activeDialog) {
+                        is EngineDialog.Message ->
+                            doShowDialog(
+                                LibTypeDialog.DIALOG_MESSAGE,
+                                dialog.text
+                            )
+
+                        is EngineDialog.Input ->
+                            doShowDialog(
+                                LibTypeDialog.DIALOG_INPUT_BOX,
+                                dialog.prompt
+                            )
+
+                        is EngineDialog.Picture ->
+                            doShowDialog(
+                                LibTypeDialog.DIALOG_PICTURE,
+                                dialog.imagePath.value
+                            )
+
+                        is EngineDialog.Error ->
+                            doShowDialog(
+                                LibTypeDialog.DIALOG_ERROR,
+                                dialog.details
+                            )
+
+                        is EngineDialog.Menu ->
+                            doShowDialog(
+                                LibTypeDialog.DIALOG_MENU,
+                                inputListItems = dialog.items
+                            )
+
+                        else -> {}
+                    }
+                }
+            }
+            .launchIn(componentScope)
     }
 
-    fun onFileCorruptResult(isCancelUser: Boolean = false) {
-        store.accept(GameStore.Intent.OnCorruptFile(isCancelUser))
+    override fun doSaveFile() = _uiState.update { it.copy(isUserChooseSave = true) }
+
+    override fun doLoadFile() = _uiState.update { it.copy(isUserChooseLoad = true) }
+
+    override fun onSaveFilePicked(path: VfsPath?) {
+        _uiState.update { it.copy(isUserChooseSave = false) }
+        if (path != null) {
+            engineInteractor.submitCommand(EngineCommand.SaveGame(path))
+        }
     }
 
-    override fun doSaveFile() = store.accept(GameStore.Intent.StartSaveFile)
-
-    override fun doLoadFile() = store.accept(GameStore.Intent.StartLoadFile)
+    override fun onLoadFilePicked(path: VfsPath?) {
+        _uiState.update { it.copy(isUserChooseLoad = false) }
+        if (path != null) {
+            engineInteractor.submitCommand(EngineCommand.LoadSave(path))
+        }
+    }
 
     private fun onConfirmMessage(value: OutputStateValue) {
         when (value.state) {
-            OutputState.OUTPUT_RESTART_GAME -> engine.onRestartGame()
+            OutputState.OUTPUT_RESTART_GAME ->
+                engineInteractor.submitCommand(EngineCommand.RestartGame)
 
             OutputState.OUTPUT_LIST_MENU ->
-                store.accept(GameStore.Intent.OnSelectMenuItem(value.menuIndex))
+                engineInteractor.submitCommand(EngineCommand.SelectMenuItem(value.menuIndex))
 
             OutputState.OUTPUT_LIST_SAVES ->
-                store.accept(GameStore.Intent.OnLoadFile(value.selFileBox.toUri()))
+                engineInteractor.submitCommand(EngineCommand.LoadSave(VfsPath(value.selFileBox)))
 
             OutputState.OUTPUT_SIMPLE_MSG ->
-                store.accept(GameStore.Intent.OnDismissDialog)
+                engineInteractor.submitCommand(EngineCommand.DismissDialog)
 
             else -> {}
         }
     }
 
     private fun onInputValue(msg: Pair<InputState, String>) {
-        store.accept(
-            GameStore.Intent.OnInputValue(msg.first, msg.second)
-        )
+        val (state, inputString) = msg
+        when (state) {
+            InputState.INPUT_WITH_MESSAGE_AREA ->
+                engineInteractor.submitCommand(EngineCommand.SubmitInputArea(inputString))
+
+            InputState.INPUT_WITH_MESSAGE_BOX ->
+                engineInteractor.submitCommand(EngineCommand.SubmitInput(inputString))
+
+            InputState.INPUT_SAVE_NAME -> componentScope.launch {
+                val gameId = _uiState.value.gameId
+                val gameDir = _uiState.value.gameDirUriBox
+
+//                saveGameManager.createAndSaveSlot(gameId.id, inputString, gameDir)
+
+                _events.send(GameEvent.ShowSnackbar("Game saved!"))
+            }
+
+            else -> engineInteractor.submitCommand(EngineCommand.ExecuteString(inputString))
+        }
     }
 
-    private fun onExecValue(inputString: String) {
-        store.accept(GameStore.Intent.OnExecCode(inputString))
-    }
+    private fun onExecValue(inputString: String) =
+        engineInteractor.submitCommand(EngineCommand.ExecuteString(inputString))
 
     private fun onCleanError() {
         val oldConfig = dialogSlot.child?.configuration as DialogsConfig
@@ -191,32 +319,40 @@ class RealGameComponent(
     }
 
     override fun doShowDialog() {
-        val currentState = store.state
-        if (currentState.isInputEnabled) {
-            doShowDialog(
-                dialogState = LibTypeDialog.DIALOG_INPUT_AREA
-            )
-        } else if (currentState.isExecutorEnabled) {
-            doShowDialog(
-                dialogState = LibTypeDialog.DIALOG_INPUT_EXEC
-            )
-        }
-    }
-
-    override fun doShowDialog(listSaves: List<LibSaveItem>) {
+        val currentState = _uiState.value
         dialogNavigation.activate(
-            configuration = DialogsConfig(
-                dialogsState = DialogsState.DIALOG_OUTPUT_VALUE,
-                outputState = OutputState.OUTPUT_LIST_SAVES,
-                saveItems = listSaves
-            )
+            when {
+                currentState.isInputEnabled ->
+                    DialogsConfig(
+                        dialogsState = DialogsState.DIALOG_INPUT_VALUE,
+                        inputState = InputState.INPUT_WITH_MESSAGE_AREA
+                    )
+
+                currentState.isExecutorEnabled ->
+                    DialogsConfig(
+                        dialogsState = DialogsState.DIALOG_INPUT_VALUE,
+                        inputState = InputState.INPUT_WITH_MESSAGE_EXEC
+                    )
+
+                else -> return
+            }
         )
     }
 
     override fun doShowDialog(
+        listSaves: List<LibSaveItem>
+    ) = dialogNavigation.activate(
+        configuration = DialogsConfig(
+            dialogsState = DialogsState.DIALOG_OUTPUT_VALUE,
+            outputState = OutputState.OUTPUT_LIST_SAVES,
+            saveItems = listSaves
+        )
+    )
+
+    override fun doShowDialog(
         dialogState: LibTypeDialog,
         inputString: String,
-        inputListItems: List<LibGenItem>
+        inputListItems: List<InteractableItem>
     ) {
         when (dialogState) {
             LibTypeDialog.DIALOG_SAVEGAME -> {
@@ -313,28 +449,24 @@ class RealGameComponent(
         objectNavigation.dismiss()
     }
 
-    override fun cleanMainUpdates() =
-        store.accept(GameStore.Intent.CleanMainSavedDesc)
+    override fun cleanMainUpdates() {
+        val currentEngine = engineState.value as? GameState.Running ?: return
+        lastHashes.update { it.copy(mainHash = currentEngine.mainDescription.hashCode()) }
+    }
 
-    override fun cleanActionsUpdates() =
-        store.accept(GameStore.Intent.CleanActionsSavedList)
+    override fun cleanActionsUpdates() {
+        val currentEngine = engineState.value as? GameState.Running ?: return
+        lastHashes.update { it.copy(actionsHash = currentEngine.actions.hashCode()) }
+    }
 
-    override fun cleanExtraUpdates() =
-        store.accept(GameStore.Intent.CleanExtraSavedDesc)
+    override fun cleanExtraUpdates() {
+        val currentEngine = engineState.value as? GameState.Running ?: return
+        lastHashes.update { it.copy(extraHash = currentEngine.varsDescription.hashCode()) }
+    }
 
-    override fun cleanObjectsUpdates() =
-        store.accept(GameStore.Intent.CleanObjectsSavedList)
-
-    override fun doRunGame() {
-        val currState = store.state
-        if (!currState.isGameRunning) {
-            engine.startService(
-                currState.gameId,
-                currState.gameTitle,
-                currState.gameDirUriBox,
-                currState.gameFileUriBox
-            )
-        }
+    override fun cleanObjectsUpdates() {
+        val currentEngine = engineState.value as? GameState.Running ?: return
+        lastHashes.update { it.copy(objectsHash = currentEngine.objects.hashCode()) }
     }
 
     override fun doRestartGame() {

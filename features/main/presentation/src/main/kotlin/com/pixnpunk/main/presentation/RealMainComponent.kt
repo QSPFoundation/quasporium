@@ -7,20 +7,18 @@ import androidx.compose.ui.text.fromHtml
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
 import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
-import com.arkivanov.mvikotlin.core.instancekeeper.getStore
-import com.arkivanov.mvikotlin.extensions.coroutines.stateFlow
-import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
 import com.pixnpunk.dto.SettingsEntity
-import com.pixnpunk.game.data.GameNativeEngine
+import com.pixnpunk.game.domain.model.GameState
+import com.pixnpunk.game.domain.model.LibUIConfig
+import com.pixnpunk.game.domain.model.WindowType
+import com.pixnpunk.game.domain.repository.EngineCommand
+import com.pixnpunk.game.domain.repository.GameEngineInteractor
 import com.pixnpunk.main.presentation.model.MainUIState
 import com.pixnpunk.main.presentation.model.ParsedActionItem
-import com.pixnpunk.main.presentation.mvi.MainStore
-import com.pixnpunk.main.presentation.mvi.RealMainStore
 import com.pixnpunk.utils.ViewUtil.toComposeFamily
 import com.pixnpunk.webview.presentation.RealWebViewComponent
 import com.pixnpunk.webview.presentation.WebViewComponent
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -33,78 +31,72 @@ import java.io.File
 
 class RealMainComponent(
     private val componentContext: ComponentContext,
-    private val gameNativeEngine: GameNativeEngine,
-    override val settingsState: StateFlow<SettingsEntity>,
+    private val engineInteractor: GameEngineInteractor,
+    private val settingsState: StateFlow<SettingsEntity>,
     private val gameDirUriBox: String,
     private val onExecValue: (String) -> Unit
 ) : ComponentContext by componentContext, MainComponent, KoinComponent {
 
-    private val store = instanceKeeper.getStore {
-        RealMainStore(
-            storeFactory = DefaultStoreFactory(),
-            gameNativeEngine = gameNativeEngine
-        ).create()
+    override val onActionClicked: (Int) -> Unit = { index ->
+        engineInteractor.submitCommand(EngineCommand.ExecuteAction(index))
     }
 
     override val gameWebViewComponent: WebViewComponent =
         RealWebViewComponent(
             componentContext = childContext("MainGameWebViewComponent"),
             htmlContentFlow =
-                gameNativeEngine.gameStateFlow
-                    .map { it.mainDesc }
-                    .distinctUntilChanged(),
+                engineInteractor.state.map { state ->
+                    if (state !is GameState.Running) return@map ""
+                    state.mainDescription
+                }.flowOn(Dispatchers.Default).distinctUntilChanged(),
+            engineSettingsStateFlow =
+                engineInteractor.state.map { state ->
+                    if (state !is GameState.Running) return@map LibUIConfig()
+                    state.uiConfig
+                }.flowOn(Dispatchers.Default).distinctUntilChanged(),
             settingsStateFlow = settingsState,
-            engineSettingsStateFlow = gameNativeEngine.gameUIConfFlow,
             gameDirUriBox = gameDirUriBox,
             onExecValue = onExecValue,
         )
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    override val model: StateFlow<MainStore.State> = store.stateFlow
-    override val onActionClicked: (Int) -> Unit = { index ->
-        store.accept(MainStore.Intent.ActionClick(index))
-    }
-
-    override val uiState: StateFlow<MainUIState> = model
-        .combine(settingsState) { state, settings ->
-            MainUIState(
-                isActionsVis = state.isActionsVis,
-                textColor = settings.textColor,
-                fontSize = settings.fontSize,
-                backColor = settings.backColor,
-                parsedActions = state.actions.map { item ->
-                    ParsedActionItem(
-                        original = item,
-                        annotatedText = AnnotatedString.fromHtml(item.text),
-                        hasImage = item.imagePath.isNotBlank()
-                    )
-                }
-            )
-        }
-        .flowOn(Dispatchers.Default)
-        .stateIn(
-            scope = coroutineScope(),
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = MainUIState()
+    override val uiState: StateFlow<MainUIState> = combine(
+        engineInteractor.state,
+        settingsState
+    ) { gameState, settings ->
+        if (gameState !is GameState.Running) return@combine MainUIState()
+        MainUIState(
+            isActionsVis = gameState.activeWindows.contains(WindowType.ACTS),
+            parsedActions = gameState.actions.map { item ->
+                ParsedActionItem(
+                    original = item,
+                    annotatedText = AnnotatedString.fromHtml(item.title),
+                    hasImage = item.imagePath != null
+                )
+            },
+            backColor =
+                gameState.uiConfig.backColor
+                    .takeIf { !settings.isBackColorOverride && it != 0 }
+                    ?: settings.backColor,
+            fontSize =
+                gameState.uiConfig.fontSize
+                    .takeIf { settings.isUseGameFont && it != 0 }
+                    ?: settings.fontSize,
+            fontFamily = resolveFontFamily(settings)
         )
+    }.flowOn(Dispatchers.Default).stateIn(
+        scope = coroutineScope(),
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = MainUIState()
+    )
 
-    override val fontFamilyState: StateFlow<FontFamily> = settingsState
-        .map { settings ->
-            if (settings.isUseCustomFont && settings.customFontPath.isNotEmpty()) {
-                val file = File(settings.customFontPath)
-                if (file.exists()) {
-                    FontFamily(Typeface.createFromFile(file))
-                } else {
-                    settings.typeface.toComposeFamily()
-                }
-            } else {
-                settings.typeface.toComposeFamily()
+    private fun resolveFontFamily(settings: SettingsEntity): FontFamily {
+        if (settings.isUseCustomFont && settings.customFontPath.isNotEmpty()) {
+            val file = File(settings.customFontPath)
+            if (file.exists()) {
+                return runCatching { FontFamily(Typeface.createFromFile(file)) }
+                    .getOrDefault(settings.typeface.toComposeFamily())
             }
         }
-        .flowOn(Dispatchers.IO)
-        .stateIn(
-            scope = coroutineScope(),
-            started = SharingStarted.Eagerly,
-            initialValue = FontFamily.Default
-        )
+        return settings.typeface.toComposeFamily()
+    }
 }
