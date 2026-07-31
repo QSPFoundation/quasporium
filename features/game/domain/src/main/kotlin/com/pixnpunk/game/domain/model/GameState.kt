@@ -1,8 +1,15 @@
 package com.pixnpunk.game.domain.model
 
 sealed interface GameState {
-    data object Idle : GameState
-    data object Loading : GameState
+    val activeDialog: EngineDialog?
+
+    data class Idle(
+        override val activeDialog: EngineDialog? = null
+    ) : GameState
+
+    data class Loading(
+        override val activeDialog: EngineDialog? = null
+    ) : GameState
 
     data class Running(
         val gameId: GameId,
@@ -11,7 +18,7 @@ sealed interface GameState {
         val varsDescription: String,
         val actions: List<InteractableItem>,
         val objects: List<InteractableItem>,
-        val activeDialog: EngineDialog? = null,
+        override val activeDialog: EngineDialog? = null,
         val activeWindows: Set<WindowType> = setOf(
             WindowType.MAIN, WindowType.INPUT, WindowType.ACTS
         )

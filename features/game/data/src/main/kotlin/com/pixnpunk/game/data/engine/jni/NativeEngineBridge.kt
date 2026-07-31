@@ -10,7 +10,7 @@ internal interface NativeEngineBridge {
     fun executeCounter(): Boolean
     fun executeString(input: String): Boolean
 
-    suspend fun loadGame(file: VirtualFile, isNewGame: Boolean = true): Boolean
+    suspend fun loadGame(file: VirtualFile, isGame: Boolean): Boolean
     suspend fun saveGameState(file: VirtualFile): Boolean
     suspend fun loadGameState(file: VirtualFile): Boolean
 

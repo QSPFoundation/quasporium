@@ -102,8 +102,6 @@ class GameActivity : ComponentActivity() {
             windowInsetsController.show(WindowInsetsCompat.Type.systemBars())
         }
 
-        println(settingsRepository.settingsFlow.value.nativeLibFrom)
-
         rootComponent = retainedComponent {
             RealGameComponent(
                 componentContext = it,

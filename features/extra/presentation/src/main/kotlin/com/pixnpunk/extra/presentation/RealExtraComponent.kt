@@ -29,7 +29,7 @@ class RealExtraComponent(
             htmlContentFlow =
                 engineInteractor.state.map { state ->
                     if (state !is GameState.Running) return@map ""
-                    state.mainDescription
+                    state.varsDescription
                 }.flowOn(Dispatchers.Default).distinctUntilChanged(),
             engineSettingsStateFlow =
                 engineInteractor.state.map { state ->

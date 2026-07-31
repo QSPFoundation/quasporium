@@ -3,10 +3,14 @@ package com.pixnpunk.game.data.vfs.impl
 import android.content.Context
 import androidx.documentfile.provider.DocumentFile
 import com.anggrayudi.storage.file.child
+import com.anggrayudi.storage.file.children
 import com.anggrayudi.storage.file.findParent
+import com.anggrayudi.storage.file.isWritable
 import com.pixnpunk.game.data.vfs.VirtualFile
 import com.pixnpunk.game.data.vfs.VirtualFileStream
 import com.pixnpunk.game.domain.model.VfsPath
+import com.pixnpunk.utils.FileUtil.isWritableFile
+import kotlin.contracts.ExperimentalContracts
 
 internal class DocumentVirtualFile(
     private val context: Context,
@@ -16,7 +20,7 @@ internal class DocumentVirtualFile(
     override val path: VfsPath get() = VfsPath(docFile.uri.toString())
     override val name: String get() = docFile.name ?: "unknown"
     override val isDirectory: Boolean get() = docFile.isDirectory
-    override val isWritable: Boolean get() = docFile.canWrite()
+    override val isWritable: Boolean get() = docFile.isWritable(context)
 
     override suspend fun readBytes(): Result<ByteArray> = runCatching {
         context.contentResolver.openInputStream(docFile.uri)?.use { it.readBytes() }
@@ -29,8 +33,17 @@ internal class DocumentVirtualFile(
     }
 
     override fun getChild(name: String): VirtualFile? {
-        val file = docFile.child(context, name) ?: return null
-        return DocumentVirtualFile(context, file)
+        val segments = name.split("/")
+        var current: DocumentFile = docFile
+
+        for (segment in segments) {
+            if (segment.isEmpty()) continue
+            current = current.child(context, segment) ?: return null
+        }
+
+        println()
+
+        return DocumentVirtualFile(context, docFile.child(context, name) ?: return null)
     }
 
     override fun getParent(): VirtualFile? {

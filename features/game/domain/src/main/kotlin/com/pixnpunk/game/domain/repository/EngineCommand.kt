@@ -10,7 +10,6 @@ sealed interface EngineCommand {
     data class SubmitInputArea(val text: String) : EngineCommand
     data class SelectMenuItem(val index: Int) : EngineCommand
     data class LoadGame(val path: VfsPath) : EngineCommand
-    data class LoadGameFile(val path: VfsPath, val isNewGame: Boolean) : EngineCommand
     data class LoadSave(val path: VfsPath) : EngineCommand
     data class SaveGame(val path: VfsPath) : EngineCommand
     data object RestartGame : EngineCommand

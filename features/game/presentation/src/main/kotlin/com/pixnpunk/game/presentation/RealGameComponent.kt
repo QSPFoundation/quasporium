@@ -47,8 +47,10 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -169,25 +171,13 @@ class RealGameComponent(
         onExecValue = ::onExecValue
     )
 
-    private fun updateUiVisibilityFromEngine(state: GameState.Running) {
-        _uiState.update { current ->
-            current.copy(
-                isObjectsEnabled = state.activeWindows.contains(WindowType.OBJS),
-                isExtraEnabled = state.activeWindows.contains(WindowType.VARS),
-                isInputEnabled = state.activeWindows.contains(WindowType.INPUT)
-            )
-        }
-    }
-
     init {
         lifecycle.doOnCreate {
-            engineInteractor.submitCommand(
-                EngineCommand.LoadGame(
-                    VfsPath(
-                        gameFileUriBox
-                    )
+            if (engineState.value is GameState.Idle) {
+                engineInteractor.submitCommand(
+                    EngineCommand.LoadGame(VfsPath(gameFileUriBox))
                 )
-            )
+            }
         }
 
         lifecycle.doOnDestroy {
@@ -198,18 +188,34 @@ class RealGameComponent(
             .onEach { settings ->
                 _uiState.update {
                     it.copy(
-                        isExecutorEnabled = settings.isUseExecString,
-                        isSaveDisable = settings.isNoSave
+                        isExecutorEnabled = settings.isUseExecString
                     )
                 }
             }
             .launchIn(componentScope)
 
         engineState
+            .filterIsInstance<GameState.Running>()
             .onEach { state ->
-                if (state is GameState.Running) {
-                    updateUiVisibilityFromEngine(state)
-                    when (val dialog = state.activeDialog) {
+                _uiState.update { current ->
+                    current.copy(
+                        isSaveDisable = state.uiConfig.isNoSave,
+                        isObjectsEnabled = state.activeWindows.contains(WindowType.OBJS),
+                        isExtraEnabled = state.activeWindows.contains(WindowType.VARS),
+                        isInputEnabled = state.activeWindows.contains(WindowType.INPUT)
+                    )
+                }
+            }
+            .launchIn(componentScope)
+
+        engineState
+            .map { it.activeDialog }
+            .distinctUntilChanged()
+            .onEach { dialog ->
+                if (dialog == null) {
+                    dialogNavigation.dismiss()
+                } else {
+                    when (dialog) {
                         is EngineDialog.Message ->
                             doShowDialog(
                                 LibTypeDialog.DIALOG_MESSAGE,
@@ -239,8 +245,6 @@ class RealGameComponent(
                                 LibTypeDialog.DIALOG_MENU,
                                 inputListItems = dialog.items
                             )
-
-                        else -> {}
                     }
                 }
             }

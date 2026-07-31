@@ -38,7 +38,7 @@ class RealObjectComponent(
     ) { gameState, settings ->
         if (gameState !is GameState.Running) return@combine ObjectUIState()
         ObjectUIState(
-            parsedObjects = gameState.actions.map { item ->
+            parsedObjects = gameState.objects.map { item ->
                 ParsedObjectItem(
                     original = item,
                     annotatedText = AnnotatedString.fromHtml(item.title),

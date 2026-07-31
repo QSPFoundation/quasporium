@@ -19,7 +19,7 @@ else ()
 
     FetchContent_Declare(qsplegacy-external
             GIT_REPOSITORY https://github.com/QSPFoundation/qsp-legacy.git
-            GIT_TAG 14fab55cfc4b3611fd8cef586f77d665bc41df3e
+            GIT_TAG 16b85ac9740a5f05ffc8a753928c658d5a9208f5
             GIT_PROGRESS true
             SUBBUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/qsplegacy-download"
             SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/qsplegacy-src"

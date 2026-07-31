@@ -16,6 +16,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import com.pixnpunk.dto.ColorPickerState
 import com.pixnpunk.dto.FontTypeface
+import com.pixnpunk.settings.dto.model.PrefKeys
 import com.pixnpunk.settings.presentation.R
 import me.zhanghai.compose.preference.listPreference
 import me.zhanghai.compose.preference.switchPreference
@@ -29,7 +30,7 @@ fun SettingsTextContent(
 ) {
     LazyColumn {
         listPreference(
-            key = "fontStylePref",
+            key = PrefKeys.FONT_STYLE,
             icon = {
                 Icon(
                     imageVector = Icons.Default.TextFormat,
@@ -51,7 +52,7 @@ fun SettingsTextContent(
             title = { Text(stringResource(R.string.font_style_list_title)) }
         )
         listPreference(
-            key = "fontSizePref",
+            key = PrefKeys.FONT_SIZE,
             icon = {
                 Icon(
                     imageVector = Icons.Default.FormatSize,
@@ -63,7 +64,7 @@ fun SettingsTextContent(
             title = { Text(stringResource(R.string.font_size_list_title)) }
         )
         twoTargetSwitchPreference(
-            key = "customFontPref",
+            key = PrefKeys.CUSTOM_FONT_ENABLED,
             icon = {
                 Icon(
                     imageVector = Icons.Default.Abc,
@@ -84,7 +85,7 @@ fun SettingsTextContent(
             },
         )
         twoTargetSwitchPreference(
-            key = "customTextColorPref",
+            key = PrefKeys.TEXT_COLOR_OVERRIDE,
             icon = {
                 Icon(
                     imageVector = Icons.Default.BorderColor,
@@ -107,7 +108,7 @@ fun SettingsTextContent(
             }
         )
         twoTargetSwitchPreference(
-            key = "customBackColorPref",
+            key = PrefKeys.BACK_COLOR_OVERRIDE,
             icon = {
                 Icon(
                     imageVector = Icons.Default.FormatColorFill,
@@ -130,7 +131,7 @@ fun SettingsTextContent(
             }
         )
         twoTargetSwitchPreference(
-            key = "customLinkColorPref",
+            key = PrefKeys.LINK_COLOR_OVERRIDE,
             icon = {
                 Icon(
                     imageVector = Icons.Default.FormatPaint,
@@ -153,7 +154,7 @@ fun SettingsTextContent(
             }
         )
         switchPreference(
-            key = "useGameExecStringPref",
+            key = PrefKeys.EXEC_STRING,
             icon = {
                 Icon(
                     imageVector = Icons.Default.Terminal,

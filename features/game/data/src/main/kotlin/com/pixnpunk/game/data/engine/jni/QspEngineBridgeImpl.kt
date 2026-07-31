@@ -55,10 +55,10 @@ internal class QspEngineBridgeImpl : QSPLib(), NativeEngineBridge {
 
     override suspend fun loadGame(
         file: VirtualFile,
-        isNewGame: Boolean
+        isGame: Boolean
     ): Boolean =
         file.readBytes().getOrNull().let { data ->
-            executeCommand { loadGameWorldFromData(data, isNewGame) }
+            executeCommand { loadGameWorldFromData(data, isGame) }
         }
 
     override suspend fun loadGameState(
@@ -155,10 +155,8 @@ internal class QspEngineBridgeImpl : QSPLib(), NativeEngineBridge {
         }
     }
 
-    override fun onInputBox(text: String?): String {
-        val safePrompt = text ?: ""
-        return engineListener?.onInputBox(safePrompt) ?: ""
-    }
+    override fun onInputBox(text: String?): String =
+        engineListener?.onInputBox(text ?: "") ?: ""
 
     override fun onShowMenu(items: Array<out ListItem>?): Int {
         if (items.isNullOrEmpty()) return -1
@@ -167,33 +165,37 @@ internal class QspEngineBridgeImpl : QSPLib(), NativeEngineBridge {
     }
 
     override fun onShowWindow(type: Int, toShow: Boolean) {
-        val windowType = mapQspWindowType(type) ?: return
-        engineListener?.onShowWindow(windowType, toShow)
+        engineListener?.onShowWindow(
+            mapQspWindowType(type) ?: return,
+            toShow
+        )
     }
 
-    override fun onOpenGame(file: String?, isNewGame: Boolean) {
-        val safePath = file ?: return
-        engineListener?.onOpenGame(safePath, isNewGame)
+    override fun onOpenGame(
+        file: String?,
+        isNewGame: Boolean
+    ) {
+        engineListener?.onOpenGame(
+            path = file ?: return,
+            isGame = isNewGame
+        )
     }
 
     override fun onOpenGameStatus(file: String?) {
-        val safePath = file ?: return
-        engineListener?.onLoadSave(safePath)
+        engineListener?.onLoadSave(file ?: return)
     }
 
     override fun onSaveGameStatus(file: String?) {
-        val safePath = file ?: return
-        engineListener?.onSaveGame(safePath)
+        engineListener?.onSaveGame(file ?: return)
     }
 
     override fun onCloseFile(file: String?) {
         engineListener?.onCloseAudio(file)
     }
 
-    override fun onIsPlayingFile(file: String?): Boolean {
-        if (file.isNullOrBlank()) return false
-        return engineListener?.onCheckAudioPlaying(file) ?: false
-    }
+    override fun onIsPlayingFile(path: String?): Boolean =
+        if (path.isNullOrBlank()) false
+        else engineListener?.onCheckAudioPlaying(path) ?: false
 
     override fun onPlayFile(file: String?, volume: Int) {
         if (!file.isNullOrBlank()) {
@@ -222,6 +224,7 @@ internal class QspEngineBridgeImpl : QSPLib(), NativeEngineBridge {
 
     private fun ObjectItem?.toObjectRawItem(): RawItem? {
         if (this == null) return null
+
         val safeName = name ?: return null
         val safeImage = image ?: ""
 

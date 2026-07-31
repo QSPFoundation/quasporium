@@ -55,6 +55,7 @@ class RealMainComponent(
                     state.uiConfig
                 }.flowOn(Dispatchers.Default).distinctUntilChanged(),
             settingsStateFlow = settingsState,
+            isMainComponent = true,
             gameDirUriBox = gameDirUriBox,
             onExecValue = onExecValue,
         )

@@ -23,7 +23,7 @@ internal interface NativeEngineListener {
     fun onShowMenu(items: List<RawItem>): Int
     fun onShowWindow(type: WindowType, isVisible: Boolean)
 
-    fun onOpenGame(path: String, isNewGame: Boolean)
+    fun onOpenGame(path: String, isGame: Boolean)
     fun onSaveGame(path: String)
     fun onLoadSave(path: String)
 

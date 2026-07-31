@@ -27,7 +27,6 @@ internal class WebViewClient(
             "exec" ->
                 uriDecode.substring(5)
                     .let {
-                        println(it)
                         onExecValue(
                             runCatching {
                                 it.decodeBase64()

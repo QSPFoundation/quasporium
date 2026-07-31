@@ -4,7 +4,6 @@ import com.pixnpunk.game.data.engine.jni.NativeEngineBridge
 import com.pixnpunk.game.data.engine.jni.NativeEngineListener
 import com.pixnpunk.game.data.model.RawItem
 import com.pixnpunk.game.data.vfs.FileSystemProvider
-import com.pixnpunk.game.data.vfs.VirtualFile
 import com.pixnpunk.game.domain.model.EngineDialog
 import com.pixnpunk.game.domain.model.GameId
 import com.pixnpunk.game.domain.model.GameState
@@ -30,10 +29,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlin.collections.map
-import kotlin.concurrent.atomics.AtomicBoolean
-import kotlin.concurrent.atomics.AtomicLong
-import kotlin.concurrent.atomics.ExperimentalAtomicApi
 import kotlin.time.Duration.Companion.milliseconds
 
 internal class GameEngineInteractorImpl(
@@ -48,12 +43,13 @@ internal class GameEngineInteractorImpl(
 
     private val commandChannel = Channel<EngineCommand>(Channel.UNLIMITED)
 
-    private val _state = MutableStateFlow<GameState>(GameState.Idle)
+    private val _state = MutableStateFlow<GameState>(GameState.Idle())
     override val state = _state.asStateFlow()
 
     private val isUiBlocked = atomic(false)
     private val counterIntervalMs = atomic(500L)
 
+    private var pendingMessageDeferred: CompletableDeferred<Unit>? = null
     private var pendingInputDeferred: CompletableDeferred<String>? = null
     private var pendingMenuDeferred: CompletableDeferred<Int>? = null
 
@@ -63,6 +59,11 @@ internal class GameEngineInteractorImpl(
 
         startActorLoop()
         startGameLoopTimer()
+    }
+
+    override fun shutdown() {
+        engineScope.cancel()
+        bridge.destroyEngine()
     }
 
     private fun startActorLoop() = engineScope.launch {
@@ -89,29 +90,26 @@ internal class GameEngineInteractorImpl(
         counterIntervalMs.value = msecs.toLong()
     }
 
-    override fun onError(details: String) {
-        _state.update { current ->
-            if (current is GameState.Running) {
-                current.copy(activeDialog = EngineDialog.Error(details))
-            } else current
-        }
-    }
-
     override fun submitCommand(command: EngineCommand) {
         when (command) {
             is EngineCommand.SubmitInput -> {
                 pendingInputDeferred?.complete(command.text)
                 pendingInputDeferred = null
-                dismissDialog()
+                updateDialogState(null)
             }
 
             is EngineCommand.SelectMenuItem -> {
                 pendingMenuDeferred?.complete(command.index)
                 pendingMenuDeferred = null
-                dismissDialog()
+                updateDialogState(null)
             }
 
-            is EngineCommand.DismissDialog -> dismissDialog()
+            is EngineCommand.DismissDialog -> {
+                pendingMessageDeferred?.complete(Unit)
+                pendingMessageDeferred = null
+                updateDialogState(null)
+            }
+
             else -> commandChannel.trySend(command)
         }
     }
@@ -124,7 +122,7 @@ internal class GameEngineInteractorImpl(
             is EngineCommand.SubmitInputArea -> bridge.onInputAreaClicked(command.text)
 
             is EngineCommand.RestartGame -> {
-                _state.value = GameState.Loading
+                _state.value = GameState.Loading()
                 audioService.closeAllFiles()
 
                 engineScope.launch { bridge.restartGame() }
@@ -133,55 +131,39 @@ internal class GameEngineInteractorImpl(
             is EngineCommand.LoadGame -> {
                 val file = vfsProvider.resolve(command.path) ?: return
 
-                _state.value = GameState.Loading
+                _state.value = GameState.Loading()
                 audioService.closeAllFiles()
                 vfsProvider.setGameRoot(file.path)
 
                 engineScope.launch {
-                    val isLoaded = bridge.loadGame(file)
+                    val isLoaded = bridge.loadGame(file, isGame = true)
                     if (isLoaded) {
                         bridge.restartGame()
                     } else {
-                        _state.value = GameState.Idle
+                        _state.value = GameState.Idle()
+                        onError("Failed to load game!")
                     }
                 }
             }
 
-            is EngineCommand.LoadGameFile -> {
-                val file = vfsProvider.resolve(command.path) ?: return
-
-                _state.value = GameState.Loading
-
-                engineScope.launch {
-                    bridge.loadGame(
-                        file = file,
-                        isNewGame = command.isNewGame
-                    )
-                }
-            }
-
             is EngineCommand.SaveGame -> {
+                val saveFile = vfsProvider.resolve(command.path) ?: return
+
                 engineScope.launch {
-                    val saveFile = vfsProvider.resolve(command.path) ?: return@launch
                     bridge.saveGameState(saveFile)
                 }
             }
 
             is EngineCommand.LoadSave -> {
+                val saveFile = vfsProvider.resolve(command.path) ?: return
+
                 engineScope.launch {
-                    val saveFile = vfsProvider.resolve(command.path) ?: return@launch
                     bridge.loadGameState(saveFile)
                     bridge.executeCounter()
                 }
             }
 
             else -> Unit
-        }
-    }
-
-    private fun dismissDialog() {
-        _state.update { current ->
-            if (current is GameState.Running) current.copy(activeDialog = null) else current
         }
     }
 
@@ -192,69 +174,80 @@ internal class GameEngineInteractorImpl(
         actions: List<RawItem>,
         objects: List<RawItem>
     ) {
-        _state.update {
+        _state.update { current ->
+            val currentRunning = current as? GameState.Running
+
             GameState.Running(
-                gameId = GameId(1),
+                gameId = currentRunning?.gameId ?: GameId(1),
                 mainDescription = mainDesc,
                 varsDescription = varsDesc,
                 uiConfig = uiConfig,
                 actions = actions.map { InteractableItem(it.text, resolveVfs(it.imagePath)) },
-                objects = objects.map { InteractableItem(it.text, resolveVfs(it.imagePath)) }
+                objects = objects.map { InteractableItem(it.text, resolveVfs(it.imagePath)) },
+                activeDialog = currentRunning?.activeDialog,
+                activeWindows =
+                    currentRunning?.activeWindows ?: setOf(
+                        WindowType.MAIN, WindowType.INPUT, WindowType.ACTS
+                    )
             )
         }
     }
 
-    override fun onShowMessage(text: String) {
+    private fun updateDialogState(dialog: EngineDialog?) {
         _state.update { current ->
-            if (current is GameState.Running) {
-                current.copy(activeDialog = EngineDialog.Message(text))
-            } else current
+            when (current) {
+                is GameState.Idle -> current.copy(activeDialog = dialog)
+                is GameState.Loading -> current.copy(activeDialog = dialog)
+                is GameState.Running -> current.copy(activeDialog = dialog)
+            }
         }
     }
 
-    override fun onShowImage(path: String) {
-        val vfsPath = resolveVfs(path) ?: return
-        _state.update { current ->
-            if (current is GameState.Running) current.copy(
-                activeDialog = EngineDialog.Picture(
-                    vfsPath
-                )
-            )
-            else current
-        }
-    }
+    private fun showBlockingDialog(dialog: EngineDialog) =
+        runBlocking {
+            isUiBlocked.value = true
+            val deferred = CompletableDeferred<Unit>()
+            pendingMessageDeferred = deferred
 
-    @OptIn(ExperimentalAtomicApi::class)
+            updateDialogState(dialog)
+
+            deferred.await()
+
+            isUiBlocked.value = false
+        }
+
+    override fun onError(details: String) = showBlockingDialog(EngineDialog.Error(details))
+
+    override fun onShowMessage(text: String) = showBlockingDialog(EngineDialog.Message(text))
+
+    override fun onShowImage(path: String): Unit = showBlockingDialog(
+        EngineDialog.Picture(resolveVfs(path) ?: return)
+    )
+
     override fun onInputBox(prompt: String): String = runBlocking {
         isUiBlocked.value = true
         val deferred = CompletableDeferred<String>()
         pendingInputDeferred = deferred
 
-        _state.update { current ->
-            if (current is GameState.Running) current.copy(activeDialog = EngineDialog.Input(prompt))
-            else current
-        }
+        updateDialogState(EngineDialog.Input(prompt))
 
         val result = deferred.await()
         isUiBlocked.value = false
         result
     }
 
-    @OptIn(ExperimentalAtomicApi::class)
     override fun onShowMenu(items: List<RawItem>): Int = runBlocking {
         isUiBlocked.value = true
         val deferred = CompletableDeferred<Int>()
         pendingMenuDeferred = deferred
 
-        val menuItems = items.map { InteractableItem(it.text, resolveVfs(it.imagePath)) }
-        _state.update { current ->
-            if (current is GameState.Running) current.copy(
-                activeDialog = EngineDialog.Menu(
-                    menuItems
-                )
+        updateDialogState(
+            EngineDialog.Menu(
+                items.map {
+                    InteractableItem(it.text, resolveVfs(it.imagePath))
+                }
             )
-            else current
-        }
+        )
 
         val result = deferred.await()
         isUiBlocked.value = false
@@ -275,16 +268,55 @@ internal class GameEngineInteractorImpl(
         }
     }
 
-    override fun onOpenGame(path: String, isNewGame: Boolean) {
-        processCommand(EngineCommand.LoadGameFile(VfsPath(path), isNewGame))
+    override fun onOpenGame(
+        path: String,
+        isGame: Boolean
+    ) = runBlocking {
+        val file = if (isGame) {
+            vfsProvider.resolve(VfsPath(path))
+        } else {
+            vfsProvider.resolveRelative(path)
+        }
+
+        if (file == null) {
+            onError("File not found: $path")
+            return@runBlocking
+        }
+
+        if (!isGame) {
+            val isLoaded = bridge.loadGame(file, isGame = false)
+            if (!isLoaded) {
+                onError("Failed to load extension: $path")
+            }
+        } else {
+            _state.value = GameState.Loading()
+            audioService.closeAllFiles()
+            vfsProvider.setGameRoot(file.path)
+
+            val isLoaded = bridge.loadGame(file, isGame = true)
+            if (isLoaded) {
+                bridge.restartGame()
+            } else {
+                _state.value = GameState.Idle()
+                onError("Failed to load game: $path")
+            }
+        }
     }
 
-    override fun onSaveGame(path: String) {
-        processCommand(EngineCommand.SaveGame(VfsPath(path)))
+    override fun onSaveGame(
+        path: String
+    ) = runBlocking {
+        bridge.saveGameState(
+            vfsProvider.resolveRelative(path) ?: return@runBlocking
+        )
     }
 
-    override fun onLoadSave(path: String) {
-        processCommand(EngineCommand.LoadSave(VfsPath(path)))
+    override fun onLoadSave(
+        path: String
+    ) = runBlocking {
+        bridge.loadGameState(
+            vfsProvider.resolveRelative(path) ?: return@runBlocking
+        )
     }
 
     override fun onCloseAudio(path: String?) {
@@ -302,11 +334,6 @@ internal class GameEngineInteractorImpl(
 
     override fun onPlayAudio(path: String, volume: Int) {
         resolveVfs(path)?.let { audioService.playFile(it.value, volume) }
-    }
-
-    override fun shutdown() {
-        engineScope.cancel()
-        bridge.destroyEngine()
     }
 
     private fun resolveVfs(rawPath: String): VfsPath? {

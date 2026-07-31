@@ -25,6 +25,7 @@ class RealWebViewComponent(
     private val htmlContentFlow: Flow<String>,
     private val settingsStateFlow: StateFlow<SettingsEntity>,
     private val engineSettingsStateFlow: Flow<LibUIConfig>,
+    private val isMainComponent: Boolean = false,
     override val gameDirUriBox: String,
     override val onExecValue: (String) -> Unit
 ) : ComponentContext by componentContext, WebViewComponent, KoinComponent {
@@ -37,26 +38,28 @@ class RealWebViewComponent(
     override val model: StateFlow<WebViewState> = _model.asStateFlow()
 
     init {
-        startHtmlProcessingPipeline()
-    }
-
-    private fun startHtmlProcessingPipeline() {
         val configFlow = combine(
             settingsStateFlow,
             engineSettingsStateFlow
         ) { appSet, libSet ->
             HtmlConfig(
                 typeface = appSet.typeface,
-                fontSize = libSet.fontSize.takeIf { appSet.isUseGameFont && it != 0 }
-                    ?: appSet.fontSize,
-                textColor = libSet.fontColor.takeIf { !appSet.isTextColorOverride && it != 0 }
-                    ?: appSet.textColor,
-                backColor = libSet.backColor.takeIf { !appSet.isBackColorOverride && it != 0 }
-                    ?: appSet.backColor,
-                linkColor = libSet.linkColor.takeIf { !appSet.isLinkColorOverride && it != 0 }
-                    ?: appSet.linkColor,
                 isUseHtml = libSet.isUseHtml,
-                isAutoscroll = appSet.isYesScrollMain
+                fontSize =
+                    libSet.fontSize.takeIf { appSet.isUseGameFont && it != 0 }
+                        ?: appSet.fontSize,
+                textColor =
+                    libSet.fontColor.takeIf { !appSet.isTextColorOverride && it != 0 }
+                        ?: appSet.textColor,
+                backColor =
+                    libSet.backColor.takeIf { !appSet.isBackColorOverride && it != 0 }
+                        ?: appSet.backColor,
+                linkColor =
+                    libSet.linkColor.takeIf { !appSet.isLinkColorOverride && it != 0 }
+                        ?: appSet.linkColor,
+                isAutoscroll =
+                    if (isMainComponent) libSet.isYesScrollMain
+                    else libSet.isYesScrollExtra
             )
         }.distinctUntilChanged()
 

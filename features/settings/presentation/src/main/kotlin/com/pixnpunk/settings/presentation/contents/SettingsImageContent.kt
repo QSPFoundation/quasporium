@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.res.stringResource
 import com.pixnpunk.dto.InputState
+import com.pixnpunk.settings.dto.model.PrefKeys
 import com.pixnpunk.settings.presentation.R
 import me.zhanghai.compose.preference.switchPreference
 import me.zhanghai.compose.preference.twoTargetSwitchPreference
@@ -23,7 +24,7 @@ fun SettingsImageContent(
 ) {
     LazyColumn {
         switchPreference(
-            key = "useGameImagesPref",
+            key = PrefKeys.IMG_LOAD_DISABLE,
             icon = {
                 Icon(
                     imageVector = Icons.Default.Image,
@@ -34,7 +35,7 @@ fun SettingsImageContent(
             title = { Text(stringResource(R.string.disable_images_switch_title)) }
         )
         twoTargetSwitchPreference(
-            key = "useAutoImageWidthPref",
+            key = PrefKeys.IMG_AUTO_WIDTH,
             icon = {
                 Icon(
                     modifier = Modifier.rotate(90f),
@@ -63,7 +64,7 @@ fun SettingsImageContent(
             }
         )
         twoTargetSwitchPreference(
-            key = "useAutoImageHeightPref",
+            key = PrefKeys.IMG_AUTO_HEIGHT,
             icon = {
                 Icon(
                     imageVector = Icons.Default.Height,
@@ -91,7 +92,7 @@ fun SettingsImageContent(
             }
         )
         switchPreference(
-            key = "useImmersImagesPref",
+            key = PrefKeys.IMG_IMMERSIVE,
             icon = {
                 Icon(
                     imageVector = Icons.Default.OpenInFull,
@@ -102,7 +103,7 @@ fun SettingsImageContent(
             title = { Text(stringResource(R.string.dialog_images_switch_title)) }
         )
         switchPreference(
-            key = "useGameImageDebug",
+            key = PrefKeys.IMG_DEBUG,
             icon = {
                 Icon(
                     imageVector = Icons.Default.BrokenImage,

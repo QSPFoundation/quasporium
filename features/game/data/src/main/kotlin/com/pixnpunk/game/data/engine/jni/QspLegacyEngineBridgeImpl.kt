@@ -27,10 +27,10 @@ internal class QspLegacyEngineBridgeImpl(
         this.engineListener = listener
     }
 
-    override fun executeAction(index: Int): Boolean {
-        executeCommand { setSelActionIndex(index, false) }
-        return executeCommand { executeSelActionCode(true) }
-    }
+    override fun executeAction(index: Int): Boolean =
+        executeCommand { setSelActionIndex(index, false) }.let {
+            executeCommand { executeSelActionCode(true) }
+        }
 
     override fun executeCounter(): Boolean =
         executeCommand { execCounter(true) }
@@ -59,23 +59,23 @@ internal class QspLegacyEngineBridgeImpl(
 
     override suspend fun loadGame(
         file: VirtualFile,
-        isNewGame: Boolean
+        isGame: Boolean
     ): Boolean =
         when (file) {
             is DirectVirtualFile ->
-                executeCommand { loadGameWorldFromPath(file.path.value, isNewGame) }
+                executeCommand { loadGameWorldFromPath(file.path.value, !isGame) }
 
             is DocumentVirtualFile ->
                 context.contentResolver.openFileDescriptor(
                     file.path.value.toUri(),
                     "r"
                 )?.use { pfd ->
-                    executeCommand { loadGameWorldFromFD(pfd.fd, isNewGame) }
+                    executeCommand { loadGameWorldFromFD(pfd.fd, !isGame) }
                 } ?: false
 
             else ->
                 file.readBytes().getOrNull().let { data ->
-                    executeCommand { loadGameWorldFromData(data, isNewGame) }
+                    executeCommand { loadGameWorldFromData(data, !isGame) }
                 }
         }
 
@@ -132,10 +132,10 @@ internal class QspLegacyEngineBridgeImpl(
     override fun selectObject(index: Int): Boolean =
         executeCommand { setSelObjectIndex(index, true) }
 
-    override fun onInputAreaClicked(text: String) {
-        setInputStrText(text)
-        executeCommand { execUserInput(true) }
-    }
+    override fun onInputAreaClicked(text: String): Unit =
+        setInputStrText(text).let {
+            executeCommand { execUserInput(true) }
+        }
 
     private fun loadUIConfiguration() =
         LibUIConfig(
@@ -190,8 +190,7 @@ internal class QspLegacyEngineBridgeImpl(
     }
 
     override fun onShowMessage(message: String?) {
-        val safeMessage = message ?: return
-        engineListener?.onShowMessage(safeMessage)
+        engineListener?.onShowMessage(message ?: return)
     }
 
     override fun onShowImage(path: String?) {
@@ -200,44 +199,47 @@ internal class QspLegacyEngineBridgeImpl(
         }
     }
 
-    override fun onInputBox(prompt: String?): String {
-        return engineListener?.onInputBox(prompt ?: "") ?: ""
-    }
+    override fun onInputBox(prompt: String?): String =
+        engineListener?.onInputBox(prompt ?: "") ?: ""
 
     override fun onShowMenu(items: Array<out ListItem>?): Int {
-        if (items.isNullOrEmpty()) return -1
+        if (items.isNullOrEmpty()) return super.onShowMenu(items)
         val mappedItems = items.mapNotNull { it.toRawItem() }
-        return engineListener?.onShowMenu(mappedItems) ?: -1
+        return engineListener?.onShowMenu(mappedItems) ?: super.onShowMenu(items)
     }
 
     override fun onShowWindow(type: Int, isShow: Boolean) {
-        val windowType = mapSdhWindowType(type) ?: return
-        engineListener?.onShowWindow(windowType, isShow)
+        engineListener?.onShowWindow(
+            mapSdhWindowType(type) ?: return,
+            isShow
+        )
     }
 
-    override fun onOpenGame(file: String?, isNewGame: Boolean) {
-        val safePath = file ?: return
-        engineListener?.onOpenGame(safePath, isNewGame)
+    override fun onOpenGame(
+        file: String?,
+        isAddLocs: Boolean
+    ) {
+        engineListener?.onOpenGame(
+            path = file ?: return,
+            isGame = !isAddLocs
+        )
     }
 
     override fun onOpenGameStatus(filename: String?) {
-        val safePath = filename ?: return
-        engineListener?.onLoadSave(safePath)
+        engineListener?.onLoadSave(filename ?: return)
     }
 
     override fun onSaveGameStatus(filename: String?) {
-        val safePath = filename ?: return
-        engineListener?.onSaveGame(safePath)
+        engineListener?.onSaveGame(filename ?: return)
     }
 
     override fun onCloseFile(path: String?) {
         engineListener?.onCloseAudio(path)
     }
 
-    override fun onIsPlayingFile(path: String?): Boolean {
-        if (path.isNullOrBlank()) return false
-        return engineListener?.onCheckAudioPlaying(path) ?: false
-    }
+    override fun onIsPlayingFile(path: String?): Boolean =
+        if (path.isNullOrBlank()) false
+        else engineListener?.onCheckAudioPlaying(path) ?: false
 
     override fun onPlayFile(path: String?, volume: Int) {
         if (!path.isNullOrBlank()) {
@@ -245,18 +247,22 @@ internal class QspLegacyEngineBridgeImpl(
         }
     }
 
-    private fun mapSdhWindowType(type: Int): WindowType? = when (type) {
-        0 -> WindowType.ACTS
-        1 -> WindowType.OBJS
-        2 -> WindowType.VARS
-        3 -> WindowType.INPUT
-        else -> WindowType.MAIN
-    }
+    private fun mapSdhWindowType(type: Int): WindowType? =
+        when (type) {
+            0 -> WindowType.ACTS
+            1 -> WindowType.OBJS
+            2 -> WindowType.VARS
+            3 -> WindowType.INPUT
+            else -> WindowType.MAIN
+        }
 
-    private fun ListItem?.toRawItem(): RawItem? {
-        if (this == null) return null
-        val safeText = text() ?: return null
-        val safeImage = image() ?: ""
-        return RawItem(safeText, safeImage)
-    }
+    private fun ListItem?.toRawItem(): RawItem? =
+        if (this == null) {
+            null
+        } else {
+            RawItem(
+                text() ?: return null,
+                image() ?: ""
+            )
+        }
 }
