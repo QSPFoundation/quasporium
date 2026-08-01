@@ -10,7 +10,6 @@ import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
 import com.pixnpunk.dto.ColorPickerState
 import com.pixnpunk.dto.InputState
-import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.settings.dto.repository.SettingsRepository
 import com.pixnpunk.settings.presentation.mappers.dispatch
 import com.pixnpunk.settings.presentation.mappers.toMap
@@ -41,13 +40,22 @@ class RealSettingsComponent(
     override val isLocalSettings: Boolean = gameId != null
 
     override val preferencesState = MutableStateFlow<Preferences>(
-        createProxyPreferences(SettingsEntity())
+        ProxyPreference(emptyMap()) { _, _ -> }
     )
 
     init {
         scope.launch {
             settingsRepository.settingsFlow.collect { entity ->
-                preferencesState.value = createProxyPreferences(entity)
+                preferencesState.value = ProxyPreference(
+                    stateMap = entity.toMap(),
+                    onEdit = { key, value ->
+                        if (value != null) {
+                            scope.launch {
+                                settingsRepository.dispatch(key, value)
+                            }
+                        }
+                    }
+                )
             }
         }
     }
@@ -76,28 +84,6 @@ class RealSettingsComponent(
                 }
             }
         )
-
-    private fun createProxyPreferences(
-        entity: SettingsEntity
-    ) = ProxyMutablePreferences(
-        stateMap = entity.toMap(),
-        onEdit = ::handleUIEdit,
-        onClear = { }
-    )
-
-    private fun handleUIEdit(key: String, value: Any?) {
-        val tempMap = preferencesState.value.asMap().toMutableMap()
-        if (value != null) tempMap[key] = value else tempMap.remove(key)
-        preferencesState.value = ProxyMutablePreferences(
-            tempMap,
-            ::handleUIEdit,
-            {}
-        )
-
-        if (value != null) {
-            scope.launch { settingsRepository.dispatch(key, value) }
-        }
-    }
 
     @Serializable
     sealed class ChildConfig {
