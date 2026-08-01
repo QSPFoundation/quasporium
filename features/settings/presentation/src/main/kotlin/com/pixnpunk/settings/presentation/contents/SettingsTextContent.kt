@@ -19,6 +19,7 @@ import com.pixnpunk.dto.FontTypeface
 import com.pixnpunk.settings.dto.model.PrefKeys
 import com.pixnpunk.settings.presentation.R
 import me.zhanghai.compose.preference.listPreference
+import me.zhanghai.compose.preference.sliderPreference
 import me.zhanghai.compose.preference.switchPreference
 import me.zhanghai.compose.preference.twoTargetSwitchPreference
 
@@ -51,7 +52,7 @@ fun SettingsTextContent(
             },
             title = { Text(stringResource(R.string.font_style_list_title)) }
         )
-        listPreference(
+        sliderPreference(
             key = PrefKeys.FONT_SIZE,
             icon = {
                 Icon(
@@ -59,9 +60,11 @@ fun SettingsTextContent(
                     contentDescription = null
                 )
             },
-            defaultValue = 16,
-            values = listOf(12, 14, 16, 18, 20, 22),
-            title = { Text(stringResource(R.string.font_size_list_title)) }
+            defaultValue = 16f,
+            valueRange = 12f..22f,
+            valueSteps = 9,
+            valueText = { Text("${it.toInt()}") },
+            title = { Text(stringResource(R.string.font_size_slider_title)) },
         )
         twoTargetSwitchPreference(
             key = PrefKeys.CUSTOM_FONT_ENABLED,

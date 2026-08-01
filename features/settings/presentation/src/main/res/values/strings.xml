@@ -12,7 +12,7 @@
     <string name="disable_images_switch_title">Disable game images</string>
     <string name="image_path_switch_title">Image path debugger</string>
     <string name="font_style_list_title">Game font style</string>
-    <string name="font_size_list_title">Game font size</string>
+    <string name="font_size_slider_title">Game font size</string>
     <string name="font_custom_switch_title">Custom game font</string>
     <string name="font_color_switch_title">Custom game text color</string>
     <string name="back_color_switch_title">Custom game background color</string>

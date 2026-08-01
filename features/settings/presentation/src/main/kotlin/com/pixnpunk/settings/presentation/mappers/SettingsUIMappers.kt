@@ -42,7 +42,7 @@ fun SettingsEntity.toMap(): Map<String, Any> = mapOf(
 
 suspend fun SettingsRepository.dispatch(key: String, value: Any) = when (key) {
     PrefKeys.FONT_STYLE -> updateFontStyle(FontTypeface.valueOf(value as String))
-    PrefKeys.FONT_SIZE -> updateFontSize(value as Int)
+    PrefKeys.FONT_SIZE -> updateFontSize((value as Float).toInt())
 
     PrefKeys.CUSTOM_FONT_ENABLED -> toggleCustomFont(isEnabled = value as Boolean)
     PrefKeys.CUSTOM_FONT_PATH -> updateCustomFontPath(value as String)
