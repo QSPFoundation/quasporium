@@ -104,7 +104,7 @@ fun SettingsGeneralContent(
                 contentDescription = null
             )
         },
-        defaultValue = BinaryPrefFormat.SI.toString(),
+        defaultValue = BinaryPrefFormat.SI.name,
         values = BinaryPrefFormat.entries.map { it.toString() },
         valueToText = {
             AnnotatedString(
