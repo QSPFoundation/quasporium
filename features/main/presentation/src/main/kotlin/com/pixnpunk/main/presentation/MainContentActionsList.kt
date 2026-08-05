@@ -146,15 +146,16 @@ private fun ActionCell(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            if (item.hasImage) {
+            val imagePath = item.original.imagePath
+            if (imagePath != null) {
                 AsyncImage(
-                    model = item.original.imagePath,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .size(56.dp)
                         .clip(MaterialTheme.shapes.small)
-                        .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                        .background(MaterialTheme.colorScheme.surfaceContainerHighest),
+                    contentScale = ContentScale.Crop,
+                    model = imagePath,
+                    contentDescription = null
                 )
             }
 

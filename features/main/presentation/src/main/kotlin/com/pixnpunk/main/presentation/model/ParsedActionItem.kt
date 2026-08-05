@@ -7,6 +7,5 @@ import com.pixnpunk.game.domain.model.InteractableItem
 @Immutable
 data class ParsedActionItem(
     val original: InteractableItem,
-    val annotatedText: AnnotatedString = AnnotatedString(""),
-    val hasImage: Boolean = false
+    val annotatedText: AnnotatedString = AnnotatedString("")
 )

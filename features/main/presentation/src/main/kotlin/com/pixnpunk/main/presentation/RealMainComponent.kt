@@ -70,8 +70,7 @@ class RealMainComponent(
             parsedActions = gameState.actions.map { item ->
                 ParsedActionItem(
                     original = item,
-                    annotatedText = AnnotatedString.fromHtml(item.title),
-                    hasImage = item.imagePath != null
+                    annotatedText = AnnotatedString.fromHtml(item.title)
                 )
             },
             backColor =
@@ -90,14 +89,20 @@ class RealMainComponent(
         initialValue = MainUIState()
     )
 
-    private fun resolveFontFamily(settings: SettingsEntity): FontFamily {
+    private fun resolveFontFamily(
+        settings: SettingsEntity
+    ): FontFamily {
         if (settings.isUseCustomFont && settings.customFontPath.isNotEmpty()) {
             val file = File(settings.customFontPath)
             if (file.exists()) {
-                return runCatching { FontFamily(Typeface.createFromFile(file)) }
-                    .getOrDefault(settings.typeface.toComposeFamily())
+                return runCatching {
+                    FontFamily(Typeface.createFromFile(file))
+                }.getOrDefault(
+                    settings.typeface.toComposeFamily()
+                )
             }
         }
+
         return settings.typeface.toComposeFamily()
     }
 }
