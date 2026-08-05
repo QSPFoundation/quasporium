@@ -8,5 +8,4 @@ import com.pixnpunk.game.domain.model.InteractableItem
 data class ParsedObjectItem(
     val original: InteractableItem,
     val annotatedText: AnnotatedString = AnnotatedString(""),
-    val hasImage: Boolean = false
 )

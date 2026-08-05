@@ -41,8 +41,7 @@ class RealObjectComponent(
             parsedObjects = gameState.objects.map { item ->
                 ParsedObjectItem(
                     original = item,
-                    annotatedText = AnnotatedString.fromHtml(item.title),
-                    hasImage = item.imagePath != null
+                    annotatedText = AnnotatedString.fromHtml(item.title)
                 )
             },
             backColor =

@@ -33,9 +33,10 @@ fun ObjectCell(
             containerColor = backColor
         ),
         leadingContent = {
-            if (item.hasImage) {
+            val imagePath = item.original.imagePath
+            if (imagePath != null) {
                 AsyncImage(
-                    model = item.original.imagePath,
+                    model = imagePath,
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
