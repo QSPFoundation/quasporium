@@ -1,5 +1,6 @@
 package com.pixnpunk.game.data.vfs
 
+import com.anggrayudi.storage.file.MimeType
 import com.pixnpunk.game.domain.model.VfsPath
 
 internal interface VirtualFile {
@@ -13,6 +14,10 @@ internal interface VirtualFile {
 
     fun getChild(name: String): VirtualFile?
     fun getParent(): VirtualFile?
+
+    fun makeDir(name: String): VirtualFile?
+    fun makeFile(name: String, mimeType: String = MimeType.BINARY_FILE): VirtualFile?
+    fun delete(): Boolean
 
     fun openStream(): Result<VirtualFileStream>
 }

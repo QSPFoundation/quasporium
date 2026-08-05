@@ -24,11 +24,9 @@ import com.anggrayudi.storage.extension.toDocumentFile
 import com.anggrayudi.storage.file.FileFullPath
 import com.anggrayudi.storage.file.MimeType.BINARY_FILE
 import com.anggrayudi.storage.file.getAbsolutePath
-import com.arkivanov.decompose.defaultComponentContext
 import com.arkivanov.decompose.retainedComponent
 import com.pixnpunk.game.domain.model.VfsPath
 import com.pixnpunk.settings.dto.repository.SettingsRepository
-import com.pixnpunk.utils.DirUtil.isGameDirIsInternal
 import org.koin.android.ext.android.get
 import org.koin.android.ext.android.inject
 
@@ -130,69 +128,35 @@ class GameActivity : ComponentActivity() {
             val snackbarHostState = remember { SnackbarHostState() }
 
             if (state.isUserChooseSave) {
-                if (!isGameDirIsInternal(gameDirUriBox)) {
-                    runCatching {
-                        val rootDir =
-                            gameDirUriBox.toUri().toDocumentFile(this@GameActivity)!!
-                        requestCreateFile.launch(
-                            FileCreationContract.Options(
-                                mimeType = BINARY_FILE,
-                                fileName = "${(UInt.MIN_VALUE..UInt.MAX_VALUE).random()}.sav",
-                                initialPath = FileFullPath(
-                                    context = this@GameActivity,
-                                    fullPath = rootDir.getAbsolutePath(this@GameActivity)
-                                )
+                runCatching {
+                    val rootDir =
+                        gameDirUriBox.toUri().toDocumentFile(this@GameActivity)!!
+                    requestCreateFile.launch(
+                        FileCreationContract.Options(
+                            mimeType = BINARY_FILE,
+                            fileName = "${(UInt.MIN_VALUE..UInt.MAX_VALUE).random()}.sav",
+                            initialPath = FileFullPath(
+                                context = this@GameActivity,
+                                fullPath = rootDir.getAbsolutePath(this@GameActivity)
                             )
                         )
-                    }
-                } else {
-//                    scope.launch(Dispatchers.IO) {
-//                        val savesCount = saveSlotDao.getSavesCount(state().gameId)
-//                        scope.launch {
-//                            publish(
-//                                ShowDialog(
-//                                    inputString = "Save ${savesCount + 1}",
-//                                    dialogState = LibTypeDialog.DIALOG_SAVEGAME
-//                                )
-//                            )
-//                        }
-//                    }
+                    )
                 }
             }
 
             if (state.isUserChooseLoad) {
-                if (!isGameDirIsInternal(gameDirUriBox)) {
-                    runCatching {
-                        val rootDir =
-                            gameDirUriBox.toUri().toDocumentFile(this@GameActivity)!!
-                        requestOpenFile.launch(
-                            OpenFilePickerContract.Options(
-                                initialPath = FileFullPath(
-                                    context = this@GameActivity,
-                                    fullPath = rootDir.getAbsolutePath(this@GameActivity)
-                                ),
-                                filterMimeTypes = setOf(BINARY_FILE)
-                            )
+                runCatching {
+                    val rootDir =
+                        gameDirUriBox.toUri().toDocumentFile(this@GameActivity)!!
+                    requestOpenFile.launch(
+                        OpenFilePickerContract.Options(
+                            initialPath = FileFullPath(
+                                context = this@GameActivity,
+                                fullPath = rootDir.getAbsolutePath(this@GameActivity)
+                            ),
+                            filterMimeTypes = setOf(BINARY_FILE)
                         )
-                    }
-                } else {
-//                    scope.launch(Dispatchers.IO) {
-//                        saveSlotDao.getAllSaves(state().gameId).map {
-//                            LibSaveItem(
-//                                it.userTitle,
-//                                it.timestamp,
-//                                it.filePath
-//                            )
-//                        }.let {
-//                            scope.launch {
-//                                if (it.isEmpty()) {
-//                                    publish(GameStore.Label.ShowSnackBar("No saved games!"))
-//                                } else {
-//                                    publish(GameStore.Label.ShowListSavesDialog(it))
-//                                }
-//                            }
-//                        }
-//                    }
+                    )
                 }
             }
 

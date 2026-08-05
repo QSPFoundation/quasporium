@@ -33,6 +33,7 @@ import com.pixnpunk.game.domain.model.WindowType
 import com.pixnpunk.game.domain.repository.AudioPlayerInteractor
 import com.pixnpunk.game.domain.repository.EngineCommand
 import com.pixnpunk.game.domain.repository.GameEngineInteractor
+import com.pixnpunk.game.domain.repository.SaveGameInteractor
 import com.pixnpunk.game.presentation.model.BadgesHashes
 import com.pixnpunk.game.presentation.model.BadgesState
 import com.pixnpunk.game.presentation.model.GameUIState
@@ -40,6 +41,8 @@ import com.pixnpunk.main.presentation.MainComponent
 import com.pixnpunk.main.presentation.RealMainComponent
 import com.pixnpunk.`object`.presentation.RealObjectComponent
 import com.pixnpunk.settings.dto.repository.SettingsRepository
+import com.pixnpunk.utils.DirUtil.isGameDirIsInternal
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -77,6 +80,7 @@ class RealGameComponent(
     internal val audioPlayer: AudioPlayerInteractor = get()
     private val engineInteractor: GameEngineInteractor by inject { parametersOf(libAuthors) }
     private val settingsRepository: SettingsRepository = get()
+    private val saveGameInteractor: SaveGameInteractor by inject { parametersOf(engineInteractor) }
 
     override val settingsState: StateFlow<SettingsEntity> = settingsRepository.settingsFlow
     override val engineState: StateFlow<GameState> = engineInteractor.state
@@ -251,9 +255,35 @@ class RealGameComponent(
             .launchIn(componentScope)
     }
 
-    override fun doSaveFile() = _uiState.update { it.copy(isUserChooseSave = true) }
+    override fun doSaveFile() {
+        if (!isGameDirIsInternal(gameDirUriBox)) {
+            _uiState.update { it.copy(isUserChooseSave = true) }
+        } else {
+            coroutineScope().launch {
+                val savesCount = saveGameInteractor.getSavesCount(gameId)
+                doShowDialog(
+                    inputString = "Save ${savesCount + 1}",
+                    dialogState = LibTypeDialog.DIALOG_SAVEGAME
+                )
+            }
+        }
+    }
 
-    override fun doLoadFile() = _uiState.update { it.copy(isUserChooseLoad = true) }
+    override fun doLoadFile() {
+        if (!isGameDirIsInternal(gameDirUriBox)) {
+            _uiState.update { it.copy(isUserChooseLoad = true) }
+        } else {
+            coroutineScope().launch {
+                saveGameInteractor.getAllSaves(gameId).let {
+                    if (it.isEmpty()) {
+                        _events.send(GameEvent.ShowSnackbar("No saved games!"))
+                    } else {
+                        doShowDialog(it)
+                    }
+                }
+            }
+        }
+    }
 
     override fun onSaveFilePicked(path: VfsPath?) {
         _uiState.update { it.copy(isUserChooseSave = false) }
@@ -300,7 +330,11 @@ class RealGameComponent(
                 val gameId = _uiState.value.gameId
                 val gameDir = _uiState.value.gameDirUriBox
 
-//                saveGameManager.createAndSaveSlot(gameId.id, inputString, gameDir)
+                saveGameInteractor.createAndSaveSlot(
+                    gameId.id,
+                    inputString,
+                    gameDir
+                )
 
                 _events.send(GameEvent.ShowSnackbar("Game saved!"))
             }

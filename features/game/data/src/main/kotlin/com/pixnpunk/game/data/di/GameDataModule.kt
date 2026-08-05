@@ -6,10 +6,12 @@ import com.pixnpunk.game.data.engine.GameEngineInteractorImpl
 import com.pixnpunk.game.data.engine.jni.NativeEngineBridge
 import com.pixnpunk.game.data.engine.jni.QspEngineBridgeImpl
 import com.pixnpunk.game.data.engine.jni.QspLegacyEngineBridgeImpl
+import com.pixnpunk.game.data.save.SaveGameInteractorImpl
 import com.pixnpunk.game.data.vfs.FileSystemProvider
 import com.pixnpunk.game.data.vfs.impl.FileSystemProviderImpl
 import com.pixnpunk.game.domain.repository.AudioPlayerInteractor
 import com.pixnpunk.game.domain.repository.GameEngineInteractor
+import com.pixnpunk.game.domain.repository.SaveGameInteractor
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.qualifier.named
@@ -38,5 +40,12 @@ val gameDataModule = module {
     singleOf(::FileSystemProviderImpl) {
         bind<FileSystemProvider>()
     }
-//    singleOf(::SaveGameManagerImpl) { bind<SaveGameManager>() }
+
+    factory<SaveGameInteractor> { (engine: GameEngineInteractor) ->
+        SaveGameInteractorImpl(
+            vfsProvider = get(),
+            saveSlotDao = get(),
+            engineInteractor = engine
+        )
+    }
 }

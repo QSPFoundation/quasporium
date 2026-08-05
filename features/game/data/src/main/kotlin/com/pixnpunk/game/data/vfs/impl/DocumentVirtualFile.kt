@@ -2,15 +2,16 @@ package com.pixnpunk.game.data.vfs.impl
 
 import android.content.Context
 import androidx.documentfile.provider.DocumentFile
+import com.anggrayudi.storage.file.CreateMode
 import com.anggrayudi.storage.file.child
-import com.anggrayudi.storage.file.children
 import com.anggrayudi.storage.file.findParent
+import com.anggrayudi.storage.file.forceDelete
 import com.anggrayudi.storage.file.isWritable
+import com.anggrayudi.storage.file.makeFile
+import com.anggrayudi.storage.file.makeFolder
 import com.pixnpunk.game.data.vfs.VirtualFile
 import com.pixnpunk.game.data.vfs.VirtualFileStream
 import com.pixnpunk.game.domain.model.VfsPath
-import com.pixnpunk.utils.FileUtil.isWritableFile
-import kotlin.contracts.ExperimentalContracts
 
 internal class DocumentVirtualFile(
     private val context: Context,
@@ -41,8 +42,6 @@ internal class DocumentVirtualFile(
             current = current.child(context, segment) ?: return null
         }
 
-        println()
-
         return DocumentVirtualFile(context, docFile.child(context, name) ?: return null)
     }
 
@@ -50,6 +49,29 @@ internal class DocumentVirtualFile(
         val parent = docFile.findParent(context)
         return if (parent != null) DocumentVirtualFile(context, parent) else null
     }
+
+    override fun makeDir(name: String): VirtualFile? =
+        DocumentVirtualFile(
+            context = context,
+            docFile.makeFolder(
+                context = context,
+                name = name,
+                mode = CreateMode.REUSE
+            ) ?: return null
+        )
+
+    override fun makeFile(name: String, mimeType: String): VirtualFile? =
+        DocumentVirtualFile(
+            context = context,
+            docFile.makeFile(
+                context = context,
+                name = name,
+                mimeType = mimeType,
+                mode = CreateMode.REUSE
+            ) ?: return null
+        )
+
+    override fun delete(): Boolean = docFile.forceDelete(context = context)
 
     override fun openStream(): Result<VirtualFileStream> {
         TODO("Not yet implemented")

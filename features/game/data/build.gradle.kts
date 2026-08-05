@@ -63,6 +63,7 @@ dependencies {
     implementation(project(":core:dto"))
     implementation(project(":core:utils"))
     implementation(project(":core:logger"))
+    implementation(project(":core:database"))
 
     implementation(project(":features:game:domain"))
 
