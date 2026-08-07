@@ -8,7 +8,6 @@ import android.webkit.WebViewClient
 import androidx.core.net.toUri
 import androidx.webkit.WebViewAssetLoader
 import com.pixnpunk.utils.Base64Util.decodeBase64
-import com.pixnpunk.utils.Base64Util.isBase64
 import kotlin.contracts.ExperimentalContracts
 
 internal class WebViewClient(
@@ -38,11 +37,6 @@ internal class WebViewClient(
                 Intent(Intent.ACTION_VIEW, uriDecode.toUri())
                     .apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK }
                     .also(onStartActivity)
-
-            "file" ->
-                Intent(Intent.ACTION_VIEW, uriScheme.replace("file:/", "https:").toUri())
-                    .apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK }
-                    .also(onStartActivity)
         }
         return true
     }
@@ -52,7 +46,8 @@ internal class WebViewClient(
         view: WebView,
         request: WebResourceRequest
     ) = runCatching {
-        val uriPath = request.url ?: throw NullPointerException()
-        assetLoader.shouldInterceptRequest(uriPath)
+        assetLoader.shouldInterceptRequest(
+            request.url ?: throw NullPointerException()
+        )
     }.getOrElse { super.shouldInterceptRequest(view, request) }
 }
