@@ -1,7 +1,7 @@
 package com.pixnpunk.game.data.di
 
 import com.pixnpunk.dto.NativeLibAuthors
-import com.pixnpunk.game.data.GameAudioComponent
+import com.pixnpunk.game.data.audio.AudioPlayerInteractorImpl
 import com.pixnpunk.game.data.engine.GameEngineInteractorImpl
 import com.pixnpunk.game.data.engine.jni.NativeEngineBridge
 import com.pixnpunk.game.data.engine.jni.QspEngineBridgeImpl
@@ -19,7 +19,7 @@ import org.koin.dsl.module
 import org.koin.dsl.onClose
 
 val gameDataModule = module {
-    singleOf(::GameAudioComponent) {
+    singleOf(::AudioPlayerInteractorImpl) {
         bind<AudioPlayerInteractor>()
     } onClose { it?.close() }
 

@@ -1,4 +1,4 @@
-package com.pixnpunk.game.data
+package com.pixnpunk.game.data.audio
 
 import android.content.Context
 import android.media.MediaPlayer
@@ -18,7 +18,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.util.concurrent.ConcurrentHashMap
 
-internal class GameAudioComponent(
+internal class AudioPlayerInteractorImpl(
     private val context: Context,
     private val logger: AppLogger,
     private val vfsProvider: FileSystemProvider
@@ -29,10 +29,8 @@ internal class GameAudioComponent(
 
     private val mediaPlayers = ConcurrentHashMap<String, MediaPlayer>()
 
-    @Volatile
-    private var isPaused = false
-    @Volatile
-    override var isSoundEnabled = true
+    @Volatile private var isPaused = false
+    @Volatile override var isSoundEnabled = true
 
     internal fun close() {
         playerScope.cancel()
