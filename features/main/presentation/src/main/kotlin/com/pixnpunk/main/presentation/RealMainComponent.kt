@@ -19,6 +19,7 @@ import com.pixnpunk.utils.ViewUtil.toComposeFamily
 import com.pixnpunk.webview.presentation.RealWebViewComponent
 import com.pixnpunk.webview.presentation.WebViewComponent
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -41,6 +42,21 @@ class RealMainComponent(
         engineInteractor.submitCommand(EngineCommand.ExecuteAction(index))
     }
 
+    private data class CachedSettings(
+        val raw: SettingsEntity,
+        val fontFamily: FontFamily
+    )
+
+    private val cachedSettingsFlow: Flow<CachedSettings> = settingsState
+        .map { settings ->
+            CachedSettings(
+                raw = settings,
+                fontFamily = resolveFontFamily(settings)
+            )
+        }
+        .flowOn(Dispatchers.IO)
+        .distinctUntilChanged()
+
     override val gameWebViewComponent: WebViewComponent =
         RealWebViewComponent(
             componentContext = childContext("MainGameWebViewComponent"),
@@ -62,9 +78,13 @@ class RealMainComponent(
 
     override val uiState: StateFlow<MainUIState> = combine(
         engineInteractor.state,
-        settingsState
-    ) { gameState, settings ->
+        cachedSettingsFlow
+    ) { gameState, processed ->
         if (gameState !is GameState.Running) return@combine MainUIState()
+
+        val settings = processed.raw
+        val libConfig = gameState.uiConfig
+
         MainUIState(
             isActionsVis = gameState.activeWindows.contains(WindowType.ACTS),
             parsedActions = gameState.actions.map { item ->
@@ -74,14 +94,14 @@ class RealMainComponent(
                 )
             },
             backColor =
-                gameState.uiConfig.backColor
+                libConfig.backColor
                     .takeIf { !settings.isBackColorOverride && it != 0 }
                     ?: settings.backColor,
             fontSize =
-                gameState.uiConfig.fontSize
+                libConfig.fontSize
                     .takeIf { settings.isUseGameFont && it != 0 }
                     ?: settings.fontSize,
-            fontFamily = resolveFontFamily(settings)
+            fontFamily = processed.fontFamily
         )
     }.flowOn(Dispatchers.Default).stateIn(
         scope = coroutineScope(),
