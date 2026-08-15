@@ -22,6 +22,9 @@ data class DialogsConfig(
     val initialValue: String = "",
     val supportValue: String = "",
     val supportErrorValue: String = "",
+    val isScanningFolder: Boolean = false,
+    val scannedFiles: List<String> = emptyList(),
+    val selectedStartupFile: String? = null,
     val menuItems: List<InteractableItem> = emptyList(),
     val saveItems: List<LibSaveItem> = emptyList()
 )

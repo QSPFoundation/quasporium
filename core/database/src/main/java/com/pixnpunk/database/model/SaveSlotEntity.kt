@@ -9,9 +9,9 @@ import androidx.room.PrimaryKey
     tableName = "save",
     foreignKeys = [
         ForeignKey(
-            entity = GameEntity::class,
+            entity = ProfileEntity::class,
             parentColumns = ["id"],
-            childColumns = ["gameId"],
+            childColumns = ["profileId"],
             onDelete = ForeignKey.CASCADE
         )
     ]
@@ -20,7 +20,7 @@ data class SaveSlotEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     @ColumnInfo(index = true)
-    val gameId: Long = 0,
+    val profileId: Long = 0,
     val userTitle: String = "",
     val filePath: String = "",
     val timestamp: Long = 0,

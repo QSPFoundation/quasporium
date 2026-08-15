@@ -14,12 +14,11 @@ sealed interface DialogsComponent {
     val selectFolder: () -> Unit
     val deselectDir: () -> Unit
     val selectFiles: () -> Unit
-    val deselectFile: (String) -> Unit
-    val selectFile: () -> Unit
+    val selectCover: () -> Unit
+    val deselectCover: (String) -> Unit
     val selectColor: (Pair<ColorPickerState, Color>) -> Unit
     val confirmMessage: (OutputStateValue) -> Unit
     val inputValue: (Pair<InputState, String>) -> Unit
-    val doPlayGame: (GameEntry, Int) -> Unit
     val onCleanError: () -> Unit
     val onDismissed: () -> Unit
 }

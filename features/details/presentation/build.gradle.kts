@@ -29,8 +29,10 @@ dependencies {
     implementation(project(":core:utils"))
 
     implementation(project(":features:stock:domain"))
+    implementation(project(":features:settings:domain"))
 
-    implementation(project(":features:settings:data"))
+    implementation(project(":features:details:data"))
+    implementation(project(":features:details:domain"))
 
     implementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(platform(libs.androidx.compose.bom))

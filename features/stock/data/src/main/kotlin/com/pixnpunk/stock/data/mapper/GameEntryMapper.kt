@@ -20,8 +20,7 @@ fun GameEntry.toEntity(): GameEntity =
         descUrl = descUrl,
         pubDate = pubDate,
         modDate = modDate,
-        gameDirPath = gameDirPath,
-        gameFilesPath = gameFilesPath
+        gameDirPath = gameDirPath
     )
 
 fun GameEntity.toDomain(): GameEntry =
@@ -41,8 +40,7 @@ fun GameEntity.toDomain(): GameEntry =
         descUrl = descUrl,
         pubDate = pubDate,
         modDate = modDate,
-        gameDirPath = gameDirPath,
-        gameFilesPath = gameFilesPath
+        gameDirPath = gameDirPath
     )
 
 fun List<GameEntity>.toDomain(): List<GameEntry> = map { value -> value.toDomain() }

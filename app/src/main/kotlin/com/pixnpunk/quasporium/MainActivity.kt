@@ -275,12 +275,11 @@ class MainActivity : ComponentActivity() {
                     )
                 }.onFailure { }
             },
-            launchEngineIntent = { (entry, i) ->
+            launchEngineIntent = {
                 startActivitySafely(
                     AddonsUtils.createEngineIntent(
                         clazz = GameActivity::class.java,
-                        entry = entry,
-                        fileSelIndex = i
+                        entity = it
                     )
                 )
             }

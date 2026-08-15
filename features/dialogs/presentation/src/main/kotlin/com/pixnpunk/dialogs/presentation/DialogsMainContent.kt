@@ -14,7 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.window.DialogProperties
-import com.pixnpunk.dialogs.presentation.content.DialogAddGameContent
+import com.pixnpunk.dialogs.presentation.content.add.DialogAddGameContent
 import com.pixnpunk.dialogs.presentation.content.DialogEditGameContent
 import com.pixnpunk.dialogs.presentation.content.DialogInputValueContent
 import com.pixnpunk.dialogs.presentation.content.DialogOutputListValueContent
@@ -51,14 +51,12 @@ fun DialogsMainContent(
                     when (state) {
                         DialogsState.DIALOG_ADD_GAME ->
                             DialogAddGameContent(
-                                entry = component.dialogsConfig.unfilledEntry,
-                                selectFile = component.selectFile,
-                                deselectFile = { component.deselectFile(it) },
+                                entry = config.unfilledEntry,
+                                onCoverSelect = component.selectCover,
+                                onCoverClear = { component.deselectCover(it) },
                                 selectDir = component.selectFolder,
-                                deselectDir = component.deselectDir,
-                                selectFiles = component.selectFiles,
-                                addGame = {
-                                    component.addNewEntry(it)
+                                addGame = { entry ->
+                                    component.addNewEntry(entry)
                                     component.onDismissed()
                                 },
                                 onDismiss = component.onDismissed,
@@ -69,8 +67,8 @@ fun DialogsMainContent(
                         DialogsState.DIALOG_EDIT_GAME ->
                             DialogEditGameContent(
                                 entry = component.dialogsConfig.unfilledEntry,
-                                selectFile = component.selectFile,
-                                deselectFile = { component.deselectFile(it) },
+                                selectFile = component.selectCover,
+                                deselectFile = { component.deselectCover(it) },
                                 selectFiles = component.selectFiles,
                                 editGame = {
                                     component.editEntry(it)
@@ -166,18 +164,14 @@ fun DialogsMainContent(
                     tonalElevation = AlertDialogDefaults.TonalElevation
                 ) {
                     when (state) {
-                        DialogsState.DIALOG_SELECT_RUN_GAME -> DialogSelectGameContent(component)
-
                         DialogsState.DIALOG_DOWNLOAD_GAME ->
                             DialogAddGameContent(
-                                entry = component.dialogsConfig.unfilledEntry,
-                                selectFile = component.selectFile,
-                                deselectFile = component.deselectFile,
+                                entry = config.unfilledEntry,
+                                onCoverSelect = component.selectCover,
+                                onCoverClear = { component.deselectCover(it) },
                                 selectDir = component.selectFolder,
-                                deselectDir = component.deselectDir,
-                                selectFiles = component.selectFiles,
-                                addGame = {
-                                    component.downloadNewEntry(it)
+                                addGame = { entry ->
+                                    component.downloadNewEntry(entry)
                                     component.onDismissed()
                                 },
                                 onDismiss = component.onDismissed,

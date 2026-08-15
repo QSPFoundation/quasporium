@@ -82,10 +82,12 @@ class GameActivity : ComponentActivity() {
             }.onFailure { rootComponent.onLoadFilePicked(null) }
         }
 
+    private val profileId: Long by lazy { intent.getLongExtra("profileId", 0L) }
     private val gameId: Long by lazy { intent.getLongExtra("gameId", -1L) }
     private val gameTitle: String by lazy { intent.getStringExtra("gameTitle") ?: "Title" }
     private val gameDirUriBox: String by lazy { intent.getStringExtra("gameDirUri") ?: "" }
     private val gameFileUriBox: String by lazy { intent.getStringExtra("gameFileUri") ?: "" }
+    private val gameSaveUriBox: String by lazy { intent.getStringExtra("gameSaveUri") ?: "" }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -105,10 +107,12 @@ class GameActivity : ComponentActivity() {
                 componentContext = it,
                 libAuthors = settingsRepository.settingsFlow.value.nativeLibFrom,
                 onFinishActivity = { killProcess(myPid()) },
+                profileId = profileId,
                 gameId = gameId,
                 gameTitle = gameTitle,
                 gameDirUriBox = gameDirUriBox,
-                gameFileUriBox = gameFileUriBox
+                gameFileUriBox = gameFileUriBox,
+                gameSaveUriBox = gameSaveUriBox
             )
         }
 

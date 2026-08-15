@@ -17,13 +17,19 @@ class RealDetailsStore(
         Store<DetailsStore.Intent, DetailsStore.State, DetailsStore.Label> by storeFactory.create(
             name = "DetailsStore",
             initialState = DetailsStore.State(gameEntry = entry),
-            bootstrapper = SimpleBootstrapper(
-                DetailsStore.Action.StartEntryFlow(entry)
-            ),
-            executorFactory = { DetailsExecutor(get()) },
+            bootstrapper = SimpleBootstrapper(DetailsStore.Action.Init(entry)),
+            executorFactory = {
+                DetailsExecutor(
+                    get(),
+                    get(),
+                    get()
+                )
+            },
             reducer = { msg ->
                 when (msg) {
                     is DetailsStore.Message.UpdateEntry -> copy(gameEntry = msg.entry)
+                    is DetailsStore.Message.UpdateProfiles -> copy(gameProfiles = msg.profiles)
+                    is DetailsStore.Message.UpdateGameFiles -> copy(gameFiles = msg.files)
                 }
             }
         )

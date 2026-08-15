@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.net.toUri
 import com.anggrayudi.storage.file.DocumentFileCompat.fromUri
-import com.pixnpunk.dto.GameEntry
+import com.pixnpunk.dto.LaunchGameEntity
 import com.pixnpunk.utils.FileUtil.isWritableDir
 import com.pixnpunk.utils.FileUtil.isWritableFile
 import org.koin.core.component.KoinComponent
@@ -16,26 +16,49 @@ object AddonsUtils : KoinComponent {
     @OptIn(ExperimentalContracts::class)
     fun <T> createEngineIntent(
         clazz: Class<T>,
-        entry: GameEntry,
-        fileSelIndex: Int
+        entity: LaunchGameEntity
     ): Intent {
+        val entry = entity.gameEntry
+
         val gameDir = fromUri(
             context = get(),
             uri = entry.gameDirPath.toUri(),
         )
         val gameFile = fromUri(
             context = get(),
-            uri = entry.gameFilesPath[fileSelIndex].toUri(),
+            uri = entity.entryFile.toUri(),
         )
 
-        return if (!gameDir.isWritableDir() || !gameFile.isWritableFile()) {
-            Intent()
+        val save = entity.saveFile
+        return if (save == null) {
+            if (!gameDir.isWritableDir() || !gameFile.isWritableFile()) {
+                Intent()
+            } else {
+                Intent(get<Context>(), clazz).apply {
+                    putExtra("profileId", entity.profileId)
+                    putExtra("gameId", entry.id)
+                    putExtra("gameTitle", entry.title)
+                    putExtra("gameDirUri", gameDir.uri.toString())
+                    putExtra("gameFileUri", gameFile.uri.toString())
+                }
+            }
         } else {
-            Intent(get<Context>(), clazz).apply {
-                putExtra("gameId", entry.id)
-                putExtra("gameTitle", entry.title)
-                putExtra("gameDirUri", gameDir.uri.toString())
-                putExtra("gameFileUri", gameFile.uri.toString())
+            val gameSave = fromUri(
+                context = get(),
+                uri = save.toUri(),
+            )
+
+            if (!gameDir.isWritableDir() || !gameFile.isWritableFile() || gameSave == null) {
+                Intent()
+            } else {
+                Intent(get<Context>(), clazz).apply {
+                    putExtra("profileId", entity.profileId)
+                    putExtra("gameId", entry.id)
+                    putExtra("gameTitle", entry.title)
+                    putExtra("gameDirUri", gameDir.uri.toString())
+                    putExtra("gameFileUri", gameFile.uri.toString())
+                    putExtra("gameSaveUri", gameSave.uri.toString())
+                }
             }
         }
     }

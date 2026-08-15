@@ -37,6 +37,8 @@ include(
 
     ":features",
     ":features:details",
+    ":features:details:data",
+    ":features:details:domain",
     ":features:details:presentation",
     ":features:dialogs",
     ":features:dialogs:presentation",

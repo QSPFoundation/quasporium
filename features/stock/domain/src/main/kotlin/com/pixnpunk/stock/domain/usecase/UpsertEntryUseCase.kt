@@ -6,5 +6,5 @@ import com.pixnpunk.stock.domain.repository.LocalRepository
 class UpsertEntryUseCase(
     private val repository: LocalRepository
 ) {
-    suspend fun execute(entry: GameEntry) = repository.updateOrInsertEntry(entry)
+    suspend fun execute(entry: GameEntry) = repository.upsertEntry(entry)
 }

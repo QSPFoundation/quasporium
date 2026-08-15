@@ -19,23 +19,23 @@ internal class SaveGameInteractorImpl(
     private val engineInteractor: GameEngineInteractor
 ) : SaveGameInteractor {
 
-    override suspend fun getSavesCount(gameId: Long): Int =
-        withContext(Dispatchers.IO) { saveSlotDao.getSavesCount(gameId) }
+    override suspend fun getSavesCount(profileId: Long): Int =
+        withContext(Dispatchers.IO) { saveSlotDao.getSavesCount(profileId) }
 
-    override suspend fun getAllSaves(gameId: Long): List<LibSaveItem> =
+    override suspend fun getAllSaves(profileId: Long): List<LibSaveItem> =
         withContext(Dispatchers.IO) {
-            saveSlotDao.getAllSaves(gameId).map {
+            saveSlotDao.getAllSaves(profileId).map {
                 LibSaveItem(it.userTitle, it.timestamp, it.filePath)
             }
         }
 
-    override suspend fun createAndSaveSlot(gameId: Long, saveName: String, gameDir: VfsPath) =
+    override suspend fun createAndSaveSlot(profileId: Long, saveName: String, gameDir: VfsPath) =
         withContext(Dispatchers.Default) {
             val gameRoot = vfsProvider.resolve(gameDir) ?: return@withContext
 
             val savesDir = gameRoot.makeDir("QuasporiumSaves") ?: return@withContext
 
-            val existSave = saveSlotDao.searchByTitle(gameId, saveName)
+            val existSave = saveSlotDao.searchByTitle(profileId, saveName)
 
             val newSaveFile = if (existSave == null) {
                 val fileName = "Save_${Uuid.random().toHexString()}_.sav"
@@ -43,7 +43,7 @@ internal class SaveGameInteractorImpl(
 
                 saveSlotDao.insert(
                     SaveSlotEntity(
-                        gameId = gameId,
+                        profileId = profileId,
                         userTitle = saveName,
                         filePath = file.path.value,
                         timestamp = Clock.System.now().toEpochMilliseconds()

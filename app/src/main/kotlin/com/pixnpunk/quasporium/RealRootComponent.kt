@@ -9,7 +9,6 @@ import com.arkivanov.decompose.router.slot.child
 import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
 import com.arkivanov.decompose.value.Value
-import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
 import com.arkivanov.mvikotlin.core.instancekeeper.getStore
 import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
 import com.pixnpunk.details.presentation.RealDetailsComponent
@@ -20,6 +19,7 @@ import com.pixnpunk.dialogs.presentation.RealDialogsComponent
 import com.pixnpunk.dto.ColorPickerState
 import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.dto.InputState
+import com.pixnpunk.dto.LaunchGameEntity
 import com.pixnpunk.dto.OutputState
 import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.quasporium.mvi.RealRootStore
@@ -41,7 +41,7 @@ class RealRootComponent(
     private val launchFilesPicker: () -> Unit,
     private val launchFontPicker: () -> Unit,
     private val launchStorageAccess: () -> Unit,
-    private val launchEngineIntent: (Pair<GameEntry, Int>) -> Unit,
+    private val launchEngineIntent: (LaunchGameEntity) -> Unit,
 ) : ComponentContext by componentContext, RootComponent, KoinComponent {
 
     private val dialogsNavigation = SlotNavigation<DialogsConfig>()
@@ -125,30 +125,6 @@ class RealRootComponent(
         }
     }
 
-    private fun selGameDialog(entry: GameEntry) {
-        when (entry.gameFilesPath.size) {
-            0 -> {
-                doShowDialog(
-                    outputValue = "The game files for the ${entry.title} are missing!",
-                    outputState = OutputState.OUTPUT_SIMPLE_MSG
-                )
-            }
-
-            1 -> {
-                launchEngineIntent(entry to 0)
-            }
-
-            else -> {
-                dialogsNavigation.activate(
-                    DialogsConfig(
-                        dialogsState = DialogsState.DIALOG_SELECT_RUN_GAME,
-                        unfilledEntry = entry
-                    )
-                )
-            }
-        }
-    }
-
     override val dialogSlot: Value<ChildSlot<*, DialogsComponent>> =
         childSlot(
             source = dialogsNavigation,
@@ -167,9 +143,9 @@ class RealRootComponent(
                 },
                 selectFolder = launchDirPicker,
                 deselectDir = ::remDirSelect,
-                selectFile = launchFilePicker,
                 selectFiles = launchFilesPicker,
-                deselectFile = ::remFileSelect,
+                selectCover = launchFilePicker,
+                deselectCover = ::remFileSelect,
                 selectColor = {
                     store.accept(RootStore.Intent.UpdateColorConfig(it.first, it.second))
                 },
@@ -182,7 +158,6 @@ class RealRootComponent(
                 inputValue = {
                     store.accept(RootStore.Intent.UpdateImageConfig(it.first, it.second))
                 },
-                doPlayGame = { entry, value -> launchEngineIntent(entry to value) },
                 onDismissed = dialogsNavigation::dismiss,
             )
         }
@@ -198,12 +173,8 @@ class RealRootComponent(
                 componentContext = ctx,
                 defEntry = config.entry,
                 settingsState = settingsState,
-                showSelectGameDialog = {
-                    doShowDialog(
-                        state = DialogsState.DIALOG_SELECT_RUN_GAME,
-                        entry = it
-                    )
-                },
+                launchFreshGame = { launchEngineIntent(it) },
+                launchContinueGame = { launchEngineIntent(it) },
                 showEditGameDialog = {
                     doShowDialog(
                         state = DialogsState.DIALOG_EDIT_GAME,
@@ -313,8 +284,6 @@ class RealRootComponent(
         entry: GameEntry
     ) {
         when (state) {
-            DialogsState.DIALOG_SELECT_RUN_GAME -> selGameDialog(entry)
-
             DialogsState.DIALOG_DOWNLOAD_GAME -> {
                 dialogsNavigation.activate(
                     DialogsConfig(

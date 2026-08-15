@@ -47,7 +47,6 @@ fun DialogSelectGameContent(
                         .fillMaxWidth()
                         .padding(vertical = 8.dp)
                         .clickable {
-                            component.doPlayGame(entry, index)
                             component.onDismissed
                         },
                     headlineContent = { Text(text = item.receiveFullName()) }

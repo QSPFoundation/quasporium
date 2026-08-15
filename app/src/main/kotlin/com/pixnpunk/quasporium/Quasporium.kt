@@ -5,6 +5,7 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.pixnpunk.database.di.databaseModule
+import com.pixnpunk.details.presentation.di.featureDetailsModule
 import com.pixnpunk.game.presentation.di.featureGameModule
 import com.pixnpunk.logger.appLoggerModule
 import com.pixnpunk.network.networkModule
@@ -26,6 +27,7 @@ class Quasporium : Application() {
                 appLoggerModule, databaseModule,
                 networkModule, notificationModule
             )
+            modules(featureDetailsModule)
             modules(featureGameModule)
             modules(featureSettingsModule)
             modules(featureStockModules)

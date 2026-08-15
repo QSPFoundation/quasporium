@@ -5,7 +5,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.outlined.BrokenImage
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -19,11 +22,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.pixnpunk.details.presentation.R
-import com.pixnpunk.dto.GameEntry
 
 @Composable
 fun DetailsPrimaryInfo(
-    entry: GameEntry
+    isPlayable: Boolean,
+    iconPath: String,
+    title: String,
+    author: String,
+    portedBy: String,
+    onShowEdit: () -> Unit
 ) {
     Column(
         modifier = Modifier.padding(4.dp)
@@ -36,28 +43,40 @@ fun DetailsPrimaryInfo(
                         modifier = Modifier
                             .size(56.dp)
                             .clip(MaterialTheme.shapes.medium),
-                        model = entry.gameIconPath,
+                        model = iconPath,
                         error = rememberVectorPainter(Icons.Outlined.BrokenImage),
-                        contentDescription = stringResource(R.string.icon_description, entry.title),
+                        contentDescription = stringResource(R.string.icon_description, title),
                     )
                 },
-                headlineContent = { Text(entry.title) },
+                headlineContent = { Text(title) },
                 supportingContent = {
                     Column {
                         AnimatedVisibility(
-                            visible = entry.author.isNotEmpty()
+                            visible = author.isNotEmpty()
                         ) {
                             Text(
                                 style = MaterialTheme.typography.bodyMedium,
-                                text = stringResource(R.string.author_title, entry.author)
+                                text = stringResource(R.string.author_title, author)
                             )
                         }
                         AnimatedVisibility(
-                            visible = entry.portedBy.isNotEmpty()
+                            visible = portedBy.isNotEmpty()
                         ) {
                             Text(
                                 style = MaterialTheme.typography.bodyMedium,
-                                text = stringResource(R.string.ported_by_title, entry.portedBy)
+                                text = stringResource(R.string.ported_by_title, portedBy)
+                            )
+                        }
+                    }
+                },
+                trailingContent = {
+                    if (isPlayable) {
+                        IconButton(
+                            onClick = onShowEdit
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = stringResource(R.string.modify_button_description),
                             )
                         }
                     }

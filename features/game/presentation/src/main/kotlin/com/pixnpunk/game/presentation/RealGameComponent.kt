@@ -69,10 +69,12 @@ class RealGameComponent(
     private val componentContext: ComponentContext,
     private val libAuthors: NativeLibAuthors,
     private val onFinishActivity: () -> Unit,
+    private val profileId: Long = 0,
     private val gameId: Long = -1L,
     private val gameTitle: String = "Title",
     private val gameDirUriBox: String = "",
-    private val gameFileUriBox: String = ""
+    private val gameFileUriBox: String = "",
+    private val gameSaveUriBox: String = ""
 ) : ComponentContext by componentContext, GameComponent, KoinComponent {
 
     private val componentScope = coroutineScope()
@@ -181,6 +183,11 @@ class RealGameComponent(
                 engineInteractor.submitCommand(
                     EngineCommand.LoadGame(VfsPath(gameFileUriBox))
                 )
+                if (gameSaveUriBox.isNotBlank()) {
+                    engineInteractor.submitCommand(
+                        EngineCommand.LoadSave(VfsPath(gameSaveUriBox))
+                    )
+                }
             }
         }
 
@@ -260,7 +267,8 @@ class RealGameComponent(
             _uiState.update { it.copy(isUserChooseSave = true) }
         } else {
             coroutineScope().launch {
-                val savesCount = saveGameInteractor.getSavesCount(gameId)
+                val savesCount =
+                    saveGameInteractor.getSavesCount(profileId)
                 doShowDialog(
                     inputString = "Save ${savesCount + 1}",
                     dialogState = LibTypeDialog.DIALOG_SAVEGAME
@@ -274,7 +282,7 @@ class RealGameComponent(
             _uiState.update { it.copy(isUserChooseLoad = true) }
         } else {
             coroutineScope().launch {
-                saveGameInteractor.getAllSaves(gameId).let {
+                saveGameInteractor.getAllSaves(profileId).let {
                     if (it.isEmpty()) {
                         _events.send(GameEvent.ShowSnackbar("No saved games!"))
                     } else {
@@ -327,13 +335,10 @@ class RealGameComponent(
                 engineInteractor.submitCommand(EngineCommand.SubmitInput(inputString))
 
             InputState.INPUT_SAVE_NAME -> componentScope.launch {
-                val gameId = _uiState.value.gameId
-                val gameDir = _uiState.value.gameDirUriBox
-
                 saveGameInteractor.createAndSaveSlot(
-                    gameId.id,
+                    profileId,
                     inputString,
-                    gameDir
+                    _uiState.value.gameDirUriBox
                 )
 
                 _events.send(GameEvent.ShowSnackbar("Game saved!"))

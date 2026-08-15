@@ -8,6 +8,7 @@ import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
 import com.pixnpunk.details.presentation.mvi.DetailsStore
 import com.pixnpunk.details.presentation.mvi.RealDetailsStore
 import com.pixnpunk.dto.GameEntry
+import com.pixnpunk.dto.LaunchGameEntity
 import com.pixnpunk.dto.SettingsEntity
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -25,7 +26,8 @@ class RealDetailsComponent(
     private val componentContext: ComponentContext,
     private val defEntry: GameEntry,
     override val settingsState: StateFlow<SettingsEntity>,
-    override val showSelectGameDialog: (GameEntry) -> Unit,
+    override val launchFreshGame: (LaunchGameEntity) -> Unit,
+    override val launchContinueGame: (LaunchGameEntity) -> Unit,
     override val showEditGameDialog: (GameEntry) -> Unit,
     override val showSettingsGamePanel: (GameEntry) -> Unit,
     override val showDownloadGameDialog: (GameEntry) -> Unit,
@@ -39,6 +41,15 @@ class RealDetailsComponent(
     @OptIn(ExperimentalCoroutinesApi::class)
     override val model: StateFlow<DetailsStore.State> = store.stateFlow
     override val label: Flow<DetailsStore.Label> = store.labels
+
+    override fun onCreateProfile() =
+        store.accept(DetailsStore.Intent.CreateProfile)
+
+    override fun onStartFresh(profileId: Long, fileName: String) =
+        store.accept(DetailsStore.Intent.StartFresh(profileId, fileName))
+
+    override fun onContinueSave(profileId: Long, savePath: String) =
+        store.accept(DetailsStore.Intent.ContinueGame(profileId, savePath))
 
     override fun convEntryData(
         entry: GameEntry

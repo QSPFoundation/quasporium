@@ -18,12 +18,13 @@ import com.pixnpunk.stock.domain.model.SearchState
 import com.pixnpunk.stock.domain.model.SearchTokenType
 import com.pixnpunk.stock.domain.model.SortOrder
 import com.pixnpunk.stock.domain.repository.LocalRepository
-import com.pixnpunk.utils.DirUtil.receiveGameFilesFromDir
 import com.pixnpunk.utils.DirUtil.tryReceiveDirSize
 import com.pixnpunk.utils.FileUtil.createSpecialFiles
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 
 class LocalRepositoryImpl(
     private val context: Context,
@@ -36,20 +37,20 @@ class LocalRepositoryImpl(
     override fun observeEntryById(entryId: Long): Flow<GameEntry?> =
         gameDao.subscribeById(entryId).distinctUntilChanged().map { it?.toDomain() }
 
-    override suspend fun deleteGameEntries(idsDelete: Set<Long>): Int {
-        val entriesDelete = gameDao.getByIds(idsDelete).apply {
-            forEach {
-                val gameDir = it.gameDirPath.toUri().toDocumentFile(context)
-                if (gameDir?.isRawFile == true) {
-                    gameDir.deleteRecursively(context)
+    override suspend fun deleteGameEntries(idsDelete: Set<Long>): Int =
+        withContext(Dispatchers.IO) {
+            gameDao.getByIds(idsDelete).apply {
+                forEach {
+                    val gameDir = it.gameDirPath.toUri().toDocumentFile(context)
+                    if (gameDir?.isRawFile == true) {
+                        gameDir.deleteRecursively(context)
+                    }
                 }
-            }
+            }.let { gameDao.deleteAll(it) }
         }
-        return gameDao.deleteAll(entriesDelete)
-    }
 
     override suspend fun getGameEntryById(entryId: Long): GameEntry =
-        gameDao.getById(entryId)?.toDomain() ?: GameEntry()
+        withContext(Dispatchers.IO) { gameDao.getById(entryId)?.toDomain() ?: GameEntry() }
 
     override fun getGameEntriesPager(
         searchState: SearchState
@@ -113,37 +114,25 @@ class LocalRepositoryImpl(
             }
         ).flow.map { data -> data.map { entry -> entry.toDomain() } }
 
-    override suspend fun updateEntry(entry: GameEntry) {
-        val nullEntry = gameDao.getById(entry.id)
-        if (nullEntry != null) {
-            gameDao.update(entry.toEntity())
-        }
-    }
+    override suspend fun upsertEntry(entry: GameEntry) =
+        withContext(Dispatchers.IO) { gameDao.getById(entry.id)?.let { updateEntry(entry) } ?: insertEntry(entry) }
 
-    override suspend fun updateOrInsertEntry(entry: GameEntry) {
-        val nullEntry = gameDao.getById(entry.id)
-        if (nullEntry != null) {
-            gameDao.update(entry.toEntity())
-        } else {
-            insertDefaultEntry(entry)
-        }
-    }
+    override suspend fun updateEntry(entry: GameEntry) =
+        withContext(Dispatchers.IO) { gameDao.update(entry.toEntity()) }
 
-    override suspend fun insertDefaultEntry(newEntry: GameEntry) {
-        gameDao.insert(newEntry.toEntity())
-    }
+    override suspend fun insertEntry(newEntry: GameEntry) =
+        withContext(Dispatchers.IO) { gameDao.insert(newEntry.toEntity()) }
 
-    override suspend fun fillAndInsertEntry(entry: GameEntry) {
-        val gameDirPath = entry.gameDirPath
-        createSpecialFiles(gameDirPath)
-        insertDefaultEntry(
-            entry.copy(
-                listId = GameListType.Playable,
-                gameFilesPath = receiveGameFilesFromDir(gameDirPath),
-                fileSize =
-                    if (entry.fileSize != 0L) entry.fileSize
-                    else tryReceiveDirSize(gameDirPath)
+    override suspend fun fillAndInsertEntry(entry: GameEntry) =
+        entry.gameDirPath.let { dirPath ->
+            withContext(Dispatchers.IO) { createSpecialFiles(dirPath) }
+            insertEntry(
+                entry.copy(
+                    listId = GameListType.Playable,
+                    fileSize =
+                        if (entry.fileSize != 0L) entry.fileSize
+                        else tryReceiveDirSize(dirPath)
+                )
             )
-        )
-    }
+        }
 }

@@ -12,7 +12,7 @@ interface LocalRepository {
     suspend fun deleteGameEntries(idsDelete: Set<Long>): Int
     suspend fun getGameEntryById(entryId: Long): GameEntry
     suspend fun updateEntry(entry: GameEntry)
-    suspend fun updateOrInsertEntry(entry: GameEntry)
-    suspend fun insertDefaultEntry(newEntry: GameEntry)
+    suspend fun upsertEntry(entry: GameEntry)
+    suspend fun insertEntry(newEntry: GameEntry)
     suspend fun fillAndInsertEntry(entry: GameEntry)
 }

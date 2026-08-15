@@ -19,6 +19,7 @@ import com.pixnpunk.details.presentation.content.DetailsPrimaryInfo
 import com.pixnpunk.details.presentation.content.DetailsSecondaryInfo
 import com.pixnpunk.details.presentation.mvi.DetailsStore
 import com.pixnpunk.dto.GameListType
+import com.pixnpunk.dto.LaunchGameEntity
 
 @Composable
 fun DetailsContent(
@@ -32,13 +33,39 @@ fun DetailsContent(
     LaunchedEffect(Unit) {
         component.label.collect {
             when (it) {
-                DetailsStore.Label.NullUpdateReceived -> component.onDismissed()
+                is DetailsStore.Label.NullUpdateReceived -> component.onDismissed()
+                is DetailsStore.Label.LaunchEngine -> {
+                    if (it.saveFile == null) {
+                        component.launchFreshGame(
+                            LaunchGameEntity(
+                                profileId = it.profileId,
+                                entryFile = it.entryFile,
+                                gameEntry = entry
+                            )
+                        )
+                    } else {
+                        component.launchContinueGame(
+                            LaunchGameEntity(
+                                profileId = it.profileId,
+                                entryFile = it.entryFile,
+                                saveFile = it.saveFile,
+                                gameEntry = entry
+                            )
+                        )
+                    }
+                }
             }
         }
     }
 
     Scaffold(
-        topBar = { DetailsAppBar(component) }
+        topBar = {
+            DetailsAppBar(
+                isPlayable = entry.listId == GameListType.Playable,
+                onDismissed = component.onDismissed,
+                onShowSettings = { component.showSettingsGamePanel(entry) }
+            )
+        }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -48,17 +75,26 @@ fun DetailsContent(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            DetailsPrimaryInfo(entry)
+            DetailsPrimaryInfo(
+                isPlayable = entry.listId == GameListType.Playable,
+                iconPath = entry.gameIconPath,
+                title = entry.title,
+                author = entry.author,
+                portedBy = entry.portedBy,
+                onShowEdit = { component.showEditGameDialog(entry) }
+            )
             DetailsSecondaryInfo(
                 entry = component.convEntryData(entry),
                 prefFormat = settings.binaryPref
             )
             DetailsButtonsSet(
                 gameType = entry.listId,
-                onShowSelectGameDialog = { component.showSelectGameDialog(entry) },
-                onShowEditGameDialog = { component.showEditGameDialog(entry) },
-                onShowSettingsGamePanel = { component.showSettingsGamePanel(entry) },
-                onShowDownloadGameDialog = { component.showDownloadGameDialog(entry) }
+                profiles = state.gameProfiles,
+                files = state.gameFiles,
+                onCreateProfile = component::onCreateProfile,
+                onDownload = { component.showDownloadGameDialog(entry) },
+                onContinue = component::onContinueSave,
+                onStartFresh = component::onStartFresh,
             )
             if (entry.listId == GameListType.Downloadable || entry.descUrl.isNotEmpty()) {
                 DetailsDescription(entry.descUrl)
