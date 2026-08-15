@@ -3,40 +3,43 @@ agp = "9.3.1"
 androidx-activity = "1.13.0"
 androidx-room = "2.8.4"
 androidx-worker = "2.11.2"
-appcompat = "1.7.1"
+appcompat = "1.8.0"
+coil = "3.5.0"
 colorpickerCompose = "1.2.0"
-composeBom = "2026.06.01"
+composeBom = "2026.08.00"
 coreKtx = "1.19.0"
-firebaseBom = "34.15.0"
-jsoup = "1.22.2"
-kotlin = "2.4.0"
+decompose = "3.5.0"
 detekt = "1.23.8"
 detektFormatting = "1.23.8"
 detektRulesCompose = "1.4.0"
+espressoCore = "3.7.0"
+essenty = "2.5.0"
+firebaseBom = "34.17.0"
+firebaseCrashPlugin = "3.0.7"
+firebasePrefPlugin = "2.0.2"
+gms = "4.5.0"
 jsoup = "1.23.1"
+junit = "4.13.2"
+junitVersion = "1.3.0"
+koin-bom = "4.2.2"
 kotlin = "2.4.10"
 kotlinx-coroutines = "1.11.0"
 kotlinx-serialization-json = "1.11.0"
-koin-bom = "4.2.2"
-ktor = "3.5.1"
-ksp = "2.3.9"
-coil = "3.5.0"
+ksp = "2.3.11"
+ktor = "3.5.2"
 lifecycleViewmodelCompose = "2.11.0"
-paging = "3.5.0"
-preference = "2.2.0"
-storage = "2.3.0"
-webkit = "1.16.0"
-prettytime = "5.0.9.Final"
-mvikotlin = "4.4.0"
-decompose = "3.5.0"
-essenty = "2.5.0"
-junit = "4.13.2"
-junitVersion = "1.3.0"
-espressoCore = "3.7.0"
 material = "1.14.0"
+mvikotlin = "4.4.0"
+paging = "3.5.1"
+preference = "2.2.0"
+prettytime = "5.0.9.Final"
+storage = "3.0.1"
+webkit = "1.17.0"
 xZipJbindingXandroid = "Release-16.02-2.03"
 
 [libraries]
+androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 androidx-compose-adaptive = { module = "androidx.compose.material3.adaptive:adaptive" }
 androidx-compose-adaptive-layout = { module = "androidx.compose.material3.adaptive:adaptive-layout" }
 androidx-compose-adaptive-navigation = { module = "androidx.compose.material3.adaptive:adaptive-navigation" }
@@ -47,53 +50,51 @@ androidx-compose-material3-adaptive-navigation-suite = { module = "androidx.comp
 androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
-androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
-androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodelCompose" }
-androidx-paging-runtime = { group = "androidx.paging", name = "paging-runtime", version.ref = "paging" }
 androidx-paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "paging" }
+androidx-paging-runtime = { group = "androidx.paging", name = "paging-runtime", version.ref = "paging" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "androidx-room" }
-androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "androidx-room" }
 androidx-room-paging = { group = "androidx.room", name = "room-paging", version.ref = "androidx-room" }
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "androidx-room" }
 androidx-webkit = { module = "androidx.webkit:webkit", version.ref = "webkit" }
 androidx-work = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "androidx-worker" }
-colorpicker-compose = { module = "com.github.skydoves:colorpicker-compose", version.ref = "colorpickerCompose" }
-detekt-formatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detektFormatting" }
-detekt-rules-compose = { module = "ru.kode:detekt-rules-compose", version.ref = "detektRulesCompose" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
 firebase-perf = { module = "com.google.firebase:firebase-perf" }
-jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
-koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "koin-bom" }
-koin-core = { module = "io.insert-koin:koin-core" }
-koin-android = { module = "io.insert-koin:koin-android" }
-koin-workmanager = { module = "io.insert-koin:koin-androidx-workmanager" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
-ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coil-gif = { module = "io.coil-kt.coil3:coil-gif", version.ref = "coil" }
 coil-network-ktor3 = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
-mvikotlin-core = { module = "com.arkivanov.mvikotlin:mvikotlin", version.ref = "mvikotlin" }
-mvikotlin-main = { module = "com.arkivanov.mvikotlin:mvikotlin-main", version.ref = "mvikotlin" }
-mvikotlin-coro-ext = { module = "com.arkivanov.mvikotlin:mvikotlin-extensions-coroutines", version.ref = "mvikotlin" }
+colorpicker-compose = { module = "com.github.skydoves:colorpicker-compose", version.ref = "colorpickerCompose" }
 decompose-core = { module = "com.arkivanov.decompose:decompose", version.ref = "decompose" }
 decompose-ext = { module = "com.arkivanov.decompose:extensions-compose", version.ref = "decompose" }
 decompose-ext-exp = { module = "com.arkivanov.decompose:extensions-compose-experimental", version.ref = "decompose" }
-essenty-lifecycle = { module = "com.arkivanov.essenty:lifecycle", version.ref = "essenty" }
+detekt-formatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detektFormatting" }
+detekt-rules-compose = { module = "ru.kode:detekt-rules-compose", version.ref = "detektRulesCompose" }
 essenty-coroutines = { module = "com.arkivanov.essenty:lifecycle-coroutines", version.ref = "essenty" }
+essenty-lifecycle = { module = "com.arkivanov.essenty:lifecycle", version.ref = "essenty" }
+jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+koin-android = { module = "io.insert-koin:koin-android" }
+koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "koin-bom" }
+koin-core = { module = "io.insert-koin:koin-core" }
+koin-workmanager = { module = "io.insert-koin:koin-androidx-workmanager" }
+mvikotlin-coro-ext = { module = "com.arkivanov.mvikotlin:mvikotlin-extensions-coroutines", version.ref = "mvikotlin" }
+mvikotlin-core = { module = "com.arkivanov.mvikotlin:mvikotlin", version.ref = "mvikotlin" }
+mvikotlin-main = { module = "com.arkivanov.mvikotlin:mvikotlin-main", version.ref = "mvikotlin" }
 preference = { module = "me.zhanghai.compose.preference:preference", version.ref = "preference" }
+prettytime = { module = "org.ocpsoft.prettytime:prettytime", version.ref = "prettytime" }
 sevenzip-jbinding-android = { module = "com.github.omicronapps:7-Zip-JBinding-4Android", version.ref = "xZipJbindingXandroid" }
 storage = { module = "com.anggrayudi:storage", version.ref = "storage" }
-prettytime = { module = "org.ocpsoft.prettytime:prettytime", version.ref = "prettytime" }
-junit = { group = "junit", name = "junit", version.ref = "junit" }
-androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
-androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
-material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 
 [bundles]
 ktorClientEcosystem = ["ktor-client-core", "ktor-client-okhttp", "ktor-client-content-negotiation", "ktor-serialization-kotlinx-json"]
@@ -104,9 +105,9 @@ android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 androidx-room = { id = "androidx.room", version.ref = "androidx-room" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-google-gms-services = { id = "com.google.gms.google-services", version.prefer = "4.4.4" }
-google-firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.prefer = "3.0.6" }
-google-firebase-perf = { id = "com.google.firebase.firebase-perf", version.prefer = "2.0.2" }
+gms-services = { id = "com.google.gms.google-services", version.ref = "gms" }
+firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebaseCrashPlugin" }
+firebase-perf = { id = "com.google.firebase.firebase-perf", version.ref = "firebasePrefPlugin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
