@@ -31,6 +31,8 @@ dependencies {
     implementation(project(":features:webview:data"))
     implementation(project(":features:webview:domain"))
 
+    implementation(project(":features:game:domain"))
+
     implementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(platform(libs.androidx.compose.bom))
 

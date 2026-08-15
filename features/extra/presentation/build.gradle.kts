@@ -54,7 +54,4 @@ dependencies {
     implementation(libs.essenty.lifecycle)
     implementation(libs.decompose.core)
     implementation(libs.decompose.ext)
-    implementation(libs.mvikotlin.core)
-    implementation(libs.mvikotlin.main)
-    implementation(libs.mvikotlin.coro.ext)
 }

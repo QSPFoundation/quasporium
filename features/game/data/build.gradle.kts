@@ -2,6 +2,13 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.library)
+    alias(libs.plugins.detekt)
+}
+
+detekt {
+    parallel = true
+    config.setFrom(files("$rootDir/config/detekt/detekt.yml"))
+    buildUponDefaultConfig = true
 }
 
 android {
@@ -19,9 +26,9 @@ android {
         externalNativeBuild {
             cmake {
                 arguments += listOf(
-                    "-DBUILD_JAVA=1",
-                    "-DBUILD_JVM=1",
-                    "-DBUILD_PRIVATE_CONTENT=1",
+                    "-DBUILD_JAVA=ON",
+                    "-DBUILD_JVM=ON",
+                    "-DBUILD_PRIVATE_CONTENT=ON",
                     "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
                 )
             }
@@ -56,26 +63,31 @@ dependencies {
     implementation(project(":core:dto"))
     implementation(project(":core:utils"))
     implementation(project(":core:logger"))
+    implementation(project(":core:database"))
 
     implementation(project(":features:game:domain"))
 
-    implementation(project(":features:settings:data"))
+    implementation(project(":features:settings:domain"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
 
     implementation(libs.kotlinx.coroutines.android)
+    implementation("org.jetbrains.kotlinx:atomicfu:0.33.0")
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin.core)
     implementation(libs.koin.android)
 
     implementation(libs.storage)
-    
+
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.crashlytics)
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.perf)
 
     implementation(libs.decompose.core)
+
+    detektPlugins(libs.detekt.formatting)
+    detektPlugins(libs.detekt.rules.compose)
 }

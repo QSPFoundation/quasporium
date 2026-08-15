@@ -4,6 +4,13 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.detekt)
+}
+
+detekt {
+    parallel = true
+    config.setFrom(files("$rootDir/config/detekt/detekt.yml"))
+    buildUponDefaultConfig = true
 }
 
 android {
@@ -26,14 +33,13 @@ android {
 
 dependencies {
     implementation(project(":core:utils"))
-    implementation(project(":core:database"))
     implementation(project(":core:dto"))
     implementation(project(":core:network"))
 
     implementation(project(":features:game:data"))
     implementation(project(":features:game:domain"))
 
-    implementation(project(":features:settings:data"))
+    implementation(project(":features:settings:domain"))
 
     implementation(project(":features:dialogs:presentation"))
     implementation(project(":features:main:presentation"))
@@ -75,4 +81,7 @@ dependencies {
     implementation(libs.mvikotlin.core)
     implementation(libs.mvikotlin.main)
     implementation(libs.mvikotlin.coro.ext)
+
+    detektPlugins(libs.detekt.formatting)
+    detektPlugins(libs.detekt.rules.compose)
 }

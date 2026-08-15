@@ -7,6 +7,19 @@ plugins {
     id("com.google.gms.google-services")
     id("com.google.firebase.crashlytics")
     id("com.google.firebase.firebase-perf")
+    alias(libs.plugins.detekt)
+}
+
+detekt {
+    parallel = true
+    config.setFrom(files("$rootDir/config/detekt/detekt.yml"))
+    buildUponDefaultConfig = true
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_17)
+    }
 }
 
 android {
@@ -43,12 +56,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlin {
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_17)
-        }
-    }
-
     ndkVersion = "27.3.13750724"
     buildFeatures {
         compose = true
@@ -68,10 +75,11 @@ dependencies {
     implementation(project(":features:stock:domain"))
     implementation(project(":features:stock:presentation"))
 
+    implementation(project(":features:settings:domain"))
+    implementation(project(":features:settings:presentation"))
+
     implementation(project(":features:dialogs:presentation"))
     implementation(project(":features:details:presentation"))
-    implementation(project(":features:settings:data"))
-    implementation(project(":features:settings:presentation"))
     implementation(project(":features:game:presentation"))
     implementation(project(":features:webview:presentation"))
 
@@ -113,4 +121,7 @@ dependencies {
     implementation(libs.mvikotlin.coro.ext)
 
     implementation(libs.preference)
+
+    detektPlugins(libs.detekt.formatting)
+    detektPlugins(libs.detekt.rules.compose)
 }

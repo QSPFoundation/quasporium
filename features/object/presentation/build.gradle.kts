@@ -54,6 +54,7 @@ dependencies {
     implementation(libs.coil.gif)
 
     implementation(libs.essenty.lifecycle)
+    implementation(libs.essenty.coroutines)
     implementation(libs.decompose.core)
     implementation(libs.decompose.ext)
     implementation(libs.mvikotlin.core)

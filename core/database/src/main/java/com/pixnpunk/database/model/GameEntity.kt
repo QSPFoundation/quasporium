@@ -22,6 +22,5 @@ data class GameEntity(
     val descUrl: String = "",
     val pubDate: String = "",
     val modDate: String = "",
-    val gameDirPath: String = "",
-    val gameFilesPath: List<String> = emptyList()
+    val gameDirPath: String = ""
 )
