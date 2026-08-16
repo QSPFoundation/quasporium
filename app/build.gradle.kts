@@ -4,16 +4,9 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.compose.compiler)
-    id("com.google.gms.google-services")
-    id("com.google.firebase.crashlytics")
-    id("com.google.firebase.firebase-perf")
-    alias(libs.plugins.detekt)
-}
-
-detekt {
-    parallel = true
-    config.setFrom(files("$rootDir/config/detekt/detekt.yml"))
-    buildUponDefaultConfig = true
+    alias(libs.plugins.gms.services)
+    alias(libs.plugins.firebase.crashlytics)
+    alias(libs.plugins.firebase.perf)
 }
 
 kotlin {
@@ -24,12 +17,12 @@ kotlin {
 
 android {
     namespace = "com.pixnpunk.quasporium"
-    compileSdk = 37
+    compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
         applicationId = "com.pixnpunk.quasporium"
-        minSdk = 26
-        targetSdk = 36
+        minSdk = libs.versions.minSdk.get().toInt()
+        targetSdk = libs.versions.targetSdk.get().toInt()
         versionCode = 30130701
         versionName = "1.13.3"
 
@@ -121,7 +114,4 @@ dependencies {
     implementation(libs.mvikotlin.coro.ext)
 
     implementation(libs.preference)
-
-    detektPlugins(libs.detekt.formatting)
-    detektPlugins(libs.detekt.rules.compose)
 }

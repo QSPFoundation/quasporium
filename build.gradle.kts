@@ -11,3 +11,18 @@ plugins {
     alias(libs.plugins.firebase.perf) apply false
     alias(libs.plugins.detekt) apply false
 }
+
+subprojects {
+    apply(plugin = rootProject.libs.plugins.detekt.get().pluginId)
+
+    extensions.configure<io.gitlab.arturbosch.detekt.extensions.DetektExtension> {
+        parallel = true
+        config.setFrom(files("$rootDir/config/detekt/detekt.yml"))
+        buildUponDefaultConfig = true
+    }
+
+    dependencies {
+        "detektPlugins"(rootProject.libs.detekt.formatting)
+        "detektPlugins"(rootProject.libs.detekt.rules.compose)
+    }
+}

@@ -2,7 +2,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.detekt)
 }
 
 detekt {
@@ -13,10 +12,10 @@ detekt {
 
 android {
     namespace = "com.pixnpunk.game.data"
-    compileSdk = 37
+    compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
-        minSdk = 26
+        minSdk = libs.versions.minSdk.get().toInt()
 
         ndk {
             abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
@@ -87,7 +86,4 @@ dependencies {
     implementation(libs.firebase.perf)
 
     implementation(libs.decompose.core)
-
-    detektPlugins(libs.detekt.formatting)
-    detektPlugins(libs.detekt.rules.compose)
 }

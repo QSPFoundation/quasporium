@@ -8,9 +8,11 @@ plugins {
 
 android {
     namespace = "com.pixnpunk.dialogs.presentation"
-    compileSdk = 37
+    compileSdk = libs.versions.compileSdk.get().toInt()
 
-    defaultConfig { minSdk = 26 }
+    defaultConfig {
+        minSdk = libs.versions.minSdk.get().toInt()
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

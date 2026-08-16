@@ -1,5 +1,8 @@
 [versions]
 agp = "9.3.1"
+compileSdk = "37"
+minSdk = "26"
+targetSdk = "37"
 androidx-activity = "1.13.0"
 androidx-room = "2.8.4"
 androidx-worker = "2.11.2"

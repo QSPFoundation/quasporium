@@ -7,9 +7,11 @@ plugins {
 
 android {
     namespace = "com.pixnpunk.network"
-    compileSdk = 36
+    compileSdk = libs.versions.compileSdk.get().toInt()
 
-    defaultConfig { minSdk = 26 }
+    defaultConfig {
+        minSdk = libs.versions.minSdk.get().toInt()
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

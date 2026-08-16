@@ -4,20 +4,15 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.compose.compiler)
-    alias(libs.plugins.detekt)
-}
-
-detekt {
-    parallel = true
-    config.setFrom(files("$rootDir/config/detekt/detekt.yml"))
-    buildUponDefaultConfig = true
 }
 
 android {
     namespace = "com.pixnpunk.game.presentation"
-    compileSdk = 37
+    compileSdk = libs.versions.compileSdk.get().toInt()
 
-    defaultConfig { minSdk = 26 }
+    defaultConfig {
+        minSdk = libs.versions.minSdk.get().toInt()
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -81,7 +76,4 @@ dependencies {
     implementation(libs.mvikotlin.core)
     implementation(libs.mvikotlin.main)
     implementation(libs.mvikotlin.coro.ext)
-
-    detektPlugins(libs.detekt.formatting)
-    detektPlugins(libs.detekt.rules.compose)
 }
