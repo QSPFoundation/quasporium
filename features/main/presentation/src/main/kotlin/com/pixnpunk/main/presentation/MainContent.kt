@@ -2,7 +2,6 @@ package com.pixnpunk.main.presentation
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetScaffold
@@ -15,7 +14,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pixnpunk.webview.presentation.GameWebView
 
@@ -47,7 +45,6 @@ fun MainContent(
                     countActsVis = uiState.visActsCount,
                     uiState = uiState,
                     fontFamily = uiState.fontFamily,
-                    fontFamily = fontFamily,
                     actions = uiState.parsedActions,
                     onActionClicked = component.onActionClicked,
                     scrollState = scrollState
