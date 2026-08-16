@@ -37,6 +37,13 @@ class RealWebViewComponent(
     private val _model = MutableStateFlow(WebViewState())
     override val model: StateFlow<WebViewState> = _model.asStateFlow()
 
+    override fun onUserTouched() {
+        val current = _model.value
+        if (current.isAutoScrollActive || current.restoreScrollY > 0) {
+            _model.update { it.copy(isAutoScrollActive = false, restoreScrollY = 0) }
+        }
+    }
+
     init {
         val configFlow = combine(
             settingsStateFlow,
@@ -81,13 +88,6 @@ class RealWebViewComponent(
                         )
                     }
                 }
-        }
-    }
-
-    override fun onUserTouched() {
-        val current = _model.value
-        if (current.isAutoScrollActive || current.restoreScrollY > 0) {
-            _model.update { it.copy(isAutoScrollActive = false, restoreScrollY = 0) }
         }
     }
 }
