@@ -21,21 +21,17 @@ class DetailsExecutor(
 
     override fun executeIntent(intent: DetailsStore.Intent) {
         when (intent) {
-            is DetailsStore.Intent.CreateProfile -> {
-                scope.launch {
-                    profileRepository.createProfile(
-                        state().gameEntry.id,
-                        "Playthrough ${state().gameProfiles.size + 1}"
-                    )
-                }
+            is DetailsStore.Intent.CreateProfile -> scope.launch {
+                profileRepository.createProfile(
+                    state().gameEntry.id,
+                    "Playthrough ${state().gameProfiles.size + 1}"
+                )
             }
 
-            is DetailsStore.Intent.StartFresh -> {
-                scope.launch {
-                    profileRepository.updateLastPlayedFile(intent.profileId, intent.fileName)
-                    profileRepository.updateProfileTimestamp(intent.profileId)
-                    publish(DetailsStore.Label.LaunchEngine(intent.profileId, intent.fileName))
-                }
+            is DetailsStore.Intent.StartFresh -> scope.launch {
+                profileRepository.updateLastPlayedFile(intent.profileId, intent.fileName)
+                profileRepository.updateProfileTimestamp(intent.profileId)
+                publish(DetailsStore.Label.LaunchEngine(intent.profileId, intent.fileName))
             }
 
             is DetailsStore.Intent.ContinueGame -> {
