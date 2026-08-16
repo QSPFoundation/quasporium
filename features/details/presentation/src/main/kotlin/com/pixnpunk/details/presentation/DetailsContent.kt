@@ -30,7 +30,7 @@ fun DetailsContent(
 
     val entry = state.gameEntry
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(component.label) {
         component.label.collect {
             when (it) {
                 is DetailsStore.Label.NullUpdateReceived -> component.onDismissed()
