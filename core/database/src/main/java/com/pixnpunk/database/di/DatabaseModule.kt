@@ -84,11 +84,7 @@ val MIGRATION_6_7 = object : Migration(6, 7) {
                         put("timestamp", currentTime)
                         put("totalPlayTime", 0L)
                         put(
-                            "entryFilePath", if (filesString.isNullOrBlank()) {
-                                ""
-                            } else {
-                                filesString.split(", ").firstOrNull() ?: ""
-                            }
+                            "lastPlayedFile", filesString?.split(", ")?.firstOrNull()
                         )
                     }
                 )
