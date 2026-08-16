@@ -36,6 +36,9 @@
         <activity
             android:name="com.pixnpunk.game.presentation.GameActivity"
             android:exported="false" />
+        <meta-data
+            android:name="firebase_crashlytics_collection_enabled"
+            android:value="false" />
         <service
             android:name="androidx.work.impl.foreground.SystemForegroundService"
             android:foregroundServiceType="dataSync"
