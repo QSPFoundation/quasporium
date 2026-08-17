@@ -17,11 +17,20 @@ interface ProfileDao {
     @Query("SELECT * FROM profile WHERE gameId = :gameId ORDER BY timestamp DESC")
     suspend fun getProfilesByGameId(gameId: Long): List<ProfileEntity>
 
+    @Query("SELECT backImagePath FROM profile WHERE id = :profileId")
+    suspend fun getBackgroundPath(profileId: Long): String?
+
     @Query("UPDATE profile SET timestamp = :newTimestamp WHERE id = :profileId")
     suspend fun updateTimestamp(profileId: Long, newTimestamp: Long)
 
     @Query("UPDATE profile SET lastPlayedFile = :newLastPlayedFile WHERE id = :profileId")
     suspend fun updateLastPlayedFile(profileId: Long, newLastPlayedFile: String)
+
+    @Query("UPDATE profile SET profileName = :name, accentColor = :accentColor WHERE id = :profileId")
+    suspend fun updateVisuals(profileId: Long, name: String, accentColor: Long)
+
+    @Query("UPDATE profile SET backImagePath = :path WHERE id = :profileId")
+    suspend fun updateBackground(profileId: Long, path: String)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(profile: ProfileEntity): Long

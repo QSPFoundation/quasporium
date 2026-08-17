@@ -45,6 +45,16 @@ class RealDetailsComponent(
     override fun onCreateProfile() =
         store.accept(DetailsStore.Intent.CreateProfile)
 
+    override fun onUpdateVisuals(profileId: Long, newName: String, newColor: Long) =
+        store.accept(DetailsStore.Intent.UpdateProfileVisuals(profileId, newName, newColor))
+
+    override fun onPickBackground(profileId: Long) {
+
+    }
+
+    override fun onDeleteProfile(profileId: Long) =
+        store.accept(DetailsStore.Intent.DeleteProfile(profileId))
+
     override fun onStartFresh(profileId: Long, fileName: String) =
         store.accept(DetailsStore.Intent.StartFresh(profileId, fileName))
 

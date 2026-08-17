@@ -22,6 +22,9 @@ sealed interface DetailsComponent {
     fun convEntryData(entry: GameEntry): GameEntry
 
     fun onCreateProfile()
+    fun onUpdateVisuals(profileId: Long, newName: String, newColor: Long)
+    fun onPickBackground(profileId: Long)
+    fun onDeleteProfile(profileId: Long)
     fun onStartFresh(profileId: Long, fileName: String)
     fun onContinueSave(profileId: Long, savePath: String)
 }

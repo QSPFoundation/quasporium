@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.pixnpunk.details.presentation.R
-import com.pixnpunk.details.presentation.content.profile.DetailsProfileCarousel
+import com.pixnpunk.details.presentation.content.profile.DetailsProfileCarouselDock
 import com.pixnpunk.details.presentation.model.GameFileItem
 import com.pixnpunk.details.presentation.model.ProfileUIState
 import com.pixnpunk.dto.GameListType
@@ -26,6 +26,9 @@ fun DetailsButtonsSet(
     profiles: List<ProfileUIState>,
     files: List<GameFileItem>,
     onCreateProfile: () -> Unit,
+    onUpdateVisuals: (profileId: Long, newName: String, newColor: Long) -> Unit,
+    onPickBackground: (profileId: Long) -> Unit,
+    onDeleteProfile: (profileId: Long) -> Unit,
     onDownload: () -> Unit,
     onContinue: (profileId: Long, savePath: String) -> Unit,
     onStartFresh: (profileId: Long, fileName: String) -> Unit
@@ -38,10 +41,19 @@ fun DetailsButtonsSet(
             GameListType.Unknown -> {}
 
             GameListType.Playable -> {
-                DetailsProfileCarousel(
+                DetailsProfileCarouselDock(
                     profiles = profiles,
                     files = files,
                     onCreateProfile = onCreateProfile,
+                    onUpdateVisuals = { profileId, newName, newColor ->
+                        onUpdateVisuals(
+                            profileId,
+                            newName,
+                            newColor
+                        )
+                    },
+                    onPickBackground = onPickBackground,
+                    onDeleteProfile = onDeleteProfile,
                     onContinue = onContinue,
                     onStartFresh = onStartFresh
                 )

@@ -5,7 +5,9 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ProfileItem(
     val id: Long,
-    val timestamp: Long,
     val name: String,
-    val lastPlayedFile: String?
+    val timestamp: Long,
+    val lastPlayedFile: String?,
+    val accentColor: Long,
+    val backImagePath: String
 )

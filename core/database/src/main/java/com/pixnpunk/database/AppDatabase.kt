@@ -30,7 +30,7 @@ import com.pixnpunk.database.model.TranslatorEntity
         AutoMigration(from = 3, to = 4),
         AutoMigration(from = 4, to = 5)
     ],
-    version = 7
+    version = 8
 )
 @TypeConverters(ListStringConverter::class)
 abstract class AppDatabase : RoomDatabase() {

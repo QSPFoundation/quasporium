@@ -180,6 +180,17 @@ val MIGRATION_6_7 = object : Migration(6, 7) {
     }
 }
 
+val MIGRATION_7_8 = object : Migration(7, 8) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            "ALTER TABLE `profile` ADD COLUMN `accentColor` INTEGER NOT NULL"
+        )
+        db.execSQL(
+            "ALTER TABLE `profile` ADD COLUMN `backImagePath` TEXT NOT NULL"
+        )
+    }
+}
+
 val databaseModule = module {
     single {
         Room.databaseBuilder(
@@ -190,7 +201,8 @@ val databaseModule = module {
             .addMigrations(
                 MIGRATION_1_2,
                 MIGRATION_5_6,
-                MIGRATION_6_7
+                MIGRATION_6_7,
+                MIGRATION_7_8
             )
             .build()
     }

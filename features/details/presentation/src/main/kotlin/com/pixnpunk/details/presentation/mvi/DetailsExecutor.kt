@@ -28,6 +28,26 @@ class DetailsExecutor(
                 )
             }
 
+            is DetailsStore.Intent.UpdateProfileVisuals -> scope.launch {
+                profileRepository.updateProfileVisuals(
+                    profileId = intent.profileId,
+                    name = intent.newName,
+                    accentColor = intent.newColor
+                )
+            }
+
+            is DetailsStore.Intent.SetBackgroundImage -> scope.launch {
+                profileRepository.saveBackgroundImage(intent.profileId, intent.uriString)
+            }
+
+            is DetailsStore.Intent.RemoveBackgroundImage -> scope.launch {
+                profileRepository.removeBackgroundImage(intent.profileId)
+            }
+
+            is DetailsStore.Intent.DeleteProfile -> scope.launch {
+                profileRepository.deleteProfile(intent.profileId)
+            }
+
             is DetailsStore.Intent.StartFresh -> scope.launch {
                 profileRepository.updateLastPlayedFile(intent.profileId, intent.fileName)
                 profileRepository.updateProfileTimestamp(intent.profileId)
@@ -109,7 +129,20 @@ class DetailsExecutor(
                                                 displayName = it.fileName,
                                                 path = it.fileUriBox
                                             )
-                                        }
+                                        },
+                                    accentColor =
+                                        if (profile.accentColor != 0L) {
+                                            profile.accentColor
+                                        } else {
+                                            val defaultPresets = longArrayOf(
+                                                0xFFD9534FL, 0xFF3B9E9BL, 0xFF8E6FB9L, 0xFFD48B38L
+                                            )
+                                            defaultPresets[
+                                                (profile.id % defaultPresets.size).toInt()
+                                                    .coerceAtLeast(0)
+                                            ]
+                                        },
+                                    backImagePath = profile.backImagePath
                                 )
                             }
 

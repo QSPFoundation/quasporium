@@ -24,5 +24,7 @@ data class ProfileEntity(
     val profileName: String = "",
     val timestamp: Long = 0,
     val totalPlayTime: Long = 0,
-    val lastPlayedFile: String? = null
+    val lastPlayedFile: String? = null,
+    val accentColor: Long = 0,
+    val backImagePath: String = ""
 )

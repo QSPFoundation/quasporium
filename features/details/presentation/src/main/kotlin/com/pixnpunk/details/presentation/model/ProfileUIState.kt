@@ -9,5 +9,7 @@ data class ProfileUIState(
     val id: Long,
     val name: String,
     val lastPlayedFile: GameFileItem?,
-    val saves: List<GameSaveItem>
+    val saves: List<GameSaveItem>,
+    val accentColor: Long,
+    val backImagePath: String
 )
