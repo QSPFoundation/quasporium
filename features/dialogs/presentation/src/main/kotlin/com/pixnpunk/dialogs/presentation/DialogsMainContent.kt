@@ -14,29 +14,28 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.window.DialogProperties
-import com.pixnpunk.dialogs.presentation.content.add.DialogAddGameContent
-import com.pixnpunk.dialogs.presentation.content.DialogEditGameContent
 import com.pixnpunk.dialogs.presentation.content.DialogInputValueContent
 import com.pixnpunk.dialogs.presentation.content.DialogOutputListValueContent
 import com.pixnpunk.dialogs.presentation.content.DialogOutputValueContent
 import com.pixnpunk.dialogs.presentation.content.DialogSelectColorContent
-import com.pixnpunk.dialogs.presentation.content.DialogSelectGameContent
+import com.pixnpunk.dialogs.presentation.content.add.DialogAddGameContent
+import com.pixnpunk.dialogs.presentation.content.edit.DialogEditGameContent
 import com.pixnpunk.dto.ColorPickerState
 import com.pixnpunk.dto.InputState
 import com.pixnpunk.dto.OutputState
 import com.pixnpunk.dto.OutputStateValue
-import com.pixnpunk.dto.SettingsEntity
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DialogsMainContent(
-    component: DialogsComponent,
-    settings: SettingsEntity
+    component: DialogsComponent
 ) {
     val config = component.dialogsConfig
+    val settings = component.settingsEntity
+
     when (val state = config.dialogsState) {
         DialogsState.DIALOG_ADD_GAME,
-         DialogsState.DIALOG_EDIT_GAME-> {
+        DialogsState.DIALOG_EDIT_GAME -> {
             BasicAlertDialog(
                 onDismissRequest = component.onDismissed,
                 properties = DialogProperties(
@@ -53,7 +52,7 @@ fun DialogsMainContent(
                             DialogAddGameContent(
                                 entry = config.unfilledEntry,
                                 onCoverSelect = component.selectCover,
-                                onCoverClear = { component.deselectCover(it) },
+                                onCoverClear = component.deselectCover,
                                 selectDir = component.selectFolder,
                                 addGame = { entry ->
                                     component.addNewEntry(entry)
@@ -67,9 +66,8 @@ fun DialogsMainContent(
                         DialogsState.DIALOG_EDIT_GAME ->
                             DialogEditGameContent(
                                 entry = component.dialogsConfig.unfilledEntry,
-                                selectFile = component.selectCover,
-                                deselectFile = { component.deselectCover(it) },
-                                selectFiles = component.selectFiles,
+                                selectCover = component.selectCover,
+                                deselectCover = component.deselectCover,
                                 editGame = {
                                     component.editEntry(it)
                                     component.onDismissed()
@@ -168,7 +166,7 @@ fun DialogsMainContent(
                             DialogAddGameContent(
                                 entry = config.unfilledEntry,
                                 onCoverSelect = component.selectCover,
-                                onCoverClear = { component.deselectCover(it) },
+                                onCoverClear = component.deselectCover,
                                 selectDir = component.selectFolder,
                                 addGame = { entry ->
                                     component.downloadNewEntry(entry)
@@ -218,7 +216,10 @@ fun DialogsMainContent(
                                             when (it) {
                                                 InputState.INPUT_IMAGE_WIDTH -> stringResource(R.string.input_width_title)
                                                 InputState.INPUT_IMAGE_HEIGHT -> stringResource(R.string.input_height_title)
-                                                InputState.INPUT_WITH_MESSAGE_EXEC -> stringResource(R.string.input_msg_exec_title)
+                                                InputState.INPUT_WITH_MESSAGE_EXEC -> stringResource(
+                                                    R.string.input_msg_exec_title
+                                                )
+
                                                 InputState.INPUT_SAVE_NAME -> "Enter save name"
                                                 else -> stringResource(R.string.input_generic_title)
                                             }
@@ -230,9 +231,9 @@ fun DialogsMainContent(
                                             InputState.INPUT_IMAGE_WIDTH, InputState.INPUT_IMAGE_HEIGHT ->
                                                 KeyboardOptions(keyboardType = KeyboardType.Number)
 
-                                        else ->
-                                            KeyboardOptions()
-                                    },cleanError = component.onCleanError,
+                                            else ->
+                                                KeyboardOptions()
+                                        }, cleanError = component.onCleanError,
                                     onDismiss = component.onDismissed
                                 )
                             }

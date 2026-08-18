@@ -76,9 +76,7 @@ fun RootContent(
     QuasporiumTheme(
         themeMode = settings.appThemeMode
     ) {
-        dialogSlot.child?.instance?.also {
-            DialogsMainContent(it, settings)
-        }
+        dialogSlot.child?.instance?.also { DialogsMainContent(it) }
 
         Box(modifier = Modifier.fillMaxSize()) {
             Surface(

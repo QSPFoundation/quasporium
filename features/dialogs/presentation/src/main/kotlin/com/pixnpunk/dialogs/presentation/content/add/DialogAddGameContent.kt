@@ -25,7 +25,7 @@ fun DialogAddGameContent(
     entry: GameEntry,
     selectDir: () -> Unit,
     onCoverSelect: () -> Unit,
-    onCoverClear: (String) -> Unit,
+    onCoverClear: () -> Unit,
     addGame: (GameEntry) -> Unit,
     onDismiss: () -> Unit,
     isAddLocalGame: Boolean,
@@ -59,7 +59,7 @@ fun DialogAddGameContent(
             onAuthorChange = { gameAuthor = it },
             onVersionChange = { gameVersion = it },
             onCoverSelect = onCoverSelect,
-            onCoverClear = { onCoverClear("") }
+            onCoverClear = onCoverClear
         )
 
         if (isAddLocalGame) {

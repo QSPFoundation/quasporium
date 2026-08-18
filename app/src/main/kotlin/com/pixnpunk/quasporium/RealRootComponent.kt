@@ -38,7 +38,6 @@ class RealRootComponent(
     private val componentContext: ComponentContext,
     private val launchDirPicker: () -> Unit,
     private val launchFilePicker: () -> Unit,
-    private val launchFilesPicker: () -> Unit,
     private val launchFontPicker: () -> Unit,
     private val launchStorageAccess: () -> Unit,
     private val launchEngineIntent: (LaunchGameEntity) -> Unit,
@@ -110,21 +109,6 @@ class RealRootComponent(
         )
     }
 
-    fun processPickedFiles(filePaths: List<String>) {
-        val oldConfig = dialogSlot.child?.configuration as? DialogsConfig
-        if (oldConfig != null) {
-            val oldEntry = oldConfig.unfilledEntry
-            val newFilesPath = oldEntry.gameFilesPath.plus(filePaths)
-            dialogsNavigation.activate(
-                oldConfig.copy(
-                    unfilledEntry = oldEntry.copy(
-                        gameFilesPath = newFilesPath
-                    )
-                )
-            )
-        }
-    }
-
     override val dialogSlot: Value<ChildSlot<*, DialogsComponent>> =
         childSlot(
             source = dialogsNavigation,
@@ -134,6 +118,7 @@ class RealRootComponent(
             RealDialogsComponent(
                 componentContext = ctx,
                 dialogsConfig = config,
+                settingsEntity = settingsState.value,
                 addNewEntry = { store.accept(RootStore.Intent.AddNewGame(it)) },
                 editEntry = { store.accept(RootStore.Intent.EditGame(it)) },
                 downloadNewEntry = { entry ->
@@ -143,7 +128,6 @@ class RealRootComponent(
                 },
                 selectFolder = launchDirPicker,
                 deselectDir = ::remDirSelect,
-                selectFiles = launchFilesPicker,
                 selectCover = launchFilePicker,
                 deselectCover = ::remFileSelect,
                 selectColor = {
@@ -245,30 +229,16 @@ class RealRootComponent(
         }
     }
 
-    private fun remFileSelect(path: String) {
+    private fun remFileSelect() {
         val oldConfig = dialogSlot.child?.configuration as? DialogsConfig
         if (oldConfig != null) {
-            if (path.isNotEmpty()) {
-                dialogsNavigation.activate(
-                    oldConfig.copy(
-                        unfilledEntry = oldConfig.unfilledEntry.copy(
-                            gameFilesPath = let {
-                                val list = oldConfig.unfilledEntry.gameFilesPath.toMutableList()
-                                list.remove(path)
-                                list
-                            }
-                        )
+            dialogsNavigation.activate(
+                oldConfig.copy(
+                    unfilledEntry = oldConfig.unfilledEntry.copy(
+                        gameIconPath = ""
                     )
                 )
-            } else {
-                dialogsNavigation.activate(
-                    oldConfig.copy(
-                        unfilledEntry = oldConfig.unfilledEntry.copy(
-                            gameIconPath = ""
-                        )
-                    )
-                )
-            }
+            )
         }
     }
 

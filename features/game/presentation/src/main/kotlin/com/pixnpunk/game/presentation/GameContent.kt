@@ -184,9 +184,7 @@ fun GameContent(
             }
         }
     ) {
-        dialogSlot.child?.instance?.also {
-            DialogsMainContent(it, settings)
-        }
+        dialogSlot.child?.instance?.also { DialogsMainContent(it) }
 
         if (showDialog) {
             AlertDialog(

@@ -123,34 +123,6 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-    @OptIn(ExperimentalContracts::class)
-    private val filesPickerLauncher =
-        registerForActivityResult(
-            ActivityResultContracts.OpenMultipleDocuments()
-        ) {
-            if (it.isNotEmpty()) {
-                var docGameFilesList = mutableListOf<String>()
-                it.forEach { uri ->
-                    val contentResolver = applicationContext.contentResolver
-                    contentResolver.takePersistableUriPermission(
-                        uri,
-                        Intent.FLAG_GRANT_READ_URI_PERMISSION
-                                or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                    )
-                    val file = uri.toDocumentFile(this)
-                    if (file.isWritableFile()) {
-                        docGameFilesList.add(file.uri.toString())
-                    }
-                }
-
-                thread { cleanupRedundantUriPermissions(applicationContext) }
-
-                if (docGameFilesList.isNotEmpty()) {
-                    root.processPickedFiles(docGameFilesList)
-                }
-            }
-        }
-
     private val storageAccessLauncher =
         registerForActivityResult(
             RequestStorageAccessContract(get())
@@ -236,18 +208,6 @@ class MainActivity : ComponentActivity() {
             launchFilePicker = {
                 try {
                     filePickerLauncher.launch(arrayOf(MimeType.IMAGE))
-                } catch (_: ActivityNotFoundException) {
-                    root.doShowDialog(
-                        outputValue = """
-                            No app was found on your device to choose folders. Please make sure the system Files app is enabled in your device settings.
-                        """.trimIndent(),
-                        outputState = OutputState.OUTPUT_SIMPLE_MSG
-                    )
-                }
-            },
-            launchFilesPicker = {
-                try {
-                    filesPickerLauncher.launch(arrayOf(MimeType.BINARY_FILE))
                 } catch (_: ActivityNotFoundException) {
                     root.doShowDialog(
                         outputValue = """

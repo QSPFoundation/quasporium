@@ -5,17 +5,18 @@ import com.pixnpunk.dto.ColorPickerState
 import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.dto.InputState
 import com.pixnpunk.dto.OutputStateValue
+import com.pixnpunk.dto.SettingsEntity
 
 sealed interface DialogsComponent {
     val dialogsConfig: DialogsConfig
+    val settingsEntity: SettingsEntity
     val addNewEntry: (GameEntry) -> Unit
     val editEntry: (GameEntry) -> Unit
     val downloadNewEntry: (GameEntry) -> Unit
     val selectFolder: () -> Unit
     val deselectDir: () -> Unit
-    val selectFiles: () -> Unit
     val selectCover: () -> Unit
-    val deselectCover: (String) -> Unit
+    val deselectCover: () -> Unit
     val selectColor: (Pair<ColorPickerState, Color>) -> Unit
     val confirmMessage: (OutputStateValue) -> Unit
     val inputValue: (Pair<InputState, String>) -> Unit

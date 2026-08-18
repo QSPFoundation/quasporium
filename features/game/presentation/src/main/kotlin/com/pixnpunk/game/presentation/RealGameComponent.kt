@@ -128,6 +128,7 @@ class RealGameComponent(
         ) { config, context ->
             RealDialogsComponent(
                 componentContext = context,
+                settingsEntity = settingsState.value,
                 dialogsConfig = config,
                 onCleanError = ::onCleanError,
                 inputValue = ::onInputValue,
