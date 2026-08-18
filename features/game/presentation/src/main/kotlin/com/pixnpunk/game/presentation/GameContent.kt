@@ -14,7 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.Typography
 import androidx.compose.material3.VerticalDragHandle
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.material3.adaptive.layout.AnimatedPane
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldDefaults
 import androidx.compose.material3.adaptive.layout.PaneAdaptedValue
@@ -85,7 +85,9 @@ fun GameContent(
 
     var showDialog by remember { mutableStateOf(false) }
 
-    val directive = calculatePaneScaffoldDirective(currentWindowAdaptiveInfo())
+    val directive = calculatePaneScaffoldDirective(
+        windowAdaptiveInfo = currentWindowAdaptiveInfoV2()
+    )
 
     val currentRole = when {
         extraSlotIsNotEmpty -> SupportingPaneScaffoldRole.Supporting

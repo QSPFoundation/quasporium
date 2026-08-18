@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.material3.adaptive.layout.AnimatedPane
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldDefaults
@@ -50,7 +50,9 @@ fun RootContent(
     val showSettingsInExtraPane = settingsChild != null && settingsChild.isLocalSettings
     val showSettingsAsOverlay = settingsChild != null && !settingsChild.isLocalSettings
 
-    val directive = calculatePaneScaffoldDirective(currentWindowAdaptiveInfo())
+    val directive = calculatePaneScaffoldDirective(
+        windowAdaptiveInfo = currentWindowAdaptiveInfoV2()
+    )
 
     val scaffoldValue = calculateThreePaneScaffoldValue(
         maxHorizontalPartitions = directive.maxHorizontalPartitions,
