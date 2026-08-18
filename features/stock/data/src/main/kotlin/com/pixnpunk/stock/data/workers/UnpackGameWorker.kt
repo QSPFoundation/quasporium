@@ -6,13 +6,14 @@ import androidx.core.net.toUri
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import com.pixnpunk.dto.stringToEntry
+import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.notification.NotificationProvider
 import com.pixnpunk.stock.data.workers.WorkerKeys.GAME_DATA_JSON
 import com.pixnpunk.stock.domain.repository.LocalRepository
 import com.pixnpunk.utils.DirUtil.receiveGameDirFromFile
 import com.pixnpunk.utils.FileUtil.removeFileByPath
 import com.pixnpunk.utils.FileUtil.unpackFileToDir
+import kotlinx.serialization.json.Json
 import org.koin.core.component.KoinComponent
 
 class UnpackGameWorker(
@@ -25,7 +26,7 @@ class UnpackGameWorker(
         val archivePath = inputData.getString("filePath") ?: return Result.failure()
         val destDirPath = inputData.getString("destDirPath") ?: return Result.failure()
         val dataJson = inputData.getString(GAME_DATA_JSON) ?: return Result.failure()
-        val gameEntry = dataJson.stringToEntry()
+        val gameEntry = Json.decodeFromString<GameEntry>(dataJson)
 
         setForeground(
             notificationProvider.createForegroundInfo(

@@ -20,10 +20,5 @@ data class GameEntry(
     val descUrl: String = "",
     val pubDate: String = "",
     val modDate: String = "",
-    val gameDirPath: String = "",
-    val gameFilesPath: List<String> = emptyList()
+    val gameDirPath: String = ""
 )
-
-fun GameEntry.asString() = Json.encodeToString(this)
-
-fun String.stringToEntry() = Json.decodeFromString<GameEntry>(this)

@@ -16,7 +16,6 @@ import com.pixnpunk.database.AppDatabase
 import com.pixnpunk.database.dao.AuthorDao
 import com.pixnpunk.database.dao.TranslatorDao
 import com.pixnpunk.dto.GameEntry
-import com.pixnpunk.dto.asString
 import com.pixnpunk.stock.data.mapper.toAuthorEntity
 import com.pixnpunk.stock.data.mapper.toDomain
 import com.pixnpunk.stock.data.mapper.toTranslatorEntity
@@ -40,6 +39,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
 import java.io.File
 import java.security.SecureRandom
 
@@ -127,7 +127,7 @@ class RemoteRepositoryImpl(
         val unpackRequest = OneTimeWorkRequestBuilder<UnpackGameWorker>()
             .setInputData(
                 workDataOf(
-                    GAME_DATA_JSON to downloadEntry.asString()
+                    GAME_DATA_JSON to Json.encodeToString(downloadEntry)
                 )
             )
             .build()
