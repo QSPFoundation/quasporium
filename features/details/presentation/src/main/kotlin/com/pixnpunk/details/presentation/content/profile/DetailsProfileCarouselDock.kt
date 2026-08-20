@@ -3,20 +3,17 @@ package com.pixnpunk.details.presentation.content.profile
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,11 +49,12 @@ fun DetailsProfileCarouselDock(
                     stiffness = Spring.StiffnessMediumLow
                 )
             ),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         if (profiles.isNotEmpty()) {
             ProfileDockStation(
+                modifier = Modifier.padding(horizontal = 8.dp),
                 profiles = profiles,
                 selectedPageIndex = pagerState.targetPage,
                 onSelectPage = { index ->
@@ -71,9 +69,8 @@ fun DetailsProfileCarouselDock(
         HorizontalPager(
             modifier = Modifier.fillMaxWidth(),
             state = pagerState,
-            pageSize = PageSize.Fixed(320.dp),
-            pageSpacing = 16.dp,
-            contentPadding = PaddingValues(horizontal = 20.dp),
+            pageSpacing = 8.dp,
+            contentPadding = PaddingValues(horizontal = 8.dp),
             verticalAlignment = Alignment.Top
         ) { page ->
             val isCurrentPage = pagerState.settledPage == page
@@ -83,9 +80,9 @@ fun DetailsProfileCarouselDock(
                     ((pagerState.currentPage - page) + pagerState.currentPageOffsetFraction)
                         .absoluteValue
                         .also { pageOffset ->
-                            scaleX = 1f - (pageOffset.coerceIn(0f, 1f) * 0.1f)
-                            scaleY = 1f - (pageOffset.coerceIn(0f, 1f) * 0.1f)
-                            alpha = 1f - (pageOffset.coerceIn(0f, 1f) * 0.4f)
+                            scaleX = 1f - (pageOffset.coerceIn(0f, 1f) * 0.05f)
+                            scaleY = 1f - (pageOffset.coerceIn(0f, 1f) * 0.05f)
+                            alpha = 1f - (pageOffset.coerceIn(0f, 1f) * 0.35f)
                         }
                 }
             ) {
@@ -120,19 +117,6 @@ fun DetailsProfileCarouselDock(
                         },
                         onPickBackground = { onPickBackground(profile.id) },
                         onDeleteProfile = { onDeleteProfile(profile.id) }
-                    )
-                }
-
-                if (!isCurrentPage) {
-                    Spacer(
-                        modifier = Modifier
-                            .matchParentSize()
-                            .clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null
-                            ) {
-                                coroutineScope.launch { pagerState.animateScrollToPage(page) }
-                            }
                     )
                 }
             }

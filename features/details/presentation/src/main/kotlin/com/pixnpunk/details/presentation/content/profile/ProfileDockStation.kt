@@ -3,6 +3,7 @@ package com.pixnpunk.details.presentation.content.profile
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -17,7 +18,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -41,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -65,20 +66,21 @@ fun ProfileDockStation(
     OutlinedCard(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp)
-            .animateContentSize(),
-        shape = RoundedCornerShape(20.dp),
+            .animateContentSize(
+                animationSpec = tween(durationMillis = 250)
+            ),
+        shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.outlinedCardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow
         ),
         border = CardDefaults.outlinedCardBorder().copy(
-            brush = androidx.compose.ui.graphics.SolidColor(
+            brush = SolidColor(
                 MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
             )
         )
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Row(
@@ -126,8 +128,8 @@ fun ProfileDockStation(
 
             AnimatedVisibility(
                 visible = isExpanded,
-                enter = expandVertically() + fadeIn(),
-                exit = shrinkVertically() + fadeOut()
+                enter = expandVertically(animationSpec = tween(250)) + fadeIn(tween(250)),
+                exit = shrinkVertically(animationSpec = tween(250)) + fadeOut(tween(250))
             ) {
                 FlowRow(
                     modifier = Modifier.fillMaxWidth(),

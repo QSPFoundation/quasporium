@@ -30,7 +30,7 @@ fun CreateProfileCard(
     onClick: () -> Unit
 ) {
     OutlinedCard(
-        modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 200.dp),
+        modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 180.dp),
         onClick = onClick,
         shape = MaterialTheme.shapes.extraLarge,
         colors = CardDefaults.outlinedCardColors(

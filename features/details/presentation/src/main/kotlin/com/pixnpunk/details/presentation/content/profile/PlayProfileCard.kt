@@ -97,7 +97,7 @@ fun PlayProfileCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .animateContentSize(),
-            shape = MaterialTheme.shapes.extraLarge,
+            shape = MaterialTheme.shapes.medium,
             color = LocalProfileColors.current.cardContainer,
             contentColor = LocalProfileColors.current.onCardContainer,
             tonalElevation = if (isEditing) 8.dp else 0.dp
@@ -116,7 +116,7 @@ fun PlayProfileCard(
 
                 Column {
                     Column(
-                        modifier = Modifier.padding(20.dp),
+                        modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         Crossfade(
@@ -317,14 +317,13 @@ fun PlayProfileCard(
                             ) {
                                 Box(
                                     modifier = Modifier
-                                        .width(36.dp)
+                                        .width(32.dp)
                                         .height(4.dp)
-                                        .clip(CircleShape)
+                                        .clip(MaterialTheme.shapes.small)
                                         .background(LocalProfileColors.current.onCardContainer.copy(alpha = 0.2f))
                                 )
                             }
 
-                            // Выезжающие кнопки
                             AnimatedVisibility(
                                 visible = isDrawerOpen,
                                 enter = expandVertically() + fadeIn(),
@@ -345,9 +344,16 @@ fun PlayProfileCard(
                                             contentColor = LocalProfileColors.current.onCardContainer
                                         )
                                     ) {
-                                        Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(18.dp))
+                                        Icon(
+                                            modifier = Modifier.size(24.dp),
+                                            imageVector = Icons.Default.Edit,
+                                            contentDescription = null
+                                        )
                                         Spacer(Modifier.width(8.dp))
-                                        Text("Customize")
+                                        Text(
+                                            text = "Customize",
+                                            style = MaterialTheme.typography.titleSmall
+                                        )
                                     }
 
                                     TextButton(
@@ -359,9 +365,16 @@ fun PlayProfileCard(
                                             contentColor = MaterialTheme.colorScheme.error
                                         )
                                     ) {
-                                        Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(18.dp))
+                                        Icon(
+                                            modifier = Modifier.size(24.dp),
+                                            imageVector = Icons.Default.Delete,
+                                            contentDescription = null
+                                        )
                                         Spacer(Modifier.width(8.dp))
-                                        Text("Delete")
+                                        Text(
+                                            text = "Delete",
+                                            style = MaterialTheme.typography.titleSmall
+                                        )
                                     }
                                 }
                             }
