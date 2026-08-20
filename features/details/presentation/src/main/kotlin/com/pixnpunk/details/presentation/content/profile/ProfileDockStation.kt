@@ -66,9 +66,7 @@ fun ProfileDockStation(
     OutlinedCard(
         modifier = modifier
             .fillMaxWidth()
-            .animateContentSize(
-                animationSpec = tween(durationMillis = 250)
-            ),
+            .animateContentSize(),
         shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.outlinedCardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow
@@ -128,8 +126,8 @@ fun ProfileDockStation(
 
             AnimatedVisibility(
                 visible = isExpanded,
-                enter = expandVertically(animationSpec = tween(250)) + fadeIn(tween(250)),
-                exit = shrinkVertically(animationSpec = tween(250)) + fadeOut(tween(250))
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
             ) {
                 FlowRow(
                     modifier = Modifier.fillMaxWidth(),
