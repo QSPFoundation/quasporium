@@ -74,7 +74,6 @@ import com.pixnpunk.details.presentation.theme.rememberProfileColorScheme
 fun PlayProfileCard(
     profile: ProfileUIState,
     allFiles: List<GameFileItem>,
-    isCurrentPage: Boolean,
     playTime: String = "0h 0m",
     onContinue: (savePath: String) -> Unit,
     onStartFresh: (fileName: String) -> Unit,
@@ -141,9 +140,11 @@ fun PlayProfileCard(
                                             style = MaterialTheme.typography.labelSmall,
                                             fontWeight = FontWeight.Bold,
                                             letterSpacing = 1.sp,
-                                            color = LocalProfileColors.current.onCardContainer.copy(
-                                                alpha = 0.6f
-                                            )
+                                            color =
+                                                LocalProfileColors
+                                                    .current
+                                                    .onCardContainer
+                                                    .copy(alpha = 0.6f)
                                         )
                                     },
                                     headlineContent = {
@@ -161,23 +162,22 @@ fun PlayProfileCard(
                                             horizontalArrangement = Arrangement.spacedBy(4.dp),
                                             modifier = Modifier.padding(top = 2.dp)
                                         ) {
+                                            val color =
+                                                LocalProfileColors
+                                                    .current
+                                                    .onCardContainer
+                                                    .copy(alpha = 0.7f)
                                             Icon(
                                                 modifier = Modifier.size(14.dp),
                                                 imageVector = Icons.Default.Schedule,
                                                 contentDescription = null,
-                                                tint =
-                                                    LocalProfileColors.current.onCardContainer.copy(
-                                                        alpha = 0.7f
-                                                    )
+                                                tint = color
                                             )
                                             Text(
                                                 text = playTime,
                                                 style = MaterialTheme.typography.bodySmall,
                                                 fontWeight = FontWeight.Medium,
-                                                color =
-                                                    LocalProfileColors.current.onCardContainer.copy(
-                                                        alpha = 0.7f
-                                                    )
+                                                color = color
                                             )
                                         }
                                     }
