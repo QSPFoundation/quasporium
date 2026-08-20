@@ -8,7 +8,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.window.core.layout.WindowSizeClass
@@ -28,7 +28,7 @@ fun DetailsAppBar(
                 onClick = onDismissed
             ) {
                 if (
-                    currentWindowAdaptiveInfo().windowSizeClass.isWidthAtLeastBreakpoint(
+                    currentWindowAdaptiveInfoV2().windowSizeClass.isWidthAtLeastBreakpoint(
                         WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND
                     )
                 ) {
