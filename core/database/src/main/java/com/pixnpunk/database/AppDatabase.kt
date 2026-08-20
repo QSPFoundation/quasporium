@@ -13,14 +13,14 @@ import com.pixnpunk.database.model.AuthorEntity
 import com.pixnpunk.database.model.GameEntity
 import com.pixnpunk.database.model.GameFTS
 import com.pixnpunk.database.model.ProfileEntity
-import com.pixnpunk.database.model.SaveSlotEntity
+import com.pixnpunk.database.model.SaveEntity
 import com.pixnpunk.database.model.TranslatorEntity
 
 @Database(
     entities = [
         GameEntity::class,
         ProfileEntity::class,
-        SaveSlotEntity::class,
+        SaveEntity::class,
         GameFTS::class,
         AuthorEntity::class,
         TranslatorEntity::class
@@ -30,7 +30,7 @@ import com.pixnpunk.database.model.TranslatorEntity
         AutoMigration(from = 3, to = 4),
         AutoMigration(from = 4, to = 5)
     ],
-    version = 8
+    version = 7
 )
 @TypeConverters(ListStringConverter::class)
 abstract class AppDatabase : RoomDatabase() {

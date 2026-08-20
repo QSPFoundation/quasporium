@@ -8,6 +8,7 @@ import android.provider.DocumentsContract
 import android.provider.DocumentsContract.getDocumentMetadata
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
+import com.anggrayudi.storage.StorageFile
 import com.anggrayudi.storage.file.DocumentFileCompat.fromUri
 import com.anggrayudi.storage.file.DocumentFileType
 import com.anggrayudi.storage.file.MimeType
@@ -28,6 +29,7 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
+import java.io.File
 import kotlin.contracts.ExperimentalContracts
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -123,7 +125,7 @@ object DirUtil : KoinComponent {
         nameRegex: Regex?
     ) {
         val pathStr = rootUri.path ?: return
-        val rootFile = java.io.File(pathStr)
+        val rootFile = File(pathStr)
 
         if (!rootFile.exists() || !rootFile.isDirectory) return
 

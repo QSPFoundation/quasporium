@@ -133,7 +133,7 @@ internal class GameEngineInteractorImpl(
 
                 _state.value = GameState.Loading()
                 audioService.closeAllFiles()
-                vfsProvider.setGameRoot(file.path)
+                vfsProvider.setGameRoot(file.uriPath)
 
                 engineScope.launch {
                     val isLoaded = bridge.loadGame(file, isGame = true)
@@ -291,7 +291,7 @@ internal class GameEngineInteractorImpl(
         } else {
             _state.value = GameState.Loading()
             audioService.closeAllFiles()
-            vfsProvider.setGameRoot(file.path)
+            vfsProvider.setGameRoot(file.uriPath)
 
             val isLoaded = bridge.loadGame(file, isGame = true)
             if (isLoaded) {
@@ -338,6 +338,6 @@ internal class GameEngineInteractorImpl(
 
     private fun resolveVfs(rawPath: String): VfsPath? {
         if (rawPath.isBlank()) return null
-        return vfsProvider.resolveRelative(rawPath)?.path
+        return vfsProvider.resolveRelative(rawPath)?.uriPath
     }
 }

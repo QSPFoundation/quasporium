@@ -6,6 +6,7 @@ import com.anggrayudi.storage.file.CreateMode
 import com.anggrayudi.storage.file.child
 import com.anggrayudi.storage.file.findParent
 import com.anggrayudi.storage.file.forceDelete
+import com.anggrayudi.storage.file.getAbsolutePath
 import com.anggrayudi.storage.file.isWritable
 import com.anggrayudi.storage.file.makeFile
 import com.anggrayudi.storage.file.makeFolder
@@ -18,19 +19,20 @@ internal class DocumentVirtualFile(
     private val docFile: DocumentFile
 ) : VirtualFile {
 
-    override val path: VfsPath get() = VfsPath(docFile.uri.toString())
+    override val absPath: VfsPath get() = VfsPath(docFile.getAbsolutePath(context))
+    override val uriPath: VfsPath get() = VfsPath(docFile.uri.toString())
     override val name: String get() = docFile.name ?: "unknown"
     override val isDirectory: Boolean get() = docFile.isDirectory
     override val isWritable: Boolean get() = docFile.isWritable(context)
 
     override suspend fun readBytes(): Result<ByteArray> = runCatching {
         context.contentResolver.openInputStream(docFile.uri)?.use { it.readBytes() }
-            ?: throw IllegalStateException("Cannot open InputStream for $path")
+            ?: throw IllegalStateException("Cannot open InputStream for $absPath")
     }
 
     override suspend fun writeBytes(data: ByteArray): Result<Unit> = runCatching {
         context.contentResolver.openOutputStream(docFile.uri, "w")?.use { it.write(data) }
-            ?: throw IllegalStateException("Cannot open OutputStream for $path")
+            ?: throw IllegalStateException("Cannot open OutputStream for $absPath")
     }
 
     override fun getChild(name: String): VirtualFile? {

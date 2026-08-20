@@ -4,7 +4,8 @@ import com.anggrayudi.storage.file.MimeType
 import com.pixnpunk.game.domain.model.VfsPath
 
 internal interface VirtualFile {
-    val path: VfsPath
+    val absPath: VfsPath
+    val uriPath: VfsPath
     val name: String
     val isDirectory: Boolean
     val isWritable: Boolean

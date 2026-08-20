@@ -9,9 +9,10 @@ import com.pixnpunk.details.presentation.model.ProfileUIState
 import com.pixnpunk.dto.GameListType
 import com.pixnpunk.stock.domain.usecase.ObserveEntryByIdUseCase
 import com.pixnpunk.utils.DirUtil.receiveGameFilesFromDir
+import com.pixnpunk.utils.DirUtil.receiveGameSavesFromDir
+import com.pixnpunk.utils.FileUtil.receiveBaseName
 import com.pixnpunk.utils.FileUtil.receiveFullName
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
@@ -83,49 +84,57 @@ class DetailsExecutor(
         if (entry.listId != GameListType.Playable) return
 
         scope.launch(Dispatchers.IO) {
-            val filesJob = async {
-                val files = receiveGameFilesFromDir(
-                    entry.gameDirPath
-                ).map {
-                    GameFileItem(
-                        displayName = if (it.isNotBlank()) it.receiveFullName() else "",
-                        path = it
+            val files = receiveGameFilesFromDir(
+                entry.gameDirPath
+            ).map {
+                GameFileItem(
+                    displayName = if (it.isNotBlank()) it.receiveFullName() else "",
+                    path = it
+                )
+            }
+            withContext(Dispatchers.Main) {
+                dispatch(DetailsStore.Message.UpdateGameFiles(files))
+            }
+
+            val diskPaths = receiveGameSavesFromDir(entry.gameDirPath)
+            val dbSaves = savesRepository.getAllSaves(entry.id)
+            val dbPaths = dbSaves.map { it.filePath }
+
+            diskPaths
+                .filterNot { dbPaths.contains(it) }
+                .forEach { path ->
+                    savesRepository.insertSave(
+                        gameId = entry.id,
+                        userTitle = path.receiveBaseName(),
+                        filePath = path
                     )
                 }
-                withContext(Dispatchers.Main) {
-                    dispatch(DetailsStore.Message.UpdateGameFiles(files))
+
+            dbSaves
+                .filterNot { diskPaths.contains(it.filePath) }
+                .forEach { save ->
+                    savesRepository.deleteSave(save.id)
                 }
-            }
-
-            val syncJob = async {
-                // TODO IMPLEMENT THIS
-            }
-
-            filesJob.await()
 
             combine(
                 observeEntryByIdUseCase.execute(entry.id).filterNotNull(),
                 profileRepository.observeProfiles(entry.id),
                 savesRepository.observeAllSaves(entry.id)
             ) { gameEntry, profiles, allSaves ->
-                val savesByProfile = allSaves.groupBy { it.profileId }
-
-                val convProfiles = profiles.map { profile ->
-                    val profileSaves = savesByProfile[profile.id] ?: emptyList()
-
+                gameEntry to profiles.map { profile ->
                     ProfileUIState(
                         id = profile.id,
                         name = profile.name,
-                        lastPlayedFile = GameFileItem(
-                            displayName = profile.lastPlayedFile?.receiveFullName() ?: "",
-                            path = profile.lastPlayedFile ?: ""
-                        ),
-                        saves = profileSaves.map {
-                            GameSaveItem(
-                                displayName = it.userTitle,
-                                path = it.filePath
-                            )
+                        lastPlayedFile = profile.lastPlayedFile?.let { path ->
+                            GameFileItem(displayName = path.receiveFullName(), path = path)
                         },
+                        saves =
+                            allSaves.map { save ->
+                                GameSaveItem(
+                                    displayName = save.userTitle,
+                                    path = save.filePath
+                                )
+                            },
                         accentColor =
                             if (profile.accentColor != 0L) {
                                 profile.accentColor
@@ -141,8 +150,6 @@ class DetailsExecutor(
                         backImagePath = profile.backImagePath
                     )
                 }
-
-                Pair(gameEntry, convProfiles)
             }.collect { (gameEntry, convProfiles) ->
                 withContext(Dispatchers.Main) {
                     dispatch(DetailsStore.Message.UpdateEntry(gameEntry))

@@ -1,7 +1,7 @@
 package com.pixnpunk.details.data.repository
 
 import com.pixnpunk.database.dao.SaveSlotDao
-import com.pixnpunk.database.model.SaveSlotEntity
+import com.pixnpunk.database.model.SaveEntity
 import com.pixnpunk.details.domain.model.SaveItem
 import com.pixnpunk.details.domain.repository.SavesRepository
 import kotlinx.coroutines.Dispatchers
@@ -18,12 +18,12 @@ class SavesRepositoryImpl(
         gameId: Long
     ): Flow<List<SaveItem>> =
         saveSlotDao
-            .observeAllSavesForGame(gameId)
+            .observeSaves(gameId)
             .map { entities ->
                 entities.map { entity ->
                     SaveItem(
                         entity.id,
-                        entity.profileId,
+                        entity.gameId,
                         entity.userTitle,
                         entity.filePath
                     )
@@ -31,20 +31,20 @@ class SavesRepositoryImpl(
             }
 
     override suspend fun getSavesCount(
-        profileId: Long
+        gameId: Long
     ): Int = withContext(Dispatchers.IO) {
-        saveSlotDao.getSavesCount(profileId)
+        saveSlotDao.getSavesCount(gameId)
     }
 
     override suspend fun getAllSaves(
-        profileId: Long
+        gameId: Long
     ): List<SaveItem> = withContext(Dispatchers.IO) {
         saveSlotDao
-            .getAllSaves(profileId)
+            .getAllSaves(gameId)
             .map { entity ->
                 SaveItem(
                     entity.id,
-                    entity.profileId,
+                    entity.gameId,
                     entity.userTitle,
                     entity.filePath
                 )
@@ -52,14 +52,14 @@ class SavesRepositoryImpl(
     }
 
     override suspend fun insertSave(
-        profileId: Long,
-        fileName: String,
+        gameId: Long,
+        userTitle: String,
         filePath: String
     ) = withContext(Dispatchers.IO) {
         saveSlotDao.insert(
-            SaveSlotEntity(
-                profileId = profileId,
-                userTitle = fileName,
+            SaveEntity(
+                gameId = gameId,
+                userTitle = userTitle,
                 filePath = filePath,
                 timestamp = Clock.System.now().toEpochMilliseconds()
             )
@@ -68,5 +68,5 @@ class SavesRepositoryImpl(
 
     override suspend fun deleteSave(
         saveId: Long
-    ) = withContext(Dispatchers.IO) { saveSlotDao.delete(SaveSlotEntity(id = saveId)) }
+    ) = withContext(Dispatchers.IO) { saveSlotDao.delete(SaveEntity(id = saveId)) }
 }

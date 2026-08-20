@@ -1,7 +1,7 @@
 package com.pixnpunk.game.data.save
 
 import com.pixnpunk.database.dao.SaveSlotDao
-import com.pixnpunk.database.model.SaveSlotEntity
+import com.pixnpunk.database.model.SaveEntity
 import com.pixnpunk.dto.LibSaveItem
 import com.pixnpunk.game.data.vfs.FileSystemProvider
 import com.pixnpunk.game.domain.model.VfsPath
@@ -19,33 +19,33 @@ internal class SaveGameInteractorImpl(
     private val engineInteractor: GameEngineInteractor
 ) : SaveGameInteractor {
 
-    override suspend fun getSavesCount(profileId: Long): Int =
-        withContext(Dispatchers.IO) { saveSlotDao.getSavesCount(profileId) }
+    override suspend fun getSavesCount(gameId: Long): Int =
+        withContext(Dispatchers.IO) { saveSlotDao.getSavesCount(gameId) }
 
-    override suspend fun getAllSaves(profileId: Long): List<LibSaveItem> =
+    override suspend fun getAllSaves(gameId: Long): List<LibSaveItem> =
         withContext(Dispatchers.IO) {
-            saveSlotDao.getAllSaves(profileId).map {
+            saveSlotDao.getAllSaves(gameId).map {
                 LibSaveItem(it.userTitle, it.timestamp, it.filePath)
             }
         }
 
-    override suspend fun createAndSaveSlot(profileId: Long, saveName: String, gameDir: VfsPath) =
+    override suspend fun createAndSaveSlot(gameId: Long, saveName: String, gameDir: VfsPath) =
         withContext(Dispatchers.Default) {
             val gameRoot = vfsProvider.resolve(gameDir) ?: return@withContext
 
             val savesDir = gameRoot.makeDir("QuasporiumSaves") ?: return@withContext
 
-            val existSave = saveSlotDao.searchByTitle(profileId, saveName)
+            val existSave = saveSlotDao.searchByTitle(gameId, saveName)
 
             val newSaveFile = if (existSave == null) {
                 val fileName = "Save_${Uuid.random().toHexString()}_.sav"
                 val file = savesDir.makeFile(fileName) ?: return@withContext
 
                 saveSlotDao.insert(
-                    SaveSlotEntity(
-                        profileId = profileId,
+                    SaveEntity(
+                        gameId = gameId,
                         userTitle = saveName,
-                        filePath = file.path.value,
+                        filePath = file.uriPath.value,
                         timestamp = Clock.System.now().toEpochMilliseconds()
                     )
                 )
@@ -61,7 +61,7 @@ internal class SaveGameInteractorImpl(
                 saveSlotDao.update(
                     existSave.copy(
                         userTitle = saveName,
-                        filePath = file.path.value,
+                        filePath = file.uriPath.value,
                         timestamp = Clock.System.now().toEpochMilliseconds()
                     )
                 )
@@ -69,6 +69,6 @@ internal class SaveGameInteractorImpl(
                 file
             }
 
-            engineInteractor.submitCommand(EngineCommand.SaveGame(newSaveFile.path))
+            engineInteractor.submitCommand(EngineCommand.SaveGame(newSaveFile.uriPath))
         }
 }

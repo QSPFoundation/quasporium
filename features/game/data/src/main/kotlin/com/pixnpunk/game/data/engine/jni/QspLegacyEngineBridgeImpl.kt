@@ -63,11 +63,11 @@ internal class QspLegacyEngineBridgeImpl(
     ): Boolean =
         when (file) {
             is DirectVirtualFile ->
-                executeCommand { loadGameWorldFromPath(file.path.value, !isGame) }
+                executeCommand { loadGameWorldFromPath(file.absPath.value, !isGame) }
 
             is DocumentVirtualFile ->
                 context.contentResolver.openFileDescriptor(
-                    file.path.value.toUri(),
+                    file.uriPath.value.toUri(),
                     "r"
                 )?.use { pfd ->
                     executeCommand { loadGameWorldFromFD(pfd.fd, !isGame) }
@@ -84,11 +84,11 @@ internal class QspLegacyEngineBridgeImpl(
     ): Boolean =
         when (file) {
             is DirectVirtualFile ->
-                executeCommand { openSavedGameFromPath(file.path.value, true) }
+                executeCommand { openSavedGameFromPath(file.absPath.value, true) }
 
             is DocumentVirtualFile ->
                 context.contentResolver.openFileDescriptor(
-                    file.path.value.toUri(),
+                    file.uriPath.value.toUri(),
                     "r"
                 )?.use { pfd ->
                     executeCommand { openSavedGameFromFD(pfd.fd, true) }
@@ -105,11 +105,11 @@ internal class QspLegacyEngineBridgeImpl(
     ): Boolean =
         when (file) {
             is DirectVirtualFile ->
-                saveGameByPath(file.path.value, false)
+                saveGameByPath(file.absPath.value, false)
 
             is DocumentVirtualFile ->
                 context.contentResolver.openFileDescriptor(
-                    file.path.value.toUri(),
+                    file.uriPath.value.toUri(),
                     "w"
                 )?.use { pfd ->
                     saveGameByFD(pfd.fd, false)

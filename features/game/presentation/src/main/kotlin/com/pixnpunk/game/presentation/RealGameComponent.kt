@@ -42,7 +42,6 @@ import com.pixnpunk.main.presentation.RealMainComponent
 import com.pixnpunk.`object`.presentation.RealObjectComponent
 import com.pixnpunk.settings.dto.repository.SettingsRepository
 import com.pixnpunk.utils.DirUtil.isGameDirIsInternal
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -69,7 +68,6 @@ class RealGameComponent(
     private val componentContext: ComponentContext,
     private val libAuthors: NativeLibAuthors,
     private val onFinishActivity: () -> Unit,
-    private val profileId: Long = 0,
     private val gameId: Long = -1L,
     private val gameTitle: String = "Title",
     private val gameDirUriBox: String = "",
@@ -269,7 +267,7 @@ class RealGameComponent(
         } else {
             coroutineScope().launch {
                 val savesCount =
-                    saveGameInteractor.getSavesCount(profileId)
+                    saveGameInteractor.getSavesCount(gameId)
                 doShowDialog(
                     inputString = "Save ${savesCount + 1}",
                     dialogState = LibTypeDialog.DIALOG_SAVEGAME
@@ -283,7 +281,7 @@ class RealGameComponent(
             _uiState.update { it.copy(isUserChooseLoad = true) }
         } else {
             coroutineScope().launch {
-                saveGameInteractor.getAllSaves(profileId).let {
+                saveGameInteractor.getAllSaves(gameId).let {
                     if (it.isEmpty()) {
                         _events.send(GameEvent.ShowSnackbar("No saved games!"))
                     } else {
@@ -335,15 +333,16 @@ class RealGameComponent(
             InputState.INPUT_WITH_MESSAGE_BOX ->
                 engineInteractor.submitCommand(EngineCommand.SubmitInput(inputString))
 
-            InputState.INPUT_SAVE_NAME -> componentScope.launch {
-                saveGameInteractor.createAndSaveSlot(
-                    profileId,
-                    inputString,
-                    _uiState.value.gameDirUriBox
-                )
+            InputState.INPUT_SAVE_NAME ->
+                componentScope.launch {
+                    saveGameInteractor.createAndSaveSlot(
+                        gameId,
+                        inputString,
+                        _uiState.value.gameDirUriBox
+                    )
 
-                _events.send(GameEvent.ShowSnackbar("Game saved!"))
-            }
+                    _events.send(GameEvent.ShowSnackbar("Game saved!"))
+                }
 
             else -> engineInteractor.submitCommand(EngineCommand.ExecuteString(inputString))
         }

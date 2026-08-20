@@ -1,8 +1,8 @@
 package com.pixnpunk.game.data.vfs.impl
 
+import androidx.core.net.toUri
 import com.anggrayudi.storage.file.child
 import com.anggrayudi.storage.file.forceDelete
-import com.anggrayudi.storage.file.makeFile
 import com.pixnpunk.game.data.vfs.VirtualFile
 import com.pixnpunk.game.data.vfs.VirtualFileStream
 import com.pixnpunk.game.domain.model.VfsPath
@@ -11,7 +11,9 @@ import java.io.File
 internal class DirectVirtualFile(
     private val file: File
 ) : VirtualFile {
-    override val path: VfsPath get() = VfsPath(file.absolutePath)
+
+    override val absPath: VfsPath get() = VfsPath(file.absolutePath)
+    override val uriPath: VfsPath get() = VfsPath(file.toUri().toString())
     override val name: String get() = file.name
     override val isDirectory: Boolean get() = file.isDirectory
     override val isWritable: Boolean get() = file.canWrite()
