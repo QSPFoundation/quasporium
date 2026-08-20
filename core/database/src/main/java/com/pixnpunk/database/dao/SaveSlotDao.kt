@@ -11,10 +11,13 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface SaveSlotDao {
-    @Query("SELECT * FROM save WHERE profileId = :profileId ORDER BY timestamp DESC LIMIT :limit")
-    fun observeRecentSaves(profileId: Long, limit: Int): Flow<List<SaveSlotEntity>>
-
     @Query("SELECT * FROM save WHERE profileId = :profileId ORDER BY timestamp DESC")
+    fun observeSavesByProfileId(profileId: Long): Flow<List<SaveSlotEntity>>
+
+    @Query("SELECT * FROM save WHERE profileId IN (SELECT id FROM profile WHERE gameId = :gameId)")
+    fun observeAllSavesForGame(gameId: Long): Flow<List<SaveSlotEntity>>
+
+    @Query("SELECT * FROM save WHERE profileId = :profileId")
     suspend fun getAllSaves(profileId: Long): List<SaveSlotEntity>
 
     @Query("SELECT count(*) FROM save WHERE profileId = :profileId ORDER BY timestamp DESC")

@@ -81,6 +81,18 @@ object DirUtil : KoinComponent {
         ).toList(mutableListOf())
     }
 
+    @OptIn(ExperimentalContracts::class)
+    suspend fun receiveGameSavesFromDir(rootDirPath: String): List<String> {
+        val gameDir = fromUri(get(), rootDirPath.toUri())
+        if (!gameDir.isWritableDir()) return listOf()
+
+        return get<Context>().findGameFiles(
+            rootTreeUri = gameDir.uri,
+            allowedMimeTypes = setOf(MimeType.BINARY_FILE),
+            nameRegex = Regex(".*\\.(sav)$", RegexOption.IGNORE_CASE)
+        ).toList(mutableListOf())
+    }
+
     fun Context.findGameFiles(
         rootTreeUri: Uri,
         allowedMimeTypes: Set<String> = emptySet(),
@@ -146,12 +158,6 @@ object DirUtil : KoinComponent {
         val dirIdQueue = ArrayDeque<String>()
         dirIdQueue.addLast(rootDocumentId)
 
-        val projection = arrayOf(
-            DocumentsContract.Document.COLUMN_DOCUMENT_ID,
-            DocumentsContract.Document.COLUMN_DISPLAY_NAME,
-            DocumentsContract.Document.COLUMN_MIME_TYPE
-        )
-
         while (dirIdQueue.isNotEmpty()) {
             currentCoroutineContext().ensureActive()
 
@@ -167,7 +173,11 @@ object DirUtil : KoinComponent {
             try {
                 context.contentResolver.query(
                     childrenUri,
-                    projection,
+                    arrayOf(
+                        DocumentsContract.Document.COLUMN_DOCUMENT_ID,
+                        DocumentsContract.Document.COLUMN_DISPLAY_NAME,
+                        DocumentsContract.Document.COLUMN_MIME_TYPE
+                    ),
                     null,
                     null,
                     null

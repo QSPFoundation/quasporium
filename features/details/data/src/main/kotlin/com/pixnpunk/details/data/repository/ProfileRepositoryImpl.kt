@@ -18,9 +18,30 @@ internal class ProfileRepositoryImpl(
     private val profileDao: ProfileDao
 ) : ProfileRepository {
 
-    override fun observeProfiles(gameId: Long): Flow<List<ProfileItem>> =
-        profileDao.observeProfilesByGameId(gameId).map { entities ->
-            entities.map { entity ->
+    override fun observeProfiles(
+        gameId: Long
+    ): Flow<List<ProfileItem>> =
+        profileDao
+            .observeProfilesByGameId(gameId)
+            .map { entities ->
+                entities.map { entity ->
+                    ProfileItem(
+                        id = entity.id,
+                        name = entity.profileName,
+                        timestamp = entity.timestamp,
+                        lastPlayedFile = entity.lastPlayedFile,
+                        accentColor = entity.accentColor,
+                        backImagePath = entity.backImagePath
+                    )
+                }
+            }
+
+    override suspend fun getAllProfiles(
+        gameId: Long
+    ): List<ProfileItem> = withContext(Dispatchers.IO) {
+        profileDao
+            .getAllProfiles(gameId)
+            .map { entity ->
                 ProfileItem(
                     id = entity.id,
                     name = entity.profileName,
@@ -30,7 +51,7 @@ internal class ProfileRepositoryImpl(
                     backImagePath = entity.backImagePath
                 )
             }
-        }
+    }
 
     override suspend fun createProfile(
         gameId: Long,

@@ -11,7 +11,11 @@ import com.pixnpunk.stock.domain.usecase.ObserveEntryByIdUseCase
 import com.pixnpunk.utils.DirUtil.receiveGameFilesFromDir
 import com.pixnpunk.utils.FileUtil.receiveFullName
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class DetailsExecutor(
     private val observeEntryByIdUseCase: ObserveEntryByIdUseCase,
@@ -74,82 +78,75 @@ class DetailsExecutor(
     }
 
     override fun executeAction(action: DetailsStore.Action) {
-        if (action is DetailsStore.Action.Init) {
-            val entry = action.entry
+        if (action !is DetailsStore.Action.Init) return
+        val entry = action.entry
+        if (entry.listId != GameListType.Playable) return
 
-            if (entry.listId == GameListType.Playable) {
-                scope.launch(Dispatchers.IO) {
-                    val files = receiveGameFilesFromDir(
-                        entry.gameDirPath
-                    ).map {
-                        GameFileItem(
-                            displayName = if (it.isNotBlank()) it.receiveFullName() else "",
-                            path = it
-                        )
-                    }
-                    scope.launch {
-                        dispatch(DetailsStore.Message.UpdateGameFiles(files))
-                    }
+        scope.launch(Dispatchers.IO) {
+            val filesJob = async {
+                val files = receiveGameFilesFromDir(
+                    entry.gameDirPath
+                ).map {
+                    GameFileItem(
+                        displayName = if (it.isNotBlank()) it.receiveFullName() else "",
+                        path = it
+                    )
                 }
-
-                scope.launch(Dispatchers.IO) {
-                    observeEntryByIdUseCase
-                        .execute(entry.id)
-                        .collect { entry ->
-                            scope.launch {
-                                if (entry != null) {
-                                    dispatch(DetailsStore.Message.UpdateEntry(entry))
-                                } else {
-                                    publish(DetailsStore.Label.NullUpdateReceived)
-                                }
-                            }
-                        }
+                withContext(Dispatchers.Main) {
+                    dispatch(DetailsStore.Message.UpdateGameFiles(files))
                 }
+            }
 
-                scope.launch(Dispatchers.IO) {
-                    profileRepository
-                        .observeProfiles(entry.id)
-                        .collect { profiles ->
-                            val convProfile = profiles.map { profile ->
-                                ProfileUIState(
-                                    id = profile.id,
-                                    name = profile.name,
-                                    lastPlayedFile =
-                                        GameFileItem(
-                                            displayName =
-                                                profile.lastPlayedFile?.receiveFullName() ?: "",
-                                            path =
-                                                profile.lastPlayedFile ?: ""
-                                        ),
-                                    saves =
-                                        savesRepository.getAllSaves(
-                                            profile.id
-                                        ).map {
-                                            GameSaveItem(
-                                                displayName = it.fileName,
-                                                path = it.fileUriBox
-                                            )
-                                        },
-                                    accentColor =
-                                        if (profile.accentColor != 0L) {
-                                            profile.accentColor
-                                        } else {
-                                            val defaultPresets = longArrayOf(
-                                                0xFFD9534FL, 0xFF3B9E9BL, 0xFF8E6FB9L, 0xFFD48B38L
-                                            )
-                                            defaultPresets[
-                                                (profile.id % defaultPresets.size).toInt()
-                                                    .coerceAtLeast(0)
-                                            ]
-                                        },
-                                    backImagePath = profile.backImagePath
+            val syncJob = async {
+                // TODO IMPLEMENT THIS
+            }
+
+            filesJob.await()
+
+            combine(
+                observeEntryByIdUseCase.execute(entry.id).filterNotNull(),
+                profileRepository.observeProfiles(entry.id),
+                savesRepository.observeAllSaves(entry.id)
+            ) { gameEntry, profiles, allSaves ->
+                val savesByProfile = allSaves.groupBy { it.profileId }
+
+                val convProfiles = profiles.map { profile ->
+                    val profileSaves = savesByProfile[profile.id] ?: emptyList()
+
+                    ProfileUIState(
+                        id = profile.id,
+                        name = profile.name,
+                        lastPlayedFile = GameFileItem(
+                            displayName = profile.lastPlayedFile?.receiveFullName() ?: "",
+                            path = profile.lastPlayedFile ?: ""
+                        ),
+                        saves = profileSaves.map {
+                            GameSaveItem(
+                                displayName = it.userTitle,
+                                path = it.filePath
+                            )
+                        },
+                        accentColor =
+                            if (profile.accentColor != 0L) {
+                                profile.accentColor
+                            } else {
+                                val defaultPresets = longArrayOf(
+                                    0xFFD9534FL, 0xFF3B9E9BL, 0xFF8E6FB9L, 0xFFD48B38L
                                 )
-                            }
+                                defaultPresets[
+                                    (profile.id % defaultPresets.size).toInt()
+                                        .coerceAtLeast(0)
+                                ]
+                            },
+                        backImagePath = profile.backImagePath
+                    )
+                }
 
-                            scope.launch {
-                                dispatch(DetailsStore.Message.UpdateProfiles(convProfile))
-                            }
-                        }
+                Pair(gameEntry, convProfiles)
+            }.collect { (gameEntry, convProfiles) ->
+                withContext(Dispatchers.Main) {
+                    dispatch(DetailsStore.Message.UpdateEntry(gameEntry))
+                    dispatch(DetailsStore.Message.UpdateProfiles(convProfiles))
                 }
             }
         }

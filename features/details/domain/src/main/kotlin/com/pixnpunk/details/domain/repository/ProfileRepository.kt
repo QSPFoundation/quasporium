@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface ProfileRepository {
     fun observeProfiles(gameId: Long): Flow<List<ProfileItem>>
+    suspend fun getAllProfiles(gameId: Long): List<ProfileItem>
     suspend fun createProfile(gameId: Long, profileName: String, filePath: String? = null): Long
     suspend fun deleteProfile(profileId: Long)
     suspend fun updateProfileTimestamp(profileId: Long)

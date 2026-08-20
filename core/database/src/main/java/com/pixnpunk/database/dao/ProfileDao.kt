@@ -14,8 +14,8 @@ interface ProfileDao {
     @Query("SELECT * FROM profile WHERE gameId = :gameId ORDER BY timestamp DESC")
     fun observeProfilesByGameId(gameId: Long): Flow<List<ProfileEntity>>
 
-    @Query("SELECT * FROM profile WHERE gameId = :gameId ORDER BY timestamp DESC")
-    suspend fun getProfilesByGameId(gameId: Long): List<ProfileEntity>
+    @Query("SELECT * FROM profile WHERE gameId = :gameId")
+    suspend fun getAllProfiles(gameId: Long): List<ProfileEntity>
 
     @Query("SELECT backImagePath FROM profile WHERE id = :profileId")
     suspend fun getBackgroundPath(profileId: Long): String?
