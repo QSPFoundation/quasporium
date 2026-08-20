@@ -61,9 +61,9 @@ fun DetailsDescription(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
+                    modifier = Modifier.weight(1f),
                     text = stringResource(R.string.description_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.weight(1f)
+                    style = MaterialTheme.typography.titleMedium
                 )
 
                 AnimatedVisibility(
@@ -91,11 +91,11 @@ fun DetailsDescription(
                     if (targetState) {
                         fadeIn(animationSpec = snap()) togetherWith
                         fadeOut(animationSpec = snap()) using
-                        SizeTransform { _, _ -> tween(duration, easing = FastOutSlowInEasing) }
+                        SizeTransform { _, _ -> tween(duration) }
                     } else {
                         fadeIn(animationSpec = snap(delayMillis = duration)) togetherWith
                         fadeOut(animationSpec = snap(delayMillis = duration)) using
-                        SizeTransform { _, _ -> tween(duration, easing = FastOutSlowInEasing) }
+                        SizeTransform { _, _ -> tween(duration) }
                     }
                 },
                 contentAlignment = Alignment.TopStart,
@@ -107,7 +107,7 @@ fun DetailsDescription(
                     maxLines = if (targetExpanded) Int.MAX_VALUE else 3,
                     overflow = if (targetExpanded) TextOverflow.Clip else TextOverflow.Ellipsis,
                     onTextLayout = { textLayoutResult ->
-                        if (!targetExpanded) { isExpandable = textLayoutResult.hasVisualOverflow }
+                        if (!targetExpanded) isExpandable = textLayoutResult.hasVisualOverflow
                     }
                 )
             }
