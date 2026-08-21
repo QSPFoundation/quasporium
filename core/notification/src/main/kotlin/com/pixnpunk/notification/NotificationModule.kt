@@ -5,7 +5,5 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
 val notificationModule = module {
-    singleOf(::NotificationProviderImpl) {
-        bind<NotificationProvider>()
-    }
+    singleOf(::NotificationProviderImpl) { bind<NotificationProvider>() }
 }

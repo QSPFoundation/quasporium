@@ -19,7 +19,7 @@ class NotificationProviderImpl(
 ) : NotificationProvider {
     private val notificationManager = NotificationManagerCompat.from(context)
 
-    companion object {
+    private companion object {
         const val CHANNEL_ID = "com.pixnpunk.quasporium.channel.download_channel"
         const val NOTIFICATION_ID = 300
     }
@@ -29,7 +29,7 @@ class NotificationProviderImpl(
             NotificationChannel(
                 CHANNEL_ID,
                 "Game downloads",
-                NotificationManager.IMPORTANCE_DEFAULT
+                NotificationManager.IMPORTANCE_LOW
             ).apply {
                 description = "Notifications about downloading and unpacking"
             }
