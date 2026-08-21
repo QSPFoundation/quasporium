@@ -49,10 +49,10 @@ val MIGRATION_6_7 = object : Migration(6, 7) {
     override fun migrate(db: SupportSQLiteDatabase) {
         db.execSQL(
             """
-            CREATE TABLE IF NOT EXISTS `profile` (
+            CREATE TABLE IF NOT EXISTS `preset` (
                 `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                 `gameId` INTEGER NOT NULL,
-                `profileName` TEXT NOT NULL,
+                `presetName` TEXT NOT NULL,
                 `timestamp` INTEGER NOT NULL,
                 `totalPlayTime` INTEGER NOT NULL,
                 `lastPlayedFile` TEXT,
@@ -62,7 +62,7 @@ val MIGRATION_6_7 = object : Migration(6, 7) {
             )
         """
         )
-        db.execSQL("CREATE INDEX IF NOT EXISTS `index_profile_gameId` ON `profile` (`gameId`)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_preset_gameId` ON `preset` (`gameId`)")
 
         val cursorGame = db.query("SELECT id, gameFilesPath FROM game")
 
@@ -76,11 +76,11 @@ val MIGRATION_6_7 = object : Migration(6, 7) {
                 )
 
                 db.insert(
-                    "profile",
+                    "preset",
                     SQLiteDatabase.CONFLICT_REPLACE,
                     ContentValues().apply {
                         put("gameId", gameId)
-                        put("profileName", "Main")
+                        put("presetName", "Main")
                         put("timestamp", Clock.System.now().toEpochMilliseconds())
                         put("totalPlayTime", 0L)
                         put("lastPlayedFile", filesString?.split(", ")?.firstOrNull())
@@ -148,6 +148,6 @@ val databaseModule = module {
     single { get<AppDatabase>().gameDao() }
     single { get<AppDatabase>().authorDao() }
     single { get<AppDatabase>().translatorDao() }
-    single { get<AppDatabase>().profileDao() }
-    single { get<AppDatabase>().saveSlotDao() }
+    single { get<AppDatabase>().presetDao() }
+    single { get<AppDatabase>().saveDao() }
 }

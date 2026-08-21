@@ -1,9 +1,8 @@
-package com.pixnpunk.details.presentation.content.profile
+package com.pixnpunk.details.presentation.content.preset
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -46,12 +45,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.pixnpunk.details.presentation.model.ProfileUIState
+import com.pixnpunk.details.presentation.model.PresetUIState
 
 @Composable
-fun ProfileDockStation(
+fun PresetDockStation(
     modifier: Modifier = Modifier,
-    profiles: List<ProfileUIState>,
+    presets: List<PresetUIState>,
     selectedPageIndex: Int,
     onSelectPage: (index: Int) -> Unit,
     onAddClick: () -> Unit
@@ -91,7 +90,7 @@ fun ProfileDockStation(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = "Profiles",
+                        text = "Presets",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -103,7 +102,7 @@ fun ProfileDockStation(
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Text(
-                                text = "${profiles.size}",
+                                text = "${presets.size}",
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSecondaryContainer
@@ -134,7 +133,7 @@ fun ProfileDockStation(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    profiles.forEachIndexed { index, profile ->
+                    presets.forEachIndexed { index, profile ->
                         val isSelected = selectedPageIndex == index
 
                         FilterChip(

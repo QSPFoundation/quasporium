@@ -1,11 +1,11 @@
 package com.pixnpunk.details.presentation.mvi
 
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
-import com.pixnpunk.details.domain.repository.ProfileRepository
+import com.pixnpunk.details.domain.repository.PresetRepository
 import com.pixnpunk.details.domain.repository.SavesRepository
 import com.pixnpunk.details.presentation.model.GameFileItem
 import com.pixnpunk.details.presentation.model.GameSaveItem
-import com.pixnpunk.details.presentation.model.ProfileUIState
+import com.pixnpunk.details.presentation.model.PresetUIState
 import com.pixnpunk.dto.GameListType
 import com.pixnpunk.stock.domain.usecase.ObserveEntryByIdUseCase
 import com.pixnpunk.utils.DirUtil.receiveGameFilesFromDir
@@ -20,57 +20,82 @@ import kotlinx.coroutines.withContext
 
 class DetailsExecutor(
     private val observeEntryByIdUseCase: ObserveEntryByIdUseCase,
-    private val profileRepository: ProfileRepository,
+    private val presetRepository: PresetRepository,
     private val savesRepository: SavesRepository
 ) : CoroutineExecutor<DetailsStore.Intent, DetailsStore.Action, DetailsStore.State, DetailsStore.Message, DetailsStore.Label>() {
 
     override fun executeIntent(intent: DetailsStore.Intent) {
         when (intent) {
-            is DetailsStore.Intent.CreateProfile -> scope.launch {
-                profileRepository.createProfile(
-                    state().gameEntry.id,
-                    "Playthrough ${state().gameProfiles.size + 1}"
-                )
-            }
-
-            is DetailsStore.Intent.UpdateProfileVisuals -> scope.launch {
-                profileRepository.updateProfileVisuals(
-                    profileId = intent.profileId,
-                    name = intent.newName,
-                    accentColor = intent.newColor
-                )
-            }
-
-            is DetailsStore.Intent.SetBackgroundImage -> scope.launch {
-                profileRepository.saveBackgroundImage(intent.profileId, intent.uriString)
-            }
-
-            is DetailsStore.Intent.RemoveBackgroundImage -> scope.launch {
-                profileRepository.removeBackgroundImage(intent.profileId)
-            }
-
-            is DetailsStore.Intent.DeleteProfile -> scope.launch {
-                profileRepository.deleteProfile(intent.profileId)
-            }
-
-            is DetailsStore.Intent.StartFresh -> scope.launch {
-                profileRepository.updateLastPlayedFile(intent.profileId, intent.fileName)
-                profileRepository.updateProfileTimestamp(intent.profileId)
-                publish(DetailsStore.Label.LaunchEngine(intent.profileId, intent.fileName))
-            }
-
-            is DetailsStore.Intent.ContinueGame -> {
-                val profile = state().gameProfiles.find { it.id == intent.profileId }
-                val targetFile =
-                    profile?.lastPlayedFile ?: state().gameFiles.firstOrNull() ?: return
-
+            is DetailsStore.Intent.CreateProfile ->
                 scope.launch {
-                    profileRepository.updateProfileTimestamp(intent.profileId)
+                    presetRepository.createPreset(
+                        state().gameEntry.id,
+                        "Playthrough ${state().gameProfiles.size + 1}"
+                    )
+                }
+
+            is DetailsStore.Intent.UpdateProfileVisuals ->
+                scope.launch {
+                    presetRepository.updateVisuals(
+                        presetId = intent.presetId,
+                        name = intent.newName,
+                        accentColor = intent.newColor
+                    )
+                }
+
+            is DetailsStore.Intent.SetBackgroundImage ->
+                scope.launch {
+                    presetRepository.saveBackgroundImage(
+                        presetId = intent.presetId,
+                        sourceUriBox = intent.uriString
+                    )
+                }
+
+            is DetailsStore.Intent.RemoveBackgroundImage ->
+                scope.launch {
+                    presetRepository.removeBackgroundImage(
+                        presetId = intent.presetId
+                    )
+                }
+
+            is DetailsStore.Intent.DeleteProfile ->
+                scope.launch {
+                    presetRepository.deletePreset(
+                        presetId = intent.presetId
+                    )
+                }
+
+            is DetailsStore.Intent.StartFresh ->
+                scope.launch {
+                    presetRepository.updateLastPlayedFile(
+                        presetId = intent.presetId,
+                        fileName = intent.fileName
+                    )
+                    presetRepository.updateTimestamp(
+                        presetId = intent.presetId
+                    )
                     publish(
                         DetailsStore.Label.LaunchEngine(
-                            intent.profileId,
-                            targetFile.path,
-                            intent.savePath
+                            presetId = intent.presetId,
+                            entryFile = intent.fileName
+                        )
+                    )
+                }
+
+            is DetailsStore.Intent.ContinueGame -> {
+                val preset = state().gameProfiles.find { it.id == intent.presetId }
+                val targetFile =
+                    preset?.lastPlayedFile ?: state().gameFiles.firstOrNull() ?: return
+
+                scope.launch {
+                    presetRepository.updateTimestamp(
+                        presetId = intent.presetId
+                    )
+                    publish(
+                        DetailsStore.Label.LaunchEngine(
+                            presetId = intent.presetId,
+                            entryFile = targetFile.path,
+                            saveFile = intent.savePath
                         )
                     )
                 }
@@ -118,11 +143,11 @@ class DetailsExecutor(
 
             combine(
                 observeEntryByIdUseCase.execute(entry.id).filterNotNull(),
-                profileRepository.observeProfiles(entry.id),
+                presetRepository.observeAllPresets(entry.id),
                 savesRepository.observeAllSaves(entry.id)
             ) { gameEntry, profiles, allSaves ->
                 gameEntry to profiles.map { profile ->
-                    ProfileUIState(
+                    PresetUIState(
                         id = profile.id,
                         name = profile.name,
                         lastPlayedFile = profile.lastPlayedFile?.let { path ->

@@ -1,4 +1,4 @@
-package com.pixnpunk.details.presentation.content.profile
+package com.pixnpunk.details.presentation.content.preset
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,11 +26,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun CreateProfileCard(
+fun CreatePresetCard(
     onClick: () -> Unit
 ) {
     OutlinedCard(
-        modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 180.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .defaultMinSize(minHeight = 180.dp),
         onClick = onClick,
         shape = MaterialTheme.shapes.extraLarge,
         colors = CardDefaults.outlinedCardColors(

@@ -1,6 +1,6 @@
 package com.pixnpunk.game.data.save
 
-import com.pixnpunk.database.dao.SaveSlotDao
+import com.pixnpunk.database.dao.SaveDao
 import com.pixnpunk.database.model.SaveEntity
 import com.pixnpunk.dto.LibSaveItem
 import com.pixnpunk.game.data.vfs.FileSystemProvider
@@ -15,16 +15,16 @@ import kotlin.uuid.Uuid
 
 internal class SaveGameInteractorImpl(
     private val vfsProvider: FileSystemProvider,
-    private val saveSlotDao: SaveSlotDao,
+    private val saveDao: SaveDao,
     private val engineInteractor: GameEngineInteractor
 ) : SaveGameInteractor {
 
     override suspend fun getSavesCount(gameId: Long): Int =
-        withContext(Dispatchers.IO) { saveSlotDao.getSavesCount(gameId) }
+        withContext(Dispatchers.IO) { saveDao.getSavesCount(gameId) }
 
     override suspend fun getAllSaves(gameId: Long): List<LibSaveItem> =
         withContext(Dispatchers.IO) {
-            saveSlotDao.getAllSaves(gameId).map {
+            saveDao.getAllSaves(gameId).map {
                 LibSaveItem(it.userTitle, it.timestamp, it.filePath)
             }
         }
@@ -35,13 +35,13 @@ internal class SaveGameInteractorImpl(
 
             val savesDir = gameRoot.makeDir("QuasporiumSaves") ?: return@withContext
 
-            val existSave = saveSlotDao.searchByTitle(gameId, saveName)
+            val existSave = saveDao.searchByTitle(gameId, saveName)
 
             val newSaveFile = if (existSave == null) {
                 val fileName = "Save_${Uuid.random().toHexString()}_.sav"
                 val file = savesDir.makeFile(fileName) ?: return@withContext
 
-                saveSlotDao.insert(
+                saveDao.insert(
                     SaveEntity(
                         gameId = gameId,
                         userTitle = saveName,
@@ -58,7 +58,7 @@ internal class SaveGameInteractorImpl(
                 val fileName = existFile?.name ?: "Save_${Uuid.random().toHexString()}_.sav"
                 val file = savesDir.makeFile(fileName) ?: return@withContext
 
-                saveSlotDao.update(
+                saveDao.update(
                     existSave.copy(
                         userTitle = saveName,
                         filePath = file.uriPath.value,

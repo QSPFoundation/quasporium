@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Immutable
 @Serializable
-data class ProfileUIState(
+data class PresetUIState(
     val id: Long,
     val name: String,
     val lastPlayedFile: GameFileItem?,

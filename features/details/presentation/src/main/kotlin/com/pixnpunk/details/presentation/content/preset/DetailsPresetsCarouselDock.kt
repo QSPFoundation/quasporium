@@ -1,4 +1,4 @@
-package com.pixnpunk.details.presentation.content.profile
+package com.pixnpunk.details.presentation.content.preset
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
@@ -19,14 +19,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import com.pixnpunk.details.presentation.model.GameFileItem
-import com.pixnpunk.details.presentation.model.ProfileUIState
+import com.pixnpunk.details.presentation.model.PresetUIState
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DetailsProfileCarouselDock(
-    profiles: List<ProfileUIState>,
+fun DetailsPresetsCarouselDock(
+    presets: List<PresetUIState>,
     files: List<GameFileItem>,
     onCreateProfile: () -> Unit,
     onUpdateVisuals: (profileId: Long, newName: String, newColor: Long) -> Unit,
@@ -35,7 +35,7 @@ fun DetailsProfileCarouselDock(
     onContinue: (profileId: Long, savePath: String) -> Unit,
     onStartFresh: (profileId: Long, fileName: String) -> Unit
 ) {
-    val pageCount = profiles.size + 1
+    val pageCount = presets.size + 1
     val pagerState = rememberPagerState { pageCount }
     val coroutineScope = rememberCoroutineScope()
 
@@ -51,16 +51,16 @@ fun DetailsProfileCarouselDock(
         verticalArrangement = Arrangement.spacedBy(12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        if (profiles.isNotEmpty()) {
-            ProfileDockStation(
+        if (presets.isNotEmpty()) {
+            PresetDockStation(
                 modifier = Modifier.padding(horizontal = 8.dp),
-                profiles = profiles,
+                presets = presets,
                 selectedPageIndex = pagerState.targetPage,
                 onSelectPage = { index ->
                     coroutineScope.launch { pagerState.animateScrollToPage(index) }
                 },
                 onAddClick = {
-                    coroutineScope.launch { pagerState.animateScrollToPage(profiles.size) }
+                    coroutineScope.launch { pagerState.animateScrollToPage(presets.size) }
                 }
             )
         }
@@ -85,37 +85,38 @@ fun DetailsProfileCarouselDock(
                         }
                 }
             ) {
-                if (page >= profiles.size) {
-                    CreateProfileCard(
+                if (page >= presets.size) {
+                    CreatePresetCard(
                         onClick = { if (isCurrentPage) onCreateProfile() }
                     )
                 } else {
-                    val profile = profiles[page]
-                    PlayProfileCard(
-                        profile = profile,
-                        allFiles = files,
-                        onContinue = { saveName ->
-                            if (isCurrentPage) onContinue(
-                                profile.id,
-                                saveName
-                            )
-                        },
-                        onStartFresh = { fileName ->
-                            if (isCurrentPage) onStartFresh(
-                                profile.id,
-                                fileName
-                            )
-                        },
-                        onSaveVisuals = { newName, newColor ->
-                            onUpdateVisuals(
-                                profile.id,
-                                newName,
-                                newColor
-                            )
-                        },
-                        onPickBackground = { onPickBackground(profile.id) },
-                        onDeleteProfile = { onDeleteProfile(profile.id) }
-                    )
+                    presets[page].let {
+                        PlayPresetCard(
+                            profile = it,
+                            allFiles = files,
+                            onContinue = { saveName ->
+                                if (isCurrentPage) onContinue(
+                                    it.id,
+                                    saveName
+                                )
+                            },
+                            onStartFresh = { fileName ->
+                                if (isCurrentPage) onStartFresh(
+                                    it.id,
+                                    fileName
+                                )
+                            },
+                            onSaveVisuals = { newName, newColor ->
+                                onUpdateVisuals(
+                                    it.id,
+                                    newName,
+                                    newColor
+                                )
+                            },
+                            onPickBackground = { onPickBackground(it.id) },
+                            onDeleteProfile = { onDeleteProfile(it.id) }
+                        )
+                    }
                 }
             }
         }

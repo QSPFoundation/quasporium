@@ -10,7 +10,7 @@ import com.pixnpunk.database.model.SaveEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface SaveSlotDao {
+interface SaveDao {
     @Query("SELECT * FROM save WHERE gameId = :gameId ORDER BY timestamp DESC")
     fun observeSaves(gameId: Long): Flow<List<SaveEntity>>
 

@@ -1,4 +1,4 @@
-package com.pixnpunk.details.presentation.content.profile
+package com.pixnpunk.details.presentation.content.preset
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -46,7 +46,7 @@ import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalFlexBoxApi::class)
 @Composable
-fun <T> ProfileSplitButton(
+fun <T> PresetSplitButton(
     isPrimary: Boolean,
     text: String,
     icon: ImageVector,

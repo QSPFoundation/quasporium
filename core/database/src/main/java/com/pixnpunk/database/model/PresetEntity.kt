@@ -6,7 +6,7 @@ import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 
 @Entity(
-    tableName = "profile",
+    tableName = "preset",
     foreignKeys = [
         ForeignKey(
             entity = GameEntity::class,
@@ -16,12 +16,12 @@ import androidx.room.PrimaryKey
         )
     ]
 )
-data class ProfileEntity(
+data class PresetEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     @ColumnInfo(index = true)
     val gameId: Long = 0,
-    val profileName: String = "",
+    val presetName: String = "",
     val timestamp: Long = 0,
     val totalPlayTime: Long = 0,
     val lastPlayedFile: String? = null,

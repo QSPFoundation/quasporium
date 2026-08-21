@@ -6,20 +6,20 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.pixnpunk.database.dao.AuthorDao
 import com.pixnpunk.database.dao.GameDao
-import com.pixnpunk.database.dao.ProfileDao
-import com.pixnpunk.database.dao.SaveSlotDao
+import com.pixnpunk.database.dao.PresetDao
+import com.pixnpunk.database.dao.SaveDao
 import com.pixnpunk.database.dao.TranslatorDao
 import com.pixnpunk.database.model.AuthorEntity
 import com.pixnpunk.database.model.GameEntity
 import com.pixnpunk.database.model.GameFTS
-import com.pixnpunk.database.model.ProfileEntity
+import com.pixnpunk.database.model.PresetEntity
 import com.pixnpunk.database.model.SaveEntity
 import com.pixnpunk.database.model.TranslatorEntity
 
 @Database(
     entities = [
         GameEntity::class,
-        ProfileEntity::class,
+        PresetEntity::class,
         SaveEntity::class,
         GameFTS::class,
         AuthorEntity::class,
@@ -37,6 +37,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun gameDao(): GameDao
     abstract fun authorDao(): AuthorDao
     abstract fun translatorDao(): TranslatorDao
-    abstract fun profileDao(): ProfileDao
-    abstract fun saveSlotDao(): SaveSlotDao
+    abstract fun presetDao(): PresetDao
+    abstract fun saveDao(): SaveDao
 }

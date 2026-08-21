@@ -44,7 +44,7 @@ val gameDataModule = module {
     factory<SaveGameInteractor> { (engine: GameEngineInteractor) ->
         SaveGameInteractorImpl(
             vfsProvider = get(),
-            saveSlotDao = get(),
+            saveDao = get(),
             engineInteractor = engine
         )
     }

@@ -2,36 +2,28 @@ package com.pixnpunk.details.presentation.content
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Download
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.pixnpunk.details.presentation.R
-import com.pixnpunk.details.presentation.content.profile.DetailsProfileCarouselDock
+import com.pixnpunk.details.presentation.content.download.DetailsDownloadButtons
+import com.pixnpunk.details.presentation.content.preset.DetailsPresetsCarouselDock
 import com.pixnpunk.details.presentation.model.GameFileItem
-import com.pixnpunk.details.presentation.model.ProfileUIState
+import com.pixnpunk.details.presentation.model.PresetUIState
 import com.pixnpunk.dto.GameListType
 
 @Composable
 fun DetailsButtonsSet(
     gameType: GameListType,
-    profiles: List<ProfileUIState>,
+    presets: List<PresetUIState>,
     files: List<GameFileItem>,
     onCreateProfile: () -> Unit,
-    onUpdateVisuals: (profileId: Long, newName: String, newColor: Long) -> Unit,
-    onPickBackground: (profileId: Long) -> Unit,
-    onDeleteProfile: (profileId: Long) -> Unit,
+    onUpdateVisuals: (presetId: Long, newName: String, newColor: Long) -> Unit,
+    onPickBackground: (presetId: Long) -> Unit,
+    onDeleteProfile: (presetId: Long) -> Unit,
     onDownload: () -> Unit,
-    onContinue: (profileId: Long, savePath: String) -> Unit,
-    onStartFresh: (profileId: Long, fileName: String) -> Unit
+    onContinue: (presetId: Long, savePath: String) -> Unit,
+    onStartFresh: (presetId: Long, fileName: String) -> Unit
 ) {
     Column(
         modifier = Modifier.padding(4.dp),
@@ -40,9 +32,14 @@ fun DetailsButtonsSet(
         when (gameType) {
             GameListType.Unknown -> {}
 
-            GameListType.Playable -> {
-                DetailsProfileCarouselDock(
-                    profiles = profiles,
+            GameListType.Downloadable ->
+                DetailsDownloadButtons(
+                    onDownload = onDownload
+                )
+
+            GameListType.Playable ->
+                DetailsPresetsCarouselDock(
+                    presets = presets,
                     files = files,
                     onCreateProfile = onCreateProfile,
                     onUpdateVisuals = { profileId, newName, newColor ->
@@ -57,24 +54,6 @@ fun DetailsButtonsSet(
                     onContinue = onContinue,
                     onStartFresh = onStartFresh
                 )
-            }
-
-            GameListType.Downloadable -> {
-                FilledTonalButton(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = onDownload
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Download,
-                        contentDescription = null,
-                        modifier = Modifier.padding(end = 8.dp)
-                    )
-                    Text(
-                        style = MaterialTheme.typography.titleMedium,
-                        text = stringResource(R.string.download_button_description)
-                    )
-                }
-            }
         }
     }
 }

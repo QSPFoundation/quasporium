@@ -1,4 +1,4 @@
-package com.pixnpunk.details.presentation.content.profile
+package com.pixnpunk.details.presentation.content.preset
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -65,14 +65,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.pixnpunk.details.presentation.model.GameFileItem
-import com.pixnpunk.details.presentation.model.ProfileUIState
+import com.pixnpunk.details.presentation.model.PresetUIState
 import com.pixnpunk.details.presentation.theme.LocalProfileColors
 import com.pixnpunk.details.presentation.theme.ProfileThemePreset
 import com.pixnpunk.details.presentation.theme.rememberProfileColorScheme
 
 @Composable
-fun PlayProfileCard(
-    profile: ProfileUIState,
+fun PlayPresetCard(
+    profile: PresetUIState,
     allFiles: List<GameFileItem>,
     playTime: String = "0h 0m",
     onContinue: (savePath: String) -> Unit,
@@ -128,7 +128,7 @@ fun PlayProfileCard(
                                     value = editedName,
                                     onValueChange = { editedName = it },
                                     singleLine = true,
-                                    label = { Text("Profile name") },
+                                    label = { Text("Preset name") },
                                     shape = RoundedCornerShape(12.dp)
                                 )
                             } else {
@@ -136,7 +136,7 @@ fun PlayProfileCard(
                                     colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                                     overlineContent = {
                                         Text(
-                                            text = "Profile".uppercase(),
+                                            text = "Preset".uppercase(),
                                             style = MaterialTheme.typography.labelSmall,
                                             fontWeight = FontWeight.Bold,
                                             letterSpacing = 1.sp,
@@ -262,7 +262,7 @@ fun PlayProfileCard(
                                     verticalArrangement = Arrangement.spacedBy(10.dp)
                                 ) {
                                     if (lastSave != null) {
-                                        ProfileSplitButton(
+                                        PresetSplitButton(
                                             text = "Continue (${lastSave.displayName})",
                                             icon = Icons.Default.PlayArrow,
                                             isPrimary = true,
@@ -275,7 +275,7 @@ fun PlayProfileCard(
                                     }
 
                                     if (targetFile != null) {
-                                        ProfileSplitButton(
+                                        PresetSplitButton(
                                             text = if (lastSave != null) "Restart (${targetFile.displayName})" else "Start (${targetFile.displayName})",
                                             icon = Icons.Default.RestartAlt,
                                             isPrimary = lastSave == null,

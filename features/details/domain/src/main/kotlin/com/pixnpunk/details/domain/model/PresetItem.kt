@@ -3,7 +3,7 @@ package com.pixnpunk.details.domain.model
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class ProfileItem(
+data class PresetItem(
     val id: Long,
     val name: String,
     val timestamp: Long,

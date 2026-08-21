@@ -35,7 +35,6 @@ object AddonsUtils : KoinComponent {
                 Intent()
             } else {
                 Intent(get<Context>(), clazz).apply {
-                    putExtra("profileId", entity.profileId)
                     putExtra("gameId", entry.id)
                     putExtra("gameTitle", entry.title)
                     putExtra("gameDirUri", gameDir.uri.toString())
@@ -52,7 +51,6 @@ object AddonsUtils : KoinComponent {
                 Intent()
             } else {
                 Intent(get<Context>(), clazz).apply {
-                    putExtra("profileId", entity.profileId)
                     putExtra("gameId", entry.id)
                     putExtra("gameTitle", entry.title)
                     putExtra("gameDirUri", gameDir.uri.toString())

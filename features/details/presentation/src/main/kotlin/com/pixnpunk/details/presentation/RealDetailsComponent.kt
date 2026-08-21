@@ -45,21 +45,21 @@ class RealDetailsComponent(
     override fun onCreateProfile() =
         store.accept(DetailsStore.Intent.CreateProfile)
 
-    override fun onUpdateVisuals(profileId: Long, newName: String, newColor: Long) =
-        store.accept(DetailsStore.Intent.UpdateProfileVisuals(profileId, newName, newColor))
+    override fun onUpdateVisuals(presetId: Long, newName: String, newColor: Long) =
+        store.accept(DetailsStore.Intent.UpdateProfileVisuals(presetId, newName, newColor))
 
-    override fun onPickBackground(profileId: Long) {
+    override fun onPickBackground(presetId: Long) {
 
     }
 
-    override fun onDeleteProfile(profileId: Long) =
-        store.accept(DetailsStore.Intent.DeleteProfile(profileId))
+    override fun onDeleteProfile(presetId: Long) =
+        store.accept(DetailsStore.Intent.DeleteProfile(presetId))
 
-    override fun onStartFresh(profileId: Long, fileName: String) =
-        store.accept(DetailsStore.Intent.StartFresh(profileId, fileName))
+    override fun onStartFresh(presetId: Long, fileName: String) =
+        store.accept(DetailsStore.Intent.StartFresh(presetId, fileName))
 
-    override fun onContinueSave(profileId: Long, savePath: String) =
-        store.accept(DetailsStore.Intent.ContinueGame(profileId, savePath))
+    override fun onContinueSave(presetId: Long, savePath: String) =
+        store.accept(DetailsStore.Intent.ContinueGame(presetId, savePath))
 
     override fun convEntryData(
         entry: GameEntry

@@ -38,7 +38,6 @@ fun DetailsContent(
                     if (it.saveFile == null) {
                         component.launchFreshGame(
                             LaunchGameEntity(
-                                profileId = it.profileId,
                                 entryFile = it.entryFile,
                                 gameEntry = entry
                             )
@@ -46,7 +45,6 @@ fun DetailsContent(
                     } else {
                         component.launchContinueGame(
                             LaunchGameEntity(
-                                profileId = it.profileId,
                                 entryFile = it.entryFile,
                                 saveFile = it.saveFile,
                                 gameEntry = entry
@@ -89,7 +87,7 @@ fun DetailsContent(
             )
             DetailsButtonsSet(
                 gameType = entry.listId,
-                profiles = state.gameProfiles,
+                presets = state.gameProfiles,
                 files = state.gameFiles,
                 onCreateProfile = component::onCreateProfile,
                 onUpdateVisuals = component::onUpdateVisuals,
