@@ -13,7 +13,7 @@ internal class DirectVirtualFile(
 ) : VirtualFile {
 
     override val absPath: VfsPath get() = VfsPath(file.absolutePath)
-    override val uriPath: VfsPath get() = VfsPath(file.toUri().toString())
+    override val uriPath: VfsPath get() = VfsPath(file.toURI().toString())
     override val name: String get() = file.name
     override val isDirectory: Boolean get() = file.isDirectory
     override val isWritable: Boolean get() = file.canWrite()
