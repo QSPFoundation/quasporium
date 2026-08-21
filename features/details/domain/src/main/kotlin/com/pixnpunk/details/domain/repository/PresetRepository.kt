@@ -11,6 +11,6 @@ interface PresetRepository {
     suspend fun updateTimestamp(presetId: Long)
     suspend fun updateLastPlayedFile(presetId: Long, fileName: String)
     suspend fun updateVisuals(presetId: Long, name: String, accentColor: Long)
-    suspend fun saveBackgroundImage(presetId: Long, sourceUriBox: String): String
+    suspend fun saveBackgroundImage(presetId: Long, sourceUriBox: String)
     suspend fun removeBackgroundImage(presetId: Long)
 }

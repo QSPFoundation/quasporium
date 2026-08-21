@@ -1,6 +1,8 @@
 package com.pixnpunk.details.presentation
 
 import com.arkivanov.decompose.ComponentContext
+import com.arkivanov.essenty.statekeeper.ExperimentalStateKeeperApi
+import com.arkivanov.essenty.statekeeper.saveable
 import com.arkivanov.mvikotlin.core.instancekeeper.getStore
 import com.arkivanov.mvikotlin.extensions.coroutines.labels
 import com.arkivanov.mvikotlin.extensions.coroutines.stateFlow
@@ -13,6 +15,7 @@ import com.pixnpunk.dto.SettingsEntity
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.serialization.Serializable
 import org.koin.core.component.KoinComponent
 import org.ocpsoft.prettytime.PrettyTime
 import java.time.Instant
@@ -26,6 +29,7 @@ class RealDetailsComponent(
     private val componentContext: ComponentContext,
     private val defEntry: GameEntry,
     override val settingsState: StateFlow<SettingsEntity>,
+    private val launchBackPicker: () -> Unit,
     override val launchFreshGame: (LaunchGameEntity) -> Unit,
     override val launchContinueGame: (LaunchGameEntity) -> Unit,
     override val showEditGameDialog: (GameEntry) -> Unit,
@@ -38,6 +42,12 @@ class RealDetailsComponent(
         RealDetailsStore(DefaultStoreFactory(), defEntry).create()
     }
 
+    @OptIn(ExperimentalStateKeeperApi::class)
+    private var config: Config by saveable(
+        serializer = Config.serializer(),
+        init = ::Config
+    )
+
     @OptIn(ExperimentalCoroutinesApi::class)
     override val model: StateFlow<DetailsStore.State> = store.stateFlow
     override val label: Flow<DetailsStore.Label> = store.labels
@@ -48,8 +58,18 @@ class RealDetailsComponent(
     override fun onUpdateVisuals(presetId: Long, newName: String, newColor: Long) =
         store.accept(DetailsStore.Intent.UpdateProfileVisuals(presetId, newName, newColor))
 
-    override fun onPickBackground(presetId: Long) {
+    fun onSetBackground(uriString: String) {
+        store.accept(
+            DetailsStore.Intent.SetBackgroundImage(
+                config.presetId ?: return,
+                uriString
+            )
+        )
+    }
 
+    override fun onPickBackground(presetId: Long) {
+        config = Config(presetId)
+        launchBackPicker()
     }
 
     override fun onDeleteProfile(presetId: Long) =
@@ -99,4 +119,7 @@ class RealDetailsComponent(
                 else entry.modDate
         )
     }
+
+    @Serializable
+    private data class Config(val presetId: Long? = null)
 }

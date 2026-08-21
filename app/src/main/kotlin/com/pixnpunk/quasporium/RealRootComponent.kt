@@ -91,6 +91,8 @@ class RealRootComponent(
                     )
                 )
             )
+        } else {
+            detailsSlot.child?.instance?.onSetBackground(filePath)
         }
     }
 
@@ -157,6 +159,7 @@ class RealRootComponent(
                 componentContext = ctx,
                 defEntry = config.entry,
                 settingsState = settingsState,
+                launchBackPicker = launchFilePicker,
                 launchFreshGame = { launchEngineIntent(it) },
                 launchContinueGame = { launchEngineIntent(it) },
                 showEditGameDialog = {

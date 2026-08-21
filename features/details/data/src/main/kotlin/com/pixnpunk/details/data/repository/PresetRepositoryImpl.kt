@@ -2,6 +2,9 @@ package com.pixnpunk.details.data.repository
 
 import android.content.Context
 import androidx.core.net.toUri
+import com.anggrayudi.storage.file.MimeType
+import com.anggrayudi.storage.moveToFile
+import com.anggrayudi.storage.toStorageFile
 import com.pixnpunk.database.dao.PresetDao
 import com.pixnpunk.database.model.PresetEntity
 import com.pixnpunk.details.data.mapper.toDomain
@@ -75,35 +78,29 @@ internal class PresetRepositoryImpl(
     override suspend fun saveBackgroundImage(
         presetId: Long,
         sourceUriBox: String
-    ): String = withContext(Dispatchers.IO) {
+    ) = withContext(Dispatchers.IO) {
         val uri = sourceUriBox.toUri()
+        val file = uri.toStorageFile(context) ?: return@withContext
+
         val backgroundsDir = File(
             context.filesDir,
             "profile_backgrounds"
         ).apply { if (!exists()) mkdirs() }
 
-        // removeOldBackgroundFile(presetId)
+        removeOldBackgroundFile(presetId)
 
         val targetFile =
             File(
                 backgroundsDir,
-                "bg_${presetId}_${Clock.System.now().toEpochMilliseconds()}.jpg"
-            )
+                "bg_${presetId}_${
+                    Clock.System.now().toEpochMilliseconds()
+                }.${MimeType.getExtensionFromMimeType(file.mimeType)}"
+            ).toStorageFile(context)
 
-//        context.contentResolver.openInputStream(uri)?.use { input ->
-//            FileOutputStream(targetFile).use { output ->
-//                val buffer = ByteArray(8192)
-//                var bytesRead: Int
-//                while (input.read(buffer).also { bytesRead = it } != -1) {
-//                    output.write(buffer, 0, bytesRead)
-//                }
-//                output.flush()
-//            }
-//        } ?: throw IllegalStateException("Unable to open InputStream for URI: $sourceUriString")
+        file.moveToFile(targetFile)
 
-        val savedPath = targetFile.absolutePath
-        presetDao.updateBackground(presetId, savedPath)
-        savedPath
+        val savedUri = targetFile.absolutePath ?: return@withContext
+        presetDao.updateBackground(presetId, savedUri)
     }
 
     override suspend fun removeBackgroundImage(
