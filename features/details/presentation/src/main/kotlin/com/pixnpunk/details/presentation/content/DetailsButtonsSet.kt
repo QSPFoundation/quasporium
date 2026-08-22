@@ -42,13 +42,7 @@ fun DetailsButtonsSet(
                     presets = presets,
                     files = files,
                     onCreateProfile = onCreateProfile,
-                    onUpdateVisuals = { profileId, newName, newColor ->
-                        onUpdateVisuals(
-                            profileId,
-                            newName,
-                            newColor
-                        )
-                    },
+                    onUpdateVisuals = onUpdateVisuals,
                     onPickBackground = onPickBackground,
                     onDeleteProfile = onDeleteProfile,
                     onContinue = onContinue,
