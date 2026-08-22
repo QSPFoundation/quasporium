@@ -15,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.pixnpunk.main.presentation.content.MainContentActionsList
 import com.pixnpunk.webview.presentation.GameWebView
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -66,13 +66,17 @@ class RealObjectComponent(
                     annotatedText = AnnotatedString.fromHtml(item.title)
                 )
             },
+            textColor =
+                libConfig.fontColor
+                    .takeIf { !settings.isTextColorOverride && it != 0 }
+                    ?: settings.textColor,
             backColor =
                 libConfig.backColor
                     .takeIf { !settings.isBackColorOverride && it != 0 }
                     ?: settings.backColor,
             fontSize =
                 libConfig.fontSize
-                    .takeIf { settings.isUseGameFont && it != 0 }
+                    .takeIf { settings.isUseCustomFont && it != 0 }
                     ?: settings.fontSize,
             fontFamily = processed.fontFamily
         )

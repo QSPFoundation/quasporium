@@ -7,7 +7,6 @@ import kotlinx.serialization.Transient
 data class SettingsEntity(
     val typeface: FontTypeface = FontTypeface.DEFAULT,
     val fontSize: Int = 16,
-    val isUseGameFont: Boolean = false,
     val isUseCustomFont: Boolean = false,
     val customFontPath: String = "",
     val isTextColorOverride: Boolean = false,

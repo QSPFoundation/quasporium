@@ -52,8 +52,17 @@ class RealWebViewComponent(
             HtmlConfig(
                 typeface = appSet.typeface,
                 isUseHtml = libSet.isUseHtml,
+                isUseCustomFont = appSet.isUseCustomFont,
+                customFontPath = appSet.customFontPath,
+                isImgLoadDis = appSet.isImgLoadDis,
+                isAutoWidthImage = appSet.isAutoWidthImage,
+                imageWidth = appSet.imageWidth,
+                isAutoHeightImage = appSet.isAutoHeightImage,
+                imageHeight = appSet.imageHeight,
+                isUseFullscreenImages = appSet.isUseFullscreenImages,
+                isVideoMute = appSet.isVideoMute,
                 fontSize =
-                    libSet.fontSize.takeIf { appSet.isUseGameFont && it != 0 }
+                    libSet.fontSize.takeIf { appSet.isUseCustomFont && it != 0 }
                         ?: appSet.fontSize,
                 textColor =
                     libSet.fontColor.takeIf { !appSet.isTextColorOverride && it != 0 }
