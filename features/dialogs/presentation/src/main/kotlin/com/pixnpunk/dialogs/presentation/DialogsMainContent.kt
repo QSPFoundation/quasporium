@@ -1,6 +1,5 @@
 package com.pixnpunk.dialogs.presentation
 
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
@@ -9,7 +8,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -37,13 +35,9 @@ fun DialogsMainContent(
         DialogsState.DIALOG_ADD_GAME,
         DialogsState.DIALOG_EDIT_GAME -> {
             BasicAlertDialog(
-                onDismissRequest = component.onDismissed,
-                properties = DialogProperties(
-                    usePlatformDefaultWidth = false
-                )
+                onDismissRequest = component.onDismissed
             ) {
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
                     shape = MaterialTheme.shapes.large,
                     tonalElevation = AlertDialogDefaults.TonalElevation
                 ) {
