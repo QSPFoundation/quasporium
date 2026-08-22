@@ -3,6 +3,7 @@ package com.pixnpunk.details.presentation.content.preset
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -39,7 +40,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -66,6 +67,7 @@ fun <T> PresetSplitButton(
 
     val arrowRotation by animateFloatAsState(
         targetValue = if (isExpanded) 180f else 0f,
+        animationSpec = tween(),
         label = "ArrowRotation"
     )
 
@@ -149,7 +151,7 @@ fun <T> PresetSplitButton(
                         onClick = { isExpanded = !isExpanded }
                     ) {
                         Icon(
-                            modifier = Modifier.rotate(arrowRotation),
+                            modifier = Modifier.graphicsLayer { rotationZ = arrowRotation },
                             imageVector = Icons.Default.ArrowDropDown,
                             contentDescription = null
                         )
