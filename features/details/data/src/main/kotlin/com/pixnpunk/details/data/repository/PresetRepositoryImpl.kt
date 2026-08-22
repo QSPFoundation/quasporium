@@ -2,7 +2,12 @@ package com.pixnpunk.details.data.repository
 
 import android.content.Context
 import androidx.core.net.toUri
+import com.anggrayudi.storage.copyToFile
+import com.anggrayudi.storage.extension.toDocumentFile
 import com.anggrayudi.storage.file.MimeType
+import com.anggrayudi.storage.file.extension
+import com.anggrayudi.storage.file.openInputStream
+import com.anggrayudi.storage.file.openOutputStream
 import com.anggrayudi.storage.moveToFile
 import com.anggrayudi.storage.toStorageFile
 import com.pixnpunk.database.dao.PresetDao
@@ -10,11 +15,13 @@ import com.pixnpunk.database.model.PresetEntity
 import com.pixnpunk.details.data.mapper.toDomain
 import com.pixnpunk.details.domain.model.PresetItem
 import com.pixnpunk.details.domain.repository.PresetRepository
+import com.pixnpunk.utils.FileUtil.readFileContents
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.FileOutputStream
 import kotlin.time.Clock
 
 internal class PresetRepositoryImpl(
@@ -80,11 +87,11 @@ internal class PresetRepositoryImpl(
         sourceUriBox: String
     ) = withContext(Dispatchers.IO) {
         val uri = sourceUriBox.toUri()
-        val file = uri.toStorageFile(context) ?: return@withContext
+        val file = uri.toDocumentFile(context) ?: return@withContext
 
         val backgroundsDir = File(
             context.filesDir,
-            "profile_backgrounds"
+            "presets_backgrounds"
         ).apply { if (!exists()) mkdirs() }
 
         removeOldBackgroundFile(presetId)
@@ -94,10 +101,12 @@ internal class PresetRepositoryImpl(
                 backgroundsDir,
                 "bg_${presetId}_${
                     Clock.System.now().toEpochMilliseconds()
-                }.${MimeType.getExtensionFromMimeType(file.mimeType)}"
-            ).toStorageFile(context)
+                }.${file.extension}"
+            )
 
-        file.moveToFile(targetFile)
+        file.openInputStream(context)?.use { i ->
+            targetFile.writeBytes(i.readBytes())
+        }
 
         val savedUri = targetFile.absolutePath ?: return@withContext
         presetDao.updateBackground(presetId, savedUri)
