@@ -1,8 +1,8 @@
 package com.pixnpunk.details.presentation.content.preset
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -32,15 +32,16 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -59,13 +60,12 @@ fun PresetDockStation(
 
     val arrowRotation by animateFloatAsState(
         targetValue = if (isExpanded) 180f else 0f,
+        animationSpec = tween(),
         label = "DockArrowRotation"
     )
 
     OutlinedCard(
-        modifier = modifier
-            .fillMaxWidth()
-            .animateContentSize(),
+        modifier = modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.outlinedCardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow
@@ -76,10 +76,7 @@ fun PresetDockStation(
             )
         )
     ) {
-        Column(
-            modifier = Modifier.padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
+        Column(modifier = Modifier.padding(12.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -116,7 +113,7 @@ fun PresetDockStation(
                     modifier = Modifier.size(32.dp)
                 ) {
                     Icon(
-                        modifier = Modifier.rotate(arrowRotation),
+                        modifier = Modifier.graphicsLayer { rotationZ = arrowRotation },
                         imageVector = Icons.Default.KeyboardArrowDown,
                         contentDescription = if (isExpanded) "Collapse" else "Expand",
                     )
@@ -124,6 +121,7 @@ fun PresetDockStation(
             }
 
             AnimatedVisibility(
+                modifier = Modifier.padding(top = if (isExpanded) 12.dp else 0.dp),
                 visible = isExpanded,
                 enter = expandVertically() + fadeIn(),
                 exit = shrinkVertically() + fadeOut()
@@ -136,48 +134,50 @@ fun PresetDockStation(
                     presets.forEachIndexed { index, profile ->
                         val isSelected = selectedPageIndex == index
 
-                        FilterChip(
-                            selected = isSelected,
-                            onClick = { onSelectPage(index) },
-                            label = {
-                                Text(
-                                    text = profile.name,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                                )
-                            },
-                            leadingIcon = {
-                                if (profile.backImagePath.isNotBlank()) {
-                                    AsyncImage(
-                                        modifier = Modifier
-                                            .size(20.dp)
-                                            .clip(CircleShape),
-                                        model = profile.backImagePath,
-                                        contentDescription = null,
-                                        contentScale = ContentScale.Crop
+                        key(profile.id) {
+                            FilterChip(
+                                selected = isSelected,
+                                onClick = { onSelectPage(index) },
+                                label = {
+                                    Text(
+                                        text = profile.name,
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                                     )
-                                } else {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(20.dp)
-                                            .clip(CircleShape)
-                                            .background(Color(profile.accentColor)),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text(
-                                            text = profile.name.take(1).uppercase(),
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = Color.White,
-                                            fontWeight = FontWeight.Bold
+                                },
+                                leadingIcon = {
+                                    if (profile.backImagePath.isNotBlank()) {
+                                        AsyncImage(
+                                            modifier = Modifier
+                                                .size(20.dp)
+                                                .clip(CircleShape),
+                                            model = profile.backImagePath,
+                                            contentDescription = null,
+                                            contentScale = ContentScale.Crop
                                         )
+                                    } else {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(20.dp)
+                                                .clip(CircleShape)
+                                                .background(Color(profile.accentColor)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = profile.name.take(1).uppercase(),
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = Color.White,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
                                     }
-                                }
-                            },
-                            shape = CircleShape,
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                                selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                },
+                                shape = CircleShape,
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
                             )
-                        )
+                        }
                     }
 
                     SuggestionChip(
