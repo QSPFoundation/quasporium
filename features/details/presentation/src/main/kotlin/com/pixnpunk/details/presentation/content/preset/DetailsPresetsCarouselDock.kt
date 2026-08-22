@@ -1,8 +1,6 @@
 package com.pixnpunk.details.presentation.content.preset
 
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,18 +38,13 @@ fun DetailsPresetsCarouselDock(
     val coroutineScope = rememberCoroutineScope()
 
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .animateContentSize(
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioLowBouncy,
-                    stiffness = Spring.StiffnessMediumLow
-                )
-            ),
+        modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        if (presets.isNotEmpty()) {
+        AnimatedVisibility(
+            visible = presets.isNotEmpty()
+        ) {
             PresetDockStation(
                 modifier = Modifier.padding(horizontal = 8.dp),
                 presets = presets,
@@ -70,7 +63,8 @@ fun DetailsPresetsCarouselDock(
             state = pagerState,
             pageSpacing = 8.dp,
             contentPadding = PaddingValues(horizontal = 8.dp),
-            verticalAlignment = Alignment.Top
+            verticalAlignment = Alignment.Top,
+            key = { page -> if (page < presets.size) presets[page].id else "create_preset_card" }
         ) { page ->
             val isCurrentPage = pagerState.settledPage == page
 
@@ -90,33 +84,22 @@ fun DetailsPresetsCarouselDock(
                         onClick = { if (isCurrentPage) onCreateProfile() }
                     )
                 } else {
-                    presets[page].let {
-                        PlayPresetCard(
-                            profile = it,
-                            allFiles = files,
-                            onContinue = { saveName ->
-                                if (isCurrentPage) onContinue(
-                                    it.id,
-                                    saveName
-                                )
-                            },
-                            onStartFresh = { fileName ->
-                                if (isCurrentPage) onStartFresh(
-                                    it.id,
-                                    fileName
-                                )
-                            },
-                            onSaveVisuals = { newName, newColor ->
-                                onUpdateVisuals(
-                                    it.id,
-                                    newName,
-                                    newColor
-                                )
-                            },
-                            onPickBackground = { onPickBackground(it.id) },
-                            onDeleteProfile = { onDeleteProfile(it.id) }
-                        )
-                    }
+                    val profile = presets[page]
+                    PlayPresetCard(
+                        profile = profile,
+                        allFiles = files,
+                        onContinue = { saveName ->
+                            if (isCurrentPage) onContinue(profile.id, saveName)
+                        },
+                        onStartFresh = { fileName ->
+                            if (isCurrentPage) onStartFresh(profile.id, fileName)
+                        },
+                        onSaveVisuals = { newName, newColor ->
+                            onUpdateVisuals(profile.id, newName, newColor)
+                        },
+                        onPickBackground = { onPickBackground(profile.id) },
+                        onDeleteProfile = { onDeleteProfile(profile.id) }
+                    )
                 }
             }
         }
