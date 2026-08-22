@@ -91,9 +91,7 @@ fun PlayPresetCard(
 
     CompositionLocalProvider(LocalProfileColors provides profileColors) {
         Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .animateContentSize(),
+            modifier = Modifier.fillMaxWidth(),
             shape = MaterialTheme.shapes.medium,
             color = LocalProfileColors.current.cardContainer,
             contentColor = LocalProfileColors.current.onCardContainer,
@@ -281,12 +279,13 @@ fun PlayPresetCard(
                                     .pointerInput(Unit) {
                                         detectVerticalDragGestures { change, dragAmount ->
                                             change.consume()
-                                            if (dragAmount < -3f) isDrawerOpen = true
-                                            if (dragAmount > 3f) isDrawerOpen = false
+                                            if (dragAmount < -5f) isDrawerOpen = true
+                                            if (dragAmount > 5f) isDrawerOpen = false
                                         }
                                     }
                                     .clickable(
-                                        interactionSource = remember { MutableInteractionSource() }
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null
                                     ) {
                                         isDrawerOpen = !isDrawerOpen
                                     },
@@ -298,9 +297,7 @@ fun PlayPresetCard(
                                         .height(4.dp)
                                         .clip(MaterialTheme.shapes.small)
                                         .background(
-                                            LocalProfileColors.current.onCardContainer.copy(
-                                                alpha = 0.2f
-                                            )
+                                            LocalProfileColors.current.onCardContainer.copy(alpha = 0.2f)
                                         )
                                 )
                             }
