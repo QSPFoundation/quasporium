@@ -33,7 +33,6 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.RestartAlt
-import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -74,7 +73,6 @@ import com.pixnpunk.details.presentation.theme.rememberProfileColorScheme
 fun PlayPresetCard(
     profile: PresetUIState,
     allFiles: List<GameFileItem>,
-    playTime: String = "0h 0m",
     onContinue: (savePath: String) -> Unit,
     onStartFresh: (fileName: String) -> Unit,
     onSaveVisuals: (newName: String, newColor: Long) -> Unit,
@@ -155,31 +153,6 @@ fun PlayPresetCard(
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis
                                         )
-                                    },
-                                    supportingContent = {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                            modifier = Modifier.padding(top = 2.dp)
-                                        ) {
-                                            val color =
-                                                LocalProfileColors
-                                                    .current
-                                                    .onCardContainer
-                                                    .copy(alpha = 0.7f)
-                                            Icon(
-                                                modifier = Modifier.size(14.dp),
-                                                imageVector = Icons.Default.Schedule,
-                                                contentDescription = null,
-                                                tint = color
-                                            )
-                                            Text(
-                                                text = playTime,
-                                                style = MaterialTheme.typography.bodySmall,
-                                                fontWeight = FontWeight.Medium,
-                                                color = color
-                                            )
-                                        }
                                     }
                                 )
                             }
@@ -189,7 +162,37 @@ fun PlayPresetCard(
                             targetState = isEditing,
                             label = "BodyMorph"
                         ) { editing ->
-                            if (editing) {
+                            if (!editing) {
+                                Column(
+                                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                                ) {
+                                    if (lastSave != null) {
+                                        PresetSplitButton(
+                                            text = "Continue (${lastSave.displayName})",
+                                            icon = Icons.Default.PlayArrow,
+                                            isPrimary = true,
+                                            items = profile.saves,
+                                            itemLabel = { it.displayName },
+                                            listIcon = Icons.Default.History,
+                                            onClickMain = { onContinue(lastSave.path) },
+                                            onSelectItem = { onContinue(it.path) }
+                                        )
+                                    }
+
+                                    if (targetFile != null) {
+                                        PresetSplitButton(
+                                            text = if (lastSave != null) "Restart (${targetFile.displayName})" else "Start (${targetFile.displayName})",
+                                            icon = Icons.Default.RestartAlt,
+                                            isPrimary = lastSave == null,
+                                            items = allFiles,
+                                            itemLabel = { it.displayName },
+                                            listIcon = Icons.Default.Description,
+                                            onClickMain = { onStartFresh(targetFile.path) },
+                                            onSelectItem = { onStartFresh(it.path) }
+                                        )
+                                    }
+                                }
+                            } else {
                                 Column(
                                     verticalArrangement = Arrangement.spacedBy(16.dp)
                                 ) {
@@ -197,7 +200,9 @@ fun PlayPresetCard(
                                         text = "ACCENT COLOR",
                                         style = MaterialTheme.typography.labelSmall,
                                         fontWeight = FontWeight.Bold,
-                                        color = LocalProfileColors.current.onCardContainer.copy(alpha = 0.6f)
+                                        color = LocalProfileColors.current.onCardContainer.copy(
+                                            alpha = 0.6f
+                                        )
                                     )
 
                                     Row(
@@ -243,7 +248,9 @@ fun PlayPresetCard(
                                         horizontalArrangement = Arrangement.End,
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        TextButton(onClick = { isEditing = false }) { Text("Cancel") }
+                                        TextButton(onClick = {
+                                            isEditing = false
+                                        }) { Text("Cancel") }
                                         Spacer(modifier = Modifier.width(8.dp))
                                         Button(
                                             onClick = {
@@ -255,36 +262,6 @@ fun PlayPresetCard(
                                                 contentColor = LocalProfileColors.current.onPrimaryButton
                                             )
                                         ) { Text("Save") }
-                                    }
-                                }
-                            } else {
-                                Column(
-                                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                                ) {
-                                    if (lastSave != null) {
-                                        PresetSplitButton(
-                                            text = "Continue (${lastSave.displayName})",
-                                            icon = Icons.Default.PlayArrow,
-                                            isPrimary = true,
-                                            items = profile.saves,
-                                            itemLabel = { it.displayName },
-                                            listIcon = Icons.Default.History,
-                                            onClickMain = { onContinue(lastSave.path) },
-                                            onSelectItem = { onContinue(it.path) }
-                                        )
-                                    }
-
-                                    if (targetFile != null) {
-                                        PresetSplitButton(
-                                            text = if (lastSave != null) "Restart (${targetFile.displayName})" else "Start (${targetFile.displayName})",
-                                            icon = Icons.Default.RestartAlt,
-                                            isPrimary = lastSave == null,
-                                            items = allFiles,
-                                            itemLabel = { it.displayName },
-                                            listIcon = Icons.Default.Description,
-                                            onClickMain = { onStartFresh(targetFile.path) },
-                                            onSelectItem = { onStartFresh(it.path) }
-                                        )
                                     }
                                 }
                             }
@@ -320,7 +297,11 @@ fun PlayPresetCard(
                                         .width(32.dp)
                                         .height(4.dp)
                                         .clip(MaterialTheme.shapes.small)
-                                        .background(LocalProfileColors.current.onCardContainer.copy(alpha = 0.2f))
+                                        .background(
+                                            LocalProfileColors.current.onCardContainer.copy(
+                                                alpha = 0.2f
+                                            )
+                                        )
                                 )
                             }
 
