@@ -92,6 +92,7 @@ fun DetailsContent(
                 onCreateProfile = component::onCreateProfile,
                 onUpdateVisuals = component::onUpdateVisuals,
                 onPickBackground = component::onPickBackground,
+                onRemoveBackground = component::onRemoveBackground,
                 onDeleteProfile = component::onDeleteProfile,
                 onDownload = { component.showDownloadGameDialog(entry) },
                 onContinue = component::onContinueSave,

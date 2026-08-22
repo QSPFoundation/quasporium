@@ -72,6 +72,9 @@ class RealDetailsComponent(
         launchBackPicker()
     }
 
+    override fun onRemoveBackground(presetId: Long) =
+        store.accept(DetailsStore.Intent.RemoveBackgroundImage(presetId))
+
     override fun onDeleteProfile(presetId: Long) =
         store.accept(DetailsStore.Intent.DeleteProfile(presetId))
 

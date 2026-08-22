@@ -20,6 +20,7 @@ fun DetailsButtonsSet(
     onCreateProfile: () -> Unit,
     onUpdateVisuals: (presetId: Long, newName: String, newColor: Long) -> Unit,
     onPickBackground: (presetId: Long) -> Unit,
+    onRemoveBackground: (presetId: Long) -> Unit,
     onDeleteProfile: (presetId: Long) -> Unit,
     onDownload: () -> Unit,
     onContinue: (presetId: Long, savePath: String) -> Unit,
@@ -44,6 +45,7 @@ fun DetailsButtonsSet(
                     onCreateProfile = onCreateProfile,
                     onUpdateVisuals = onUpdateVisuals,
                     onPickBackground = onPickBackground,
+                    onRemoveBackground = onRemoveBackground,
                     onDeleteProfile = onDeleteProfile,
                     onContinue = onContinue,
                     onStartFresh = onStartFresh

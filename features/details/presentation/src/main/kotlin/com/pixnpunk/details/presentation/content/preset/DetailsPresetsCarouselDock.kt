@@ -29,6 +29,7 @@ fun DetailsPresetsCarouselDock(
     onCreateProfile: () -> Unit,
     onUpdateVisuals: (profileId: Long, newName: String, newColor: Long) -> Unit,
     onPickBackground: (profileId: Long) -> Unit,
+    onRemoveBackground: (profileId: Long) -> Unit,
     onDeleteProfile: (profileId: Long) -> Unit,
     onContinue: (profileId: Long, savePath: String) -> Unit,
     onStartFresh: (profileId: Long, fileName: String) -> Unit
@@ -98,6 +99,7 @@ fun DetailsPresetsCarouselDock(
                             onUpdateVisuals(profile.id, newName, newColor)
                         },
                         onPickBackground = { onPickBackground(profile.id) },
+                        onRemoveBackground = { onRemoveBackground(profile.id) },
                         onDeleteProfile = { onDeleteProfile(profile.id) }
                     )
                 }

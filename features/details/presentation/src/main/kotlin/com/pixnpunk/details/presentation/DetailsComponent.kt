@@ -24,6 +24,7 @@ sealed interface DetailsComponent {
     fun onCreateProfile()
     fun onUpdateVisuals(presetId: Long, newName: String, newColor: Long)
     fun onPickBackground(presetId: Long)
+    fun onRemoveBackground(presetId: Long)
     fun onDeleteProfile(presetId: Long)
     fun onStartFresh(presetId: Long, fileName: String)
     fun onContinueSave(presetId: Long, savePath: String)
