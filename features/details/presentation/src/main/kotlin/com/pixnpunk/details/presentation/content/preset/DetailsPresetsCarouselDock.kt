@@ -65,7 +65,7 @@ fun DetailsPresetsCarouselDock(
             pageSpacing = 8.dp,
             contentPadding = PaddingValues(horizontal = 8.dp),
             verticalAlignment = Alignment.Top,
-            key = { page -> if (page < presets.size) presets[page].id else "create_preset_card" }
+            key = { page -> if (page < presets.size) presets[page].id else "create_preset_card_${presets.size}" }
         ) { page ->
             val isCurrentPage = pagerState.settledPage == page
 
