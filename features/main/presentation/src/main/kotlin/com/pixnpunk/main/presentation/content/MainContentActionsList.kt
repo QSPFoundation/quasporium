@@ -95,11 +95,11 @@ fun MainContentActionsList(
             }
         ) {
             animatedActions.forEachIndexed { index, item ->
-                key(item.original.title + index) {
+                key(item.original.title) {
                     ActionCell(
                         modifier =
                             Modifier
-                                .flex { grow(1f) }
+                                .flex { basis(140.dp); grow(1f) }
                                 .widthIn(min = 140.dp),
                         item = item,
                         textStyle = textStyle,
