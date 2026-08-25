@@ -86,6 +86,7 @@ fun DetailsContent(
                 prefFormat = settings.binaryPref
             )
             DetailsButtonsSet(
+                isLoading = state.isLoading,
                 gameType = entry.listId,
                 presets = state.gameProfiles,
                 files = state.gameFiles,

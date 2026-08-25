@@ -7,6 +7,7 @@ import com.pixnpunk.details.presentation.model.GameFileItem
 import com.pixnpunk.details.presentation.model.GameSaveItem
 import com.pixnpunk.details.presentation.model.PresetUIState
 import com.pixnpunk.dto.GameListType
+import com.pixnpunk.logger.AppLogger
 import com.pixnpunk.stock.domain.usecase.ObserveEntryByIdUseCase
 import com.pixnpunk.utils.DirUtil.receiveGameFilesFromDir
 import com.pixnpunk.utils.DirUtil.receiveGameSavesFromDir
@@ -19,6 +20,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class DetailsExecutor(
+    private val logger: AppLogger,
     private val observeEntryByIdUseCase: ObserveEntryByIdUseCase,
     private val presetRepository: PresetRepository,
     private val savesRepository: SavesRepository
@@ -108,79 +110,100 @@ class DetailsExecutor(
         val entry = action.entry
         if (entry.listId != GameListType.Playable) return
 
+        observeDB(entry.id)
+
         scope.launch(Dispatchers.IO) {
-            val files = receiveGameFilesFromDir(
-                entry.gameDirPath
-            ).map {
-                GameFileItem(
-                    displayName = if (it.isNotBlank()) it.receiveFullName() else "",
-                    path = it
-                )
-            }
-            withContext(Dispatchers.Main) {
-                dispatch(DetailsStore.Message.UpdateGameFiles(files))
-            }
-
-            val diskPaths = receiveGameSavesFromDir(entry.gameDirPath)
-            val dbSaves = savesRepository.getAllSaves(entry.id)
-            val dbPaths = dbSaves.map { it.filePath }
-
-            diskPaths
-                .filterNot { dbPaths.contains(it) }
-                .forEach { path ->
-                    savesRepository.insertSave(
-                        gameId = entry.id,
-                        userTitle = path.receiveBaseName(),
-                        filePath = path
-                    )
-                }
-
-            dbSaves
-                .filterNot { diskPaths.contains(it.filePath) }
-                .forEach { save ->
-                    savesRepository.deleteSave(save.id)
-                }
-
-            combine(
-                observeEntryByIdUseCase.execute(entry.id).filterNotNull(),
-                presetRepository.observeAllPresets(entry.id),
-                savesRepository.observeAllSaves(entry.id)
-            ) { gameEntry, profiles, allSaves ->
-                gameEntry to profiles.map { profile ->
-                    PresetUIState(
-                        id = profile.id,
-                        name = profile.name,
-                        lastPlayedFile = profile.lastPlayedFile?.let { path ->
-                            GameFileItem(displayName = path.receiveFullName(), path = path)
-                        },
-                        saves =
-                            allSaves.map { save ->
-                                GameSaveItem(
-                                    displayName = save.userTitle,
-                                    path = save.filePath
-                                )
-                            },
-                        accentColor =
-                            if (profile.accentColor != 0L) {
-                                profile.accentColor
-                            } else {
-                                val defaultPresets = longArrayOf(
-                                    0xFFD9534FL, 0xFF3B9E9BL, 0xFF8E6FB9L, 0xFFD48B38L
-                                )
-                                defaultPresets[
-                                    (profile.id % defaultPresets.size).toInt()
-                                        .coerceAtLeast(0)
-                                ]
-                            },
-                        backImagePath = profile.backImagePath
-                    )
-                }
-            }.collect { (gameEntry, convProfiles) ->
-                withContext(Dispatchers.Main) {
-                    dispatch(DetailsStore.Message.UpdateEntry(gameEntry))
-                    dispatch(DetailsStore.Message.UpdateProfiles(convProfiles))
-                }
+            runCatching {
+                launch { syncGameFiles(entry.gameDirPath) }
+                launch { syncSaves(entry.id, entry.gameDirPath) }
+            }.onFailure {
+                logger.recordNonFatalException(it)
             }
         }
+    }
+
+    private fun observeDB(entryId: Long) = scope.launch(Dispatchers.Default) {
+        combine(
+            observeEntryByIdUseCase.execute(entryId).filterNotNull(),
+            presetRepository.observeAllPresets(entryId),
+            savesRepository.observeAllSaves(entryId)
+        ) { gameEntry, profiles, allSaves ->
+            gameEntry to profiles.map { profile ->
+                PresetUIState(
+                    id = profile.id,
+                    name = profile.name,
+                    lastPlayedFile = profile.lastPlayedFile?.let { path ->
+                        GameFileItem(displayName = path.receiveFullName(), path = path)
+                    },
+                    saves =
+                        allSaves.map { save ->
+                            GameSaveItem(
+                                displayName = save.userTitle,
+                                path = save.filePath
+                            )
+                        },
+                    accentColor =
+                        if (profile.accentColor != 0L) {
+                            profile.accentColor
+                        } else {
+                            val defaultPresets = longArrayOf(
+                                0xFFD9534FL, 0xFF3B9E9BL, 0xFF8E6FB9L, 0xFFD48B38L
+                            )
+                            defaultPresets[
+                                (profile.id % defaultPresets.size).toInt()
+                                    .coerceAtLeast(0)
+                            ]
+                        },
+                    backImagePath = profile.backImagePath
+                )
+            }
+        }.collect { (gameEntry, convProfiles) ->
+            withContext(Dispatchers.Main) {
+                dispatch(DetailsStore.Message.UpdateEntry(gameEntry))
+                dispatch(DetailsStore.Message.UpdateProfiles(convProfiles))
+                dispatch(DetailsStore.Message.SetLoading(false))
+            }
+        }
+    }
+
+    private suspend fun syncGameFiles(gameDirPath: String) {
+        val files = receiveGameFilesFromDir(
+            rootDirPath = gameDirPath
+        ).map {
+            GameFileItem(
+                displayName = if (it.isNotBlank()) it.receiveFullName() else "",
+                path = it
+            )
+        }
+        withContext(Dispatchers.Main) {
+            dispatch(DetailsStore.Message.UpdateGameFiles(files))
+        }
+    }
+
+    private suspend fun syncSaves(
+        entryId: Long,
+        gameDirPath: String
+    ) {
+        val diskPaths = receiveGameSavesFromDir(gameDirPath)
+        val dbSaves = savesRepository.getAllSaves(entryId)
+
+        val dbPathsSet = dbSaves.map { it.filePath }.toSet()
+        val diskPathsSet = diskPaths.toSet()
+
+        diskPaths
+            .filterNot { it in dbPathsSet }
+            .forEach { path ->
+                savesRepository.insertSave(
+                    gameId = entryId,
+                    userTitle = path.receiveBaseName(),
+                    filePath = path
+                )
+            }
+
+        dbSaves
+            .filterNot { it.filePath in diskPathsSet }
+            .forEach { save ->
+                savesRepository.deleteSave(save.id)
+            }
     }
 }

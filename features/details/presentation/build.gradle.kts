@@ -29,6 +29,7 @@ android {
 dependencies {
     implementation(project(":core:dto"))
     implementation(project(":core:utils"))
+    implementation(project(":core:logger"))
 
     implementation(project(":features:stock:domain"))
     implementation(project(":features:settings:domain"))

@@ -14,6 +14,7 @@ import com.pixnpunk.dto.GameListType
 
 @Composable
 fun DetailsButtonsSet(
+    isLoading: Boolean,
     gameType: GameListType,
     presets: List<PresetUIState>,
     files: List<GameFileItem>,
@@ -40,6 +41,7 @@ fun DetailsButtonsSet(
 
             GameListType.Playable ->
                 DetailsPresetsCarouselDock(
+                    isLoading = isLoading,
                     presets = presets,
                     files = files,
                     onCreateProfile = onCreateProfile,

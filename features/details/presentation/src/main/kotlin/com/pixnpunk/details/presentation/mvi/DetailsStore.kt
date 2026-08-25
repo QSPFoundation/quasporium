@@ -9,6 +9,7 @@ import kotlinx.serialization.Serializable
 sealed interface DetailsStore : Store<DetailsStore.Intent, DetailsStore.State, DetailsStore.Label> {
     @Serializable
     data class State(
+        val isLoading: Boolean = true,
         val gameEntry: GameEntry,
         val gameProfiles: List<PresetUIState> = emptyList(),
         val gameFiles: List<GameFileItem> = emptyList()
@@ -25,6 +26,7 @@ sealed interface DetailsStore : Store<DetailsStore.Intent, DetailsStore.State, D
     }
 
     sealed interface Message {
+        data class SetLoading(val isLoading: Boolean) : Message
         data class UpdateEntry(val entry: GameEntry) : Message
         data class UpdateProfiles(val profiles: List<PresetUIState>) : Message
         data class UpdateGameFiles(val files: List<GameFileItem>) : Message

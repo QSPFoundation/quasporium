@@ -22,11 +22,13 @@ class RealDetailsStore(
                 DetailsExecutor(
                     get(),
                     get(),
+                    get(),
                     get()
                 )
             },
             reducer = { msg ->
                 when (msg) {
+                    is DetailsStore.Message.SetLoading -> copy(isLoading = msg.isLoading)
                     is DetailsStore.Message.UpdateEntry -> copy(gameEntry = msg.entry)
                     is DetailsStore.Message.UpdateProfiles -> copy(gameProfiles = msg.profiles)
                     is DetailsStore.Message.UpdateGameFiles -> copy(gameFiles = msg.files)
