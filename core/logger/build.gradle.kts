@@ -26,8 +26,6 @@ android {
 
 dependencies {
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.material)
 
     implementation(project.dependencies.platform(libs.koin.bom))
     implementation(libs.koin.android)
