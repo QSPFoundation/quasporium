@@ -23,8 +23,7 @@
 -keep class org.ocpsoft.prettytime.i18n.** { *; }
 
 -keep class com.libqsp.jni.** { *; }
--keep class com.libsdhqs.jni.** { *; }
--keep class com.libsnxqs.jni.** { *; }
+-keep class com.libqsplegacy.jni.** { *; }
 
 -keep class net.sf.sevenzipjbinding.** { *; }
 
