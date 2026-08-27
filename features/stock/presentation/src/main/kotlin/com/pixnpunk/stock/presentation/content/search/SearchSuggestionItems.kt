@@ -8,15 +8,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.pixnpunk.stock.domain.model.SearchToken
+import com.pixnpunk.stock.presentation.model.SearchTokenUI
 
 @Composable
 fun SearchSuggestionItem(
-    token: SearchToken,
+    token: SearchTokenUI,
     icon: ImageVector,
     onClick: () -> Unit
 ) {
     ListItem(
+        modifier = Modifier.clickable { onClick() },
         headlineContent = { Text(token.displayText) },
         leadingContent = {
             Icon(
@@ -24,7 +25,6 @@ fun SearchSuggestionItem(
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
-        },
-        modifier = Modifier.clickable { onClick() }
+        }
     )
 }

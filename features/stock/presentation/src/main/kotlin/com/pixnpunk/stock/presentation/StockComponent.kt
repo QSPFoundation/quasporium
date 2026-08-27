@@ -5,6 +5,7 @@ import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.stock.domain.model.SearchToken
 import com.pixnpunk.stock.domain.model.SortBy
+import com.pixnpunk.stock.presentation.model.SearchTokenUI
 import com.pixnpunk.stock.presentation.mvi.StockStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
@@ -31,8 +32,8 @@ sealed interface StockComponent {
     fun updateSearchQuery(query: String)
     fun executeSearch()
 
-    fun addToken(token: SearchToken)
-    fun removeToken(token: SearchToken)
+    fun addToken(token: SearchTokenUI)
+    fun removeToken(token: SearchTokenUI)
 
     fun enterDeleteMode()
     fun exitDeleteMode()

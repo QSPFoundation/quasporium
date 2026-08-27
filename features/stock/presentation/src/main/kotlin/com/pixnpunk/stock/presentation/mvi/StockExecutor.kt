@@ -5,6 +5,8 @@ import com.pixnpunk.stock.domain.model.SearchToken
 import com.pixnpunk.stock.domain.model.SearchTokenType
 import com.pixnpunk.stock.domain.model.SortOrder
 import com.pixnpunk.stock.domain.usecase.DeleteLocalGameEntriesUseCase
+import com.pixnpunk.stock.presentation.mapper.toDomain
+import com.pixnpunk.stock.presentation.mapper.toUI
 import com.pixnpunk.stock.presentation.mvi.StockStore.Message.ChangeStateDeleteMode
 import com.pixnpunk.stock.presentation.mvi.StockStore.Message.ClearSelection
 import com.pixnpunk.stock.presentation.mvi.StockStore.Message.SelectionUpdated
@@ -68,16 +70,21 @@ class StockExecutor(
 
             is StockStore.Intent.ExecuteSearch -> {
                 if (state().searchQuery.length >= 3) {
-                    val newRecent = state().recentSearches + SearchToken(
-                        state().searchQuery,
-                        SearchTokenType.TITLE,
-                        state().searchQuery
-                    )
-                    dispatch(
-                        StockStore.Message.UpdateRecentSearches(
-                            newRecent.toSet().toList()
-                        )
-                    )
+                    scope.launch(Dispatchers.Default) {
+                        state().recentSearches.toDomain().plus(
+                            SearchToken(
+                                state().searchQuery,
+                                SearchTokenType.TITLE,
+                                state().searchQuery
+                            )
+                        ).toSet().toList().toUI().let { recent ->
+                            withContext(Dispatchers.Main) {
+                                dispatch(
+                                    StockStore.Message.UpdateRecentSearches(recent)
+                                )
+                            }
+                        }
+                    }
                 }
                 dispatch(StockStore.Message.ChangeStateSearch(false))
             }

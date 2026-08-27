@@ -22,14 +22,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.pixnpunk.stock.domain.model.SearchToken
 import com.pixnpunk.stock.domain.model.SearchTokenType
+import com.pixnpunk.stock.presentation.model.SearchTokenUI
 
 fun LazyListScope.expandedSearchQueryDefault(
     searchQuery: String,
-    recentSearches: List<SearchToken>,
+    recentSearches: List<SearchTokenUI>,
     suggestedAuthors: List<String>,
     suggestedTranslators: List<String>,
     addSearch: (String) -> Unit,
-    addToken: (SearchToken) -> Unit
+    addToken: (SearchTokenUI) -> Unit
 ) {
     if (recentSearches.isNotEmpty()) {
         item { SearchSectionHeader("Recent") }
@@ -60,7 +61,7 @@ fun LazyListScope.expandedSearchQueryEmpty(
     searchQuery: String,
     suggestedAuthors: List<String>,
     suggestedTranslators: List<String>,
-    addToken: (SearchToken) -> Unit
+    addToken: (SearchTokenUI) -> Unit
 ) {
     item {
         Column(
@@ -96,10 +97,10 @@ fun LazyListScope.expandedSearchQueryNotEmpty(
     suggestedTranslators: List<String>,
     searchQuery: String,
     addSearch: (String) -> Unit,
-    addToken: (SearchToken) -> Unit
+    addToken: (SearchTokenUI) -> Unit
 ) {
     item {
-        val titleToken = SearchToken(
+        val titleToken = SearchTokenUI(
             value = searchQuery,
             type = SearchTokenType.TITLE,
             displayText = "In title: $searchQuery"
@@ -112,7 +113,7 @@ fun LazyListScope.expandedSearchQueryNotEmpty(
     }
 
     item {
-        val descToken = SearchToken(
+        val descToken = SearchTokenUI(
             value = searchQuery,
             type = SearchTokenType.DESCRIPTION,
             displayText = "In description: $searchQuery"
@@ -136,7 +137,7 @@ fun LazyListScope.expandedSearchListsSuggestion(
     isSearch: Boolean,
     suggestedAuthors: List<String>,
     suggestedTranslators: List<String>,
-    addToken: (SearchToken) -> Unit
+    addToken: (SearchTokenUI) -> Unit
 ) {
     if (suggestedAuthors.isNotEmpty()) {
         item {
@@ -149,7 +150,7 @@ fun LazyListScope.expandedSearchListsSuggestion(
             )
         }
         items(suggestedAuthors) { author ->
-            val token = SearchToken(
+            val token = SearchTokenUI(
                 value = author,
                 type = SearchTokenType.AUTHOR,
                 displayText = author
@@ -173,7 +174,7 @@ fun LazyListScope.expandedSearchListsSuggestion(
             )
         }
         items(suggestedTranslators) { translator ->
-            val token = SearchToken(
+            val token = SearchTokenUI(
                 value = translator,
                 type = SearchTokenType.TRANSLATOR,
                 displayText = translator

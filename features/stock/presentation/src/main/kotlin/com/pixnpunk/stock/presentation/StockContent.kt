@@ -1,11 +1,13 @@
 package com.pixnpunk.stock.presentation
 
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -37,6 +39,8 @@ import com.pixnpunk.stock.presentation.content.StockFloatButton
 import com.pixnpunk.stock.presentation.content.StockInstalledChild
 import com.pixnpunk.stock.presentation.content.StockLibraryChild
 import com.pixnpunk.stock.presentation.content.StockSearchAppBar
+import com.pixnpunk.stock.presentation.model.FabType
+import com.pixnpunk.stock.presentation.model.TabState
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -45,45 +49,28 @@ fun StockContent(
     component: StockComponent
 ) {
     val focusManager = LocalFocusManager.current
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     val model by component.model.collectAsState()
     val settings by component.settingsState.collectAsState()
-
-    val lazyLocalPagingItems = component.gameLocalPageFlow.collectAsLazyPagingItems()
-
     val authorSuggestions by component.authorSuggestionsFlow.collectAsState(emptyList())
     val translatorSuggestions by component.translatorSuggestionsFlow.collectAsState(emptyList())
-
-    val scope = rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
+    val lazyLocalPagingItems = component.gameLocalPageFlow.collectAsLazyPagingItems()
 
     val scrollBehavior = BottomAppBarDefaults.exitAlwaysScrollBehavior()
 
     val gridState = rememberLazyGridState()
     val listState = rememberLazyListState()
-
-    val isAtTop by remember {
-        derivedStateOf {
-            gridState.firstVisibleItemIndex == 0 && gridState.firstVisibleItemScrollOffset == 0
-        }
-    }
-
     val pagerState = rememberPagerState { TabState.entries.size }
 
-    LaunchedEffect(gridState.isScrollInProgress) {
-        if (gridState.isScrollInProgress) {
-            focusManager.clearFocus()
-        }
-    }
+    val isAtTop by remember { derivedStateOf { !gridState.canScrollBackward } }
 
-    LaunchedEffect(listState.isScrollInProgress) {
-        if (listState.isScrollInProgress) {
-            focusManager.clearFocus()
-        }
-    }
-
-    LaunchedEffect(pagerState.isScrollInProgress) {
-        if (pagerState.isScrollInProgress) {
+    val isAnyScrollInProgress = gridState.isScrollInProgress ||
+            listState.isScrollInProgress ||
+            pagerState.isScrollInProgress
+    LaunchedEffect(isAnyScrollInProgress) {
+        if (isAnyScrollInProgress) {
             focusManager.clearFocus()
         }
     }
@@ -131,52 +118,56 @@ fun StockContent(
             }
         },
         floatingActionButton = {
-            AnimatedVisibility(
-                visible = pagerState.currentPage == TabState.INSTALLED.ordinal
-                        && !model.isDeleteModeActive,
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                StockFloatButton(
-                    onClick = component.showDialogAdd,
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Filled.Add,
-                            contentDescription = null
-                        )
-                    }
-                )
+            val currentTab = TabState.entries.getOrNull(pagerState.currentPage)
+            val fabType = when {
+                model.isDeleteModeActive -> null
+                currentTab == TabState.INSTALLED -> FabType.ADD
+                currentTab == TabState.LIBRARY && !isAtTop -> FabType.SCROLL_TO_TOP
+                else -> null
             }
-            AnimatedVisibility(
-                visible = !isAtTop
-                        && pagerState.currentPage == TabState.LIBRARY.ordinal,
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                StockFloatButton(
-                    onClick = {
-                        scope.launch {
-                            launch {
-                                gridState.animateScrollToItem(0)
-                            }
-                            launch {
-                                val currentOffset = scrollBehavior.state.heightOffset
-                                Animatable(currentOffset).animateTo(
-                                    targetValue = 0f,
-                                    animationSpec = tween(durationMillis = 200)
-                                ) {
-                                    scrollBehavior.state.heightOffset = value
+
+            AnimatedContent(
+                targetState = fabType,
+                transitionSpec = { fadeIn() togetherWith fadeOut() },
+                label = "FabTransition"
+            ) { target ->
+                when (target) {
+                    null -> Unit
+
+                    FabType.ADD -> StockFloatButton(
+                        onClick = component.showDialogAdd,
+                        icon = {
+                            Icon(
+                                imageVector = Icons.Filled.Add,
+                                contentDescription = null
+                            )
+                        }
+                    )
+
+                    FabType.SCROLL_TO_TOP -> StockFloatButton(
+                        onClick = {
+                            scope.launch {
+                                launch { gridState.animateScrollToItem(0) }
+                                launch {
+                                    Animatable(
+                                        scrollBehavior.state.heightOffset
+                                    ).animateTo(
+                                        targetValue = 0f,
+                                        animationSpec = tween(durationMillis = 200)
+                                    ) {
+                                        scrollBehavior.state.heightOffset = value
+                                    }
                                 }
                             }
+                        },
+                        icon = {
+                            Icon(
+                                imageVector = Icons.Filled.ArrowUpward,
+                                contentDescription = null
+                            )
                         }
-                    },
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowUpward,
-                            contentDescription = null
-                        )
-                    }
-                )
+                    )
+                }
             }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
@@ -184,9 +175,10 @@ fun StockContent(
         HorizontalPager(
             modifier = Modifier
                 .padding(paddingValues)
-                .fillMaxHeight(),
+                .fillMaxSize(),
             verticalAlignment = Alignment.Top,
-            state = pagerState
+            state = pagerState,
+            key = { TabState.entries[it] }
         ) {
             when (it) {
                 TabState.LIBRARY.ordinal ->

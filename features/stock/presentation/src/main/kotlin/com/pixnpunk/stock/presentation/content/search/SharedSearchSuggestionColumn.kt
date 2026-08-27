@@ -8,16 +8,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.pixnpunk.stock.domain.model.SearchToken
+import com.pixnpunk.stock.presentation.model.SearchTokenUI
 
 @Composable
 fun ColumnScope.SharedSearchSuggestionColumn(
     suggestedAuthors: List<String>,
     suggestedTranslators: List<String>,
     searchQuery: String,
-    recentSearches: List<SearchToken>,
+    recentSearches: List<SearchTokenUI>,
     updateSearchQuery: (String) -> Unit,
     executeSearch: () -> Unit,
-    addToken: (SearchToken) -> Unit
+    addToken: (SearchTokenUI) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxWidth(),

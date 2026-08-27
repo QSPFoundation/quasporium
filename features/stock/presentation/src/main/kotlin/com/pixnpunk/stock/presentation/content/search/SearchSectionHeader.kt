@@ -10,9 +10,9 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun SearchSectionHeader(title: String) {
     Text(
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
         text = title,
         style = MaterialTheme.typography.labelMedium,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        color = MaterialTheme.colorScheme.primary
     )
 }

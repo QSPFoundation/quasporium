@@ -1,4 +1,4 @@
-package com.pixnpunk.stock.presentation
+package com.pixnpunk.stock.presentation.model
 
 enum class TabState {
     INSTALLED,

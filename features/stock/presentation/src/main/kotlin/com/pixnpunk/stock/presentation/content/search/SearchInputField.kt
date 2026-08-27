@@ -26,45 +26,43 @@ fun SearchInputField(
     executeSearch: () -> Unit,
     toggleSearch: (Boolean) -> Unit,
     navigateToSettings: () -> Unit
-) {
-    SearchBarDefaults.InputField(
-        searchBarState = searchBarState,
-        textFieldState = textFieldState,
-        onSearch = { executeSearch() },
-        placeholder = { Text("Search games") },
-        leadingIcon = {
-            if (!isSearchExpanded) {
+) = SearchBarDefaults.InputField(
+    searchBarState = searchBarState,
+    textFieldState = textFieldState,
+    onSearch = { executeSearch() },
+    placeholder = { Text("Search games") },
+    leadingIcon = {
+        if (!isSearchExpanded) {
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = null
+            )
+        } else {
+            IconButton(onClick = { toggleSearch(false) }) {
                 Icon(
-                    imageVector = Icons.Default.Search,
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = null
                 )
-            } else {
-                IconButton(onClick = { toggleSearch(false) }) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = null
-                    )
-                }
             }
-        },
-        trailingIcon = {
-            if (isSearchExpanded && searchQuery.isNotEmpty()) {
-                IconButton(onClick = { updateSearchQuery("") }) {
+        }
+    },
+    trailingIcon = {
+        if (isSearchExpanded && searchQuery.isNotEmpty()) {
+            IconButton(onClick = { updateSearchQuery("") }) {
+                Icon(
+                    imageVector = Icons.Default.Clear,
+                    contentDescription = null
+                )
+            }
+        } else if (!isSearchExpanded) {
+            Row {
+                IconButton(onClick = navigateToSettings) {
                     Icon(
-                        imageVector = Icons.Default.Clear,
+                        imageVector = Icons.Default.Settings,
                         contentDescription = null
                     )
-                }
-            } else if (!isSearchExpanded) {
-                Row {
-                    IconButton(onClick = navigateToSettings) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = null
-                        )
-                    }
                 }
             }
         }
-    )
-}
+    }
+)

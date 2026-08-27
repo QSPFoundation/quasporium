@@ -10,12 +10,13 @@ import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
 import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.stock.domain.model.SearchState
-import com.pixnpunk.stock.domain.model.SearchToken
 import com.pixnpunk.stock.domain.model.SortBy
 import com.pixnpunk.stock.domain.usecase.GetAuthorSuggestionUseCase
 import com.pixnpunk.stock.domain.usecase.GetLocalGameEntriesUseCase
 import com.pixnpunk.stock.domain.usecase.GetRemoteGameEntriesExcludingLocalUseCase
 import com.pixnpunk.stock.domain.usecase.GetTranslatorSuggestionUseCase
+import com.pixnpunk.stock.presentation.mapper.toDomain
+import com.pixnpunk.stock.presentation.model.SearchTokenUI
 import com.pixnpunk.stock.presentation.mvi.RealStockStore
 import com.pixnpunk.stock.presentation.mvi.StockStore
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -58,7 +59,7 @@ class RealStockComponent(
                     state.sortBy,
                     state.sortOrder,
                     state.selectedLang,
-                    state.activeTokens
+                    state.activeTokens.toDomain()
                 )
             )
         }.cachedIn(componentScope)
@@ -72,7 +73,7 @@ class RealStockComponent(
                     state.sortBy,
                     state.sortOrder,
                     state.selectedLang,
-                    state.activeTokens
+                    state.activeTokens.toDomain()
                 )
             )
         }.cachedIn(componentScope)
@@ -122,9 +123,9 @@ class RealStockComponent(
     override fun executeSearch() =
         store.accept(StockStore.Intent.ExecuteSearch)
 
-    override fun addToken(token: SearchToken) =
+    override fun addToken(token: SearchTokenUI) =
         store.accept(StockStore.Intent.AddToken(token))
 
-    override fun removeToken(token: SearchToken) =
+    override fun removeToken(token: SearchTokenUI) =
         store.accept(StockStore.Intent.RemoveToken(token))
 }

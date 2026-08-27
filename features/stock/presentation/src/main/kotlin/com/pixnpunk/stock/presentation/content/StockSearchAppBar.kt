@@ -17,7 +17,7 @@ import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarValue
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,11 +34,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
-import com.pixnpunk.stock.domain.model.SearchToken
 import com.pixnpunk.stock.domain.model.SortBy
 import com.pixnpunk.stock.domain.model.SortOrder
 import com.pixnpunk.stock.presentation.R
-import com.pixnpunk.stock.presentation.TabState
 import com.pixnpunk.stock.presentation.content.filter.filterItemCategory
 import com.pixnpunk.stock.presentation.content.filter.filterItemLang
 import com.pixnpunk.stock.presentation.content.filter.filterItemOrder
@@ -46,8 +44,11 @@ import com.pixnpunk.stock.presentation.content.filter.filterItemToken
 import com.pixnpunk.stock.presentation.content.filter.filterVerticalDivider
 import com.pixnpunk.stock.presentation.content.search.SearchInputField
 import com.pixnpunk.stock.presentation.content.search.SharedSearchSuggestionColumn
+import com.pixnpunk.stock.presentation.model.SearchTokenUI
+import com.pixnpunk.stock.presentation.model.TabState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,15 +59,15 @@ fun StockSearchAppBar(
     lang: String?,
     searchQuery: String,
     isSearchExpanded: Boolean,
-    activeTokens: List<SearchToken>,
-    recentSearches: List<SearchToken>,
+    activeTokens: List<SearchTokenUI>,
+    recentSearches: List<SearchTokenUI>,
     suggestedAuthors: List<String>,
     suggestedTranslators: List<String>,
     updateSearchQuery: (String) -> Unit,
     executeSearch: () -> Unit,
     toggleSearch: (Boolean) -> Unit,
-    addToken: (SearchToken) -> Unit,
-    removeToken: (SearchToken) -> Unit,
+    addToken: (SearchTokenUI) -> Unit,
+    removeToken: (SearchTokenUI) -> Unit,
     selectSortOrder: () -> Unit,
     selectSortBy: (SortBy) -> Unit,
     selectSortLang: (String?) -> Unit,
@@ -76,7 +77,7 @@ fun StockSearchAppBar(
 
     var canRequestFocus by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
-        delay(100)
+        delay(100.milliseconds)
         canRequestFocus = true
     }
 
@@ -134,7 +135,8 @@ fun StockSearchAppBar(
             inputField = sharedInputField
         )
 
-        if (currentWindowAdaptiveInfo().windowSizeClass.isWidthAtLeastBreakpoint(
+        if (
+            currentWindowAdaptiveInfoV2().windowSizeClass.isWidthAtLeastBreakpoint(
                 WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND
             )
         ) {

@@ -15,12 +15,12 @@ import androidx.compose.material3.InputChip
 import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
-import com.pixnpunk.stock.domain.model.SearchToken
 import com.pixnpunk.stock.domain.model.SearchTokenType
+import com.pixnpunk.stock.presentation.model.SearchTokenUI
 
 fun LazyListScope.filterItemToken(
-    activeTokens: List<SearchToken>,
-    removeToken: (SearchToken) -> Unit
+    activeTokens: List<SearchTokenUI>,
+    removeToken: (SearchTokenUI) -> Unit
 ) = items(activeTokens) { token ->
     InputChip(
         selected = true,
