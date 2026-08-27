@@ -65,18 +65,18 @@ fun SettingsRootContent(
             title = { Text(stringResource(R.string.audio_button_title)) },
             onClick = { moveToChild(RealSettingsComponent.ChildConfig.Audio) }
         )
-        if (!isLocalSettings) {
-            preference(
-                key = "aboutPref",
-                icon = {
-                    Icon(
-                        imageVector = Icons.Filled.Info,
-                        contentDescription = null
-                    )
-                },
-                title = { Text(stringResource(R.string.about_button_title)) },
-                onClick = {}
-            )
-        }
+//        if (!isLocalSettings) {
+//            preference(
+//                key = "aboutPref",
+//                icon = {
+//                    Icon(
+//                        imageVector = Icons.Filled.Info,
+//                        contentDescription = null
+//                    )
+//                },
+//                title = { Text(stringResource(R.string.about_button_title)) },
+//                onClick = {}
+//            )
+//        }
     }
 }
