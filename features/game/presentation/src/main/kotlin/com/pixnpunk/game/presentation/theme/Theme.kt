@@ -1,8 +1,9 @@
 package com.pixnpunk.game.presentation.theme
 
 import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import android.os.Build
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
@@ -12,10 +13,8 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
@@ -261,6 +260,12 @@ val unspecified_scheme = ColorFamily(
     Color.Unspecified, Color.Unspecified, Color.Unspecified, Color.Unspecified
 )
 
+private tailrec fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
+}
+
 @Composable
 fun QuasporiumTheme(
     themeMode: AppThemeMode,
@@ -268,17 +273,6 @@ fun QuasporiumTheme(
     typography: Typography = AppTypography,
     content: @Composable () -> Unit
 ) {
-    LaunchedEffect(themeMode) {
-        val mode = when (themeMode) {
-            AppThemeMode.SYSTEM -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
-            AppThemeMode.LIGHT -> AppCompatDelegate.MODE_NIGHT_NO
-            AppThemeMode.DARK -> AppCompatDelegate.MODE_NIGHT_YES
-        }
-        if (AppCompatDelegate.getDefaultNightMode() != mode) {
-            AppCompatDelegate.setDefaultNightMode(mode)
-        }
-    }
-
     val darkTheme = when (themeMode) {
         AppThemeMode.SYSTEM -> isSystemInDarkTheme()
         AppThemeMode.LIGHT -> false
@@ -298,10 +292,7 @@ fun QuasporiumTheme(
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
-            val window = (view.context as Activity).window
-
-            window.statusBarColor = colorScheme.background.toArgb()
-            window.navigationBarColor = colorScheme.background.toArgb()
+            val window = view.context.findActivity()?.window ?: return@SideEffect
 
             WindowCompat.getInsetsController(window, view).apply {
                 isAppearanceLightStatusBars = !darkTheme
