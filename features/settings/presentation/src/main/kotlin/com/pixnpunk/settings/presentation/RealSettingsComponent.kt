@@ -13,9 +13,15 @@ import com.pixnpunk.dto.InputState
 import com.pixnpunk.settings.dto.repository.SettingsRepository
 import com.pixnpunk.settings.presentation.mappers.dispatch
 import com.pixnpunk.settings.presentation.mappers.toMap
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.serializer
 import me.zhanghai.compose.preference.Preferences
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -44,20 +50,20 @@ class RealSettingsComponent(
     )
 
     init {
-        scope.launch {
-            settingsRepository.settingsFlow.collect { entity ->
+        settingsRepository.settingsFlow
+            .map { it.toMap() }
+            .flowOn(Dispatchers.Default)
+            .onEach { stateMap ->
                 preferencesState.value = ProxyPreference(
-                    stateMap = entity.toMap(),
+                    stateMap = stateMap,
                     onEdit = { key, value ->
                         if (value != null) {
-                            scope.launch {
-                                settingsRepository.dispatch(key, value)
-                            }
+                            scope.launch { settingsRepository.dispatch(key, value) }
                         }
                     }
                 )
             }
-        }
+            .launchIn(scope)
     }
 
     override fun moveToChild(config: ChildConfig) = navigation.pushNew(config)
@@ -67,7 +73,7 @@ class RealSettingsComponent(
     override val childStack: Value<ChildStack<*, SettingsComponent.Child>> =
         childStack(
             source = navigation,
-            serializer = null,
+            serializer = serializer(),
             initialConfiguration = ChildConfig.Root,
             handleBackButton = true,
             childFactory = { config, _ ->
@@ -86,20 +92,20 @@ class RealSettingsComponent(
         )
 
     @Serializable
-    sealed class ChildConfig {
+    sealed interface ChildConfig {
         @Serializable
-        data object Root : ChildConfig()
+        data object Root : ChildConfig
 
         @Serializable
-        data object General : ChildConfig()
+        data object General : ChildConfig
 
         @Serializable
-        data object Text : ChildConfig()
+        data object Text : ChildConfig
 
         @Serializable
-        data object Pictures : ChildConfig()
+        data object Pictures : ChildConfig
 
         @Serializable
-        data object Audio : ChildConfig()
+        data object Audio : ChildConfig
     }
 }

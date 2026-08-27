@@ -15,12 +15,4 @@ class ProxyPreference(
 
     override fun toMutablePreferences(): MutablePreferences =
         OptimisticMutablePreferences(stateMap.toMutableMap(), onEdit)
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is Preferences) return false
-        return stateMap == other.asMap()
-    }
-
-    override fun hashCode(): Int = stateMap.hashCode()
 }
