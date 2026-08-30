@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.pixnpunk.details.presentation.R
@@ -48,7 +49,14 @@ fun DetailsPrimaryInfo(
                         contentDescription = stringResource(R.string.icon_description, title),
                     )
                 },
-                headlineContent = { Text(title) },
+                headlineContent = {
+                    Text(
+                        style = MaterialTheme.typography.titleMedium,
+                        text = title,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                },
                 supportingContent = {
                     Column {
                         AnimatedVisibility(
