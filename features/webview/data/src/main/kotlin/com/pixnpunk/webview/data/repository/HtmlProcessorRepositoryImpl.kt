@@ -1,7 +1,6 @@
 package com.pixnpunk.webview.data.repository
 
 import android.content.Context
-import android.util.Base64
 import com.pixnpunk.dto.FontTypeface
 import com.pixnpunk.utils.Base64Util.encodeBase64
 import com.pixnpunk.utils.ColorUtil.toHexColorStr
@@ -12,6 +11,7 @@ import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import java.io.File
+import kotlin.io.encoding.Base64
 
 class HtmlProcessorRepositoryImpl(
     private val context: Context
@@ -103,7 +103,7 @@ class HtmlProcessorRepositoryImpl(
             "href=${quote}exec:${
                 command
                     .replace('\\', '/')
-                    .encodeBase64(Base64.NO_WRAP)
+                    .encodeBase64()
             }${quote}"
         }
     }

@@ -15,6 +15,7 @@ internal class WebViewClient(
     private val onExecValue: (String) -> Unit,
     private val onStartActivity: (Intent) -> Unit
 ) : WebViewClient() {
+
     override fun shouldOverrideUrlLoading(
         view: WebView,
         request: WebResourceRequest

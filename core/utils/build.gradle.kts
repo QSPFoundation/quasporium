@@ -28,6 +28,7 @@ android {
 
 dependencies {
     implementation(project(":core:dto"))
+    implementation(project(":core:logger"))
 
     implementation(libs.androidx.activity.compose)
 
