@@ -4,7 +4,6 @@ import android.app.Application
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.pixnpunk.database.di.databaseModule
 import com.pixnpunk.details.presentation.di.featureDetailsModule
 import com.pixnpunk.game.presentation.di.featureGameModule
@@ -19,11 +18,8 @@ import org.koin.androidx.workmanager.koin.workManagerFactory
 import org.koin.core.context.startKoin
 
 class Quasporium : Application() {
-
     override fun onCreate() {
         super.onCreate()
-
-        FirebaseCrashlytics.getInstance().isCrashlyticsCollectionEnabled = !BuildConfig.DEBUG
 
         startKoin {
             androidContext(this@Quasporium)

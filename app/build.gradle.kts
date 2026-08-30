@@ -1,3 +1,5 @@
+import com.google.firebase.crashlytics.buildtools.gradle.CrashlyticsExtension
+import com.google.firebase.perf.plugin.FirebasePerfExtension
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -31,9 +33,7 @@ android {
 
     buildTypes {
         release {
-            ndk {
-                debugSymbolLevel = "FULL"
-            }
+            ndk { debugSymbolLevel = "FULL" }
 
             isMinifyEnabled = true
             isShrinkResources = true
@@ -41,6 +41,20 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+
+            manifestPlaceholders["crashlyticsCollectionEnabled"] = "true"
+        }
+        debug {
+            configure<CrashlyticsExtension> {
+                mappingFileUploadEnabled = false
+                nativeSymbolUploadEnabled = false
+            }
+
+            configure<FirebasePerfExtension> {
+                setInstrumentationEnabled(false)
+            }
+
+            manifestPlaceholders["crashlyticsCollectionEnabled"] = "false"
         }
     }
 
