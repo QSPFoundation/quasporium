@@ -180,20 +180,6 @@ object FileUtil : KoinComponent {
         return Result.success(destFile.uri.toString())
     }
 
-    fun Uri.readFileContents(): ByteArray? =
-        runCatching {
-            this.openInputStream(get())
-                .use { it?.readBytes() ?: throw NullPointerException() }
-        }.getOrNull()
-
-    fun Uri.writeFileContents(dataToWrite: ByteArray) {
-        get<Context>().contentResolver.runCatching {
-            openOutputStream(this@writeFileContents).use { out ->
-                out?.write(dataToWrite) ?: throw IOException("Input is NULL!")
-            }
-        }
-    }
-
     suspend fun unpackFileToDir(
         filePath: String,
         destDirPath: String,
