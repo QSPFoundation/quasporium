@@ -2,6 +2,8 @@ package com.pixnpunk.game.data.vfs.impl
 
 import android.content.Context
 import androidx.documentfile.provider.DocumentFile
+import com.anggrayudi.storage.extension.openInputStream
+import com.anggrayudi.storage.extension.openOutputStream
 import com.anggrayudi.storage.file.CreateMode
 import com.anggrayudi.storage.file.child
 import com.anggrayudi.storage.file.findParent
@@ -25,32 +27,29 @@ internal class DocumentVirtualFile(
     override val isDirectory: Boolean get() = docFile.isDirectory
     override val isWritable: Boolean get() = docFile.isWritable(context)
 
-    override suspend fun readBytes(): Result<ByteArray> = runCatching {
-        context.contentResolver.openInputStream(docFile.uri)?.use { it.readBytes() }
-            ?: throw IllegalStateException("Cannot open InputStream for $absPath")
-    }
-
-    override suspend fun writeBytes(data: ByteArray): Result<Unit> = runCatching {
-        context.contentResolver.openOutputStream(docFile.uri, "w")?.use { it.write(data) }
-            ?: throw IllegalStateException("Cannot open OutputStream for $absPath")
-    }
-
-    override fun getChild(name: String): VirtualFile? {
-        val segments = name.split("/")
-        var current: DocumentFile = docFile
-
-        for (segment in segments) {
-            if (segment.isEmpty()) continue
-            current = current.child(context, segment) ?: return null
+    override suspend fun readBytes(): Result<ByteArray> =
+        runCatching {
+            docFile.uri.openInputStream(context)?.use { it.readBytes() }
+                ?: throw IllegalStateException("Cannot open InputStream for $absPath")
         }
 
-        return DocumentVirtualFile(context, docFile.child(context, name) ?: return null)
-    }
+    override suspend fun writeBytes(data: ByteArray): Result<Unit> =
+        runCatching {
+            docFile.uri.openOutputStream(context, false)?.use { it.write(data) }
+                ?: throw IllegalStateException("Cannot open OutputStream for $absPath")
+        }
 
-    override fun getParent(): VirtualFile? {
-        val parent = docFile.findParent(context)
-        return if (parent != null) DocumentVirtualFile(context, parent) else null
-    }
+    override fun getChild(name: String): VirtualFile? =
+        DocumentVirtualFile(
+            context,
+            docFile.child(context, name) ?: return null
+        )
+
+    override fun getParent(): VirtualFile? =
+        DocumentVirtualFile(
+            context,
+            docFile.findParent(context) ?: return null
+        )
 
     override fun makeDir(name: String): VirtualFile? =
         DocumentVirtualFile(
@@ -62,7 +61,10 @@ internal class DocumentVirtualFile(
             ) ?: return null
         )
 
-    override fun makeFile(name: String, mimeType: String): VirtualFile? =
+    override fun makeFile(
+        name: String,
+        mimeType: String
+    ): VirtualFile? =
         DocumentVirtualFile(
             context = context,
             docFile.makeFile(

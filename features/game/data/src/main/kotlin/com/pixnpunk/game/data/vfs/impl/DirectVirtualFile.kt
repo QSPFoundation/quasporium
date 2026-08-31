@@ -1,6 +1,5 @@
 package com.pixnpunk.game.data.vfs.impl
 
-import androidx.core.net.toUri
 import com.anggrayudi.storage.file.child
 import com.anggrayudi.storage.file.forceDelete
 import com.pixnpunk.game.data.vfs.VirtualFile
@@ -18,13 +17,11 @@ internal class DirectVirtualFile(
     override val isDirectory: Boolean get() = file.isDirectory
     override val isWritable: Boolean get() = file.canWrite()
 
-    override suspend fun readBytes(): Result<ByteArray> = runCatching {
-        file.readBytes()
-    }
+    override suspend fun readBytes(): Result<ByteArray> =
+        runCatching { file.readBytes() }
 
-    override suspend fun writeBytes(data: ByteArray): Result<Unit> = runCatching {
-        file.writeBytes(data)
-    }
+    override suspend fun writeBytes(data: ByteArray): Result<Unit> =
+        runCatching { file.writeBytes(data) }
 
     override fun getChild(name: String): VirtualFile? =
         file.child(name).let {

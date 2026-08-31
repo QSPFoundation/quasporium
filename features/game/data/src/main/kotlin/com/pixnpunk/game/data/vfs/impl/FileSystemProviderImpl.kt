@@ -2,7 +2,7 @@ package com.pixnpunk.game.data.vfs.impl
 
 import android.content.Context
 import androidx.core.net.toUri
-import androidx.documentfile.provider.DocumentFile
+import com.anggrayudi.storage.extension.toDocumentFile
 import com.pixnpunk.game.data.vfs.FileSystemProvider
 import com.pixnpunk.game.data.vfs.VirtualFile
 import com.pixnpunk.game.domain.model.VfsPath
@@ -28,8 +28,7 @@ internal class FileSystemProviderImpl(
         val uriStr = path.value
         return when {
             uriStr.startsWith("content://") -> {
-                val uri = uriStr.toUri()
-                val doc = DocumentFile.fromSingleUri(context, uri)
+                val doc = uriStr.toUri().toDocumentFile(context)
                 if (doc != null && doc.exists()) DocumentVirtualFile(context, doc) else null
             }
 
