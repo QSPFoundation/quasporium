@@ -80,20 +80,29 @@ class RealWebViewComponent(
         }.distinctUntilChanged()
 
         scope.launch {
-            combine(htmlContentFlow, configFlow) { rawHtml, config -> rawHtml to config }
-                .flowOn(Dispatchers.Default)
-                .collect { (rawHtml, config) ->
-                    val newHash = rawHtml.hashCode()
-
+            combine(
+                flow = htmlContentFlow,
+                flow2 = configFlow
+            ) { rawHtml, config ->
+                formatGameHtmlUseCase(
+                    rawBody = rawHtml,
+                    config = config
+                ).let { Triple(config, it, it.hashCode()) }
+            }.flowOn(Dispatchers.Default)
+                .collect { (config, formattedHtml, newHash) ->
                     _model.update { current ->
                         val isNewContent = current.htmlContentHash != newHash
 
                         current.copy(
                             htmlConfig = config,
-                            htmlContent = formatGameHtmlUseCase(rawHtml, config),
+                            htmlContent = formattedHtml,
                             htmlContentHash = newHash,
-                            isAutoScrollActive = if (isNewContent) config.isAutoscroll else current.isAutoScrollActive,
-                            restoreScrollY = if (!isNewContent) current.restoreScrollY else 0
+                            isAutoScrollActive =
+                                if (isNewContent) config.isAutoscroll
+                                else current.isAutoScrollActive,
+                            restoreScrollY =
+                                if (isNewContent) 0
+                                else current.restoreScrollY
                         )
                     }
                 }

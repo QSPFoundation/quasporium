@@ -124,7 +124,7 @@ fun GameWebView(
                             )
                             .build(),
                     onExecValue = component.onExecValue,
-                    onStartActivity = { runCatching { ctx.startActivity(it) } }
+                    onStartActivity = { runCatching { ctx.startActivity(it) } },
                 )
             }
         }

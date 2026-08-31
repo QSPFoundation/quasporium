@@ -11,7 +11,6 @@ import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import java.io.File
-import kotlin.io.encoding.Base64
 
 class HtmlProcessorRepositoryImpl(
     private val context: Context
@@ -19,7 +18,7 @@ class HtmlProcessorRepositoryImpl(
 
     private val execLinkMatcher: Regex =
         Regex(
-            pattern = "href\\s*=\\s*([\"'])exec:(.*?)\\1",
+            pattern = """href\s*=\s*(["'])exec:(.*?)\1""",
             options = setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL)
         )
     private val template by lazy {
