@@ -180,7 +180,10 @@ class RealGameComponent(
         lifecycle.doOnCreate {
             if (engineState.value is GameState.Idle) {
                 engineInteractor.submitCommand(
-                    EngineCommand.LoadGame(VfsPath(gameFileUriBox))
+                    EngineCommand.LoadGame(
+                        VfsPath(gameFileUriBox),
+                        VfsPath(gameDirUriBox)
+                    )
                 )
                 if (gameSaveUriBox.isNotBlank()) {
                     engineInteractor.submitCommand(

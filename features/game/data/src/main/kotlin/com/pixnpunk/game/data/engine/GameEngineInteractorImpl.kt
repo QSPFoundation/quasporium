@@ -129,11 +129,20 @@ internal class GameEngineInteractorImpl(
             }
 
             is EngineCommand.LoadGame -> {
-                val file = vfsProvider.resolve(command.path) ?: return
+                val file = vfsProvider.resolve(command.file) ?: return
+                val unResolveDir = command.dir
+                val dir = if (unResolveDir != null) {
+                    vfsProvider.resolve(unResolveDir) ?: return
+                } else null
 
                 _state.value = GameState.Loading()
                 audioService.closeAllFiles()
-                vfsProvider.setGameRoot(file.uriPath)
+
+                if (dir != null) {
+                    vfsProvider.setGameRoot(dir.uriPath)
+                } else {
+                    vfsProvider.setGameRoot(file.uriPath)
+                }
 
                 engineScope.launch {
                     val isLoaded = bridge.loadGame(file, isGame = true)

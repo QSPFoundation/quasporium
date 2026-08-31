@@ -21,6 +21,7 @@ internal class FileSystemProviderImpl(
         resolveCache.clear()
         val resolved = resolve(rootPath) ?: return
 
+        // TODO GETPARENT IS NOT WORK. NEED TO REWRITE SYSTEM!
         gameRoot = if (resolved.isDirectory) resolved else resolved.getParent()
     }
 
@@ -32,7 +33,7 @@ internal class FileSystemProviderImpl(
                 if (doc != null && doc.exists()) DocumentVirtualFile(context, doc) else null
             }
 
-            uriStr.startsWith("file://") -> {
+            uriStr.startsWith("file:") -> {
                 val file = File(uriStr.toUri().path!!)
                 if (file.exists()) DirectVirtualFile(file) else null
             }
