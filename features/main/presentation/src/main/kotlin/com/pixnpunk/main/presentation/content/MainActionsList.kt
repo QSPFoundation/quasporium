@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -95,18 +94,16 @@ fun MainContentActionsList(
             }
         ) {
             animatedActions.forEachIndexed { index, item ->
-                key(item.original.title) {
-                    ActionCell(
-                        modifier =
-                            Modifier
-                                .flex { basis(140.dp); grow(1f) }
-                                .widthIn(min = 140.dp),
-                        item = item,
-                        textStyle = textStyle,
-                        cardBackgroundColor = Color(uiState.backColor),
-                        onItemClick = { onActionClicked(index) }
-                    )
-                }
+                ActionCell(
+                    modifier =
+                        Modifier
+                            .flex { basis(140.dp); grow(1f) }
+                            .widthIn(min = 140.dp),
+                    item = item,
+                    textStyle = textStyle,
+                    cardBackgroundColor = Color(uiState.backColor),
+                    onItemClick = { onActionClicked(index) }
+                )
             }
         }
     }

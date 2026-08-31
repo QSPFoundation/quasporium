@@ -36,13 +36,13 @@ fun ObjectCell(
             val imagePath = item.original.imagePath
             if (imagePath != null) {
                 AsyncImage(
-                    model = imagePath,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .size(56.dp)
                         .clip(MaterialTheme.shapes.small)
-                        .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                        .background(MaterialTheme.colorScheme.surfaceContainerHighest),
+                    model = imagePath,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop
                 )
             }
         },

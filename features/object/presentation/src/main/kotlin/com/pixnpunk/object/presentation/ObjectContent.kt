@@ -62,9 +62,7 @@ fun ObjectContent(
                 .fillMaxSize()
         ) {
             itemsIndexed(
-                items = uiState.parsedObjects,
-                key = { _, obj -> obj.original.title },
-                contentType = { _, _ -> "GameObjects" }
+                items = uiState.parsedObjects
             ) { key, obj ->
                 ObjectCell(
                     item = obj,
