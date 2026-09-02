@@ -50,7 +50,7 @@ fun ActionCell(
                         .clip(MaterialTheme.shapes.small)
                         .background(MaterialTheme.colorScheme.surfaceContainerHighest),
                     contentScale = ContentScale.Crop,
-                    model = imagePath,
+                    model = imagePath.value,
                     contentDescription = null
                 )
             }
