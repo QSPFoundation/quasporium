@@ -36,6 +36,9 @@ class GameActivity : ComponentActivity() {
 
     private val settingsRepository: SettingsRepository by inject()
 
+    private val isImmersiveEnabled: Boolean
+        get() = settingsRepository.settingsFlow.value.isImmersModeEnabled
+
     private val requestCreateFile =
         registerForActivityResult(
             FileCreationContract(get())
@@ -88,12 +91,23 @@ class GameActivity : ComponentActivity() {
     private val gameFileUriBox: String by lazy { intent.getStringExtra("gameFileUri") ?: "" }
     private val gameSaveUriBox: String by lazy { intent.getStringExtra("gameSaveUri") ?: "" }
 
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus && isImmersiveEnabled) {
+            WindowCompat.getInsetsController(window, window.decorView).apply {
+                systemBarsBehavior =
+                    WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                hide(WindowInsetsCompat.Type.systemBars())
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
         val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
-        if (settingsRepository.settingsFlow.value.isImmersModeEnabled) {
+        if (isImmersiveEnabled) {
             windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
             windowInsetsController.systemBarsBehavior =
                 WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
