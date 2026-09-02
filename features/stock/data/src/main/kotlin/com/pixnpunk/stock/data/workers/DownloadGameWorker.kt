@@ -6,7 +6,7 @@ import androidx.core.net.toUri
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
-import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.pixnpunk.logger.AppLogger
 import com.pixnpunk.notification.NotificationProvider
 import com.pixnpunk.stock.data.workers.WorkerKeys.DEST_DIR
 import com.pixnpunk.stock.data.workers.WorkerKeys.DOWNLOAD_URL
@@ -24,6 +24,7 @@ import kotlin.time.Duration.Companion.minutes
 class DownloadGameWorker(
     appContext: Context,
     workerParams: WorkerParameters,
+    private val logger: AppLogger,
     private val notificationProvider: NotificationProvider
 ) : CoroutineWorker(appContext, workerParams), KoinComponent {
     override suspend fun doWork(): Result {
@@ -119,9 +120,9 @@ class DownloadGameWorker(
                 )
             }
         } catch (e: Exception) {
-            FirebaseCrashlytics.getInstance().apply {
-                log("Failed to download file")
-                recordException(e)
+            logger.apply {
+                recordBreadcrumb("Failed to download file | link: $downloadLink")
+                recordNonFatalException(e)
             }
             notificationProvider.showNotification(
                 "Error",

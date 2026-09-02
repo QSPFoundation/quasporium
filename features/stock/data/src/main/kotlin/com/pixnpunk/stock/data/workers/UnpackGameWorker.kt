@@ -5,8 +5,8 @@ import androidx.core.net.toFile
 import androidx.core.net.toUri
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.pixnpunk.dto.GameEntry
+import com.pixnpunk.logger.AppLogger
 import com.pixnpunk.notification.NotificationProvider
 import com.pixnpunk.stock.data.workers.WorkerKeys.GAME_DATA_JSON
 import com.pixnpunk.stock.domain.repository.LocalRepository
@@ -19,6 +19,7 @@ import org.koin.core.component.KoinComponent
 class UnpackGameWorker(
     appContext: Context,
     workerParams: WorkerParameters,
+    private val logger: AppLogger,
     private val localRepository: LocalRepository,
     private val notificationProvider: NotificationProvider
 ) : CoroutineWorker(appContext, workerParams), KoinComponent {
@@ -71,9 +72,9 @@ class UnpackGameWorker(
 
             Result.success()
         } catch (e: Exception) {
-            FirebaseCrashlytics.getInstance().apply {
-                log("Failed to unpack file")
-                recordException(e)
+            logger.apply {
+                recordBreadcrumb("Failed to unpack | file $archivePath")
+                recordNonFatalException(e)
             }
             notificationProvider.showNotification(
                 "Error",

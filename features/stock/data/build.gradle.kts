@@ -30,6 +30,7 @@ dependencies {
     implementation(project(":core:dto"))
     implementation(project(":core:network"))
     implementation(project(":core:notification"))
+    implementation(project(":core:logger"))
 
     implementation(project(":features:details:domain"))
 
@@ -49,9 +50,4 @@ dependencies {
 
     implementation(libs.jsoup)
     implementation(libs.storage)
-
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.crashlytics)
-    implementation(libs.firebase.analytics)
-    implementation(libs.firebase.perf)
 }
