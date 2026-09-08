@@ -99,12 +99,8 @@ internal class AudioPlayerInteractorImpl(
                     VfsPath(path)
                 )?.let {
                     if (it is DirectVirtualFile) {
-                        FileInputStream(
-                            File(path)
-                        ).use { inputStream ->
-                            setDataSource(inputStream.fd)
-                            prepare()
-                        }
+                        setDataSource(it.absPath.value)
+                        prepare()
                     } else {
                         setDataSource(context, path.toUri())
                         prepare()
