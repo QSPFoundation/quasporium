@@ -110,27 +110,29 @@ class RemoteRepositoryImpl(
         val gameDir = File(context.filesDir, gameDirName)
         gameDir.mkdir()
 
-        val downloadRequest = OneTimeWorkRequestBuilder<DownloadGameWorker>()
-            .setInputData(
-                workDataOf(
-                    DOWNLOAD_URL to downloadEntry.fileUrl,
-                    DEST_DIR to gameDir.toUri().toString()
+        val downloadRequest =
+            OneTimeWorkRequestBuilder<DownloadGameWorker>()
+                .setInputData(
+                    workDataOf(
+                        DOWNLOAD_URL to downloadEntry.fileUrl,
+                        DEST_DIR to gameDir.toUri().toString()
+                    )
                 )
-            )
-            .setConstraints(
-                Constraints.Builder()
-                    .setRequiredNetworkType(NetworkType.CONNECTED)
-                    .build()
-            )
-            .build()
+                .setConstraints(
+                    Constraints.Builder()
+                        .setRequiredNetworkType(NetworkType.CONNECTED)
+                        .build()
+                )
+                .build()
 
-        val unpackRequest = OneTimeWorkRequestBuilder<UnpackGameWorker>()
-            .setInputData(
-                workDataOf(
-                    GAME_DATA_JSON to Json.encodeToString(downloadEntry)
+        val unpackRequest =
+            OneTimeWorkRequestBuilder<UnpackGameWorker>()
+                .setInputData(
+                    workDataOf(
+                        GAME_DATA_JSON to Json.encodeToString(downloadEntry)
+                    )
                 )
-            )
-            .build()
+                .build()
 
         workManager
             .beginUniqueWork(

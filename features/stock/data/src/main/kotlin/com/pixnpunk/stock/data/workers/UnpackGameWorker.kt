@@ -15,6 +15,7 @@ import com.pixnpunk.utils.FileUtil.removeFileByPath
 import com.pixnpunk.utils.FileUtil.unpackFileToDir
 import kotlinx.serialization.json.Json
 import org.koin.core.component.KoinComponent
+import java.io.File
 
 class UnpackGameWorker(
     appContext: Context,
@@ -29,46 +30,56 @@ class UnpackGameWorker(
         val dataJson = inputData.getString(GAME_DATA_JSON) ?: return Result.failure()
         val gameEntry = Json.decodeFromString<GameEntry>(dataJson)
 
+        val sourceFile = File(archivePath)
+        val isDirectQspFile = sourceFile.extension.equals("qsp", ignoreCase = true) ||
+                sourceFile.extension.equals("gam", ignoreCase = true)
+
         setForeground(
             notificationProvider.createForegroundInfo(
                 id,
-                "Preparing to unpack",
+                if (isDirectQspFile) "Installing game..." else "Preparing to unpack",
                 0f
             )
         )
 
         return try {
-            unpackFileToDir(
-                filePath = archivePath,
-                destDirPath = destDirPath,
-                onProgressUpdate = { state ->
-                    setForeground(
-                        notificationProvider.createForegroundInfo(
-                            id,
-                            "Unpacking: ${state.time}",
-                            state.progress
-                        )
-                    )
-                }
-            ).getOrThrow()
-
-            archivePath.removeFileByPath()
-
-            val newGameDir = receiveGameDirFromFile(destDirPath)
-            if (newGameDir == null || destDirPath.toUri() == newGameDir.uri) {
+            if (isDirectQspFile) {
                 localRepository.fillAndInsertEntry(
                     gameEntry.copy(gameDirPath = destDirPath)
                 )
             } else {
-                localRepository.fillAndInsertEntry(
-                    gameEntry.copy(gameDirPath = newGameDir.uri.toString())
+                unpackFileToDir(
+                    filePath = archivePath,
+                    destDirPath = destDirPath,
+                    onProgressUpdate = { state ->
+                        setForeground(
+                            notificationProvider.createForegroundInfo(
+                                id,
+                                "Unpacking: ${state.time}",
+                                state.progress
+                            )
+                        )
+                    }
+                ).getOrThrow()
+
+                archivePath.removeFileByPath()
+
+                val newGameDir = receiveGameDirFromFile(destDirPath)
+                if (newGameDir == null || destDirPath.toUri() == newGameDir.uri) {
+                    localRepository.fillAndInsertEntry(
+                        gameEntry.copy(gameDirPath = destDirPath)
+                    )
+                } else {
+                    localRepository.fillAndInsertEntry(
+                        gameEntry.copy(gameDirPath = newGameDir.uri.toString())
+                    )
+                }
+
+                notificationProvider.showNotification(
+                    "Installation complete",
+                    "${gameEntry.title} is ready to play!"
                 )
             }
-
-            notificationProvider.showNotification(
-                "Installation complete",
-                "${gameEntry.title} is ready to play!"
-            )
 
             Result.success()
         } catch (e: Exception) {

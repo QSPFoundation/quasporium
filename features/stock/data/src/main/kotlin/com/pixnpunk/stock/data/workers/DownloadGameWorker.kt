@@ -18,6 +18,8 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 import java.util.*
 import kotlin.time.Duration.Companion.minutes
 
@@ -27,6 +29,42 @@ class DownloadGameWorker(
     private val logger: AppLogger,
     private val notificationProvider: NotificationProvider
 ) : CoroutineWorker(appContext, workerParams), KoinComponent {
+
+    fun extractFileName(response: HttpResponse): String? {
+        val contentDisposition = response.headers[HttpHeaders.ContentDisposition]
+        if (!contentDisposition.isNullOrBlank()) {
+            val parsed = parseHeaderValue(contentDisposition).firstOrNull()
+
+            val filenameStar =
+                parsed?.params?.find { it.name.equals("filename*", ignoreCase = true) }?.value
+            if (!filenameStar.isNullOrBlank()) {
+                val encodedValue = filenameStar.substringAfter("''", filenameStar)
+                runCatching {
+                    return URLDecoder.decode(encodedValue, StandardCharsets.UTF_8.name()).trim('"')
+                }
+            }
+
+            val filename =
+                parsed?.params?.find { it.name.equals("filename", ignoreCase = true) }?.value
+            if (!filename.isNullOrBlank()) {
+                return filename.trim('"')
+            }
+        }
+
+        val urlPathName = response.request.url.segments.lastOrNull { it.isNotBlank() }
+        if (!urlPathName.isNullOrBlank()) {
+            val decoded = runCatching {
+                URLDecoder.decode(urlPathName, StandardCharsets.UTF_8.name())
+            }.getOrDefault(urlPathName)
+
+            if (decoded.isNotBlank()) {
+                return decoded
+            }
+        }
+
+        return null
+    }
+
     override suspend fun doWork(): Result {
         val downloadLink = inputData.getString(DOWNLOAD_URL) ?: return Result.failure()
         val destDirPath = inputData.getString(DEST_DIR) ?: return Result.failure()
@@ -91,14 +129,10 @@ class DownloadGameWorker(
                     throw RuntimeException("HTTP Error ${response.status}")
                 }
 
-                val contentDisposition = response.headers[HttpHeaders.ContentDisposition]
-                val headerValues = parseHeaderValue(contentDisposition)
-                val fileName = headerValues.firstOrNull()?.params?.firstOrNull()?.value
-                    ?: "#${(0..Int.MAX_VALUE).random()}Game"
-
                 val file = writeFileToDir(
                     fileChannel = response.bodyAsChannel(),
-                    fileName = fileName,
+                    fileName = extractFileName(response)
+                        ?: throw RuntimeException("Could not resolve file name"),
                     destDirPath = destDirPath,
                     totalSize = response.contentLength() ?: -1L,
                     onProgressUpdate = { state ->
