@@ -41,7 +41,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import java.io.File
-import java.security.SecureRandom
+import java.util.*
 
 class RemoteRepositoryImpl(
     private val context: Context,
@@ -106,7 +106,7 @@ class RemoteRepositoryImpl(
         }
 
     override suspend fun downloadGame(downloadEntry: GameEntry) {
-        val gameDirName = "Game_${downloadEntry.title}-#${SecureRandom().nextInt()}"
+        val gameDirName = "Game_${UUID.randomUUID().toString().replace("-", "")}"
         val gameDir = File(context.filesDir, gameDirName)
         gameDir.mkdir()
 

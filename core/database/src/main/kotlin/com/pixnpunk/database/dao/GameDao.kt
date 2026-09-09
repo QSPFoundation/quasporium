@@ -61,6 +61,9 @@ interface GameDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(games: List<GameEntity>)
 
+    @Query("UPDATE game SET gameDirPath = :newPath WHERE id = :gameId")
+    suspend fun updateGamePath(gameId: Long, newPath: String)
+
     @Update
     suspend fun update(game: GameEntity)
 

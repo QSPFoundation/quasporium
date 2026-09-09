@@ -13,7 +13,7 @@ class RealRootStore(
     private inner class RootImpl : RootStore,
         Store<RootStore.Intent, RootStore.State, RootStore.Label> by storeFactory.create(
             name = "RootStore",
-            initialState = RootStore.State,
+            initialState = RootStore.State(),
             executorFactory = {
                 RootExecutor(
                     get(),
@@ -22,8 +22,14 @@ class RealRootStore(
                     get(),
                     get(),
                     get(),
+                    get(),
                     get()
                 )
+            },
+            reducer = { msg ->
+                when (msg) {
+                    is RootStore.Message.MigrationComplete -> copy(isMigrationComplete = true)
+                }
             }
         )
 }

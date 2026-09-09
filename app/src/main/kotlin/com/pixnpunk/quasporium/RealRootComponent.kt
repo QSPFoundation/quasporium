@@ -10,6 +10,7 @@ import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.mvikotlin.core.instancekeeper.getStore
+import com.arkivanov.mvikotlin.extensions.coroutines.stateFlow
 import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
 import com.pixnpunk.details.presentation.RealDetailsComponent
 import com.pixnpunk.dialogs.presentation.DialogsComponent
@@ -27,6 +28,7 @@ import com.pixnpunk.quasporium.mvi.RootStore
 import com.pixnpunk.settings.dto.repository.SettingsRepository
 import com.pixnpunk.settings.presentation.RealSettingsComponent
 import com.pixnpunk.stock.presentation.RealStockComponent
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
@@ -57,6 +59,9 @@ class RealRootComponent(
                 storeFactory = DefaultStoreFactory()
             ).create()
         }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val model: StateFlow<RootStore.State> = store.stateFlow
 
     fun processPickedDir(dirName: String, dirPath: String) {
         val oldConfig = dialogSlot.child?.configuration as? DialogsConfig

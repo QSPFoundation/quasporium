@@ -9,7 +9,9 @@ import kotlinx.serialization.Serializable
 
 sealed interface RootStore : Store<RootStore.Intent, RootStore.State, RootStore.Label> {
     @Serializable
-    data object State
+    data class State(
+        val isMigrationComplete: Boolean = false
+    )
 
     sealed interface Intent {
         data class AddNewGame(val entry: GameEntry) : Intent
@@ -21,9 +23,13 @@ sealed interface RootStore : Store<RootStore.Intent, RootStore.State, RootStore.
         data class UpdateCustomFontPath(val path: String) : Intent
     }
 
-    sealed interface Message
+    sealed interface Message {
+        data object MigrationComplete : Message
+    }
 
     sealed interface Label
 
-    sealed interface Action
+    sealed interface Action {
+        data object MigrateIfNeeded : Action
+    }
 }

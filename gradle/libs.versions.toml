@@ -11,6 +11,7 @@ coil = "3.5.0"
 colorpickerCompose = "1.2.0"
 composeBom = "2026.08.00"
 coreKtx = "1.19.0"
+coreSplashscreen = "1.2.0"
 decompose = "3.5.0"
 detekt = "1.23.8"
 detektFormatting = "1.23.8"
@@ -53,6 +54,7 @@ androidx-compose-material3-adaptive-navigation-suite = { module = "androidx.comp
 androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodelCompose" }

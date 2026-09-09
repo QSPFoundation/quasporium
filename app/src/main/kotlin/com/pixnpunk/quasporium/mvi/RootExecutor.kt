@@ -8,9 +8,11 @@ import com.pixnpunk.settings.dto.usecase.UpdateCustomFontPathUseCase
 import com.pixnpunk.settings.dto.usecase.UpdateImageSizeUseCase
 import com.pixnpunk.stock.domain.usecase.DownloadGameArchUseCase
 import com.pixnpunk.stock.domain.usecase.FillAndInsertEntryUseCase
+import com.pixnpunk.stock.domain.usecase.MigrateIfNeededUseCase
 import com.pixnpunk.stock.domain.usecase.UpsertEntryUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class RootExecutor(
     private val fillAndInsertEntryUseCase: FillAndInsertEntryUseCase,
@@ -19,8 +21,10 @@ class RootExecutor(
     private val updateColorUseCase: UpdateColorUseCase,
     private val restoreColorValueUseCase: RestoreColorValueUseCase,
     private val updateImageSizeUseCase: UpdateImageSizeUseCase,
-    private val updateCustomFontPathUseCase: UpdateCustomFontPathUseCase
+    private val updateCustomFontPathUseCase: UpdateCustomFontPathUseCase,
+    private val migrateIfNeededUseCase: MigrateIfNeededUseCase
 ) : CoroutineExecutor<RootStore.Intent, RootStore.Action, RootStore.State, RootStore.Message, RootStore.Label>() {
+
     override fun executeIntent(intent: RootStore.Intent) {
         when (intent) {
             is RootStore.Intent.AddNewGame -> {
@@ -50,6 +54,19 @@ class RootExecutor(
 
             is RootStore.Intent.UpdateCustomFontPath ->
                 scope.launch { updateCustomFontPathUseCase(intent.path) }
+        }
+    }
+
+    override fun executeAction(action: RootStore.Action) {
+        when (action) {
+            RootStore.Action.MigrateIfNeeded ->
+                scope.launch {
+                    withContext(Dispatchers.IO) {
+                        migrateIfNeededUseCase.execute()
+                    }
+
+                    dispatch(RootStore.Message.MigrationComplete)
+                }
         }
     }
 }

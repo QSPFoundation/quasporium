@@ -1,6 +1,7 @@
 package com.pixnpunk.stock.data.repository
 
 import android.content.Context
+import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
@@ -25,11 +26,15 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import java.io.File
+import java.util.*
 
 class LocalRepositoryImpl(
     private val context: Context,
     private val gameDao: GameDao
 ) : LocalRepository {
+
+    private val prefs = context.getSharedPreferences("app_migrations", Context.MODE_PRIVATE)
 
     override fun observeEntryUrls(): Flow<List<String>> =
         gameDao.getByUrl().distinctUntilChanged()
@@ -135,4 +140,62 @@ class LocalRepositoryImpl(
                 )
             )
         }
+
+    override suspend fun migrateIfNeeded() = withContext(Dispatchers.IO) {
+        if (prefs.getBoolean("is_game_folders_migrated_v1", false)) {
+            return@withContext
+        }
+
+        val games = gameDao.getAll()
+        var hasFailures = false
+
+        for (game in games) {
+            try {
+                val currentPathString = game.gameDirPath
+                val currentFile = if (currentPathString.startsWith("file:")) {
+                    File(currentPathString.toUri().path!!)
+                } else {
+                    File(currentPathString)
+                }
+                val targetDirectory = when {
+                    currentFile.isDirectory -> currentFile
+                    currentFile.isFile -> currentFile.parentFile
+                    else -> null
+                }
+
+                if (
+                    targetDirectory != null
+                    && targetDirectory.exists()
+                    && targetDirectory.name.contains("#")
+                ) {
+                    val newDir = File(
+                        currentFile.parentFile ?: continue,
+                        "Game_${UUID.randomUUID().toString().replace("-", "")}"
+                    )
+
+                    if (!targetDirectory.renameTo(newDir)) {
+                        hasFailures = true
+                    } else {
+                        gameDao.updateGamePath(
+                            game.id,
+                            if (currentFile.isFile) {
+                                File(
+                                    newDir,
+                                    currentFile.name
+                                )
+                            } else {
+                                newDir
+                            }.toUri().toString()
+                        )
+                    }
+                }
+            } catch (_: Exception) {
+                hasFailures = true
+            }
+        }
+
+        if (hasFailures) {
+            prefs.edit { putBoolean("is_game_folders_migrated_v1", true) }
+        }
+    }
 }

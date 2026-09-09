@@ -13,7 +13,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.launch
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.anggrayudi.storage.SimpleStorage.Companion.cleanupRedundantUriPermissions
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.withResumed
 import com.anggrayudi.storage.contract.RequestStorageAccessContract
 import com.anggrayudi.storage.contract.RequestStorageAccessResult
 import com.anggrayudi.storage.contract.StoragePermissionContract
@@ -27,10 +29,11 @@ import com.pixnpunk.game.presentation.GameActivity
 import com.pixnpunk.utils.AddonsUtils
 import com.pixnpunk.utils.FileUtil.isWritableDir
 import com.pixnpunk.utils.FileUtil.isWritableFile
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import org.koin.android.ext.android.get
 import java.io.File
 import java.io.FileOutputStream
-import kotlin.concurrent.thread
 import kotlin.contracts.ExperimentalContracts
 
 class MainActivity : ComponentActivity() {
@@ -186,10 +189,9 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge()
+        val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
-
-        checkAndRequestPermissions()
+        enableEdgeToEdge()
 
         root = RealRootComponent(
             componentContext = defaultComponentContext(),
@@ -245,6 +247,16 @@ class MainActivity : ComponentActivity() {
                 )
             }
         )
+
+        splashScreen.setKeepOnScreenCondition {
+            root.model.value.isMigrationComplete
+        }
+
+        lifecycleScope.launch {
+            root.model.first { it.isMigrationComplete }
+
+            withResumed { checkAndRequestPermissions() }
+        }
 
         setContent { RootContent(root) }
     }
