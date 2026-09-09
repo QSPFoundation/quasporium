@@ -19,6 +19,7 @@ import com.pixnpunk.logger.AppLogger
 import com.pixnpunk.utils.FileUtil.isWritableDir
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
@@ -32,6 +33,7 @@ import org.koin.core.component.get
 import java.io.File
 import kotlin.contracts.ExperimentalContracts
 import kotlin.coroutines.cancellation.CancellationException
+import kotlin.time.Duration.Companion.milliseconds
 
 object DirUtil : KoinComponent {
 
@@ -149,7 +151,10 @@ object DirUtil : KoinComponent {
         context: Context,
         rootTreeUri: Uri,
         allowedMimeTypes: Set<String>,
-        nameRegex: Regex?
+        nameRegex: Regex?,
+        ignoredDirNames: Set<String> = setOf(
+            "images", "img", "sounds", "sound", "audio", "video", "music"
+        )
     ) {
         val rootDocumentId = try {
             DocumentsContract.getTreeDocumentId(rootTreeUri)
@@ -165,12 +170,19 @@ object DirUtil : KoinComponent {
         val dirIdQueue = ArrayDeque<String>()
         dirIdQueue.addLast(rootDocumentId)
 
+        var operationsCount = 0
+
         while (dirIdQueue.isNotEmpty()) {
             currentCoroutineContext().ensureActive()
 
+            if (++operationsCount % 30 == 0) delay(10.milliseconds)
+
             val currentDirId = dirIdQueue.removeFirst()
             val childrenUri = try {
-                DocumentsContract.buildChildDocumentsUriUsingTree(rootTreeUri, currentDirId)
+                DocumentsContract.buildChildDocumentsUriUsingTree(
+                    rootTreeUri,
+                    currentDirId
+                )
             } catch (e: Exception) {
                 if (e is CancellationException) throw e
                 get<AppLogger>().apply {
@@ -180,57 +192,74 @@ object DirUtil : KoinComponent {
                 continue
             }
 
-            try {
-                context.contentResolver.query(
-                    childrenUri,
-                    arrayOf(
-                        DocumentsContract.Document.COLUMN_DOCUMENT_ID,
-                        DocumentsContract.Document.COLUMN_DISPLAY_NAME,
-                        DocumentsContract.Document.COLUMN_MIME_TYPE
-                    ),
-                    null,
-                    null,
-                    null
-                )?.use { cursor ->
-                    val idIndex =
-                        cursor.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DOCUMENT_ID)
-                    val nameIndex =
-                        cursor.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DISPLAY_NAME)
-                    val mimeIndex =
-                        cursor.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_MIME_TYPE)
+            var attempts = 0
+            var success = false
 
-                    while (cursor.moveToNext()) {
-                        currentCoroutineContext().ensureActive()
+            while (attempts < 3 && !success) {
+                attempts++
+                try {
+                    context.contentResolver.query(
+                        childrenUri,
+                        arrayOf(
+                            DocumentsContract.Document.COLUMN_DOCUMENT_ID,
+                            DocumentsContract.Document.COLUMN_DISPLAY_NAME,
+                            DocumentsContract.Document.COLUMN_MIME_TYPE
+                        ),
+                        null,
+                        null,
+                        null
+                    )?.use { cursor ->
+                        val idIndex =
+                            cursor.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DOCUMENT_ID)
+                        val nameIndex =
+                            cursor.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DISPLAY_NAME)
+                        val mimeIndex =
+                            cursor.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_MIME_TYPE)
 
-                        val childId = cursor.getString(idIndex)
-                        val childMime = cursor.getString(mimeIndex) ?: ""
-                        val childName = cursor.getString(nameIndex) ?: ""
+                        while (cursor.moveToNext()) {
+                            currentCoroutineContext().ensureActive()
 
-                        if (childMime == DocumentsContract.Document.MIME_TYPE_DIR) {
-                            dirIdQueue.addLast(childId)
-                            continue
+                            val childId = cursor.getString(idIndex)
+                            val childMime = cursor.getString(mimeIndex) ?: ""
+                            val childName = cursor.getString(nameIndex) ?: ""
+
+                            if (childMime == DocumentsContract.Document.MIME_TYPE_DIR) {
+                                if (
+                                    childName.lowercase() in ignoredDirNames
+                                    && nameRegex?.pattern?.contains(childName) != true
+                                ) {
+                                    continue
+                                }
+                                dirIdQueue.addLast(childId)
+                                continue
+                            }
+
+                            if (allowedMimeTypes.isNotEmpty() && childMime !in allowedMimeTypes) {
+                                continue
+                            }
+
+                            if (nameRegex != null && !nameRegex.matches(childName)) {
+                                continue
+                            }
+
+                            emit(
+                                DocumentsContract.buildDocumentUriUsingTree(
+                                    rootTreeUri, childId
+                                ).toString()
+                            )
                         }
-
-                        if (allowedMimeTypes.isNotEmpty() && childMime !in allowedMimeTypes) {
-                            continue
-                        }
-
-                        if (nameRegex != null && !nameRegex.matches(childName)) {
-                            continue
-                        }
-
-                        emit(
-                            DocumentsContract.buildDocumentUriUsingTree(
-                                rootTreeUri, childId
-                            ).toString()
-                        )
                     }
-                }
-            } catch (e: Exception) {
-                if (e is CancellationException) throw e
-                get<AppLogger>().apply {
-                    recordBreadcrumb("SAF: Error querying children for dir: $currentDirId")
-                    recordNonFatalException(e)
+                    success = true
+                } catch (e: Exception) {
+                    if (e is CancellationException) throw e
+                    if (attempts < 3) {
+                        delay((100L * attempts).milliseconds)
+                    } else {
+                        get<AppLogger>().apply {
+                            recordBreadcrumb("SAF: Error querying children for dir after retries: $currentDirId")
+                            recordNonFatalException(e)
+                        }
+                    }
                 }
             }
         }
