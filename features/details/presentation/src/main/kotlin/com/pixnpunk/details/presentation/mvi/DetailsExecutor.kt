@@ -14,8 +14,11 @@ import com.pixnpunk.utils.DirUtil.receiveGameSavesFromDir
 import com.pixnpunk.utils.FileUtil.receiveBaseName
 import com.pixnpunk.utils.FileUtil.receiveFullName
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -122,48 +125,60 @@ class DetailsExecutor(
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     private fun observeDB(entryId: Long) = scope.launch(Dispatchers.Default) {
-        combine(
-            observeEntryByIdUseCase.execute(entryId).filterNotNull(),
-            presetRepository.observeAllPresets(entryId),
-            savesRepository.observeAllSaves(entryId)
-        ) { gameEntry, profiles, allSaves ->
-            gameEntry to profiles.map { profile ->
-                PresetUIState(
-                    id = profile.id,
-                    name = profile.name,
-                    lastPlayedFile = profile.lastPlayedFile?.let { path ->
-                        GameFileItem(displayName = path.receiveFullName(), path = path)
-                    },
-                    saves =
-                        allSaves.map { save ->
-                            GameSaveItem(
-                                displayName = save.userTitle,
-                                path = save.filePath
+        observeEntryByIdUseCase.execute(entryId)
+            .flatMapLatest { gameEntry ->
+                if (gameEntry == null) {
+                    flowOf(null)
+                } else {
+                    combine(
+                        presetRepository.observeAllPresets(entryId),
+                        savesRepository.observeAllSaves(entryId)
+                    ) { profiles, allSaves ->
+                        gameEntry to profiles.map { profile ->
+                            PresetUIState(
+                                id = profile.id,
+                                name = profile.name,
+                                lastPlayedFile = profile.lastPlayedFile?.let { path ->
+                                    GameFileItem(displayName = path.receiveFullName(), path = path)
+                                },
+                                saves =
+                                    allSaves.map { save ->
+                                        GameSaveItem(
+                                            displayName = save.userTitle,
+                                            path = save.filePath
+                                        )
+                                    },
+                                accentColor =
+                                    if (profile.accentColor != 0L) {
+                                        profile.accentColor
+                                    } else {
+                                        val defaultPresets = longArrayOf(
+                                            0xFFD9534FL, 0xFF3B9E9BL, 0xFF8E6FB9L, 0xFFD48B38L
+                                        )
+                                        defaultPresets[
+                                            (profile.id % defaultPresets.size).toInt()
+                                                .coerceAtLeast(0)
+                                        ]
+                                    },
+                                backImagePath = profile.backImagePath
                             )
-                        },
-                    accentColor =
-                        if (profile.accentColor != 0L) {
-                            profile.accentColor
-                        } else {
-                            val defaultPresets = longArrayOf(
-                                0xFFD9534FL, 0xFF3B9E9BL, 0xFF8E6FB9L, 0xFFD48B38L
-                            )
-                            defaultPresets[
-                                (profile.id % defaultPresets.size).toInt()
-                                    .coerceAtLeast(0)
-                            ]
-                        },
-                    backImagePath = profile.backImagePath
-                )
+                        }
+                    }
+                }
+            }.collect { result ->
+                withContext(Dispatchers.Main) {
+                    if (result == null) {
+                        publish(DetailsStore.Label.NullUpdateReceived)
+                    } else {
+                        val (gameEntry, convProfiles) = result
+                        dispatch(DetailsStore.Message.UpdateEntry(gameEntry))
+                        dispatch(DetailsStore.Message.UpdateProfiles(convProfiles))
+                        dispatch(DetailsStore.Message.SetLoading(false))
+                    }
+                }
             }
-        }.collect { (gameEntry, convProfiles) ->
-            withContext(Dispatchers.Main) {
-                dispatch(DetailsStore.Message.UpdateEntry(gameEntry))
-                dispatch(DetailsStore.Message.UpdateProfiles(convProfiles))
-                dispatch(DetailsStore.Message.SetLoading(false))
-            }
-        }
     }
 
     private suspend fun syncGameFiles(gameDirPath: String) {
