@@ -21,6 +21,7 @@ import org.koin.core.component.get
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import java.util.*
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration.Companion.minutes
 
 class DownloadGameWorker(
@@ -81,6 +82,8 @@ class DownloadGameWorker(
             get<HttpClient>().prepareGet(
                 urlString = downloadLink,
                 block = {
+                    header(HttpHeaders.CacheControl, "no-cache, no-store")
+
                     var lastTime = System.currentTimeMillis()
                     var lastBytesSent = 0L
                     val speedSamples = LinkedList<Double>()
@@ -154,14 +157,21 @@ class DownloadGameWorker(
                 )
             }
         } catch (e: Exception) {
+            if (e is CancellationException) {
+                destDirPath.toUri().toFile().deleteRecursively()
+                throw e
+            }
+
             logger.apply {
                 recordBreadcrumb("Failed to download file | link: $downloadLink")
                 recordNonFatalException(e)
             }
+
             notificationProvider.showNotification(
                 "Error",
                 "Failed to download file"
             )
+
             destDirPath.toUri().toFile().deleteRecursively()
             Result.failure()
         }

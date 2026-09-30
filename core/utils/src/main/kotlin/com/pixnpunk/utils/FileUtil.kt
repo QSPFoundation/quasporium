@@ -5,10 +5,8 @@ import android.icu.text.MeasureFormat
 import android.icu.text.NumberFormat
 import android.icu.util.Measure
 import android.icu.util.MeasureUnit
-import android.net.Uri
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
-import com.anggrayudi.storage.extension.openInputStream
 import com.anggrayudi.storage.extension.toDocumentFile
 import com.anggrayudi.storage.file.CreateMode
 import com.anggrayudi.storage.file.DocumentFileCompat.fromUri
@@ -136,15 +134,35 @@ object FileUtil : KoinComponent {
         onProgressUpdate: suspend (state: ProgressState) -> Unit
     ): Result<String> = runCatching {
         val gameDir = fromUri(get(), destDirPath.toUri())
-        if (!gameDir.isWritableDir()) return Result.failure(NullPointerException())
+        if (!gameDir.isWritableDir()) {
+            val reason =
+                if (gameDir == null) "Dir is null (URI invalid/no permission)" else "No write access to dir"
+            return Result.failure(IOException("DestDir error: $reason. Path: $destDirPath"))
+        }
 
         val destFile = gameDir.makeFile(get(), fileName, mode = CreateMode.SKIP_IF_EXISTS)
-        if (!destFile.isWritableFile()) return Result.failure(NullPointerException())
+        if (!destFile.isWritableFile()) {
+            return Result.failure(
+                IOException(
+                    "DestFile error: ${
+                        when {
+                            destFile == null -> "makeFile returned null (invalid chars in name: '$fileName'?)"
+                            !destFile.exists() -> "File doesn't exist after creation"
+                            !destFile.isFile -> "Target is a directory, not a file"
+                            else -> "No write permission to file"
+                        }
+                    }. Name: $fileName"
+                )
+            )
+        }
 
         val startTime = System.currentTimeMillis()
         var lastEmitTime = 0L
 
-        destFile.openOutputStream(get())!!.use { output ->
+        val outputStream = destFile.openOutputStream(get())
+            ?: return Result.failure(IOException("Failed to open outputStream for $fileName"))
+
+        outputStream.use { output ->
             val buffer = ByteArray(8 * 1024)
             var bytesCopied = 0L
 

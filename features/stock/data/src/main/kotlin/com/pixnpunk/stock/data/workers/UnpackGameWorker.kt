@@ -16,6 +16,7 @@ import com.pixnpunk.utils.FileUtil.unpackFileToDir
 import kotlinx.serialization.json.Json
 import org.koin.core.component.KoinComponent
 import java.io.File
+import kotlin.coroutines.cancellation.CancellationException
 
 class UnpackGameWorker(
     appContext: Context,
@@ -83,14 +84,21 @@ class UnpackGameWorker(
 
             Result.success()
         } catch (e: Exception) {
+            if (e is CancellationException) {
+                destDirPath.toUri().toFile().deleteRecursively()
+                throw e
+            }
+
             logger.apply {
                 recordBreadcrumb("Failed to unpack | file $archivePath")
                 recordNonFatalException(e)
             }
+
             notificationProvider.showNotification(
                 "Error",
                 "Failed to unpack file"
             )
+
             destDirPath.toUri().toFile().deleteRecursively()
             Result.failure()
         }
