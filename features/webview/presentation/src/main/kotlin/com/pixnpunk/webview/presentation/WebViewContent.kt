@@ -70,8 +70,6 @@ fun GameWebView(
                 }
                 overScrollMode = View.OVER_SCROLL_NEVER
 
-                setLayerType(View.LAYER_TYPE_HARDWARE, null)
-
                 val density = ctx.resources.displayMetrics.density
                 var lastContentHeight = 0
 
