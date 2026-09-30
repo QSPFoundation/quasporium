@@ -64,9 +64,9 @@ internal class QspEngineBridgeImpl : QSPLib(), NativeEngineBridge {
     override suspend fun loadGameState(
         file: VirtualFile
     ): Boolean =
-        file.readBytes().getOrNull().let { data ->
+        file.readBytes().getOrNull()?.let { data ->
             executeCommand { openSavedGameFromData(data, true) }
-        }
+        } == true
 
     override suspend fun saveGameState(
         file: VirtualFile
