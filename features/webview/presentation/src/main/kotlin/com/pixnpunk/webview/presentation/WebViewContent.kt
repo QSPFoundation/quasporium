@@ -25,6 +25,11 @@ fun GameWebView(
 
     AndroidView(
         modifier = modifier,
+        onRelease = { webView ->
+            webView.stopLoading()
+            webView.setOnTouchListener(null)
+            webView.destroy()
+        },
         update = { webView ->
             val contentHash = state.htmlContentHash
             val themeHash = arrayOf(
