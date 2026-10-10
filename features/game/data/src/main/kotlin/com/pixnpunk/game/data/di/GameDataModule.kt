@@ -43,6 +43,7 @@ val gameDataModule = module {
 
     factory<SaveGameInteractor> { (engine: GameEngineInteractor) ->
         SaveGameInteractorImpl(
+            context = get(),
             vfsProvider = get(),
             saveDao = get(),
             engineInteractor = engine

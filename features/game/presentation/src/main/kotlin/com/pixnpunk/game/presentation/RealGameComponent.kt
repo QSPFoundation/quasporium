@@ -12,6 +12,7 @@ import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
 import com.arkivanov.essenty.lifecycle.doOnCreate
 import com.arkivanov.essenty.lifecycle.doOnDestroy
+import com.arkivanov.essenty.lifecycle.doOnStop
 import com.pixnpunk.dialogs.presentation.DialogsComponent
 import com.pixnpunk.dialogs.presentation.DialogsConfig
 import com.pixnpunk.dialogs.presentation.DialogsState
@@ -58,6 +59,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.serializer
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
@@ -114,6 +116,9 @@ class RealGameComponent(
     private val _events = Channel<GameEvent>(Channel.BUFFERED)
     override val events: Flow<GameEvent> = _events.receiveAsFlow()
 
+    private val isRestoredAfterProcessDeath =
+        stateKeeper.consume(KEY_SESSION, Boolean.serializer()) == true
+
     private val dialogNavigation = SlotNavigation<DialogsConfig>()
     private val extraNavigation = SlotNavigation<Unit>()
     private val objectNavigation = SlotNavigation<Unit>()
@@ -121,7 +126,7 @@ class RealGameComponent(
     override val dialogSlot: Value<ChildSlot<*, DialogsComponent>> =
         childSlot(
             source = dialogNavigation,
-            serializer = DialogsConfig.serializer()
+            serializer = null
         ) { config, context ->
             var isAnswered = false
             RealDialogsComponent(
@@ -184,7 +189,13 @@ class RealGameComponent(
         onExecValue = ::onExecValue
     )
 
+    private companion object {
+        const val KEY_SESSION = "GameSession"
+    }
+
     init {
+        stateKeeper.register(KEY_SESSION, Boolean.serializer()) { true }
+
         lifecycle.doOnCreate {
             if (engineState.value is GameState.Idle) {
                 engineInteractor.submitCommand(
@@ -193,12 +204,26 @@ class RealGameComponent(
                         VfsPath(gameDirUriBox)
                     )
                 )
-                if (gameSaveUriBox.isNotBlank()) {
-                    engineInteractor.submitCommand(
-                        EngineCommand.LoadSave(VfsPath(gameSaveUriBox))
-                    )
+                componentScope.launch {
+                    val autosave = if (isRestoredAfterProcessDeath) {
+                        saveGameInteractor.findAutosave(_uiState.value.gameFileUriBox)
+                    } else {
+                        null
+                    }
+                    val save = autosave ?: gameSaveUriBox.takeIf { it.isNotBlank() }?.let(::VfsPath)
+                    if (save != null) {
+                        engineInteractor.submitCommand(EngineCommand.LoadSave(save))
+                    }
                 }
             }
+        }
+
+        lifecycle.doOnStop {
+            if (_uiState.value.isFinishRequested) return@doOnStop
+            val running = engineState.value as? GameState.Running ?: return@doOnStop
+            if (running.uiConfig.isNoSave) return@doOnStop
+
+            componentScope.launch { saveGameInteractor.autosave(VfsPath(gameFileUriBox)) }
         }
 
         lifecycle.doOnDestroy {
@@ -535,6 +560,7 @@ class RealGameComponent(
 
     override fun doFinishGame() {
         engineInteractor.shutdown()
+        componentScope.launch { saveGameInteractor.deleteAutosave(VfsPath(gameFileUriBox)) }
         _uiState.update { it.copy(isFinishRequested = true) }
     }
 }
