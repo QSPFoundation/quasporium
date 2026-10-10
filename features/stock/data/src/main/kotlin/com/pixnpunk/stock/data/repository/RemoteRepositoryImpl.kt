@@ -30,6 +30,7 @@ import com.pixnpunk.stock.domain.model.NameCountItemRemote
 import com.pixnpunk.stock.domain.model.SearchState
 import com.pixnpunk.stock.domain.model.TranslatorEntry
 import com.pixnpunk.stock.domain.repository.RemoteRepository
+import com.pixnpunk.utils.runCatchingCancellable
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
@@ -145,7 +146,7 @@ class RemoteRepositoryImpl(
     }
 
     override suspend fun syncDictionaries() = withContext(Dispatchers.IO) {
-        runCatching {
+        runCatchingCancellable {
             coroutineScope {
                 val allAuthors = async { fetchAllPages(REMOTE_AUTHORS_URL) }.await()
                 val allTranslators = async { fetchAllPages(REMOTE_TRANSLATORS_URL) }.await()

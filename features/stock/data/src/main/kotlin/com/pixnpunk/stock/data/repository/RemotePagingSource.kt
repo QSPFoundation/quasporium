@@ -24,6 +24,7 @@ import com.pixnpunk.stock.domain.model.SortOrder
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
+import kotlin.coroutines.cancellation.CancellationException
 
 class RemotePagingSource(
     private val ktorClient: HttpClient,
@@ -68,6 +69,8 @@ class RemotePagingSource(
                         currentPage + 1
                     }
             )
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             LoadResult.Error(e)
         }

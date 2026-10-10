@@ -26,6 +26,8 @@ import com.pixnpunk.utils.ViewUtil.formatEta
 import io.ktor.utils.io.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.sf.sevenzipjbinding.ExtractAskMode
@@ -132,7 +134,7 @@ object FileUtil : KoinComponent {
         destDirPath: String,
         totalSize: Long,
         onProgressUpdate: suspend (state: ProgressState) -> Unit
-    ): Result<String> = runCatching {
+    ): Result<String> = runCatchingCancellable {
         val gameDir = fromUri(get(), destDirPath.toUri())
         if (!gameDir.isWritableDir()) {
             val reason =
@@ -202,24 +204,29 @@ object FileUtil : KoinComponent {
         filePath: String,
         destDirPath: String,
         onProgressUpdate: suspend (state: ProgressState) -> Unit
-    ): Result<Unit> = runCatching {
+    ): Result<Unit> = runCatchingCancellable {
         DocumentFileRandomInStream(
             singleFileUri = filePath.toUri(),
             contentResolver = get<Context>().contentResolver
         ).use { randomInStream ->
             withContext(Dispatchers.IO) {
                 SevenZip.openInArchive(null, randomInStream).use { inArchive ->
-                    inArchive.extract(
-                        null,
-                        false,
-                        ArchiveExtractCallback(
-                            context = get(),
-                            targetDir = destDirPath.toUri().toDocumentFile(get())!!,
-                            inArchive = inArchive,
-                            onProgressUpdate = onProgressUpdate,
-                            coroutineScope = this
+                    try {
+                        inArchive.extract(
+                            null,
+                            false,
+                            ArchiveExtractCallback(
+                                context = get(),
+                                targetDir = destDirPath.toUri().toDocumentFile(get())!!,
+                                inArchive = inArchive,
+                                onProgressUpdate = onProgressUpdate,
+                                coroutineScope = this
+                            )
                         )
-                    )
+                    } catch (e: SevenZipException) {
+                        ensureActive()
+                        throw e
+                    }
                 }
             }
         }
@@ -242,11 +249,16 @@ object FileUtil : KoinComponent {
             const val UPDATE_INTERVAL_MS = 200L
         }
 
+        private fun throwIfCancelled() {
+            if (!coroutineScope.isActive) throw SevenZipException("Extraction cancelled")
+        }
+
         override fun getStream(
             index: Int,
             extractAskMode: ExtractAskMode?
         ): ISequentialOutStream? {
             if (extractAskMode != ExtractAskMode.EXTRACT) return null
+            throwIfCancelled()
 
             val isFolder = inArchive.getProperty(index, PropID.IS_FOLDER) as? Boolean ?: false
             if (isFolder) return null
@@ -290,6 +302,7 @@ object FileUtil : KoinComponent {
         }
 
         override fun setCompleted(complete: Long) {
+            throwIfCancelled()
             val currentTime = System.currentTimeMillis()
 
             if (startTime == 0L) startTime = currentTime
