@@ -124,15 +124,24 @@ class RealGameComponent(
             source = dialogNavigation,
             serializer = DialogsConfig.serializer()
         ) { config, context ->
+            var isAnswered = false
             RealDialogsComponent(
                 componentContext = context,
                 settingsEntity = settingsState.value,
                 dialogsConfig = config,
                 onCleanError = ::onCleanError,
-                inputValue = ::onInputValue,
-                confirmMessage = ::onConfirmMessage,
+                inputValue = {
+                    isAnswered = true
+                    onInputValue(it)
+                },
+                confirmMessage = {
+                    isAnswered = true
+                    onConfirmMessage(it)
+                },
                 onDismissed = {
-                    engineInteractor.submitCommand(EngineCommand.DismissDialog)
+                    if (!isAnswered) {
+                        engineInteractor.submitCommand(EngineCommand.DismissDialog)
+                    }
                     dialogNavigation.dismiss()
                 }
             )

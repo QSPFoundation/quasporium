@@ -49,9 +49,13 @@ internal class GameEngineInteractorImpl(
     private val isUiBlocked = atomic(false)
     private val counterIntervalMs = atomic(500L)
 
-    private var pendingMessageDeferred: CompletableDeferred<Unit>? = null
-    private var pendingInputDeferred: CompletableDeferred<String>? = null
-    private var pendingMenuDeferred: CompletableDeferred<Int>? = null
+    private val pendingDialog = atomic<CompletableDeferred<DialogResult>?>(null)
+
+    private sealed interface DialogResult {
+        data object Dismissed : DialogResult
+        data class Input(val text: String) : DialogResult
+        data class MenuItem(val index: Int) : DialogResult
+    }
 
     init {
         bridge.setListener(this)
@@ -92,24 +96,9 @@ internal class GameEngineInteractorImpl(
 
     override fun submitCommand(command: EngineCommand) {
         when (command) {
-            is EngineCommand.SubmitInput -> {
-                pendingInputDeferred?.complete(command.text)
-                pendingInputDeferred = null
-                updateDialogState(null)
-            }
-
-            is EngineCommand.SelectMenuItem -> {
-                pendingMenuDeferred?.complete(command.index)
-                pendingMenuDeferred = null
-                updateDialogState(null)
-            }
-
-            is EngineCommand.DismissDialog -> {
-                pendingMessageDeferred?.complete(Unit)
-                pendingMessageDeferred = null
-                updateDialogState(null)
-            }
-
+            is EngineCommand.SubmitInput -> completeDialog(DialogResult.Input(command.text))
+            is EngineCommand.SelectMenuItem -> completeDialog(DialogResult.MenuItem(command.index))
+            is EngineCommand.DismissDialog -> completeDialog(DialogResult.Dismissed)
             else -> commandChannel.trySend(command)
         }
     }
@@ -212,18 +201,27 @@ internal class GameEngineInteractorImpl(
         }
     }
 
-    private fun showBlockingDialog(dialog: EngineDialog) =
+    private fun completeDialog(result: DialogResult) {
+        pendingDialog.getAndSet(null)?.complete(result)
+        updateDialogState(null)
+    }
+
+    private fun awaitDialog(dialog: EngineDialog): DialogResult =
         runBlocking {
             isUiBlocked.value = true
-            val deferred = CompletableDeferred<Unit>()
-            pendingMessageDeferred = deferred
+            val deferred = CompletableDeferred<DialogResult>()
+            pendingDialog.value = deferred
 
             updateDialogState(dialog)
 
-            deferred.await()
-
+            val result = deferred.await()
             isUiBlocked.value = false
+            result
         }
+
+    private fun showBlockingDialog(dialog: EngineDialog) {
+        awaitDialog(dialog)
+    }
 
     override fun onError(details: String) = showBlockingDialog(EngineDialog.Error(details))
 
@@ -233,34 +231,22 @@ internal class GameEngineInteractorImpl(
         EngineDialog.Picture(resolveVfs(path) ?: return)
     )
 
-    override fun onInputBox(prompt: String): String = runBlocking {
-        isUiBlocked.value = true
-        val deferred = CompletableDeferred<String>()
-        pendingInputDeferred = deferred
+    override fun onInputBox(prompt: String): String =
+        when (val result = awaitDialog(EngineDialog.Input(prompt))) {
+            is DialogResult.Input -> result.text
+            else -> ""
+        }
 
-        updateDialogState(EngineDialog.Input(prompt))
-
-        val result = deferred.await()
-        isUiBlocked.value = false
-        result
-    }
-
-    override fun onShowMenu(items: List<RawItem>): Int = runBlocking {
-        isUiBlocked.value = true
-        val deferred = CompletableDeferred<Int>()
-        pendingMenuDeferred = deferred
-
-        updateDialogState(
-            EngineDialog.Menu(
-                items.map {
-                    InteractableItem(it.text, resolveVfs(it.imagePath))
-                }
-            )
+    override fun onShowMenu(items: List<RawItem>): Int {
+        val menu = EngineDialog.Menu(
+            items.map {
+                InteractableItem(it.text, resolveVfs(it.imagePath))
+            }
         )
-
-        val result = deferred.await()
-        isUiBlocked.value = false
-        result
+        return when (val result = awaitDialog(menu)) {
+            is DialogResult.MenuItem -> result.index
+            else -> -1
+        }
     }
 
     override fun onShowWindow(type: WindowType, isVisible: Boolean) {
