@@ -67,7 +67,6 @@ import org.koin.core.parameter.parametersOf
 class RealGameComponent(
     private val componentContext: ComponentContext,
     private val libAuthors: NativeLibAuthors,
-    private val onFinishActivity: () -> Unit,
     private val gameId: Long = -1L,
     private val gameTitle: String = "Title",
     private val gameDirUriBox: String = "",
@@ -534,5 +533,8 @@ class RealGameComponent(
         )
     }
 
-    override fun doFinishGame() = onFinishActivity()
+    override fun doFinishGame() {
+        engineInteractor.shutdown()
+        _uiState.update { it.copy(isFinishRequested = true) }
+    }
 }

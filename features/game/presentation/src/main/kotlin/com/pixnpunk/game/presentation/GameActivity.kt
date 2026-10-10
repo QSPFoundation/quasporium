@@ -1,12 +1,11 @@
 package com.pixnpunk.game.presentation
 
 import android.os.Bundle
-import android.os.Process.killProcess
-import android.os.Process.myPid
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.core.net.toUri
@@ -119,7 +118,6 @@ class GameActivity : ComponentActivity() {
             RealGameComponent(
                 componentContext = it,
                 libAuthors = settingsRepository.settingsFlow.value.nativeLibFrom,
-                onFinishActivity = { killProcess(myPid()) },
                 gameId = gameId,
                 gameTitle = gameTitle,
                 gameDirUriBox = gameDirUriBox,
@@ -142,6 +140,10 @@ class GameActivity : ComponentActivity() {
             val state by rootComponent.model.collectAsStateWithLifecycle()
 
             val snackbarHostState = remember { SnackbarHostState() }
+
+            if (state.isFinishRequested) {
+                LaunchedEffect(Unit) { finish() }
+            }
 
             if (state.isUserChooseSave) {
                 runCatching {

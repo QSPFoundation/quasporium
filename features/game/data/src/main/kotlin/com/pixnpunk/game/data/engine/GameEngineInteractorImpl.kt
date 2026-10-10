@@ -37,8 +37,6 @@ internal class GameEngineInteractorImpl(
     private val audioService: AudioPlayerInteractor
 ) : GameEngineInteractor, NativeEngineListener {
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private val engineDispatcher = Dispatchers.IO.limitedParallelism(1)
     private val engineScope = CoroutineScope(engineDispatcher + SupervisorJob())
 
     private val commandChannel = Channel<EngineCommand>(Channel.UNLIMITED)
@@ -47,9 +45,14 @@ internal class GameEngineInteractorImpl(
     override val state = _state.asStateFlow()
 
     private val isUiBlocked = atomic(false)
+    private val isShutdown = atomic(false)
     private val counterIntervalMs = atomic(500L)
 
     private val pendingDialog = atomic<CompletableDeferred<DialogResult>?>(null)
+
+    private companion object {
+        val engineDispatcher = Dispatchers.IO.limitedParallelism(1)
+    }
 
     private sealed interface DialogResult {
         data object Dismissed : DialogResult
@@ -58,16 +61,24 @@ internal class GameEngineInteractorImpl(
     }
 
     init {
-        bridge.setListener(this)
-        bridge.initializeEngine()
+        engineScope.launch {
+            bridge.setListener(this@GameEngineInteractorImpl)
+            bridge.initializeEngine()
+        }
 
         startActorLoop()
         startGameLoopTimer()
     }
 
     override fun shutdown() {
+        if (!isShutdown.compareAndSet(false, true)) return
+
+        commandChannel.close()
+        pendingDialog.getAndSet(null)?.complete(DialogResult.Dismissed)
         engineScope.cancel()
-        bridge.destroyEngine()
+        audioService.closeAllFiles()
+
+        CoroutineScope(engineDispatcher).launch { bridge.destroyEngine() }
     }
 
     private fun startActorLoop() = engineScope.launch {
@@ -212,6 +223,11 @@ internal class GameEngineInteractorImpl(
             val deferred = CompletableDeferred<DialogResult>()
             pendingDialog.value = deferred
 
+            if (isShutdown.value) {
+                isUiBlocked.value = false
+                return@runBlocking DialogResult.Dismissed
+            }
+
             updateDialogState(dialog)
 
             val result = deferred.await()
@@ -328,6 +344,7 @@ internal class GameEngineInteractorImpl(
     }
 
     override fun onPlayAudio(path: String, volume: Int) {
+        if (isShutdown.value) return
         resolveVfs(path)?.let { audioService.playFile(it.value, volume) }
     }
 

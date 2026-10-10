@@ -14,6 +14,7 @@ data class GameUIState(
     val isSaveDisable: Boolean = false,
     val isUserChooseSave: Boolean = false,
     val isUserChooseLoad: Boolean = false,
+    val isFinishRequested: Boolean = false,
 
     val gameId: GameId = GameId(-1),
     val gameTitle: String = "Title",
