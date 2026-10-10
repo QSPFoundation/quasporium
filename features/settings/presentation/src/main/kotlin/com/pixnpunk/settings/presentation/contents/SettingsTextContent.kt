@@ -100,13 +100,13 @@ fun SettingsTextContent(
             summary = {
                 if (it) {
                     Text(stringResource(R.string.font_color_switch_summary))
-                } else {
-                    resetToDefault(ColorPickerState.COLOR_TEXT)
                 }
             },
             onClick = {
                 if (it) {
                     showColorDialog(ColorPickerState.COLOR_TEXT)
+                } else {
+                    resetToDefault(ColorPickerState.COLOR_TEXT)
                 }
             }
         )
@@ -123,13 +123,13 @@ fun SettingsTextContent(
             summary = {
                 if (it) {
                     Text(stringResource(R.string.back_color_switch_summary))
-                } else {
-                    resetToDefault(ColorPickerState.COLOR_BACK)
                 }
             },
             onClick = {
                 if (it) {
                     showColorDialog(ColorPickerState.COLOR_BACK)
+                } else {
+                    resetToDefault(ColorPickerState.COLOR_BACK)
                 }
             }
         )
@@ -146,13 +146,13 @@ fun SettingsTextContent(
             summary = {
                 if (it) {
                     Text(stringResource(R.string.link_color_switch_summary))
-                } else {
-                    resetToDefault(ColorPickerState.COLOR_LINK)
                 }
             },
             onClick = {
                 if (it) {
                     showColorDialog(ColorPickerState.COLOR_LINK)
+                } else {
+                    resetToDefault(ColorPickerState.COLOR_LINK)
                 }
             }
         )

@@ -8,6 +8,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -75,7 +76,7 @@ fun DialogsMainContent(
 
         DialogsState.DIALOG_OUTPUT_VALUE -> config.outputState.let {
             if (it == null) {
-                component.onDismissed()
+                LaunchedEffect(Unit) { component.onDismissed() }
             } else {
                 BasicAlertDialog(
                     onDismissRequest = component.onDismissed,
@@ -140,7 +141,7 @@ fun DialogsMainContent(
                                 )
                             }
 
-                            else -> component.onDismissed()
+                            else -> LaunchedEffect(Unit) { component.onDismissed() }
                         }
                     }
                 }
@@ -173,7 +174,7 @@ fun DialogsMainContent(
 
                         DialogsState.DIALOG_SELECT_COLOR -> config.colorPickerState.let {
                             if (it == null) {
-                                component.onDismissed()
+                                LaunchedEffect(Unit) { component.onDismissed() }
                             } else {
                                 DialogSelectColorContent(
                                     selectColor = { c -> component.selectColor(it to c) },
@@ -191,7 +192,7 @@ fun DialogsMainContent(
 
                         DialogsState.DIALOG_INPUT_VALUE -> config.inputState.let {
                             if (it == null) {
-                                component.onDismissed()
+                                LaunchedEffect(Unit) { component.onDismissed() }
                             } else {
                                 DialogInputValueContent(
                                     isError = config.isError,

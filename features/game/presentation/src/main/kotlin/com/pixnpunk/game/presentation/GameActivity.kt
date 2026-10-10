@@ -159,36 +159,40 @@ class GameActivity : ComponentActivity() {
                 LaunchedEffect(Unit) { finish() }
             }
 
-            if (state.isUserChooseSave) {
-                runCatching {
-                    val rootDir =
-                        gameDirUriBox.toUri().toDocumentFile(this@GameActivity)!!
-                    requestCreateFile.launch(
-                        FileCreationContract.Options(
-                            mimeType = BINARY_FILE,
-                            fileName = "${(UInt.MIN_VALUE..UInt.MAX_VALUE).random()}.sav",
-                            initialPath = FileFullPath(
-                                context = this@GameActivity,
-                                fullPath = rootDir.getAbsolutePath(this@GameActivity)
+            LaunchedEffect(state.isUserChooseSave) {
+                if (state.isUserChooseSave) {
+                    runCatching {
+                        val rootDir =
+                            gameDirUriBox.toUri().toDocumentFile(this@GameActivity)!!
+                        requestCreateFile.launch(
+                            FileCreationContract.Options(
+                                mimeType = BINARY_FILE,
+                                fileName = "${(UInt.MIN_VALUE..UInt.MAX_VALUE).random()}.sav",
+                                initialPath = FileFullPath(
+                                    context = this@GameActivity,
+                                    fullPath = rootDir.getAbsolutePath(this@GameActivity)
+                                )
                             )
                         )
-                    )
+                    }
                 }
             }
 
-            if (state.isUserChooseLoad) {
-                runCatching {
-                    val rootDir =
-                        gameDirUriBox.toUri().toDocumentFile(this@GameActivity)!!
-                    requestOpenFile.launch(
-                        OpenFilePickerContract.Options(
-                            initialPath = FileFullPath(
-                                context = this@GameActivity,
-                                fullPath = rootDir.getAbsolutePath(this@GameActivity)
-                            ),
-                            filterMimeTypes = setOf(BINARY_FILE)
+            LaunchedEffect(state.isUserChooseLoad) {
+                if (state.isUserChooseLoad) {
+                    runCatching {
+                        val rootDir =
+                            gameDirUriBox.toUri().toDocumentFile(this@GameActivity)!!
+                        requestOpenFile.launch(
+                            OpenFilePickerContract.Options(
+                                initialPath = FileFullPath(
+                                    context = this@GameActivity,
+                                    fullPath = rootDir.getAbsolutePath(this@GameActivity)
+                                ),
+                                filterMimeTypes = setOf(BINARY_FILE)
+                            )
                         )
-                    )
+                    }
                 }
             }
 
