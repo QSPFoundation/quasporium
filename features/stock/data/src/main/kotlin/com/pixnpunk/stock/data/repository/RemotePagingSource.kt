@@ -62,10 +62,10 @@ class RemotePagingSource(
                 data = gameEntries,
                 prevKey = if (currentPage == INITIAL_PAGE_INDEX) null else currentPage - 1,
                 nextKey =
-                    if (searchQuery.isNotEmpty() || activeTokens.isNotEmpty()) {
-                        if (currentPage == responseResult.meta.lastPage) null else currentPage + 1
+                    if (currentPage >= responseResult.meta.lastPage || gameEntries.isEmpty()) {
+                        null
                     } else {
-                        if (currentPage == responseResult.meta.total) null else currentPage + 1
+                        currentPage + 1
                     }
             )
         } catch (e: Exception) {
