@@ -51,6 +51,7 @@ internal class GameEngineInteractorImpl(
 
     private val isUiBlocked = atomic(false)
     private val isShutdown = atomic(false)
+    private val isTimerPaused = atomic(false)
     private val counterIntervalMs = atomic(500L)
 
     private val pendingDialog = atomic<CompletableDeferred<DialogResult>?>(null)
@@ -99,11 +100,15 @@ internal class GameEngineInteractorImpl(
                 delay(100.milliseconds)
             } else {
                 delay(delayMs.milliseconds)
-                if (_state.value is GameState.Running && !isUiBlocked.value) {
+                if (_state.value is GameState.Running && !isUiBlocked.value && !isTimerPaused.value) {
                     runGuarded { bridge.executeCounter() }
                 }
             }
         }
+    }
+
+    override fun setTimerPaused(isPaused: Boolean) {
+        isTimerPaused.value = isPaused
     }
 
     override fun onSetTimer(msecs: Int) {

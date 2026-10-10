@@ -133,6 +133,14 @@ class GameActivity : ComponentActivity() {
         }
 
         lifecycle.addObserver(object : DefaultLifecycleObserver {
+            override fun onStart(owner: LifecycleOwner) {
+                rootComponent.setGameVisible(true)
+            }
+
+            override fun onStop(owner: LifecycleOwner) {
+                rootComponent.setGameVisible(false)
+            }
+
             override fun onResume(owner: LifecycleOwner) {
                 rootComponent.audioPlayer.resumeAll()
             }

@@ -6,5 +6,6 @@ import kotlinx.coroutines.flow.StateFlow
 interface GameEngineInteractor {
     val state: StateFlow<GameState>
     fun submitCommand(command: EngineCommand)
+    fun setTimerPaused(isPaused: Boolean)
     fun shutdown()
 }

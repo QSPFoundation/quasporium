@@ -298,6 +298,8 @@ class RealGameComponent(
             .launchIn(componentScope)
     }
 
+    internal fun setGameVisible(isVisible: Boolean) = engineInteractor.setTimerPaused(!isVisible)
+
     override fun doSaveFile() {
         if (!isGameDirIsInternal(gameDirUriBox)) {
             _uiState.update { it.copy(isUserChooseSave = true) }
