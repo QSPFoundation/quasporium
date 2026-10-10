@@ -18,7 +18,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,9 +39,9 @@ fun DialogEditGameContent(
     editGame: (GameEntry) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    var gameName by remember(entry.title) { mutableStateOf(entry.title) }
-    var gameAuthor by remember(entry.author) { mutableStateOf(entry.author) }
-    var gameVersion by remember(entry.version) { mutableStateOf(entry.version) }
+    var gameName by rememberSaveable(entry.title) { mutableStateOf(entry.title) }
+    var gameAuthor by rememberSaveable(entry.author) { mutableStateOf(entry.author) }
+    var gameVersion by rememberSaveable(entry.version) { mutableStateOf(entry.version) }
 
     val isButtonEnabled = gameName.isNotBlank() && entry.gameDirPath.isNotEmpty()
 

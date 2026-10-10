@@ -12,7 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,9 +31,9 @@ fun DialogAddGameContent(
     isAddLocalGame: Boolean,
     buttonText: String
 ) {
-    var gameName by remember(entry.title) { mutableStateOf(entry.title) }
-    var gameAuthor by remember(entry.author) { mutableStateOf(entry.author) }
-    var gameVersion by remember(entry.version) { mutableStateOf(entry.version) }
+    var gameName by rememberSaveable(entry.title) { mutableStateOf(entry.title) }
+    var gameAuthor by rememberSaveable(entry.author) { mutableStateOf(entry.author) }
+    var gameVersion by rememberSaveable(entry.version) { mutableStateOf(entry.version) }
 
     val isDirSelected = entry.gameDirPath.isNotEmpty()
 
