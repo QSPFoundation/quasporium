@@ -1,6 +1,0 @@
-[submodule "features/game/data/src/main/cpp/qsp-legacy"]
-	path = features/game/data/src/main/cpp/qsp-legacy
-	url = git@github.com:QSPFoundation/qsp-legacy.git
-[submodule "features/game/data/src/main/cpp/qsp"]
-	path = features/game/data/src/main/cpp/qsp
-	url = git@github.com:QSPFoundation/qsp.git
