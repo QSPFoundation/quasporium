@@ -249,7 +249,7 @@ class MainActivity : ComponentActivity() {
         )
 
         splashScreen.setKeepOnScreenCondition {
-            root.model.value.isMigrationComplete
+            !root.model.value.isMigrationComplete
         }
 
         lifecycleScope.launch {

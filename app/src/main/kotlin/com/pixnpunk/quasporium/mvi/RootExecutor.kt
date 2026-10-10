@@ -10,6 +10,7 @@ import com.pixnpunk.stock.domain.usecase.DownloadGameArchUseCase
 import com.pixnpunk.stock.domain.usecase.FillAndInsertEntryUseCase
 import com.pixnpunk.stock.domain.usecase.MigrateIfNeededUseCase
 import com.pixnpunk.stock.domain.usecase.UpsertEntryUseCase
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -61,8 +62,13 @@ class RootExecutor(
         when (action) {
             RootStore.Action.MigrateIfNeeded ->
                 scope.launch {
-                    withContext(Dispatchers.IO) {
-                        migrateIfNeededUseCase.execute()
+                    try {
+                        withContext(Dispatchers.IO) {
+                            migrateIfNeededUseCase.execute()
+                        }
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (_: Exception) {
                     }
 
                     dispatch(RootStore.Message.MigrationComplete)

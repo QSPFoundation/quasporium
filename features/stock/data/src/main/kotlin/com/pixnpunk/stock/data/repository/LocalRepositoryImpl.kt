@@ -157,9 +157,10 @@ class LocalRepositoryImpl(
                 } else {
                     File(currentPathString)
                 }
+                val isFile = currentFile.isFile
                 val targetDirectory = when {
                     currentFile.isDirectory -> currentFile
-                    currentFile.isFile -> currentFile.parentFile
+                    isFile -> currentFile.parentFile
                     else -> null
                 }
 
@@ -169,7 +170,7 @@ class LocalRepositoryImpl(
                     && targetDirectory.name.contains("#")
                 ) {
                     val newDir = File(
-                        currentFile.parentFile ?: continue,
+                        targetDirectory.parentFile ?: continue,
                         "Game_${UUID.randomUUID().toString().replace("-", "")}"
                     )
 
@@ -178,7 +179,7 @@ class LocalRepositoryImpl(
                     } else {
                         gameDao.updateGamePath(
                             game.id,
-                            if (currentFile.isFile) {
+                            if (isFile) {
                                 File(
                                     newDir,
                                     currentFile.name
@@ -194,7 +195,7 @@ class LocalRepositoryImpl(
             }
         }
 
-        if (hasFailures) {
+        if (!hasFailures) {
             prefs.edit { putBoolean("is_game_folders_migrated_v1", true) }
         }
     }
