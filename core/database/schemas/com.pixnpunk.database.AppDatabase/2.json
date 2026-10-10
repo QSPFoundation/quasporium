@@ -1,0 +1,166 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 2,
+    "identityHash": "dff9b41f9a7266a8d9633ec4a0c5a1f4",
+    "entities": [
+      {
+        "tableName": "game",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `listId` TEXT NOT NULL, `author` TEXT NOT NULL, `portedBy` TEXT NOT NULL, `version` TEXT NOT NULL, `title` TEXT NOT NULL, `lang` TEXT NOT NULL, `player` TEXT NOT NULL, `gameIconPath` TEXT NOT NULL, `fileUrl` TEXT NOT NULL, `fileSize` INTEGER NOT NULL, `fileExt` TEXT NOT NULL, `descUrl` TEXT NOT NULL, `pubDate` TEXT NOT NULL, `modDate` TEXT NOT NULL, `gameDirPath` TEXT NOT NULL, `gameFilesPath` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "listId",
+            "columnName": "listId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "author",
+            "columnName": "author",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "portedBy",
+            "columnName": "portedBy",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "version",
+            "columnName": "version",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lang",
+            "columnName": "lang",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "player",
+            "columnName": "player",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gameIconPath",
+            "columnName": "gameIconPath",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fileUrl",
+            "columnName": "fileUrl",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fileSize",
+            "columnName": "fileSize",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fileExt",
+            "columnName": "fileExt",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "descUrl",
+            "columnName": "descUrl",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pubDate",
+            "columnName": "pubDate",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "modDate",
+            "columnName": "modDate",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gameDirPath",
+            "columnName": "gameDirPath",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gameFilesPath",
+            "columnName": "gameFilesPath",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "game_fts",
+        "createSql": "CREATE VIRTUAL TABLE IF NOT EXISTS `${TABLE_NAME}` USING FTS4(`author` TEXT NOT NULL, `title` TEXT NOT NULL, content=`game`)",
+        "fields": [
+          {
+            "fieldPath": "author",
+            "columnName": "author",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": []
+        },
+        "ftsVersion": "FTS4",
+        "ftsOptions": {
+          "tokenizer": "simple",
+          "tokenizerArgs": [],
+          "contentTable": "game",
+          "languageIdColumnName": "",
+          "matchInfo": "FTS4",
+          "notIndexedColumns": [],
+          "prefixSizes": [],
+          "preferredOrder": "ASC"
+        },
+        "contentSyncTriggers": [
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_game_fts_BEFORE_UPDATE BEFORE UPDATE ON `game` BEGIN DELETE FROM `game_fts` WHERE `docid`=OLD.`rowid`; END",
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_game_fts_BEFORE_DELETE BEFORE DELETE ON `game` BEGIN DELETE FROM `game_fts` WHERE `docid`=OLD.`rowid`; END",
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_game_fts_AFTER_UPDATE AFTER UPDATE ON `game` BEGIN INSERT INTO `game_fts`(`docid`, `author`, `title`) VALUES (NEW.`rowid`, NEW.`author`, NEW.`title`); END",
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_game_fts_AFTER_INSERT AFTER INSERT ON `game` BEGIN INSERT INTO `game_fts`(`docid`, `author`, `title`) VALUES (NEW.`rowid`, NEW.`author`, NEW.`title`); END"
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'dff9b41f9a7266a8d9633ec4a0c5a1f4')"
+    ]
+  }
+}
