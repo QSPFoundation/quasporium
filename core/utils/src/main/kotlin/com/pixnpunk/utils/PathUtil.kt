@@ -62,4 +62,16 @@ object PathUtil {
         }
         return result.replace("\\", "/")
     }
+
+    fun String.toSafeRelativePath(): String? {
+        val segments = ArrayDeque<String>()
+        for (segment in replace('\\', '/').split('/')) {
+            when (segment) {
+                "", "." -> continue
+                ".." -> segments.removeLastOrNull() ?: return null
+                else -> segments.addLast(segment)
+            }
+        }
+        return if (segments.isEmpty()) null else segments.joinToString("/")
+    }
 }

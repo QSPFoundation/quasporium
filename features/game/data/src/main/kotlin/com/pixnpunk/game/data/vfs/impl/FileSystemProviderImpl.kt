@@ -6,7 +6,7 @@ import com.anggrayudi.storage.extension.toDocumentFile
 import com.pixnpunk.game.data.vfs.FileSystemProvider
 import com.pixnpunk.game.data.vfs.VirtualFile
 import com.pixnpunk.game.domain.model.VfsPath
-import com.pixnpunk.utils.PathUtil.normalizeContentPath
+import com.pixnpunk.utils.PathUtil.toSafeRelativePath
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 
@@ -47,7 +47,7 @@ internal class FileSystemProviderImpl(
 
     override fun resolveRelative(path: String): VirtualFile? {
         val root = gameRoot ?: return null
-        val cleanPath = path.normalizeContentPath()
+        val cleanPath = path.toSafeRelativePath() ?: return null
 
         resolveCache[cleanPath]?.let { return it }
         val resolvedChild = root.getChild(cleanPath)

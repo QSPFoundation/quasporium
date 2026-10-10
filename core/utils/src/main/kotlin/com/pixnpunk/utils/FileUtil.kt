@@ -21,7 +21,7 @@ import com.anggrayudi.storage.file.openOutputStream
 import com.pixnpunk.dto.BinaryPrefFormat
 import com.pixnpunk.dto.DownloadStatus
 import com.pixnpunk.dto.ProgressState
-import com.pixnpunk.utils.PathUtil.normalizeContentPath
+import com.pixnpunk.utils.PathUtil.toSafeRelativePath
 import com.pixnpunk.utils.ViewUtil.formatEta
 import io.ktor.utils.io.*
 import kotlinx.coroutines.CoroutineScope
@@ -252,17 +252,18 @@ object FileUtil : KoinComponent {
             if (isFolder) return null
 
             val rawPath = inArchive.getProperty(index, PropID.PATH) as? String ?: return null
-            val normalizedPath = rawPath.normalizeContentPath()
+            val safePath = rawPath.toSafeRelativePath()
+                ?: throw SevenZipException("Unsafe archive entry path: $rawPath")
 
             val file = targetDir.makeFile(
                 get(),
-                normalizedPath,
-                getExtensionFromFileName(normalizedPath),
+                safePath,
+                getExtensionFromFileName(safePath),
                 mode = CreateMode.REUSE
-            ) ?: throw IOException("Could not create file: $normalizedPath")
+            ) ?: throw IOException("Could not create file: $safePath")
 
             val outputStream = file.openOutputStream(context)
-                ?: throw IOException("Could not open stream for: $normalizedPath")
+                ?: throw IOException("Could not open stream for: $safePath")
 
             stream = SequentialOutStream(outputStream)
             return stream
