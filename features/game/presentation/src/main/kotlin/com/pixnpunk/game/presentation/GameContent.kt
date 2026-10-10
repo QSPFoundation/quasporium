@@ -173,13 +173,15 @@ fun GameContent(
                 if (settings.customFontPath.isBlank()) {
                     AppTypography
                 } else {
-                    Typography().withDefaultFontFamily(
-                        FontFamily(
-                            Typeface.createFromFile(
-                                settings.customFontPath
+                    runCatching {
+                        Typography().withDefaultFontFamily(
+                            FontFamily(
+                                Typeface.createFromFile(
+                                    settings.customFontPath
+                                )
                             )
                         )
-                    )
+                    }.getOrDefault(AppTypography)
                 }
             }
         }

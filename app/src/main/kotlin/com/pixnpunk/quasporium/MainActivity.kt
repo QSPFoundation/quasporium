@@ -29,11 +29,14 @@ import com.pixnpunk.game.presentation.GameActivity
 import com.pixnpunk.utils.AddonsUtils
 import com.pixnpunk.utils.FileUtil.isWritableDir
 import com.pixnpunk.utils.FileUtil.isWritableFile
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.koin.android.ext.android.get
 import java.io.File
 import java.io.FileOutputStream
+import java.util.UUID
 import kotlin.contracts.ExperimentalContracts
 
 class MainActivity : ComponentActivity() {
@@ -105,21 +108,40 @@ class MainActivity : ComponentActivity() {
             if (uri != null) {
                 val customFont = uri.toDocumentFile(this) ?: return@registerForActivityResult
                 if (customFont.isFile && customFont.canRead()) {
-                    File(
-                        File(filesDir, "custom_fonts").apply { mkdirs() },
-                        customFont.name ?: "custom_font_${System.currentTimeMillis()}.ttf"
-                    ).let { cachedFontFile ->
-                        runCatching {
-                            customFont.openInputStream(this)!!.use { inputStream ->
-                                FileOutputStream(cachedFontFile).use { outputStream ->
-                                    inputStream.copyTo(outputStream)
+                    lifecycleScope.launch {
+                        val cachedFontFile = withContext(Dispatchers.IO) {
+                            val extension = customFont.name
+                                ?.substringAfterLast('.', "")
+                                ?.lowercase()
+                                ?.takeIf { it in FONT_EXTENSIONS }
+                                ?: "ttf"
+                            val target = File(
+                                File(filesDir, "custom_fonts").apply { mkdirs() },
+                                "custom_font_${UUID.randomUUID()}.$extension"
+                            )
+                            val isCopied = runCatching {
+                                customFont.openInputStream(this@MainActivity)!!.use { inputStream ->
+                                    FileOutputStream(target).use { outputStream ->
+                                        inputStream.copyTo(outputStream)
+                                    }
                                 }
+                            }.isSuccess
+
+                            if (isCopied && isFontFile(target)) {
+                                target
+                            } else {
+                                target.delete()
+                                null
                             }
-                        }.onSuccess {
-                            val path = cachedFontFile.absolutePath
-                            if (path.isNotEmpty()) {
-                                root.processPickedFont(path)
-                            }
+                        }
+
+                        if (cachedFontFile != null) {
+                            root.processPickedFont(cachedFontFile.absolutePath)
+                        } else {
+                            root.doShowDialog(
+                                outputValue = "The selected file is not a TrueType or OpenType font.",
+                                outputState = OutputState.OUTPUT_SIMPLE_MSG
+                            )
                         }
                     }
                 }
@@ -157,6 +179,22 @@ class MainActivity : ComponentActivity() {
         registerForActivityResult(StoragePermissionContract()) { _ ->
 
         }
+
+    private companion object {
+        val FONT_EXTENSIONS = setOf("ttf", "otf", "ttc")
+
+        fun isFontFile(file: File): Boolean {
+            val header = runCatching {
+                file.inputStream().use {
+                    input -> ByteArray(4)
+                        .also { input.read(it) }
+                }
+            }.getOrNull() ?: return false
+            val tag = String(header, Charsets.ISO_8859_1)
+            return header.contentEquals(byteArrayOf(0, 1, 0, 0)) ||
+                    tag == "OTTO" || tag == "true" || tag == "ttcf"
+        }
+    }
 
     private fun checkAndRequestPermissions() {
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
