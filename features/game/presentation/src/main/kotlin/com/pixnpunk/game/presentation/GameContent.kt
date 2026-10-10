@@ -140,7 +140,7 @@ fun GameContent(
         }
     }
 
-    BackHandler { showDialog = true }
+    BackHandler(enabled = !extraSlotIsNotEmpty && !objectSlotIsNotEmpty) { showDialog = true }
 
     val baseScaffoldValue = calculateThreePaneScaffoldValue(
         maxHorizontalPartitions = directive.maxHorizontalPartitions,
