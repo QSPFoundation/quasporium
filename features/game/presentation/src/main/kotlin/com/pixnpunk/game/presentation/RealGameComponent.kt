@@ -80,7 +80,7 @@ class RealGameComponent(
 
     internal val audioPlayer: AudioPlayerInteractor = get()
     private val engineInteractor: GameEngineInteractor by inject { parametersOf(libAuthors) }
-    private val settingsRepository: SettingsRepository = get()
+    private val settingsRepository: SettingsRepository = get { parametersOf(gameId) }
     private val saveGameInteractor: SaveGameInteractor by inject { parametersOf(engineInteractor) }
 
     override val settingsState: StateFlow<SettingsEntity> = settingsRepository.settingsFlow
@@ -228,6 +228,7 @@ class RealGameComponent(
 
         lifecycle.doOnDestroy {
             engineInteractor.shutdown()
+            settingsRepository.cancel()
         }
 
         settingsState

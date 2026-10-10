@@ -8,6 +8,7 @@ import com.arkivanov.decompose.router.stack.pop
 import com.arkivanov.decompose.router.stack.pushNew
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
+import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.pixnpunk.dto.ColorPickerState
 import com.pixnpunk.dto.InputState
 import com.pixnpunk.settings.dto.repository.SettingsRepository
@@ -25,13 +26,13 @@ import kotlinx.serialization.serializer
 import me.zhanghai.compose.preference.Preferences
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import org.koin.core.parameter.parametersOf
 
 class RealSettingsComponent(
     private val componentContext: ComponentContext,
     private val gameId: Long? = null,
     override val gameTitle: String = "",
     override val showColorDialog: (ColorPickerState) -> Unit,
-    override val resetToDefault: (ColorPickerState) -> Unit,
     override val showInputDialog: (InputState) -> Unit,
     override val showFontDialog: () -> Unit,
     override val onDismissed: () -> Unit
@@ -41,7 +42,7 @@ class RealSettingsComponent(
 
     private val navigation = StackNavigation<ChildConfig>()
 
-    private val settingsRepository: SettingsRepository by inject()
+    private val settingsRepository: SettingsRepository by inject { parametersOf(gameId ?: -1L) }
 
     override val isLocalSettings: Boolean = gameId != null
 
@@ -49,7 +50,25 @@ class RealSettingsComponent(
         ProxyPreference(emptyMap()) { _, _ -> }
     )
 
+    override val resetToDefault: (ColorPickerState) -> Unit = { state ->
+        scope.launch { settingsRepository.restoreColorValue(state) }
+    }
+
+    fun updateColor(state: ColorPickerState, colorArgb: Int) {
+        scope.launch { settingsRepository.updateColorValue(state, colorArgb) }
+    }
+
+    fun updateImageSize(state: InputState, value: Int) {
+        scope.launch { settingsRepository.updateImageSize(state, value) }
+    }
+
+    fun updateCustomFontPath(path: String) {
+        scope.launch { settingsRepository.updateCustomFontPath(path) }
+    }
+
     init {
+        lifecycle.doOnDestroy { settingsRepository.cancel() }
+
         settingsRepository.settingsFlow
             .map { it.toMap() }
             .flowOn(Dispatchers.Default)

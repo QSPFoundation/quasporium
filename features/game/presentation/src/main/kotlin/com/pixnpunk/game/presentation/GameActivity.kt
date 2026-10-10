@@ -28,12 +28,13 @@ import com.pixnpunk.game.domain.model.VfsPath
 import com.pixnpunk.settings.dto.repository.SettingsRepository
 import org.koin.android.ext.android.get
 import org.koin.android.ext.android.inject
+import org.koin.core.parameter.parametersOf
 
 class GameActivity : ComponentActivity() {
 
     private lateinit var rootComponent: RealGameComponent
 
-    private val settingsRepository: SettingsRepository by inject()
+    private val settingsRepository: SettingsRepository by inject { parametersOf(gameId) }
 
     private val isImmersiveEnabled: Boolean
         get() = settingsRepository.settingsFlow.value.isImmersModeEnabled
@@ -99,6 +100,11 @@ class GameActivity : ComponentActivity() {
                 hide(WindowInsetsCompat.Type.systemBars())
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        settingsRepository.cancel()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

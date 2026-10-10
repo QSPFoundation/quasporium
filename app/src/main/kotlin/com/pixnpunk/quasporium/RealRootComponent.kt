@@ -1,5 +1,6 @@
 package com.pixnpunk.quasporium
 
+import androidx.compose.ui.graphics.toArgb
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
 import com.arkivanov.decompose.router.slot.ChildSlot
@@ -102,6 +103,12 @@ class RealRootComponent(
     }
 
     fun processPickedFont(fontPath: String) {
+        val settings = settingsSlot.child?.instance
+        if (settings != null && settings.isLocalSettings) {
+            settings.updateCustomFontPath(fontPath)
+            return
+        }
+
         val oldCustomFontPath = settingsState.value.customFontPath
 
         if (oldCustomFontPath.isNotEmpty() && oldCustomFontPath != fontPath) {
@@ -137,8 +144,13 @@ class RealRootComponent(
                 deselectDir = ::remDirSelect,
                 selectCover = launchFilePicker,
                 deselectCover = ::remFileSelect,
-                selectColor = {
-                    store.accept(RootStore.Intent.UpdateColorConfig(it.first, it.second))
+                selectColor = { (state, color) ->
+                    val settings = settingsSlot.child?.instance
+                    if (settings != null) {
+                        settings.updateColor(state, color.toArgb())
+                    } else {
+                        store.accept(RootStore.Intent.UpdateColorConfig(state, color))
+                    }
                 },
                 confirmMessage = {
                     when (it.state) {
@@ -146,8 +158,14 @@ class RealRootComponent(
                         else -> {}
                     }
                 },
-                inputValue = {
-                    store.accept(RootStore.Intent.UpdateImageConfig(it.first, it.second))
+                inputValue = { (state, input) ->
+                    val settings = settingsSlot.child?.instance
+                    val value = input.toIntOrNull()
+                    if (settings != null && value != null) {
+                        settings.updateImageSize(state, value)
+                    } else {
+                        store.accept(RootStore.Intent.UpdateImageConfig(state, input))
+                    }
                 },
                 onDismissed = dialogsNavigation::dismiss,
             )
@@ -203,7 +221,6 @@ class RealRootComponent(
                 gameId = config.gameId,
                 gameTitle = config.gameTitle,
                 showColorDialog = ::doShowDialog,
-                resetToDefault = { store.accept(RootStore.Intent.RestoreColorConfig(state = it)) },
                 showInputDialog = ::doShowDialog,
                 showFontDialog = launchFontPicker,
                 onDismissed = { settingsNavigation.dismiss() }
