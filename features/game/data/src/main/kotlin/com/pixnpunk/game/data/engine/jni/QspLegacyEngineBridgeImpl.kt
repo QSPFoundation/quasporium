@@ -73,10 +73,10 @@ internal class QspLegacyEngineBridgeImpl(
                     executeCommand { loadGameWorldFromFD(pfd.fd, !isGame) }
                 } ?: false
 
-            else ->
-                file.readBytes().getOrNull().let { data ->
-                    executeCommand { loadGameWorldFromData(data, !isGame) }
-                }
+            else -> {
+                val data = file.readBytes().getOrElse { return false }
+                executeCommand { loadGameWorldFromData(data, !isGame) }
+            }
         }
 
     override suspend fun loadGameState(
@@ -94,10 +94,10 @@ internal class QspLegacyEngineBridgeImpl(
                     executeCommand { openSavedGameFromFD(pfd.fd, true) }
                 } ?: false
 
-            else ->
-                file.readBytes().getOrNull().let { data ->
-                    executeCommand { openSavedGameFromData(data, true) }
-                }
+            else -> {
+                val data = file.readBytes().getOrElse { return false }
+                executeCommand { openSavedGameFromData(data, true) }
+            }
         }
 
     override suspend fun saveGameState(
@@ -115,10 +115,10 @@ internal class QspLegacyEngineBridgeImpl(
                     saveGameByFD(pfd.fd, false)
                 } ?: false
 
-            else ->
-                saveGameAsData(false).let { data ->
-                    file.writeBytes(data).isSuccess
-                }
+            else -> {
+                val data: ByteArray = saveGameAsData(false) ?: return false
+                file.writeBytes(data).isSuccess
+            }
         }
 
     override fun restartGame(): Boolean =

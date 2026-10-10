@@ -56,24 +56,24 @@ internal class QspEngineBridgeImpl : QSPLib(), NativeEngineBridge {
     override suspend fun loadGame(
         file: VirtualFile,
         isGame: Boolean
-    ): Boolean =
-        file.readBytes().getOrNull().let { data ->
-            executeCommand { loadGameWorldFromData(data, isGame) }
-        }
+    ): Boolean {
+        val data = file.readBytes().getOrElse { return false }
+        return executeCommand { loadGameWorldFromData(data, isGame) }
+    }
 
     override suspend fun loadGameState(
         file: VirtualFile
-    ): Boolean =
-        file.readBytes().getOrNull()?.let { data ->
-            executeCommand { openSavedGameFromData(data, true) }
-        } == true
+    ): Boolean {
+        val data = file.readBytes().getOrElse { return false }
+        return executeCommand { openSavedGameFromData(data, true) }
+    }
 
     override suspend fun saveGameState(
         file: VirtualFile
-    ): Boolean =
-        saveGameAsData(false).let { data ->
-            file.writeBytes(data).isSuccess
-        }
+    ): Boolean {
+        val data: ByteArray = saveGameAsData(false) ?: return false
+        return file.writeBytes(data).isSuccess
+    }
 
     override fun restartGame(): Boolean =
         executeCommand {
