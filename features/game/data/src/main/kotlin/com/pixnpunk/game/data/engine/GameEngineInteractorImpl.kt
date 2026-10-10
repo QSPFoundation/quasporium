@@ -14,11 +14,13 @@ import com.pixnpunk.game.domain.model.WindowType
 import com.pixnpunk.game.domain.repository.AudioPlayerInteractor
 import com.pixnpunk.game.domain.repository.EngineCommand
 import com.pixnpunk.game.domain.repository.GameEngineInteractor
+import com.pixnpunk.logger.AppLogger
 import kotlinx.atomicfu.atomic
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
@@ -34,10 +36,13 @@ import kotlin.time.Duration.Companion.milliseconds
 internal class GameEngineInteractorImpl(
     private val bridge: NativeEngineBridge,
     private val vfsProvider: FileSystemProvider,
-    private val audioService: AudioPlayerInteractor
+    private val audioService: AudioPlayerInteractor,
+    private val logger: AppLogger
 ) : GameEngineInteractor, NativeEngineListener {
 
-    private val engineScope = CoroutineScope(engineDispatcher + SupervisorJob())
+    private val engineScope = CoroutineScope(
+        engineDispatcher + SupervisorJob() + CoroutineExceptionHandler { _, e -> reportFailure(e) }
+    )
 
     private val commandChannel = Channel<EngineCommand>(Channel.UNLIMITED)
 
@@ -83,7 +88,7 @@ internal class GameEngineInteractorImpl(
 
     private fun startActorLoop() = engineScope.launch {
         for (command in commandChannel) {
-            processCommand(command)
+            runGuarded { processCommand(command) }
         }
     }
 
@@ -95,7 +100,7 @@ internal class GameEngineInteractorImpl(
             } else {
                 delay(delayMs.milliseconds)
                 if (_state.value is GameState.Running && !isUiBlocked.value) {
-                    bridge.executeCounter()
+                    runGuarded { bridge.executeCounter() }
                 }
             }
         }
@@ -209,6 +214,27 @@ internal class GameEngineInteractorImpl(
                 is GameState.Loading -> current.copy(activeDialog = dialog)
                 is GameState.Running -> current.copy(activeDialog = dialog)
             }
+        }
+    }
+
+    private inline fun runGuarded(block: () -> Unit) {
+        try {
+            block()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            reportFailure(e)
+        }
+    }
+
+    private fun reportFailure(e: Throwable) {
+        logger.recordNonFatalException(e)
+        if (!isShutdown.value) {
+            updateDialogState(
+                EngineDialog.Error(
+                    e.message ?: e::class.java.simpleName
+                )
+            )
         }
     }
 

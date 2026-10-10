@@ -27,6 +27,7 @@ class RealRootStore(
                     get(),
                     get(),
                     get(),
+                    get(),
                     get()
                 )
             },

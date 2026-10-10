@@ -33,7 +33,8 @@ val gameDataModule = module {
         GameEngineInteractorImpl(
             bridge = get(named(author)),
             vfsProvider = get(),
-            audioService = get()
+            audioService = get(),
+            logger = get()
         )
     }
 

@@ -8,6 +8,7 @@ import com.pixnpunk.details.presentation.model.GameSaveItem
 import com.pixnpunk.details.presentation.model.PresetUIState
 import com.pixnpunk.dto.GameListType
 import com.pixnpunk.logger.AppLogger
+import com.pixnpunk.logger.executorContext
 import com.pixnpunk.stock.domain.usecase.ObserveEntryByIdUseCase
 import com.pixnpunk.utils.DirUtil.receiveGameFilesFromDir
 import com.pixnpunk.utils.DirUtil.receiveGameSavesFromDir
@@ -16,7 +17,6 @@ import com.pixnpunk.utils.FileUtil.receiveFullName
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
@@ -27,7 +27,9 @@ class DetailsExecutor(
     private val observeEntryByIdUseCase: ObserveEntryByIdUseCase,
     private val presetRepository: PresetRepository,
     private val savesRepository: SavesRepository
-) : CoroutineExecutor<DetailsStore.Intent, DetailsStore.Action, DetailsStore.State, DetailsStore.Message, DetailsStore.Label>() {
+) : CoroutineExecutor<DetailsStore.Intent, DetailsStore.Action, DetailsStore.State, DetailsStore.Message, DetailsStore.Label>(
+    logger.executorContext("DetailsExecutor")
+) {
 
     override fun executeIntent(intent: DetailsStore.Intent) {
         when (intent) {
@@ -115,14 +117,8 @@ class DetailsExecutor(
 
         observeDB(entry.id)
 
-        scope.launch(Dispatchers.IO) {
-            runCatching {
-                launch { syncGameFiles(entry.gameDirPath) }
-                launch { syncSaves(entry.id, entry.gameDirPath) }
-            }.onFailure {
-                logger.recordNonFatalException(it)
-            }
-        }
+        scope.launch(Dispatchers.IO) { syncGameFiles(entry.gameDirPath) }
+        scope.launch(Dispatchers.IO) { syncSaves(entry.id, entry.gameDirPath) }
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)

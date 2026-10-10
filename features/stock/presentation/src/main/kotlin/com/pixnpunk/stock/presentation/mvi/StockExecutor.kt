@@ -1,6 +1,8 @@
 package com.pixnpunk.stock.presentation.mvi
 
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
+import com.pixnpunk.logger.AppLogger
+import com.pixnpunk.logger.executorContext
 import com.pixnpunk.stock.domain.model.SearchToken
 import com.pixnpunk.stock.domain.model.SearchTokenType
 import com.pixnpunk.stock.domain.model.SortOrder
@@ -15,8 +17,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class StockExecutor(
-    private val deleteLocalGameEntriesUseCase: DeleteLocalGameEntriesUseCase
-) : CoroutineExecutor<StockStore.Intent, StockStore.Action, StockStore.State, StockStore.Message, StockStore.Label>() {
+    private val deleteLocalGameEntriesUseCase: DeleteLocalGameEntriesUseCase,
+    logger: AppLogger
+) : CoroutineExecutor<StockStore.Intent, StockStore.Action, StockStore.State, StockStore.Message, StockStore.Label>(
+    logger.executorContext("StockExecutor")
+) {
 
     override fun executeIntent(intent: StockStore.Intent) {
         when (intent) {

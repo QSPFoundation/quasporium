@@ -30,6 +30,7 @@ dependencies {
     implementation(project(":core:utils"))
     implementation(project(":core:database"))
     implementation(project(":core:dto"))
+    implementation(project(":core:logger"))
 
     implementation(project(":features:stock:data"))
     implementation(project(":features:stock:domain"))

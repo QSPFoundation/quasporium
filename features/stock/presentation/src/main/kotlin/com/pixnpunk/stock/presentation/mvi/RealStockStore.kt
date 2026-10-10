@@ -14,7 +14,7 @@ class RealStockStore(
         Store<StockStore.Intent, StockStore.State, StockStore.Label> by storeFactory.create(
             name = "StockStore",
             initialState = StockStore.State(),
-            executorFactory = { StockExecutor(get()) },
+            executorFactory = { StockExecutor(get(), get()) },
             reducer = { message ->
                 when (message) {
                     is StockStore.Message.ChangeStateDeleteMode -> copy(isDeleteModeActive = message.newState)

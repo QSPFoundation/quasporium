@@ -2,6 +2,8 @@ package com.pixnpunk.quasporium.mvi
 
 import androidx.compose.ui.graphics.toArgb
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
+import com.pixnpunk.logger.AppLogger
+import com.pixnpunk.logger.executorContext
 import com.pixnpunk.settings.dto.usecase.RestoreColorValueUseCase
 import com.pixnpunk.settings.dto.usecase.UpdateColorUseCase
 import com.pixnpunk.settings.dto.usecase.UpdateCustomFontPathUseCase
@@ -23,8 +25,11 @@ class RootExecutor(
     private val restoreColorValueUseCase: RestoreColorValueUseCase,
     private val updateImageSizeUseCase: UpdateImageSizeUseCase,
     private val updateCustomFontPathUseCase: UpdateCustomFontPathUseCase,
-    private val migrateIfNeededUseCase: MigrateIfNeededUseCase
-) : CoroutineExecutor<RootStore.Intent, RootStore.Action, RootStore.State, RootStore.Message, RootStore.Label>() {
+    private val migrateIfNeededUseCase: MigrateIfNeededUseCase,
+    logger: AppLogger
+) : CoroutineExecutor<RootStore.Intent, RootStore.Action, RootStore.State, RootStore.Message, RootStore.Label>(
+    logger.executorContext("RootExecutor")
+) {
 
     override fun executeIntent(intent: RootStore.Intent) {
         when (intent) {
