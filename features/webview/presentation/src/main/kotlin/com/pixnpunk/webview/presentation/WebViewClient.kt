@@ -35,9 +35,11 @@ internal class WebViewClient(
                     }
 
             "https", "http" ->
-                Intent(Intent.ACTION_VIEW, uriDecode.toUri())
-                    .apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK }
-                    .also(onStartActivity)
+                if (request.hasGesture()) {
+                    Intent(Intent.ACTION_VIEW, uriDecode.toUri())
+                        .apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK }
+                        .also(onStartActivity)
+                }
         }
         return true
     }

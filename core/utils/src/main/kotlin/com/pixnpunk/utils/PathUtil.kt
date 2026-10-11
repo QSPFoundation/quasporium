@@ -5,7 +5,6 @@ import android.net.Uri
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import com.anggrayudi.storage.extension.toDocumentFile
-import com.anggrayudi.storage.file.DocumentFileCompat.fromFullPath
 import com.anggrayudi.storage.file.child
 import com.anggrayudi.storage.file.getAbsolutePath
 import com.pixnpunk.utils.FileUtil.isWritableDir
@@ -27,13 +26,21 @@ object PathUtil {
             File(this).toRelativeString(rootDirPathAsFile)
         }
 
-    fun String.pathToFile(context: Context, rootDir: DocumentFile) =
+    fun String.pathToFile(context: Context, rootDir: DocumentFile): DocumentFile? =
+        rootDir.child(
+            context = context,
+            path = toRootRelativePath(
+                rootDir.getAbsolutePath(context)
+            ) ?: return null
+        )
+
+    fun String.toRootRelativePath(rootDirAbsPath: String): String? =
         if (!this.startsWith('/')) {
-            rootDir.child(context, this)
+            toSafeRelativePath()
+        } else if (rootDirAbsPath.isBlank()) {
+            null
         } else {
-            val rootDirPathAsFile = File(rootDir.getAbsolutePath(context))
-            val fullPathAsRelative = File(this).toRelativeString(rootDirPathAsFile)
-            rootDir.child(context, fullPathAsRelative) ?: fromFullPath(context.applicationContext, this)
+            File(this).toRelativeString(File(rootDirAbsPath)).toSafeRelativePath()
         }
 
     @OptIn(ExperimentalContracts::class)

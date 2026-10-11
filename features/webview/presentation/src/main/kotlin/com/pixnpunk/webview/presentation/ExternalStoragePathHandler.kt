@@ -32,10 +32,7 @@ internal class ExternalStoragePathHandler(
                     null,
                     200,
                     "OK",
-                    mapOf(
-                        "Cache-Control" to "public, max-age=3600, immutable",
-                        "Access-Control-Allow-Origin" to "*"
-                    ),
+                    mapOf("Cache-Control" to "public, max-age=3600, immutable"),
                     context.contentResolver.openInputStream(mediaFile.uri)
                 )
             }
