@@ -25,6 +25,19 @@ class UnpackGameWorker(
     private val localRepository: LocalRepository,
     private val notificationProvider: NotificationProvider
 ) : CoroutineWorker(appContext, workerParams), KoinComponent {
+
+    private var isForeground = true
+
+    private suspend fun updateForeground(title: String, progress: Float) {
+        if (!isForeground) return
+        isForeground = trySetForeground(
+            notificationProvider.createForegroundInfo(id, title, progress)
+        )
+        if (!isForeground) {
+            logger.recordBreadcrumb("Foreground service is not allowed, unpack continues in background")
+        }
+    }
+
     override suspend fun doWork(): Result {
         val archivePath = inputData.getString("filePath") ?: return Result.failure()
         val destDirPath = inputData.getString("destDirPath") ?: return Result.failure()
@@ -35,13 +48,7 @@ class UnpackGameWorker(
         val isDirectQspFile = sourceFile.extension.equals("qsp", ignoreCase = true) ||
                 sourceFile.extension.equals("gam", ignoreCase = true)
 
-        setForeground(
-            notificationProvider.createForegroundInfo(
-                id,
-                if (isDirectQspFile) "Installing game..." else "Preparing to unpack",
-                0f
-            )
-        )
+        updateForeground(if (isDirectQspFile) "Installing game..." else "Preparing to unpack", 0f)
 
         return try {
             if (isDirectQspFile) {
@@ -53,13 +60,7 @@ class UnpackGameWorker(
                     filePath = archivePath,
                     destDirPath = destDirPath,
                     onProgressUpdate = { state ->
-                        setForeground(
-                            notificationProvider.createForegroundInfo(
-                                id,
-                                "Unpacking: ${state.time}",
-                                state.progress
-                            )
-                        )
+                        updateForeground("Unpacking: ${state.time}", state.progress)
                     }
                 ).getOrThrow()
 

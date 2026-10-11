@@ -31,6 +31,18 @@ class DownloadGameWorker(
     private val notificationProvider: NotificationProvider
 ) : CoroutineWorker(appContext, workerParams), KoinComponent {
 
+    private var isForeground = true
+
+    private suspend fun updateForeground(title: String, progress: Float) {
+        if (!isForeground) return
+        isForeground = trySetForeground(
+            notificationProvider.createForegroundInfo(id, title, progress)
+        )
+        if (!isForeground) {
+            logger.recordBreadcrumb("Foreground service is not allowed, download continues in background")
+        }
+    }
+
     fun extractFileName(response: HttpResponse): String? {
         val contentDisposition = response.headers[HttpHeaders.ContentDisposition]
         if (!contentDisposition.isNullOrBlank()) {
@@ -70,13 +82,7 @@ class DownloadGameWorker(
         val downloadLink = inputData.getString(DOWNLOAD_URL) ?: return Result.failure()
         val destDirPath = inputData.getString(DEST_DIR) ?: return Result.failure()
 
-        setForeground(
-            notificationProvider.createForegroundInfo(
-                id,
-                "Preparing to download",
-                0f
-            )
-        )
+        updateForeground("Preparing to download", 0f)
 
         return try {
             get<HttpClient>().prepareGet(
@@ -116,12 +122,9 @@ class DownloadGameWorker(
                                     if (averageSpeed > 0) (contentLength - bytesSentTotal) / averageSpeed
                                     else Double.POSITIVE_INFINITY
 
-                                setForeground(
-                                    notificationProvider.createForegroundInfo(
-                                        id,
-                                        "Downloading: $etaSeconds",
-                                        bytesSentTotal.toFloat() / contentLength.toFloat()
-                                    )
+                                updateForeground(
+                                    "Downloading: $etaSeconds",
+                                    bytesSentTotal.toFloat() / contentLength.toFloat()
                                 )
                             }
                         }
@@ -139,13 +142,7 @@ class DownloadGameWorker(
                     destDirPath = destDirPath,
                     totalSize = response.contentLength() ?: -1L,
                     onProgressUpdate = { state ->
-                        setForeground(
-                            notificationProvider.createForegroundInfo(
-                                id,
-                                "Writing: ${state.time}",
-                                state.progress
-                            )
-                        )
+                        updateForeground("Writing: ${state.time}", state.progress)
                     }
                 )
 
