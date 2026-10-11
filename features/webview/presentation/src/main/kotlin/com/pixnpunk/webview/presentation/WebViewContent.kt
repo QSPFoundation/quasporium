@@ -5,7 +5,6 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
-import android.webkit.WebView
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -60,7 +59,28 @@ fun GameWebView(
             }
         },
         factory = { ctx ->
-            WebView(ctx).apply {
+            val density = ctx.resources.displayMetrics.density
+            var lastContentHeight = 0
+
+            AutoScrollWebView(ctx) {
+                val currentState = component.model.value
+                val currentHeight = contentHeight
+
+                if (currentHeight != lastContentHeight) {
+                    lastContentHeight = currentHeight
+                }
+
+                if (currentState.isAutoScrollActive) {
+                    val targetY = (currentHeight * density).toInt()
+                    if (scrollY != targetY) {
+                        scrollTo(0, targetY)
+                    }
+                } else if (currentState.restoreScrollY > 0) {
+                    if (scrollY != currentState.restoreScrollY) {
+                        scrollTo(0, currentState.restoreScrollY)
+                    }
+                }
+            }.apply {
                 setBackgroundColor(state.htmlConfig.backColor)
                 layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
 
@@ -74,31 +94,6 @@ fun GameWebView(
                     }
                 }
                 overScrollMode = View.OVER_SCROLL_NEVER
-
-                val density = ctx.resources.displayMetrics.density
-                var lastContentHeight = 0
-
-                viewTreeObserver.addOnPreDrawListener {
-                    val currentState = component.model.value
-                    val currentHeight = contentHeight
-
-                    if (currentHeight != lastContentHeight) {
-                        lastContentHeight = currentHeight
-                    }
-
-                    if (currentState.isAutoScrollActive) {
-                        val targetY = (currentHeight * density).toInt()
-                        if (scrollY != targetY) {
-                            scrollTo(0, targetY)
-                        }
-                    } else if (currentState.restoreScrollY > 0) {
-                        if (scrollY != currentState.restoreScrollY) {
-                            scrollTo(0, currentState.restoreScrollY)
-                        }
-                    }
-
-                    true
-                }
 
                 @SuppressLint("ClickableViewAccessibility")
                 setOnTouchListener { _, event ->
