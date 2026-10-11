@@ -31,6 +31,7 @@ import kotlinx.coroutines.flow.toList
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import java.io.File
+import java.io.IOException
 import kotlin.contracts.ExperimentalContracts
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration.Companion.milliseconds
@@ -87,51 +88,68 @@ object DirUtil : KoinComponent {
     }
 
     @OptIn(ExperimentalContracts::class)
-    suspend fun receiveGameSavesFromDir(rootDirPath: String): List<String> {
+    suspend fun receiveGameSavesFromDir(rootDirPath: String): List<String>? {
         val gameDir = fromUri(get(), rootDirPath.toUri())
-        if (!gameDir.isWritableDir()) return listOf()
+        if (!gameDir.isWritableDir()) return null
 
-        return get<Context>().findGameFiles(
-            rootTreeUri = gameDir.uri,
-            allowedMimeTypes = setOf(MimeType.BINARY_FILE),
-            nameRegex = Regex(".*\\.(sav)$", RegexOption.IGNORE_CASE)
-        ).toList(mutableListOf())
+        return try {
+            get<Context>().findGameFiles(
+                rootTreeUri = gameDir.uri,
+                allowedMimeTypes = setOf(MimeType.BINARY_FILE),
+                nameRegex = Regex(".*\\.(sav)$", RegexOption.IGNORE_CASE),
+                failOnError = true
+            ).toList(mutableListOf())
+        } catch (_: IOException) { null }
     }
 
     fun Context.findGameFiles(
         rootTreeUri: Uri,
         allowedMimeTypes: Set<String> = emptySet(),
-        nameRegex: Regex? = null
+        nameRegex: Regex? = null,
+        failOnError: Boolean = false
     ): Flow<String> = flow {
         when (rootTreeUri.scheme) {
-            ContentResolver.SCHEME_FILE -> findFilesWithNio(rootTreeUri, nameRegex)
+            ContentResolver.SCHEME_FILE ->
+                findFilesWithNio(
+                    rootTreeUri,
+                    nameRegex,
+                    failOnError
+                )
 
             ContentResolver.SCHEME_CONTENT ->
                 findFilesWithSaf(
                     this@findGameFiles,
                     rootTreeUri,
                     allowedMimeTypes,
-                    nameRegex
+                    nameRegex,
+                    failOnError
                 )
 
-            else ->
+            else -> {
                 get<AppLogger>().recordBreadcrumb(
                     "Unsupported URI scheme: ${rootTreeUri.scheme}"
                 )
+                if (failOnError) throw IOException("Unsupported URI scheme: ${rootTreeUri.scheme}")
+            }
         }
     }.flowOn(Dispatchers.IO)
 
     private suspend fun FlowCollector<String>.findFilesWithNio(
         rootUri: Uri,
-        nameRegex: Regex?
+        nameRegex: Regex?,
+        failOnError: Boolean
     ) {
         val pathStr = rootUri.path ?: return
         val rootFile = File(pathStr)
 
-        if (!rootFile.exists() || !rootFile.isDirectory) return
+        if (!rootFile.exists() || !rootFile.isDirectory) {
+            if (failOnError) throw IOException("Not a directory: $pathStr")
+            return
+        }
 
         try {
             rootFile.walkTopDown()
+                .onFail { _, e -> if (failOnError) throw e }
                 .filter { it.isFile }
                 .filter { nameRegex == null || nameRegex.matches(it.name) }
                 .forEach { file ->
@@ -144,6 +162,7 @@ object DirUtil : KoinComponent {
                 recordBreadcrumb("File IO: Error walking directory tree")
                 recordNonFatalException(e)
             }
+            if (failOnError) throw IOException("Error walking directory tree", e)
         }
     }
 
@@ -152,6 +171,7 @@ object DirUtil : KoinComponent {
         rootTreeUri: Uri,
         allowedMimeTypes: Set<String>,
         nameRegex: Regex?,
+        failOnError: Boolean,
         ignoredDirNames: Set<String> = setOf(
             "images", "img", "sounds", "sound", "audio", "video", "music"
         )
@@ -164,6 +184,7 @@ object DirUtil : KoinComponent {
                 recordBreadcrumb("SAF: Invalid tree URI: $rootTreeUri")
                 recordNonFatalException(e)
             }
+            if (failOnError) throw IOException("Invalid tree URI", e)
             return
         }
 
@@ -189,6 +210,7 @@ object DirUtil : KoinComponent {
                     recordBreadcrumb("SAF: Failed to build child URI for $currentDirId")
                     recordNonFatalException(e)
                 }
+                if (failOnError) throw IOException("Failed to build child URI", e)
                 continue
             }
 
@@ -197,6 +219,8 @@ object DirUtil : KoinComponent {
 
             while (attempts < 3 && !success) {
                 attempts++
+                val childDirIds = mutableListOf<String>()
+                val childFileUris = mutableListOf<String>()
                 try {
                     context.contentResolver.query(
                         childrenUri,
@@ -230,7 +254,7 @@ object DirUtil : KoinComponent {
                                 ) {
                                     continue
                                 }
-                                dirIdQueue.addLast(childId)
+                                childDirIds.add(childId)
                                 continue
                             }
 
@@ -242,13 +266,13 @@ object DirUtil : KoinComponent {
                                 continue
                             }
 
-                            emit(
+                            childFileUris.add(
                                 DocumentsContract.buildDocumentUriUsingTree(
                                     rootTreeUri, childId
                                 ).toString()
                             )
                         }
-                    }
+                    } ?: throw IOException("Provider returned no cursor")
                     success = true
                 } catch (e: Exception) {
                     if (e is CancellationException) throw e
@@ -259,7 +283,12 @@ object DirUtil : KoinComponent {
                             recordBreadcrumb("SAF: Error querying children for dir after retries: $currentDirId")
                             recordNonFatalException(e)
                         }
+                        if (failOnError) throw IOException("Error querying children", e)
                     }
+                }
+                if (success) {
+                    childDirIds.forEach(dirIdQueue::addLast)
+                    childFileUris.forEach { emit(it) }
                 }
             }
         }

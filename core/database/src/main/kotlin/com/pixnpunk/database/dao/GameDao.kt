@@ -40,19 +40,19 @@ interface GameDao {
     @Query("SELECT count(*) FROM game")
     suspend fun countGames(): Int
 
-    @Query("SELECT * FROM game WHERE id LIKE :id LIMIT 1")
+    @Query("SELECT * FROM game WHERE id = :id")
     suspend fun getById(id: Long): GameEntity?
 
     @Query("SELECT * FROM game WHERE id IN (:ids)")
     suspend fun getByIds(ids: Set<Long>): List<GameEntity>
 
     @Query("SELECT * FROM game WHERE title LIKE :name LIMIT 1")
-    suspend fun getByName(name: String?): GameEntity
+    suspend fun getByName(name: String?): GameEntity?
 
     @Query("SELECT fileUrl FROM game")
     fun getByUrl(): Flow<List<String>>
 
-    @Query("SELECT * FROM game WHERE id LIKE :id")
+    @Query("SELECT * FROM game WHERE id = :id")
     fun subscribeById(id: Long): Flow<GameEntity?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

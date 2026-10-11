@@ -195,13 +195,12 @@ class DetailsExecutor(
         entryId: Long,
         gameDirPath: String
     ) {
-        val diskPaths = receiveGameSavesFromDir(gameDirPath)
+        val diskPathsSet = receiveGameSavesFromDir(gameDirPath)?.toSet() ?: return
         val dbSaves = savesRepository.getAllSaves(entryId)
 
         val dbPathsSet = dbSaves.map { it.filePath }.toSet()
-        val diskPathsSet = diskPaths.toSet()
 
-        diskPaths
+        diskPathsSet
             .filterNot { it in dbPathsSet }
             .forEach { path ->
                 savesRepository.insertSave(
