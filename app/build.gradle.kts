@@ -25,8 +25,8 @@ android {
         applicationId = "com.pixnpunk.quasporium"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
-        versionCode = 30140801
-        versionName = "1.14.4"
+        versionCode = 30140901
+        versionName = "1.14.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
