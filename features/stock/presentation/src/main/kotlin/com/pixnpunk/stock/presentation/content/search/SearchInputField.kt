@@ -14,6 +14,8 @@ import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SearchBarState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.pixnpunk.stock.presentation.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,7 +43,7 @@ fun SearchInputField(
             IconButton(onClick = { toggleSearch(false) }) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = null
+                    contentDescription = stringResource(R.string.back_button_description)
                 )
             }
         }
@@ -51,7 +53,7 @@ fun SearchInputField(
             IconButton(onClick = { updateSearchQuery("") }) {
                 Icon(
                     imageVector = Icons.Default.Clear,
-                    contentDescription = null
+                    contentDescription = stringResource(R.string.clear_query_button_description)
                 )
             }
         } else if (!isSearchExpanded) {
@@ -59,7 +61,7 @@ fun SearchInputField(
                 IconButton(onClick = navigateToSettings) {
                     Icon(
                         imageVector = Icons.Default.Settings,
-                        contentDescription = null
+                        contentDescription = stringResource(R.string.settings_button_description)
                     )
                 }
             }

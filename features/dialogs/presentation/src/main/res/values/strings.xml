@@ -17,4 +17,6 @@
     <string name="input_height_title">Image height</string>
     <string name="input_msg_exec_title">QSP Terminal</string>
     <string name="input_generic_title">Enter something</string>
+    <string name="choose_cover_description">Choose cover image</string>
+    <string name="close_button_description">Close</string>
 </resources>

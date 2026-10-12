@@ -11,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import com.pixnpunk.stock.presentation.R
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -35,7 +36,7 @@ fun StockDeleteAppBar(
             IconButton(onClick = stopDeleteMode) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                    contentDescription = null
+                    contentDescription = stringResource(R.string.back_button_description)
                 )
             }
         },
@@ -43,13 +44,13 @@ fun StockDeleteAppBar(
             IconButton(onClick = selectAll) {
                 Icon(
                     imageVector = Icons.Default.SelectAll,
-                    contentDescription = null
+                    contentDescription = stringResource(R.string.select_all_button_description)
                 )
             }
             IconButton(onClick = deleteEntries) {
                 Icon(
                     imageVector = Icons.Default.Delete,
-                    contentDescription = null
+                    contentDescription = stringResource(R.string.delete_button_description)
                 )
             }
         },

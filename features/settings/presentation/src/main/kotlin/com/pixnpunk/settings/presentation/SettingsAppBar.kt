@@ -57,14 +57,14 @@ fun SettingsAppBar(
                     ) -> {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = null
+                            contentDescription = stringResource(R.string.close_button_description)
                         )
                     }
 
                     else -> {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = null
+                            contentDescription = stringResource(R.string.back_button_description)
                         )
                     }
                 }

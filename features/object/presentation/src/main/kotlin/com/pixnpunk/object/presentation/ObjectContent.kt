@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -48,7 +49,7 @@ fun ObjectContent(
                     IconButton(onClick = dismiss) {
                         Icon(
                             imageVector = Icons.Filled.Close,
-                            contentDescription = null
+                            contentDescription = stringResource(R.string.close_button_description)
                         )
                     }
                 }

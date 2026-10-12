@@ -33,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.pixnpunk.stock.presentation.content.StockDeleteAppBar
 import com.pixnpunk.stock.presentation.content.StockFloatButton
@@ -139,7 +140,7 @@ fun StockContent(
                         icon = {
                             Icon(
                                 imageVector = Icons.Filled.Add,
-                                contentDescription = null
+                                contentDescription = stringResource(R.string.add_game_button_description)
                             )
                         }
                     )
@@ -163,7 +164,7 @@ fun StockContent(
                         icon = {
                             Icon(
                                 imageVector = Icons.Filled.ArrowUpward,
-                                contentDescription = null
+                                contentDescription = stringResource(R.string.scroll_to_top_button_description)
                             )
                         }
                     )

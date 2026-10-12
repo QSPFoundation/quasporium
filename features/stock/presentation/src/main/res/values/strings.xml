@@ -10,4 +10,13 @@
     <string name="first_tab_text">Installed</string>
     <string name="second_tab_text">Library</string>
     <string name="placeholder_searchbar">Search game</string>
+    <string name="add_game_button_description">Add game</string>
+    <string name="scroll_to_top_button_description">Scroll to top</string>
+    <string name="back_button_description">Navigate back</string>
+    <string name="clear_query_button_description">Clear search query</string>
+    <string name="settings_button_description">Settings</string>
+    <string name="select_all_button_description">Select all</string>
+    <string name="delete_button_description">Delete selected games</string>
+    <string name="sort_ascending_description">Ascending order</string>
+    <string name="sort_descending_description">Descending order</string>
 </resources>

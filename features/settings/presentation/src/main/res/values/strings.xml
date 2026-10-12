@@ -34,4 +34,6 @@
     <string name="image_height_twotarswitch_summary">Specify game image height</string>
     <string name="image_height_twotarswitch_title">%1$s game image height</string>
     <string name="image_width_twotarswitch_title">%1$s game image width</string>
+    <string name="close_button_description">Close settings</string>
+    <string name="back_button_description">Navigate back</string>
 </resources>
