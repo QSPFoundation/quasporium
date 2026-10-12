@@ -42,6 +42,8 @@ class RealDetailsComponent(
         RealDetailsStore(DefaultStoreFactory(), defEntry).create()
     }
 
+    private val prettyTime = PrettyTime()
+
     @OptIn(ExperimentalStateKeeperApi::class)
     private var config: Config by saveable(
         serializer = Config.serializer(),
@@ -84,44 +86,14 @@ class RealDetailsComponent(
     override fun onContinueSave(presetId: Long, savePath: String) =
         store.accept(DetailsStore.Intent.ContinueGame(presetId, savePath))
 
-    override fun convEntryData(
-        entry: GameEntry
-    ): GameEntry {
-        if (entry.pubDate.isEmpty() || entry.modDate.isEmpty()) return entry
-
-        val formatPubDate =
-            runCatching {
-                OffsetDateTime.parse(entry.pubDate).toInstant()
-            }.onFailure {
-                Instant.parse(
-                    LocalDateTime.parse(
-                        entry.pubDate,
-                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-                    ).toInstant(ZoneOffset.UTC).toString()
-                )
-            }
-
-        val formatModDate =
-            runCatching {
-                OffsetDateTime.parse(entry.pubDate).toInstant()
-            }.onFailure {
-                Instant.parse(
-                    LocalDateTime.parse(
-                        entry.modDate,
-                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-                    ).toInstant(ZoneOffset.UTC).toString()
-                )
-            }
-
-        return entry.copy(
-            pubDate =
-                if (formatPubDate.isSuccess) PrettyTime().format(formatModDate.getOrNull())
-                else entry.pubDate,
-            modDate =
-                if (formatModDate.isSuccess) PrettyTime().format(formatModDate.getOrNull())
-                else entry.modDate
+    override fun convEntryData(entry: GameEntry): GameEntry =
+        entry.copy(
+            pubDate = entry.pubDate.toRelativeTime(),
+            modDate = entry.modDate.toRelativeTime()
         )
-    }
+
+    private fun String.toRelativeTime(): String =
+        parseCatalogDate(this)?.let { prettyTime.format(it) } ?: this
 
     @Serializable
     private data class Config(val presetId: Long? = null)
