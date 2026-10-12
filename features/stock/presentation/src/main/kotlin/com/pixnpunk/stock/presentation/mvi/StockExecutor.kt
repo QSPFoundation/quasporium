@@ -3,12 +3,10 @@ package com.pixnpunk.stock.presentation.mvi
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
 import com.pixnpunk.logger.AppLogger
 import com.pixnpunk.logger.executorContext
-import com.pixnpunk.stock.domain.model.SearchToken
 import com.pixnpunk.stock.domain.model.SearchTokenType
 import com.pixnpunk.stock.domain.model.SortOrder
 import com.pixnpunk.stock.domain.usecase.DeleteLocalGameEntriesUseCase
-import com.pixnpunk.stock.presentation.mapper.toDomain
-import com.pixnpunk.stock.presentation.mapper.toUI
+import com.pixnpunk.stock.presentation.model.SearchTokenUI
 import com.pixnpunk.stock.presentation.mvi.StockStore.Message.ChangeStateDeleteMode
 import com.pixnpunk.stock.presentation.mvi.StockStore.Message.ClearSelection
 import com.pixnpunk.stock.presentation.mvi.StockStore.Message.SelectionUpdated
@@ -74,30 +72,31 @@ class StockExecutor(
                 dispatch(StockStore.Message.UpdateSearchQuery(intent.query))
 
             is StockStore.Intent.ExecuteSearch -> {
-                if (state().searchQuery.length >= 3) {
-                    scope.launch(Dispatchers.Default) {
-                        state().recentSearches.toDomain().plus(
-                            SearchToken(
-                                state().searchQuery,
-                                SearchTokenType.TITLE,
-                                state().searchQuery
-                            )
-                        ).toSet().toList().toUI().let { recent ->
-                            withContext(Dispatchers.Main) {
-                                dispatch(
-                                    StockStore.Message.UpdateRecentSearches(recent)
+                val query = state().searchQuery
+                if (query.length >= 3) {
+                    dispatch(
+                        StockStore.Message.UpdateRecentSearches(
+                            state().recentSearches.withRecentSearch(
+                                SearchTokenUI(
+                                    query,
+                                    SearchTokenType.TITLE,
+                                    query
                                 )
-                            }
-                        }
-                    }
+                            )
+                        )
+                    )
                 }
                 dispatch(StockStore.Message.ChangeStateSearch(false))
             }
 
             is StockStore.Intent.AddToken -> {
                 dispatch(StockStore.Message.UpdateSearchQuery(""))
-                dispatch(StockStore.Message.UpdateRecentSearches(state().recentSearches + intent.token))
-                dispatch(StockStore.Message.UpdateActiveTokens(state().activeTokens + intent.token))
+                dispatch(StockStore.Message.UpdateRecentSearches(state().recentSearches.withRecentSearch(intent.token)))
+                if (intent.token !in state().activeTokens) {
+                    dispatch(
+                        StockStore.Message.UpdateActiveTokens(state().activeTokens + intent.token)
+                    )
+                }
                 dispatch(StockStore.Message.ChangeStateSearch(false))
             }
 
