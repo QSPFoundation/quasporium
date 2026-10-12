@@ -30,13 +30,13 @@ internal class DocumentVirtualFile(
     override suspend fun readBytes(): Result<ByteArray> =
         runCatching {
             docFile.uri.openInputStream(context)?.use { it.readBytes() }
-                ?: throw IllegalStateException("Cannot open InputStream for $absPath")
+                ?: throw IllegalStateException("Cannot open InputStream")
         }
 
     override suspend fun writeBytes(data: ByteArray): Result<Unit> =
         runCatching {
             docFile.uri.openOutputStream(context, false)?.use { it.write(data) }
-                ?: throw IllegalStateException("Cannot open OutputStream for $absPath")
+                ?: throw IllegalStateException("Cannot open OutputStream")
         }
 
     override fun getChild(name: String): VirtualFile? =

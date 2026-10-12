@@ -139,7 +139,7 @@ object FileUtil : KoinComponent {
         if (!gameDir.isWritableDir()) {
             val reason =
                 if (gameDir == null) "Dir is null (URI invalid/no permission)" else "No write access to dir"
-            return Result.failure(IOException("DestDir error: $reason. Path: $destDirPath"))
+            return Result.failure(IOException("DestDir error: $reason"))
         }
 
         val destFile = gameDir.makeFile(get(), fileName, mode = CreateMode.SKIP_IF_EXISTS)

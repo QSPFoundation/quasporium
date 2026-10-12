@@ -91,7 +91,7 @@ class UnpackGameWorker(
             }
 
             logger.apply {
-                recordBreadcrumb("Failed to unpack | file $archivePath")
+                recordBreadcrumb("Failed to unpack | extension: ${sourceFile.extension}")
                 recordNonFatalException(e)
             }
 

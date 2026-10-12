@@ -143,7 +143,7 @@ object DirUtil : KoinComponent {
         val rootFile = File(pathStr)
 
         if (!rootFile.exists() || !rootFile.isDirectory) {
-            if (failOnError) throw IOException("Not a directory: $pathStr")
+            if (failOnError) throw IOException("Not a directory")
             return
         }
 
@@ -181,7 +181,7 @@ object DirUtil : KoinComponent {
         } catch (e: Exception) {
             if (e is CancellationException) throw e
             get<AppLogger>().apply {
-                recordBreadcrumb("SAF: Invalid tree URI: $rootTreeUri")
+                recordBreadcrumb("SAF: Invalid tree URI")
                 recordNonFatalException(e)
             }
             if (failOnError) throw IOException("Invalid tree URI", e)
@@ -207,7 +207,7 @@ object DirUtil : KoinComponent {
             } catch (e: Exception) {
                 if (e is CancellationException) throw e
                 get<AppLogger>().apply {
-                    recordBreadcrumb("SAF: Failed to build child URI for $currentDirId")
+                    recordBreadcrumb("SAF: Failed to build child URI")
                     recordNonFatalException(e)
                 }
                 if (failOnError) throw IOException("Failed to build child URI", e)
@@ -280,7 +280,7 @@ object DirUtil : KoinComponent {
                         delay((100L * attempts).milliseconds)
                     } else {
                         get<AppLogger>().apply {
-                            recordBreadcrumb("SAF: Error querying children for dir after retries: $currentDirId")
+                            recordBreadcrumb("SAF: Error querying children for dir after retries")
                             recordNonFatalException(e)
                         }
                         if (failOnError) throw IOException("Error querying children", e)

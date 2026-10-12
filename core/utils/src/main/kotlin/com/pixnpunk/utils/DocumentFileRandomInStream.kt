@@ -32,7 +32,7 @@ internal class DocumentFileRandomInStream(
     @Throws(FileNotFoundException::class)
     private fun openChannel() {
         val pfd = contentResolver.openFileDescriptor(singleFileUri, "r")
-            ?: throw FileNotFoundException("Could not open file descriptor for $singleFileUri")
+            ?: throw FileNotFoundException("Could not open file descriptor")
 
         pfdInput = pfd
         fileChannel = FileInputStream(pfd.fileDescriptor).channel

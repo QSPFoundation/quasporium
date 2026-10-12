@@ -86,7 +86,7 @@ internal class AudioPlayerInteractorImpl(
                 }
             }.onFailure {
                 logger.recordNonFatalException(
-                    AudioPlayerException.PlaybackError(path, it)
+                    AudioPlayerException.PlaybackError(cause = it)
                 )
                 closeFileSync(path)
             }
@@ -115,7 +115,7 @@ internal class AudioPlayerInteractorImpl(
             setOnErrorListener { _, what, extra ->
                 logger.recordNonFatalException(
                     RuntimeException(
-                        "MediaPlayer async error: what=$what extra=$extra path=$path"
+                        "MediaPlayer async error: what=$what extra=$extra"
                     )
                 )
                 closeFile(path)
