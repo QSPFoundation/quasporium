@@ -58,6 +58,26 @@ android {
         }
     }
 
+    flavorDimensions += "distribution"
+    productFlavors {
+        create("foss") {
+            dimension = "distribution"
+            isDefault = true
+
+            configure<CrashlyticsExtension> {
+                mappingFileUploadEnabled = false
+                nativeSymbolUploadEnabled = false
+            }
+
+            configure<FirebasePerfExtension> {
+                setInstrumentationEnabled(false)
+            }
+        }
+        create("play") {
+            dimension = "distribution"
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -108,10 +128,10 @@ dependencies {
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.appcompat)
 
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.crashlytics)
-    implementation(libs.firebase.analytics)
-    implementation(libs.firebase.perf)
+    "playImplementation"(platform(libs.firebase.bom))
+    "playImplementation"(libs.firebase.crashlytics)
+    "playImplementation"(libs.firebase.analytics)
+    "playImplementation"(libs.firebase.perf)
 
     implementation(libs.storage)
 
@@ -129,4 +149,10 @@ dependencies {
     implementation(libs.mvikotlin.coro.ext)
 
     implementation(libs.preference)
+}
+
+tasks.configureEach {
+    if (name.startsWith("process") && name.contains("Foss") && name.endsWith("GoogleServices")) {
+        enabled = false
+    }
 }

@@ -7,9 +7,9 @@ import androidx.work.WorkManager
 import com.pixnpunk.database.di.databaseModule
 import com.pixnpunk.details.presentation.di.featureDetailsModule
 import com.pixnpunk.game.presentation.di.featureGameModule
-import com.pixnpunk.logger.appLoggerModule
 import com.pixnpunk.network.networkModule
 import com.pixnpunk.notification.notificationModule
+import com.pixnpunk.quasporium.logger.distributionLoggerModule
 import com.pixnpunk.settings.presentation.di.featureSettingsModule
 import com.pixnpunk.stock.presentation.di.featureStockModules
 import com.pixnpunk.webview.presentation.di.featureWebViewModule
@@ -25,7 +25,7 @@ class Quasporium : Application() {
             androidContext(this@Quasporium)
             workManagerFactory()
             modules(
-                appLoggerModule, databaseModule,
+                distributionLoggerModule, databaseModule,
                 networkModule, notificationModule
             )
             modules(featureDetailsModule)
