@@ -15,16 +15,12 @@ import com.pixnpunk.stock.domain.usecase.GetAuthorSuggestionUseCase
 import com.pixnpunk.stock.domain.usecase.GetLocalGameEntriesUseCase
 import com.pixnpunk.stock.domain.usecase.GetRemoteGameEntriesExcludingLocalUseCase
 import com.pixnpunk.stock.domain.usecase.GetTranslatorSuggestionUseCase
-import com.pixnpunk.stock.presentation.mapper.toDomain
 import com.pixnpunk.stock.presentation.model.SearchTokenUI
 import com.pixnpunk.stock.presentation.mvi.RealStockStore
 import com.pixnpunk.stock.presentation.mvi.StockStore
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
@@ -53,23 +49,8 @@ class RealStockComponent(
     @OptIn(ExperimentalCoroutinesApi::class)
     override val model: StateFlow<StockStore.State> = store.stateFlow
 
-    @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
-    private val searchStateFlow: Flow<SearchState> =
-        combine(
-            store.stateFlow
-                .map { it.searchQuery }
-                .distinctUntilChanged()
-                .debounce { query -> if (query.isEmpty()) 0L else SEARCH_DEBOUNCE_MS },
-            store.stateFlow
-        ) { query, state ->
-            SearchState(
-                query,
-                state.sortBy,
-                state.sortOrder,
-                state.selectedLang,
-                state.activeTokens.toDomain()
-            )
-        }.distinctUntilChanged()
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val searchStateFlow: Flow<SearchState> = store.stateFlow.toSearchState()
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override val gameRemotePageFlow: Flow<PagingData<GameEntry>> =
@@ -94,10 +75,6 @@ class RealStockComponent(
         store.stateFlow.map { it.searchQuery }.distinctUntilChanged().flatMapLatest { query ->
             getTranslatorSuggestionUseCase.execute(query).map { list -> list.map { it.name } }
         }
-
-    private companion object {
-        const val SEARCH_DEBOUNCE_MS = 400L
-    }
 
     override fun toggleGameSelection(gameId: Long) =
         store.accept(StockStore.Intent.ToggleGameSelection(gameId))

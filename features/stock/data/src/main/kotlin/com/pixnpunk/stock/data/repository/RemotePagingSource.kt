@@ -62,12 +62,7 @@ class RemotePagingSource(
             LoadResult.Page(
                 data = gameEntries,
                 prevKey = if (currentPage == INITIAL_PAGE_INDEX) null else currentPage - 1,
-                nextKey =
-                    if (currentPage >= responseResult.meta.lastPage || gameEntries.isEmpty()) {
-                        null
-                    } else {
-                        currentPage + 1
-                    }
+                nextKey = nextPageKey(currentPage, responseResult.meta.lastPage, gameEntries.isEmpty())
             )
         } catch (e: CancellationException) {
             throw e
