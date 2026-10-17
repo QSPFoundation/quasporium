@@ -194,26 +194,20 @@ class DetailsExecutor(
     private suspend fun syncSaves(
         entryId: Long,
         gameDirPath: String
-    ) {
-        val diskPathsSet = receiveGameSavesFromDir(gameDirPath)?.toSet() ?: return
-        val dbSaves = savesRepository.getAllSaves(entryId)
+    ) = planSavesSync(
+        diskPaths = receiveGameSavesFromDir(gameDirPath),
+        dbSaves = savesRepository.getAllSaves(entryId)
+    ).apply {
+        pathsToInsert.forEach { path ->
+            savesRepository.insertSave(
+                gameId = entryId,
+                userTitle = path.receiveBaseName(),
+                filePath = path
+            )
+        }
 
-        val dbPathsSet = dbSaves.map { it.filePath }.toSet()
-
-        diskPathsSet
-            .filterNot { it in dbPathsSet }
-            .forEach { path ->
-                savesRepository.insertSave(
-                    gameId = entryId,
-                    userTitle = path.receiveBaseName(),
-                    filePath = path
-                )
-            }
-
-        dbSaves
-            .filterNot { it.filePath in diskPathsSet }
-            .forEach { save ->
-                savesRepository.deleteSave(save.id)
-            }
+        idsToDelete.forEach {
+            savesRepository.deleteSave(it)
+        }
     }
 }
