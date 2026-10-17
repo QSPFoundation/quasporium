@@ -25,4 +25,13 @@ subprojects {
         "detektPlugins"(rootProject.libs.detekt.formatting)
         "detektPlugins"(rootProject.libs.detekt.rules.compose)
     }
+
+    listOf("com.android.application", "com.android.library", "org.jetbrains.kotlin.jvm").forEach { pluginId ->
+        pluginManager.withPlugin(pluginId) {
+            dependencies {
+                "testImplementation"(rootProject.libs.junit)
+                "testImplementation"(rootProject.libs.kotlinx.coroutines.test)
+            }
+        }
+    }
 }
