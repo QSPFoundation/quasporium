@@ -1,0 +1,24 @@
+name: Feature request
+description: Suggest an idea for the app
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: You can write in English or Russian.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would it solve
+      description: What you are trying to do and what gets in the way now.
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: How it could work
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you have considered

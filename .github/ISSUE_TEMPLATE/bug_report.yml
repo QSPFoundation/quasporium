@@ -1,0 +1,58 @@
+name: Bug report
+description: The app crashes or does something wrong
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        If a specific game does not run or looks wrong, use the *Game compatibility* template instead.
+        You can write in English or Russian.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you did, what you expected and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open ...
+        2. Tap ...
+        3. ...
+    validations:
+      required: true
+  - type: input
+    id: app-version
+    attributes:
+      label: App version
+      description: Android Settings → Apps → Quasporium, or the version shown in Google Play.
+      placeholder: "1.14.5"
+    validations:
+      required: true
+  - type: dropdown
+    id: source
+    attributes:
+      label: Installed from
+      options:
+        - Google Play
+        - GitHub Releases
+        - F-Droid
+        - Built from source
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device and Android version
+      placeholder: "Pixel 7, Android 15"
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: For a crash, the output of `adb logcat` around the crash helps a lot.
+      render: text

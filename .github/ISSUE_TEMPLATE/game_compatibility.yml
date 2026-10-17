@@ -1,0 +1,49 @@
+name: Game compatibility
+description: A particular game does not start, stops working or looks wrong
+labels: ["game compatibility"]
+body:
+  - type: markdown
+    attributes:
+      value: You can write in English or Russian.
+  - type: input
+    id: game
+    attributes:
+      label: Game
+      description: Name and a link to the game (qsp.org page or download link).
+    validations:
+      required: true
+  - type: dropdown
+    id: engine
+    attributes:
+      label: Engine version
+      description: Settings → Basic → Library version (globally or in the game's settings).
+      options:
+        - 5.9.5 (by Byte)
+        - 5.7.0 (by seedHarta)
+        - Both
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happens
+      description: Where in the game it happens and what you see. Does the game work in another QSP player (for example, Qqsp or the desktop player)?
+    validations:
+      required: true
+  - type: input
+    id: app-version
+    attributes:
+      label: App version
+      placeholder: "1.14.5"
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device and Android version
+      placeholder: "Pixel 7, Android 15"
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots or a save file
+      description: A save made just before the problem helps to reproduce it.
