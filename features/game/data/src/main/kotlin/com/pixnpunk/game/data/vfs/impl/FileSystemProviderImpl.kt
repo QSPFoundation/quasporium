@@ -3,10 +3,10 @@ package com.pixnpunk.game.data.vfs.impl
 import android.content.Context
 import androidx.core.net.toUri
 import com.anggrayudi.storage.extension.toDocumentFile
+import com.pixnpunk.common.PathUtil.toSafeRelativePath
 import com.pixnpunk.game.data.vfs.FileSystemProvider
 import com.pixnpunk.game.data.vfs.VirtualFile
 import com.pixnpunk.game.domain.model.VfsPath
-import com.pixnpunk.utils.PathUtil.toSafeRelativePath
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 

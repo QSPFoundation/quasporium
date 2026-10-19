@@ -8,7 +8,8 @@ android {
 
 dependencies {
     implementation(project(":core:dto"))
-    implementation(project(":core:utils"))
+    implementation(project(":core:storage"))
+    implementation(project(":core:ui"))
     implementation(project(":core:logger"))
 
     implementation(project(":features:stock:domain"))

@@ -15,7 +15,7 @@ import com.pixnpunk.game.domain.repository.EngineCommand
 import com.pixnpunk.game.domain.repository.GameEngineInteractor
 import com.pixnpunk.main.presentation.model.MainUIState
 import com.pixnpunk.main.presentation.model.ParsedActionItem
-import com.pixnpunk.utils.ViewUtil.toComposeFamily
+import com.pixnpunk.ui.ViewUtil.toComposeFamily
 import com.pixnpunk.webview.presentation.RealWebViewComponent
 import com.pixnpunk.webview.presentation.WebViewComponent
 import kotlinx.coroutines.Dispatchers

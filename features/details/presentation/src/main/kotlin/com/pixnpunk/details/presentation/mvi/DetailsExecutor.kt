@@ -10,10 +10,10 @@ import com.pixnpunk.dto.GameListType
 import com.pixnpunk.logger.AppLogger
 import com.pixnpunk.logger.executorContext
 import com.pixnpunk.stock.domain.usecase.ObserveEntryByIdUseCase
-import com.pixnpunk.utils.DirUtil.receiveGameFilesFromDir
-import com.pixnpunk.utils.DirUtil.receiveGameSavesFromDir
-import com.pixnpunk.utils.FileUtil.receiveBaseName
-import com.pixnpunk.utils.FileUtil.receiveFullName
+import com.pixnpunk.storage.DirUtil.receiveGameFilesFromDir
+import com.pixnpunk.storage.DirUtil.receiveGameSavesFromDir
+import com.pixnpunk.storage.FileUtil.receiveBaseName
+import com.pixnpunk.storage.FileUtil.receiveFullName
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.combine

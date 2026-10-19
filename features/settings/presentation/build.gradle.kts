@@ -8,7 +8,6 @@ android {
 
 dependencies {
     implementation(project(":core:dto"))
-    implementation(project(":core:utils"))
 
     implementation(project(":features:settings:data"))
     implementation(project(":features:settings:domain"))

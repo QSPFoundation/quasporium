@@ -5,9 +5,9 @@ import android.webkit.WebResourceResponse
 import androidx.webkit.WebViewAssetLoader
 import com.anggrayudi.storage.extension.toDocumentFile
 import com.anggrayudi.storage.file.MimeType
-import com.pixnpunk.utils.FileUtil.isWritableFile
-import com.pixnpunk.utils.PathUtil.getImageUriFromPath
-import com.pixnpunk.utils.PathUtil.normalizeContentPath
+import com.pixnpunk.common.PathUtil.normalizeContentPath
+import com.pixnpunk.storage.FileUtil.isWritableFile
+import com.pixnpunk.storage.StoragePathUtil.getImageUriFromPath
 import java.io.FileNotFoundException
 import kotlin.contracts.ExperimentalContracts
 

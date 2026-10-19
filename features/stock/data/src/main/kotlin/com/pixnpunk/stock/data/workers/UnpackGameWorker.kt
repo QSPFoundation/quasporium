@@ -10,9 +10,9 @@ import com.pixnpunk.logger.AppLogger
 import com.pixnpunk.notification.NotificationProvider
 import com.pixnpunk.stock.data.workers.WorkerKeys.GAME_DATA_JSON
 import com.pixnpunk.stock.domain.repository.LocalRepository
-import com.pixnpunk.utils.DirUtil.receiveGameDirFromFile
-import com.pixnpunk.utils.FileUtil.removeFileByPath
-import com.pixnpunk.utils.FileUtil.unpackFileToDir
+import com.pixnpunk.storage.DirUtil.receiveGameDirFromFile
+import com.pixnpunk.storage.FileUtil.removeFileByPath
+import com.pixnpunk.storage.FileUtil.unpackFileToDir
 import kotlinx.serialization.json.Json
 import org.koin.core.component.KoinComponent
 import java.io.File

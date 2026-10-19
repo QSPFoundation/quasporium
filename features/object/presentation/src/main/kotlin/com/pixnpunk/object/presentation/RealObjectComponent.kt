@@ -6,13 +6,13 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.fromHtml
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
+import com.pixnpunk.`object`.presentation.model.ObjectUIState
+import com.pixnpunk.`object`.presentation.model.ParsedObjectItem
 import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.game.domain.model.GameState
 import com.pixnpunk.game.domain.repository.EngineCommand
 import com.pixnpunk.game.domain.repository.GameEngineInteractor
-import com.pixnpunk.`object`.presentation.model.ObjectUIState
-import com.pixnpunk.`object`.presentation.model.ParsedObjectItem
-import com.pixnpunk.utils.ViewUtil.toComposeFamily
+import com.pixnpunk.ui.ViewUtil.toComposeFamily
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted

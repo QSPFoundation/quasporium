@@ -16,7 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.pixnpunk.dialogs.presentation.R
-import com.pixnpunk.utils.FileUtil.receiveDirRelPath
+import com.pixnpunk.storage.FileUtil.receiveDirRelPath
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable

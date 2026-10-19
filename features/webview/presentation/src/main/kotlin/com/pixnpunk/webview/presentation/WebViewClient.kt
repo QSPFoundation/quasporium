@@ -7,7 +7,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.core.net.toUri
 import androidx.webkit.WebViewAssetLoader
-import com.pixnpunk.utils.Base64Util.decodeBase64
+import com.pixnpunk.common.Base64Util.decodeBase64
 import kotlin.contracts.ExperimentalContracts
 
 internal class WebViewClient(

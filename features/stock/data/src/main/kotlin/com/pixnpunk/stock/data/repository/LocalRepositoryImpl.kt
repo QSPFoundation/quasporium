@@ -19,8 +19,8 @@ import com.pixnpunk.stock.domain.model.SearchState
 import com.pixnpunk.stock.domain.model.SearchTokenType
 import com.pixnpunk.stock.domain.model.SortOrder
 import com.pixnpunk.stock.domain.repository.LocalRepository
-import com.pixnpunk.utils.DirUtil.tryReceiveDirSize
-import com.pixnpunk.utils.FileUtil.createSpecialFiles
+import com.pixnpunk.storage.DirUtil.tryReceiveDirSize
+import com.pixnpunk.storage.FileUtil.createSpecialFiles
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged

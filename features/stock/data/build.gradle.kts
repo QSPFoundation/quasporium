@@ -7,7 +7,8 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:utils"))
+    implementation(project(":core:common"))
+    implementation(project(":core:storage"))
     implementation(project(":core:database"))
     implementation(project(":core:dto"))
     implementation(project(":core:network"))

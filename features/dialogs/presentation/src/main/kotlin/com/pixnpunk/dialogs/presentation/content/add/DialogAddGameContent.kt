@@ -18,7 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.pixnpunk.dto.GameEntry
-import com.pixnpunk.utils.FileUtil.receiveBaseName
+import com.pixnpunk.storage.FileUtil.receiveBaseName
 
 @Composable
 fun DialogAddGameContent(

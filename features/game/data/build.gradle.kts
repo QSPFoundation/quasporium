@@ -37,7 +37,7 @@ android {
 
 dependencies {
     implementation(project(":core:dto"))
-    implementation(project(":core:utils"))
+    implementation(project(":core:common"))
     implementation(project(":core:logger"))
     implementation(project(":core:database"))
 

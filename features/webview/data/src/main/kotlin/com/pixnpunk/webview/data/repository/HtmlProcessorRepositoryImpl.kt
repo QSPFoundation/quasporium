@@ -1,9 +1,9 @@
 package com.pixnpunk.webview.data.repository
 
 import android.content.Context
+import com.pixnpunk.common.Base64Util.encodeBase64
+import com.pixnpunk.common.ColorUtil.toHexColorStr
 import com.pixnpunk.dto.FontTypeface
-import com.pixnpunk.utils.Base64Util.encodeBase64
-import com.pixnpunk.utils.ColorUtil.toHexColorStr
 import com.pixnpunk.webview.domain.model.HtmlConfig
 import com.pixnpunk.webview.domain.repository.HtmlProcessorRepository
 import kotlinx.coroutines.Dispatchers

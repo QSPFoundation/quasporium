@@ -10,7 +10,7 @@ import com.pixnpunk.logger.AppLogger
 import com.pixnpunk.notification.NotificationProvider
 import com.pixnpunk.stock.data.workers.WorkerKeys.DEST_DIR
 import com.pixnpunk.stock.data.workers.WorkerKeys.DOWNLOAD_URL
-import com.pixnpunk.utils.FileUtil.writeFileToDir
+import com.pixnpunk.storage.FileUtil.writeFileToDir
 import io.ktor.client.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*

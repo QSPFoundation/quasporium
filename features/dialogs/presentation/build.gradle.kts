@@ -8,7 +8,7 @@ android {
 
 dependencies {
     implementation(project(":core:dto"))
-    implementation(project(":core:utils"))
+    implementation(project(":core:storage"))
 
     implementation(project(":features:settings:domain"))
     implementation(project(":features:game:domain"))

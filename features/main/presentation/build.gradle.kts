@@ -8,7 +8,7 @@ android {
 
 dependencies {
     implementation(project(":core:dto"))
-    implementation(project(":core:utils"))
+    implementation(project(":core:ui"))
 
     implementation(project(":features:webview:presentation"))
 

@@ -14,7 +14,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
@@ -25,7 +24,7 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.pixnpunk.dto.BinaryPrefFormat
 import com.pixnpunk.dto.GameEntry
-import com.pixnpunk.utils.FileUtil.formatFileSize
+import com.pixnpunk.ui.FormatUtil.formatFileSize
 
 @Composable
 fun StockLibraryGameGridItem(

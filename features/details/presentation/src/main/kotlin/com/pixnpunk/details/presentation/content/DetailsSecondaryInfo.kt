@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import com.pixnpunk.details.presentation.R
 import com.pixnpunk.dto.BinaryPrefFormat
 import com.pixnpunk.dto.GameEntry
-import com.pixnpunk.utils.FileUtil.formatFileSize
+import com.pixnpunk.ui.FormatUtil.formatFileSize
 
 @Composable
 fun DetailsSecondaryInfo(

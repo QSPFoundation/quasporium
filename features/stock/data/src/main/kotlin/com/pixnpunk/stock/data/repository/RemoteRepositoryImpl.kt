@@ -12,6 +12,7 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
+import com.pixnpunk.common.runCatchingCancellable
 import com.pixnpunk.database.AppDatabase
 import com.pixnpunk.database.dao.AuthorDao
 import com.pixnpunk.database.dao.TranslatorDao
@@ -30,7 +31,6 @@ import com.pixnpunk.stock.domain.model.NameCountItemRemote
 import com.pixnpunk.stock.domain.model.SearchState
 import com.pixnpunk.stock.domain.model.TranslatorEntry
 import com.pixnpunk.stock.domain.repository.RemoteRepository
-import com.pixnpunk.utils.runCatchingCancellable
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*

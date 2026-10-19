@@ -29,12 +29,14 @@ include(
     ":app",
 
     ":core",
+    ":core:common",
     ":core:database",
     ":core:dto",
     ":core:logger",
     ":core:network",
-    ":core:utils",
     ":core:notification",
+    ":core:storage",
+    ":core:ui",
 
     ":features",
     ":features:details",
