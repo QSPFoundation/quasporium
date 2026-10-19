@@ -1,22 +1,11 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
-    alias(libs.plugins.android.library)
-}
-
-detekt {
-    parallel = true
-    config.setFrom(files("$rootDir/config/detekt/detekt.yml"))
-    buildUponDefaultConfig = true
+    alias(libs.plugins.quasporium.android.library)
 }
 
 android {
     namespace = "com.pixnpunk.game.data"
-    compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
-        minSdk = libs.versions.minSdk.get().toInt()
-
         ndk {
             abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
             debugSymbolLevel = "FULL"
@@ -30,17 +19,6 @@ android {
                     "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=1"
                 )
             }
-        }
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-
-    kotlin {
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_17)
         }
     }
 
@@ -71,7 +49,7 @@ dependencies {
     implementation(libs.androidx.appcompat)
 
     implementation(libs.kotlinx.coroutines.android)
-    implementation("org.jetbrains.kotlinx:atomicfu:0.33.0")
+    implementation(libs.kotlinx.atomicfu)
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin.core)

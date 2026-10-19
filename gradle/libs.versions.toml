@@ -7,6 +7,7 @@ androidx-activity = "1.13.0"
 androidx-room = "2.8.5"
 androidx-worker = "2.12.0"
 appcompat = "1.8.0"
+atomicfu = "0.33.0"
 coil = "3.6.3"
 colorpickerCompose = "1.3.0"
 composeBom = "2026.09.00"
@@ -42,6 +43,9 @@ webkit = "1.17.1"
 xZipJbindingXandroid = "Release-16.02-2.03"
 
 [libraries]
+android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
+kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
+detekt-gradlePlugin = { group = "io.gitlab.arturbosch.detekt", name = "detekt-gradle-plugin", version.ref = "detekt" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 androidx-compose-adaptive = { module = "androidx.compose.material3.adaptive:adaptive" }
@@ -70,6 +74,7 @@ firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "fir
 firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
 firebase-perf = { module = "com.google.firebase:firebase-perf" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+kotlinx-atomicfu = { group = "org.jetbrains.kotlinx", name = "atomicfu", version.ref = "atomicfu" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
@@ -118,3 +123,9 @@ kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+quasporium-android-application = { id = "quasporium.android.application" }
+quasporium-android-library = { id = "quasporium.android.library" }
+quasporium-android-compose = { id = "quasporium.android.compose" }
+quasporium-android-feature = { id = "quasporium.android.feature" }
+quasporium-jvm-library = { id = "quasporium.jvm.library" }
+quasporium-detekt = { id = "quasporium.detekt" }
