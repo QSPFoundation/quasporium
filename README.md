@@ -58,9 +58,12 @@ Unit tests:
 The app is split into Gradle modules by feature and layer:
 
 - `app` — application class, root navigation, flavor-specific code (`src/foss`, `src/play`)
-- `core:*` — database (Room), network (Ktor), logging interface, notifications, shared utilities
+- `core:*` — database (Room), network (Ktor), logging interface, notifications; `core:common`
+  (pure Kotlin helpers), `core:storage` (SAF and archive unpacking), `core:ui` (Compose helpers)
 - `features:<name>:{domain,data,presentation}` — catalogue (`stock`), game details, game screen and
   engine bridge (`game`), settings, dialogs, WebView rendering
+- `build-logic` — Gradle convention plugins (`quasporium.android.library`, `quasporium.android.feature`,
+  `quasporium.jvm.library` and others) that hold the configuration shared by the modules
 
 Stack: Kotlin, Jetpack Compose, Decompose, MVIKotlin, Koin, Room, Ktor, Coil, WorkManager,
 SimpleStorage (SAF) and the native QSP engines built with CMake.
