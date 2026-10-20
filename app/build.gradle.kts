@@ -96,6 +96,7 @@ dependencies {
     implementation(project(":features:settings:presentation"))
 
     implementation(project(":features:details:data"))
+    implementation(project(":features:details:domain"))
     implementation(project(":features:details:presentation"))
 
     implementation(project(":features:game:data"))

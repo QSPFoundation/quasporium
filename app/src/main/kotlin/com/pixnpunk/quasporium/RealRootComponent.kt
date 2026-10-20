@@ -34,6 +34,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
 import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
 import org.koin.core.component.inject
 import java.io.File
 
@@ -57,7 +58,8 @@ class RealRootComponent(
     private val store =
         instanceKeeper.getStore {
             RealRootStore(
-                storeFactory = DefaultStoreFactory()
+                storeFactory = DefaultStoreFactory(),
+                executorFactory = { get() }
             ).create()
         }
 

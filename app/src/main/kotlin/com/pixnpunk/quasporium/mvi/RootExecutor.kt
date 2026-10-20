@@ -16,6 +16,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.coroutines.CoroutineContext
 
 class RootExecutor(
     private val fillAndInsertEntryUseCase: FillAndInsertEntryUseCase,
@@ -26,23 +27,25 @@ class RootExecutor(
     private val updateImageSizeUseCase: UpdateImageSizeUseCase,
     private val updateCustomFontPathUseCase: UpdateCustomFontPathUseCase,
     private val migrateIfNeededUseCase: MigrateIfNeededUseCase,
-    logger: AppLogger
+    logger: AppLogger,
+    mainContext: CoroutineContext = logger.executorContext("RootExecutor"),
+    private val ioContext: CoroutineContext = Dispatchers.IO
 ) : CoroutineExecutor<RootStore.Intent, RootStore.Action, RootStore.State, RootStore.Message, RootStore.Label>(
-    logger.executorContext("RootExecutor")
+    mainContext
 ) {
 
     override fun executeIntent(intent: RootStore.Intent) {
         when (intent) {
             is RootStore.Intent.AddNewGame -> {
-                scope.launch(Dispatchers.IO) { fillAndInsertEntryUseCase.execute(intent.entry) }
+                scope.launch(ioContext) { fillAndInsertEntryUseCase.execute(intent.entry) }
             }
 
             is RootStore.Intent.EditGame -> {
-                scope.launch(Dispatchers.IO) { upsertEntryUseCase.execute(intent.entry) }
+                scope.launch(ioContext) { upsertEntryUseCase.execute(intent.entry) }
             }
 
             is RootStore.Intent.DownloadNewGame -> {
-                scope.launch(Dispatchers.IO) {
+                scope.launch(ioContext) {
                     downloadGameArchUseCase.execute(
                         downloadEntry = intent.entry
                     )
@@ -68,7 +71,7 @@ class RootExecutor(
             RootStore.Action.MigrateIfNeeded ->
                 scope.launch {
                     try {
-                        withContext(Dispatchers.IO) {
+                        withContext(ioContext) {
                             migrateIfNeededUseCase.execute()
                         }
                     } catch (e: CancellationException) {

@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
 import org.koin.core.component.inject
 
 class RealStockComponent(
@@ -43,7 +44,7 @@ class RealStockComponent(
     private val getTranslatorSuggestionUseCase: GetTranslatorSuggestionUseCase by inject()
 
     private val store = instanceKeeper.getStore {
-        RealStockStore(DefaultStoreFactory()).create()
+        RealStockStore(DefaultStoreFactory()) { get() }.create()
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)

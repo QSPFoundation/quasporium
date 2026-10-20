@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.serialization.Serializable
 import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
 import org.ocpsoft.prettytime.PrettyTime
 
 class RealDetailsComponent(
@@ -38,7 +39,7 @@ class RealDetailsComponent(
 ) : ComponentContext by componentContext, DetailsComponent, KoinComponent {
 
     private val store = instanceKeeper.getStore {
-        RealDetailsStore(DefaultStoreFactory(), defEntry).create()
+        RealDetailsStore(DefaultStoreFactory(), defEntry) { get() }.create()
     }
 
     private val prettyTime = PrettyTime()

@@ -10,10 +10,7 @@ import com.pixnpunk.dto.GameListType
 import com.pixnpunk.logger.AppLogger
 import com.pixnpunk.logger.executorContext
 import com.pixnpunk.stock.domain.usecase.ObserveEntryByIdUseCase
-import com.pixnpunk.storage.DirUtil.receiveGameFilesFromDir
-import com.pixnpunk.storage.DirUtil.receiveGameSavesFromDir
-import com.pixnpunk.storage.FileUtil.receiveBaseName
-import com.pixnpunk.storage.FileUtil.receiveFullName
+import com.pixnpunk.storage.GameFileStorage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.combine
@@ -21,14 +18,19 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.coroutines.CoroutineContext
 
 class DetailsExecutor(
     private val logger: AppLogger,
     private val observeEntryByIdUseCase: ObserveEntryByIdUseCase,
     private val presetRepository: PresetRepository,
-    private val savesRepository: SavesRepository
+    private val savesRepository: SavesRepository,
+    private val gameFileStorage: GameFileStorage,
+    mainContext: CoroutineContext = logger.executorContext("DetailsExecutor"),
+    private val ioContext: CoroutineContext = Dispatchers.IO,
+    private val computationContext: CoroutineContext = Dispatchers.Default
 ) : CoroutineExecutor<DetailsStore.Intent, DetailsStore.Action, DetailsStore.State, DetailsStore.Message, DetailsStore.Label>(
-    logger.executorContext("DetailsExecutor")
+    mainContext
 ) {
 
     override fun executeIntent(intent: DetailsStore.Intent) {
@@ -117,12 +119,12 @@ class DetailsExecutor(
 
         observeDB(entry.id)
 
-        scope.launch(Dispatchers.IO) { syncGameFiles(entry.gameDirPath) }
-        scope.launch(Dispatchers.IO) { syncSaves(entry.id, entry.gameDirPath) }
+        scope.launch(ioContext) { syncGameFiles(entry.gameDirPath) }
+        scope.launch(ioContext) { syncSaves(entry.id, entry.gameDirPath) }
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private fun observeDB(entryId: Long) = scope.launch(Dispatchers.Default) {
+    private fun observeDB(entryId: Long) = scope.launch(computationContext) {
         observeEntryByIdUseCase.execute(entryId)
             .flatMapLatest { gameEntry ->
                 if (gameEntry == null) {
@@ -137,7 +139,7 @@ class DetailsExecutor(
                                 id = profile.id,
                                 name = profile.name,
                                 lastPlayedFile = profile.lastPlayedFile?.let { path ->
-                                    GameFileItem(displayName = path.receiveFullName(), path = path)
+                                    GameFileItem(displayName = gameFileStorage.receiveFullName(path), path = path)
                                 },
                                 saves =
                                     allSaves.map { save ->
@@ -178,11 +180,11 @@ class DetailsExecutor(
     }
 
     private suspend fun syncGameFiles(gameDirPath: String) {
-        val files = receiveGameFilesFromDir(
+        val files = gameFileStorage.receiveGameFiles(
             rootDirPath = gameDirPath
         ).map {
             GameFileItem(
-                displayName = if (it.isNotBlank()) it.receiveFullName() else "",
+                displayName = if (it.isNotBlank()) gameFileStorage.receiveFullName(it) else "",
                 path = it
             )
         }
@@ -195,13 +197,13 @@ class DetailsExecutor(
         entryId: Long,
         gameDirPath: String
     ) = planSavesSync(
-        diskPaths = receiveGameSavesFromDir(gameDirPath),
+        diskPaths = gameFileStorage.receiveGameSaves(gameDirPath),
         dbSaves = savesRepository.getAllSaves(entryId)
     ).apply {
         pathsToInsert.forEach { path ->
             savesRepository.insertSave(
                 gameId = entryId,
-                userTitle = path.receiveBaseName(),
+                userTitle = gameFileStorage.receiveBaseName(path),
                 filePath = path
             )
         }

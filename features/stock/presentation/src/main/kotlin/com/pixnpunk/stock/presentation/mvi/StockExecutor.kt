@@ -13,12 +13,15 @@ import com.pixnpunk.stock.presentation.mvi.StockStore.Message.SelectionUpdated
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.coroutines.CoroutineContext
 
 class StockExecutor(
     private val deleteLocalGameEntriesUseCase: DeleteLocalGameEntriesUseCase,
-    logger: AppLogger
+    logger: AppLogger,
+    mainContext: CoroutineContext = logger.executorContext("StockExecutor"),
+    private val ioContext: CoroutineContext = Dispatchers.IO
 ) : CoroutineExecutor<StockStore.Intent, StockStore.Action, StockStore.State, StockStore.Message, StockStore.Label>(
-    logger.executorContext("StockExecutor")
+    mainContext
 ) {
 
     override fun executeIntent(intent: StockStore.Intent) {
@@ -35,7 +38,7 @@ class StockExecutor(
             is StockStore.Intent.DeleteSelectedGames -> {
                 val idsToDelete = state().selectedGameIds
                 if (idsToDelete.isNotEmpty()) {
-                    scope.launch(Dispatchers.IO) {
+                    scope.launch(ioContext) {
                         deleteLocalGameEntriesUseCase.execute(idsToDelete)
                         withContext(Dispatchers.Main) {
                             dispatch(ClearSelection)

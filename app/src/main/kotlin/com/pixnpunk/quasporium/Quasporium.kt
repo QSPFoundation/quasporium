@@ -9,12 +9,14 @@ import com.pixnpunk.details.data.di.detailsDataModule
 import com.pixnpunk.game.data.di.gameDataModule
 import com.pixnpunk.network.networkModule
 import com.pixnpunk.notification.notificationModule
+import com.pixnpunk.quasporium.di.presentationModule
 import com.pixnpunk.quasporium.di.settingsDomainModule
 import com.pixnpunk.quasporium.di.stockDomainModule
 import com.pixnpunk.quasporium.di.webViewDomainModule
 import com.pixnpunk.quasporium.logger.distributionLoggerModule
 import com.pixnpunk.settings.data.di.settingsDataModule
 import com.pixnpunk.stock.data.di.stockDataModule
+import com.pixnpunk.storage.di.storageModule
 import com.pixnpunk.webview.data.di.webViewDataModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.workmanager.koin.workManagerFactory
@@ -29,13 +31,14 @@ class Quasporium : Application() {
             workManagerFactory()
             modules(
                 distributionLoggerModule, databaseModule,
-                networkModule, notificationModule
+                networkModule, notificationModule, storageModule
             )
             modules(
                 detailsDataModule, gameDataModule, settingsDataModule,
                 stockDataModule, webViewDataModule
             )
             modules(settingsDomainModule, stockDomainModule, webViewDomainModule)
+            modules(presentationModule)
         }
 
         WorkManager.getInstance(this).enqueueUniqueWork(
