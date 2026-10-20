@@ -7,6 +7,7 @@ import com.pixnpunk.stock.data.workers.DownloadGameWorker
 import com.pixnpunk.stock.data.workers.UnpackGameWorker
 import com.pixnpunk.stock.domain.repository.LocalRepository
 import com.pixnpunk.stock.domain.repository.RemoteRepository
+import io.ktor.client.*
 import org.koin.androidx.workmanager.dsl.workerOf
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
@@ -21,7 +22,10 @@ val stockDataModule = module {
         bind<LocalRepository>()
     }
 
-    singleOf(::RemoteRepositoryImpl) {
-        bind<RemoteRepository>()
+    single<RemoteRepository> {
+        RemoteRepositoryImpl(
+            get(), inject<HttpClient>(), get(),
+            get(), get(), get()
+        )
     }
 }

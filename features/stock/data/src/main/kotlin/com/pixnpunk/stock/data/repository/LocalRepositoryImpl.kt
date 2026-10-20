@@ -34,7 +34,9 @@ class LocalRepositoryImpl(
     private val gameDao: GameDao
 ) : LocalRepository {
 
-    private val prefs = context.getSharedPreferences("app_migrations", Context.MODE_PRIVATE)
+    private val prefs by lazy {
+        context.getSharedPreferences("app_migrations", Context.MODE_PRIVATE)
+    }
 
     override fun observeEntryUrls(): Flow<List<String>> =
         gameDao.getByUrl().distinctUntilChanged()

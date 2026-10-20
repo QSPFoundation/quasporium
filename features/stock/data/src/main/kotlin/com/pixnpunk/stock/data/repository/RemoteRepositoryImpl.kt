@@ -46,7 +46,7 @@ import java.util.*
 
 class RemoteRepositoryImpl(
     private val context: Context,
-    private val ktorClient: HttpClient,
+    private val ktorClient: Lazy<HttpClient>,
     private val workManager: WorkManager,
     private val appDatabase: AppDatabase,
     private val authorDao: AuthorDao,
@@ -82,7 +82,7 @@ class RemoteRepositoryImpl(
             ),
             pagingSourceFactory = {
                 RemotePagingSource(
-                    ktorClient,
+                    ktorClient.value,
                     searchState.query,
                     searchState.sortBy,
                     searchState.sortOrder,
@@ -167,7 +167,7 @@ class RemoteRepositoryImpl(
         var hasNextPage = true
 
         while (hasNextPage) {
-            val response = ktorClient.get(url) {
+            val response = ktorClient.value.get(url) {
                 parameter(API_QUERY_PAGE, currentPage)
                 parameter(API_QUERY_PER_PAGE, 100)
             }.body<GenericApiResponse<NameCountItemRemote>>()
