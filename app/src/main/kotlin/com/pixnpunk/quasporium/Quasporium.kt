@@ -15,6 +15,7 @@ import com.pixnpunk.quasporium.di.settingsDomainModule
 import com.pixnpunk.quasporium.di.stockDomainModule
 import com.pixnpunk.quasporium.di.webViewDomainModule
 import com.pixnpunk.quasporium.logger.distributionLoggerModule
+import com.pixnpunk.settings.data.di.preloadGlobalSettings
 import com.pixnpunk.settings.data.di.settingsDataModule
 import com.pixnpunk.stock.data.di.stockDataModule
 import com.pixnpunk.storage.di.storageModule
@@ -22,6 +23,7 @@ import com.pixnpunk.webview.data.di.webViewDataModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.workmanager.koin.workManagerFactory
 import org.koin.core.context.startKoin
+import kotlin.concurrent.thread
 
 class Quasporium : Application() {
     override fun onCreate() {
@@ -36,7 +38,7 @@ class Quasporium : Application() {
             )
         }
 
-        startKoin {
+        val koin = startKoin {
             androidContext(this@Quasporium)
             workManagerFactory()
             modules(
@@ -49,7 +51,9 @@ class Quasporium : Application() {
             )
             modules(settingsDomainModule, stockDomainModule, webViewDomainModule)
             modules(presentationModule)
-        }
+        }.koin
+
+        thread(name = "SettingsPreload") { koin.preloadGlobalSettings() }
 
         WorkManager.getInstance(this).enqueueUniqueWork(
             "AppStartupWork",

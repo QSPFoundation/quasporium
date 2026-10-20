@@ -6,19 +6,22 @@ import android.preference.PreferenceManager
 import com.pixnpunk.settings.data.repository.SettingsRepositoryImpl
 import com.pixnpunk.settings.domain.repository.SettingsRepository
 import org.koin.android.ext.koin.androidContext
+import org.koin.core.Koin
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.koin.dsl.onClose
 
+private val globalPrefsQualifier = named("global_prefs")
+
 val settingsDataModule = module {
-    single<SharedPreferences>(named("global_prefs")) {
-        PreferenceManager.getDefaultSharedPreferences(androidContext())
+    single<SharedPreferences>(globalPrefsQualifier) {
+        PreferenceManager.getDefaultSharedPreferences(androidContext()).also { it.all }
     }
 
     factory<SettingsRepository> { params ->
         val gameId = params.getOrNull<Long>()?.takeIf { it != -1L }
 
-        val globalSharedPrefs: SharedPreferences = get(named("global_prefs"))
+        val globalSharedPrefs: SharedPreferences = get(globalPrefsQualifier)
         val localSharedPrefs: SharedPreferences? = if (gameId != null) {
             androidContext().getSharedPreferences(
                 "game_settings_${gameId}",
@@ -31,4 +34,8 @@ val settingsDataModule = module {
             localPrefs = localSharedPrefs
         )
     } onClose { it?.cancel() }
+}
+
+fun Koin.preloadGlobalSettings() {
+    get<SharedPreferences>(globalPrefsQualifier)
 }
