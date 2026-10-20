@@ -1,5 +1,6 @@
 package com.pixnpunk.game.presentation
 
+import androidx.compose.ui.text.font.FontFamily
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
 import com.arkivanov.decompose.router.slot.ChildSlot
@@ -42,6 +43,7 @@ import com.pixnpunk.main.presentation.MainComponent
 import com.pixnpunk.main.presentation.RealMainComponent
 import com.pixnpunk.settings.domain.repository.SettingsRepository
 import com.pixnpunk.storage.DirUtil.isGameDirIsInternal
+import com.pixnpunk.ui.ViewUtil.loadCustomFontFamily
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -52,6 +54,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -86,6 +89,13 @@ class RealGameComponent(
     private val saveGameInteractor: SaveGameInteractor by inject { parametersOf(engineInteractor) }
 
     override val settingsState: StateFlow<SettingsEntity> = settingsRepository.settingsFlow
+
+    override val customFontFamily: StateFlow<FontFamily?> =
+        settingsState
+            .customFont(::loadCustomFontFamily)
+            .flowOn(Dispatchers.IO)
+            .stateIn(componentScope, SharingStarted.Eagerly, null)
+
     override val engineState: StateFlow<GameState> = engineInteractor.state
 
     private val _uiState = MutableStateFlow(

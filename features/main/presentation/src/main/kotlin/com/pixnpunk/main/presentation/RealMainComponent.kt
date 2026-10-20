@@ -1,6 +1,5 @@
 package com.pixnpunk.main.presentation
 
-import android.graphics.Typeface
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.fromHtml
@@ -15,6 +14,7 @@ import com.pixnpunk.game.domain.repository.EngineCommand
 import com.pixnpunk.game.domain.repository.GameEngineInteractor
 import com.pixnpunk.main.presentation.model.MainUIState
 import com.pixnpunk.main.presentation.model.ParsedActionItem
+import com.pixnpunk.ui.ViewUtil.loadCustomFontFamily
 import com.pixnpunk.ui.ViewUtil.toComposeFamily
 import com.pixnpunk.webview.presentation.RealWebViewComponent
 import com.pixnpunk.webview.presentation.WebViewComponent
@@ -28,7 +28,6 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import org.koin.core.component.KoinComponent
-import java.io.File
 
 class RealMainComponent(
     private val componentContext: ComponentContext,
@@ -116,18 +115,9 @@ class RealMainComponent(
 
     private fun resolveFontFamily(
         settings: SettingsEntity
-    ): FontFamily {
-        if (settings.isUseCustomFont && settings.customFontPath.isNotEmpty()) {
-            val file = File(settings.customFontPath)
-            if (file.exists()) {
-                return runCatching {
-                    FontFamily(Typeface.createFromFile(file))
-                }.getOrDefault(
-                    settings.typeface.toComposeFamily()
-                )
-            }
-        }
-
-        return settings.typeface.toComposeFamily()
-    }
+    ): FontFamily =
+        settings.customFontPath
+            .takeIf { settings.isUseCustomFont && it.isNotEmpty() }
+            ?.let(::loadCustomFontFamily)
+            ?: settings.typeface.toComposeFamily()
 }

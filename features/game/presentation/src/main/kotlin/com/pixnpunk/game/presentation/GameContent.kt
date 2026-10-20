@@ -1,6 +1,5 @@
 package com.pixnpunk.game.presentation
 
-import android.graphics.Typeface
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.material3.AlertDialog
@@ -34,9 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.pixnpunk.dialogs.presentation.DialogsMainContent
 import com.pixnpunk.extra.presentation.ExtraContent
@@ -54,7 +51,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
 
-@OptIn(ExperimentalDecomposeApi::class, ExperimentalMaterial3AdaptiveApi::class)
+@OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 fun GameContent(
     component: GameComponent,
@@ -66,6 +63,7 @@ fun GameContent(
     val objectSlot by component.objectSlot.subscribeAsState()
 
     val settings by component.settingsState.collectAsStateWithLifecycle()
+    val customFont by component.customFontFamily.collectAsStateWithLifecycle()
 
     val badges by component.badgesState.collectAsStateWithLifecycle()
 
@@ -163,27 +161,8 @@ fun GameContent(
 
     QuasporiumTheme(
         themeMode = settings.appThemeMode,
-        typography = remember(
-            settings.isUseCustomFont,
-            settings.customFontPath
-        ) {
-            if (!settings.isUseCustomFont) {
-                AppTypography
-            } else {
-                if (settings.customFontPath.isBlank()) {
-                    AppTypography
-                } else {
-                    runCatching {
-                        Typography().withDefaultFontFamily(
-                            FontFamily(
-                                Typeface.createFromFile(
-                                    settings.customFontPath
-                                )
-                            )
-                        )
-                    }.getOrDefault(AppTypography)
-                }
-            }
+        typography = remember(customFont) {
+            customFont?.let { Typography().withDefaultFontFamily(it) } ?: AppTypography
         }
     ) {
         dialogSlot.child?.instance?.also { DialogsMainContent(it) }

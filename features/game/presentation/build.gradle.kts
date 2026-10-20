@@ -10,6 +10,7 @@ dependencies {
     implementation(project(":core:storage"))
     implementation(project(":core:dto"))
     implementation(project(":core:network"))
+    implementation(project(":core:ui"))
 
     implementation(project(":features:game:domain"))
 

@@ -1,5 +1,6 @@
 package com.pixnpunk.game.presentation
 
+import androidx.compose.ui.text.font.FontFamily
 import com.arkivanov.decompose.router.slot.ChildSlot
 import com.arkivanov.decompose.value.Value
 import com.pixnpunk.dialogs.presentation.DialogsComponent
@@ -30,6 +31,7 @@ sealed interface GameComponent {
     val events: Flow<GameEvent>
 
     val settingsState: StateFlow<SettingsEntity>
+    val customFontFamily: StateFlow<FontFamily?>
 
     fun doRestartGame()
     fun doFinishGame()
