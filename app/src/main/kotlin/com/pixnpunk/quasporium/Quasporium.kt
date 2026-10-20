@@ -1,6 +1,7 @@
 package com.pixnpunk.quasporium
 
 import android.app.Application
+import android.os.StrictMode
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
@@ -25,6 +26,15 @@ import org.koin.core.context.startKoin
 class Quasporium : Application() {
     override fun onCreate() {
         super.onCreate()
+
+        if (BuildConfig.DEBUG) {
+            StrictMode.setThreadPolicy(
+                StrictMode.ThreadPolicy.Builder()
+                    .detectAll()
+                    .penaltyLog()
+                    .build()
+            )
+        }
 
         startKoin {
             androidContext(this@Quasporium)

@@ -19,6 +19,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.storage.FileUtil.receiveBaseName
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun DialogAddGameContent(
@@ -39,7 +41,7 @@ fun DialogAddGameContent(
 
     LaunchedEffect(entry.gameDirPath) {
         if (gameName.isEmpty() && entry.gameDirPath.isNotBlank()) {
-            gameName = entry.gameDirPath.receiveBaseName()
+            gameName = withContext(Dispatchers.IO) { entry.gameDirPath.receiveBaseName() }
         }
     }
 

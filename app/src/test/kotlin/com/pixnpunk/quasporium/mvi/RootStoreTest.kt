@@ -23,9 +23,11 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.io.File
 import java.lang.reflect.Proxy
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -139,6 +141,18 @@ class RootStoreTest {
         store.accept(RootStore.Intent.UpdateCustomFontPath("content://font"))
 
         assertEquals(listOf("image size 42", "font content://font"), calls)
+    }
+
+    @Test
+    fun `replaced custom font file is deleted after the new one is saved`() {
+        val oldFont = File.createTempFile("custom_font", ".ttf")
+        val store = createStore()
+        calls.clear()
+
+        store.accept(RootStore.Intent.UpdateCustomFontPath("/fonts/new.ttf", replacedPath = oldFont.path))
+
+        assertEquals(listOf("font /fonts/new.ttf"), calls)
+        assertFalse(oldFont.exists())
     }
 }
 

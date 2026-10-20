@@ -36,7 +36,6 @@ import kotlinx.serialization.serializer
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import org.koin.core.component.inject
-import java.io.File
 
 class RealRootComponent(
     private val componentContext: ComponentContext,
@@ -113,15 +112,11 @@ class RealRootComponent(
 
         val oldCustomFontPath = settingsState.value.customFontPath
 
-        if (oldCustomFontPath.isNotEmpty() && oldCustomFontPath != fontPath) {
-            val oldFile = File(oldCustomFontPath)
-            if (oldFile.exists()) {
-                oldFile.delete()
-            }
-        }
-
         store.accept(
-            RootStore.Intent.UpdateCustomFontPath(fontPath)
+            RootStore.Intent.UpdateCustomFontPath(
+                path = fontPath,
+                replacedPath = oldCustomFontPath.takeIf { it.isNotEmpty() && it != fontPath }
+            )
         )
     }
 

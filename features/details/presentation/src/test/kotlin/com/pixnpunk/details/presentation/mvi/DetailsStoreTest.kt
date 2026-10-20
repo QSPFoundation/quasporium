@@ -139,8 +139,7 @@ class DetailsStoreTest {
                 savesRepository = savesRepository,
                 gameFileStorage = gameFileStorage,
                 mainContext = dispatcher,
-                ioContext = dispatcher,
-                computationContext = dispatcher
+                ioContext = dispatcher
             )
         }.create()
         store.labels(observer { labels += it })

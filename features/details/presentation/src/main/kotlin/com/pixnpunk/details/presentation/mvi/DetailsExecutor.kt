@@ -27,8 +27,7 @@ class DetailsExecutor(
     private val savesRepository: SavesRepository,
     private val gameFileStorage: GameFileStorage,
     mainContext: CoroutineContext = logger.executorContext("DetailsExecutor"),
-    private val ioContext: CoroutineContext = Dispatchers.IO,
-    private val computationContext: CoroutineContext = Dispatchers.Default
+    private val ioContext: CoroutineContext = Dispatchers.IO
 ) : CoroutineExecutor<DetailsStore.Intent, DetailsStore.Action, DetailsStore.State, DetailsStore.Message, DetailsStore.Label>(
     mainContext
 ) {
@@ -124,7 +123,7 @@ class DetailsExecutor(
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private fun observeDB(entryId: Long) = scope.launch(computationContext) {
+    private fun observeDB(entryId: Long) = scope.launch(ioContext) {
         observeEntryByIdUseCase.execute(entryId)
             .flatMapLatest { gameEntry ->
                 if (gameEntry == null) {

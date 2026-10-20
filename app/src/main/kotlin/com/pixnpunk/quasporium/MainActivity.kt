@@ -36,7 +36,7 @@ import kotlinx.coroutines.withContext
 import org.koin.android.ext.android.get
 import java.io.File
 import java.io.FileOutputStream
-import java.util.UUID
+import java.util.*
 import kotlin.contracts.ExperimentalContracts
 
 class MainActivity : ComponentActivity() {
@@ -49,23 +49,27 @@ class MainActivity : ComponentActivity() {
             ActivityResultContracts.OpenDocumentTree()
         ) {
             if (it != null) {
-                contentResolver.takePersistableUriPermission(
-                    it,
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION
-                            or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                )
+                lifecycleScope.launch {
+                    val pickedDir = withContext(Dispatchers.IO) {
+                        contentResolver.takePersistableUriPermission(
+                            it,
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION
+                                    or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                        )
 
-                var newGameDir = it.toDocumentFile(get())
-                if (newGameDir.isWritableDir()) {
-                    val path = newGameDir.uri.toString()
-                    val dirName = newGameDir.name
-
-                    if (path.isNotEmpty() && dirName != null) {
-                        root.processPickedDir(dirName, path)
+                        val newGameDir = it.toDocumentFile(get())
+                        if (newGameDir.isWritableDir()) newGameDir.uri.toString() to newGameDir.name else null
                     }
-                } else {
-                    root.doShowDialog(
-                        outputValue = """
+
+                    if (pickedDir != null) {
+                        val (path, dirName) = pickedDir
+
+                        if (path.isNotEmpty() && dirName != null) {
+                            root.processPickedDir(dirName, path)
+                        }
+                    } else {
+                        root.doShowDialog(
+                            outputValue = """
                             We require full access to your device storage so that you can easily select and add games from any folder where they are stored.
                             This permission ensures stable file management on older Android versions (8, 9 and 10).
                             <br><br>
@@ -73,8 +77,9 @@ class MainActivity : ComponentActivity() {
                             <br>
                             <b>For SD cards:</b> select the main folder (root directory) of the SD card and tap "Allow access to..." when prompted.
                         """.trimIndent(),
-                        outputState = OutputState.OUTPUT_REQUEST_PERM
-                    )
+                            outputState = OutputState.OUTPUT_REQUEST_PERM
+                        )
+                    }
                 }
             }
         }
@@ -85,16 +90,19 @@ class MainActivity : ComponentActivity() {
             ActivityResultContracts.OpenDocument()
         ) {
             if (it != null) {
-                contentResolver.takePersistableUriPermission(
-                    it,
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION
-                            or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                )
+                lifecycleScope.launch {
+                    val path = withContext(Dispatchers.IO) {
+                        contentResolver.takePersistableUriPermission(
+                            it,
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION
+                                    or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                        )
 
-                var newGameDir = it.toDocumentFile(this)
-                if (newGameDir.isWritableFile()) {
-                    val path = newGameDir.uri.toString()
-                    if (path.isNotEmpty()) {
+                        val newGameDir = it.toDocumentFile(this@MainActivity)
+                        if (newGameDir.isWritableFile()) newGameDir.uri.toString() else null
+                    }
+
+                    if (!path.isNullOrEmpty()) {
                         root.processPickedFile(path)
                     }
                 }
@@ -106,43 +114,44 @@ class MainActivity : ComponentActivity() {
             ActivityResultContracts.OpenDocument()
         ) { uri ->
             if (uri != null) {
-                val customFont = uri.toDocumentFile(this) ?: return@registerForActivityResult
-                if (customFont.isFile && customFont.canRead()) {
-                    lifecycleScope.launch {
-                        val cachedFontFile = withContext(Dispatchers.IO) {
-                            val extension = customFont.name
-                                ?.substringAfterLast('.', "")
-                                ?.lowercase()
-                                ?.takeIf { it in FONT_EXTENSIONS }
-                                ?: "ttf"
-                            val target = File(
-                                File(filesDir, "custom_fonts").apply { mkdirs() },
-                                "custom_font_${UUID.randomUUID()}.$extension"
-                            )
-                            val isCopied = runCatching {
-                                customFont.openInputStream(this@MainActivity)!!.use { inputStream ->
-                                    FileOutputStream(target).use { outputStream ->
-                                        inputStream.copyTo(outputStream)
-                                    }
+                lifecycleScope.launch {
+                    val customFont = withContext(Dispatchers.IO) {
+                        uri.toDocumentFile(this@MainActivity)?.takeIf { it.isFile && it.canRead() }
+                    } ?: return@launch
+
+                    val cachedFontFile = withContext(Dispatchers.IO) {
+                        val extension = customFont.name
+                            ?.substringAfterLast('.', "")
+                            ?.lowercase()
+                            ?.takeIf { it in FONT_EXTENSIONS }
+                            ?: "ttf"
+                        val target = File(
+                            File(filesDir, "custom_fonts").apply { mkdirs() },
+                            "custom_font_${UUID.randomUUID()}.$extension"
+                        )
+                        val isCopied = runCatching {
+                            customFont.openInputStream(this@MainActivity)!!.use { inputStream ->
+                                FileOutputStream(target).use { outputStream ->
+                                    inputStream.copyTo(outputStream)
                                 }
-                            }.isSuccess
-
-                            if (isCopied && isFontFile(target)) {
-                                target
-                            } else {
-                                target.delete()
-                                null
                             }
-                        }
+                        }.isSuccess
 
-                        if (cachedFontFile != null) {
-                            root.processPickedFont(cachedFontFile.absolutePath)
+                        if (isCopied && isFontFile(target)) {
+                            target
                         } else {
-                            root.doShowDialog(
-                                outputValue = "The selected file is not a TrueType or OpenType font.",
-                                outputState = OutputState.OUTPUT_SIMPLE_MSG
-                            )
+                            target.delete()
+                            null
                         }
+                    }
+
+                    if (cachedFontFile != null) {
+                        root.processPickedFont(cachedFontFile.absolutePath)
+                    } else {
+                        root.doShowDialog(
+                            outputValue = "The selected file is not a TrueType or OpenType font.",
+                            outputState = OutputState.OUTPUT_SIMPLE_MSG
+                        )
                     }
                 }
             }
@@ -185,9 +194,8 @@ class MainActivity : ComponentActivity() {
 
         fun isFontFile(file: File): Boolean {
             val header = runCatching {
-                file.inputStream().use {
-                    input -> ByteArray(4)
-                        .also { input.read(it) }
+                file.inputStream().use { input ->
+                    ByteArray(4).also { input.read(it) }
                 }
             }.getOrNull() ?: return false
             val tag = String(header, Charsets.ISO_8859_1)
@@ -277,12 +285,15 @@ class MainActivity : ComponentActivity() {
                 }.onFailure { }
             },
             launchEngineIntent = {
-                startActivitySafely(
-                    AddonsUtils.createEngineIntent(
-                        clazz = GameActivity::class.java,
-                        entity = it
-                    )
-                )
+                lifecycleScope.launch {
+                    val engineIntent = withContext(Dispatchers.IO) {
+                        AddonsUtils.createEngineIntent(
+                            clazz = GameActivity::class.java,
+                            entity = it
+                        )
+                    }
+                    startActivitySafely(engineIntent)
+                }
             }
         )
 

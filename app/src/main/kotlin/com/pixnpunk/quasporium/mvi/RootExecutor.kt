@@ -16,6 +16,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
 import kotlin.coroutines.CoroutineContext
 
 class RootExecutor(
@@ -62,7 +63,10 @@ class RootExecutor(
                 scope.launch { updateImageSizeUseCase(intent.state, intent.input.toInt()) }
 
             is RootStore.Intent.UpdateCustomFontPath ->
-                scope.launch { updateCustomFontPathUseCase(intent.path) }
+                scope.launch {
+                    updateCustomFontPathUseCase(intent.path)
+                    intent.replacedPath?.let { withContext(ioContext) { File(it).delete() } }
+                }
         }
     }
 

@@ -43,6 +43,7 @@ import com.pixnpunk.main.presentation.MainComponent
 import com.pixnpunk.main.presentation.RealMainComponent
 import com.pixnpunk.settings.domain.repository.SettingsRepository
 import com.pixnpunk.storage.DirUtil.isGameDirIsInternal
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -59,6 +60,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.serializer
 import org.koin.core.component.KoinComponent
@@ -300,11 +302,14 @@ class RealGameComponent(
 
     internal fun setGameVisible(isVisible: Boolean) = engineInteractor.setTimerPaused(!isVisible)
 
+    private suspend fun isGameDirInternal(): Boolean =
+        withContext(Dispatchers.IO) { isGameDirIsInternal(gameDirUriBox) }
+
     override fun doSaveFile() {
-        if (!isGameDirIsInternal(gameDirUriBox)) {
-            _uiState.update { it.copy(isUserChooseSave = true) }
-        } else {
-            coroutineScope().launch {
+        componentScope.launch {
+            if (!isGameDirInternal()) {
+                _uiState.update { it.copy(isUserChooseSave = true) }
+            } else {
                 val savesCount =
                     saveGameInteractor.getSavesCount(gameId)
                 doShowDialog(
@@ -316,10 +321,10 @@ class RealGameComponent(
     }
 
     override fun doLoadFile() {
-        if (!isGameDirIsInternal(gameDirUriBox)) {
-            _uiState.update { it.copy(isUserChooseLoad = true) }
-        } else {
-            coroutineScope().launch {
+        componentScope.launch {
+            if (!isGameDirInternal()) {
+                _uiState.update { it.copy(isUserChooseLoad = true) }
+            } else {
                 saveGameInteractor.getAllSaves(gameId).let {
                     if (it.isEmpty()) {
                         _events.send(GameEvent.ShowSnackbar("No saved games!"))
