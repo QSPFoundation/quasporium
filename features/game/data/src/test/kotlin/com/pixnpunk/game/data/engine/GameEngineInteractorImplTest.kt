@@ -98,7 +98,7 @@ class GameEngineInteractorImplTest {
     private val engines = mutableListOf<GameEngineInteractorImpl>()
 
     private fun newEngine() =
-        GameEngineInteractorImpl(bridge, NoFiles, FakeAudio(log), logger).also { engines += it }
+        GameEngineInteractorImpl(lazyOf(bridge), NoFiles, FakeAudio(log), logger).also { engines += it }
 
     private fun waitUntil(timeoutMs: Long = 3000, condition: () -> Boolean): Boolean {
         val end = System.currentTimeMillis() + timeoutMs

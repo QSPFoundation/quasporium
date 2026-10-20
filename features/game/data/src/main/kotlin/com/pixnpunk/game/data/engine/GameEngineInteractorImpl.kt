@@ -34,11 +34,13 @@ import kotlinx.coroutines.runBlocking
 import kotlin.time.Duration.Companion.milliseconds
 
 internal class GameEngineInteractorImpl(
-    private val bridge: NativeEngineBridge,
+    bridgeProvider: Lazy<NativeEngineBridge>,
     private val vfsProvider: FileSystemProvider,
     private val audioService: AudioPlayerInteractor,
     private val logger: AppLogger
 ) : GameEngineInteractor, NativeEngineListener {
+
+    private val bridge by bridgeProvider
 
     private val engineScope = CoroutineScope(
         engineDispatcher + SupervisorJob() + CoroutineExceptionHandler { _, e -> reportFailure(e) }

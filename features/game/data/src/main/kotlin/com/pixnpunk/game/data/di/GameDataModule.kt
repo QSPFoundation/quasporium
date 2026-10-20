@@ -31,7 +31,7 @@ val gameDataModule = module {
     ) { QspLegacyEngineBridgeImpl(context = get()) }
     factory<GameEngineInteractor> { (author: NativeLibAuthors) ->
         GameEngineInteractorImpl(
-            bridge = get(named(author)),
+            bridgeProvider = inject(named(author)),
             vfsProvider = get(),
             audioService = get(),
             logger = get()
