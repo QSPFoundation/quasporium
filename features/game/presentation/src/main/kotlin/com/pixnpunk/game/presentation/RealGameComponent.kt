@@ -20,7 +20,6 @@ import com.pixnpunk.dialogs.presentation.DialogsState
 import com.pixnpunk.dialogs.presentation.RealDialogsComponent
 import com.pixnpunk.dto.InputState
 import com.pixnpunk.dto.LibSaveItem
-import com.pixnpunk.dto.NativeLibAuthors
 import com.pixnpunk.dto.OutputState
 import com.pixnpunk.dto.OutputStateValue
 import com.pixnpunk.dto.SettingsEntity
@@ -70,7 +69,6 @@ import org.koin.core.parameter.parametersOf
 
 class RealGameComponent(
     private val componentContext: ComponentContext,
-    private val libAuthors: NativeLibAuthors,
     private val gameId: Long = -1L,
     private val gameTitle: String = "Title",
     private val gameDirUriBox: String = "",
@@ -81,8 +79,10 @@ class RealGameComponent(
     private val componentScope = coroutineScope()
 
     internal val audioPlayer: AudioPlayerInteractor = get()
-    private val engineInteractor: GameEngineInteractor by inject { parametersOf(libAuthors) }
     private val settingsRepository: SettingsRepository = get { parametersOf(gameId) }
+    private val engineInteractor: GameEngineInteractor by inject {
+        parametersOf(settingsRepository.settingsFlow.value.nativeLibFrom)
+    }
     private val saveGameInteractor: SaveGameInteractor by inject { parametersOf(engineInteractor) }
 
     override val settingsState: StateFlow<SettingsEntity> = settingsRepository.settingsFlow

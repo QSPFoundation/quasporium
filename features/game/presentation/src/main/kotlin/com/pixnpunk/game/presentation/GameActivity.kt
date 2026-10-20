@@ -25,19 +25,14 @@ import com.anggrayudi.storage.file.MimeType.BINARY_FILE
 import com.anggrayudi.storage.file.getAbsolutePath
 import com.arkivanov.decompose.retainedComponent
 import com.pixnpunk.game.domain.model.VfsPath
-import com.pixnpunk.settings.domain.repository.SettingsRepository
 import org.koin.android.ext.android.get
-import org.koin.android.ext.android.inject
-import org.koin.core.parameter.parametersOf
 
 class GameActivity : ComponentActivity() {
 
     private lateinit var rootComponent: RealGameComponent
 
-    private val settingsRepository: SettingsRepository by inject { parametersOf(gameId) }
-
     private val isImmersiveEnabled: Boolean
-        get() = settingsRepository.settingsFlow.value.isImmersModeEnabled
+        get() = rootComponent.settingsState.value.isImmersModeEnabled
 
     private val requestCreateFile =
         registerForActivityResult(
@@ -102,14 +97,20 @@ class GameActivity : ComponentActivity() {
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        settingsRepository.cancel()
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+
+        rootComponent = retainedComponent {
+            RealGameComponent(
+                componentContext = it,
+                gameId = gameId,
+                gameTitle = gameTitle,
+                gameDirUriBox = gameDirUriBox,
+                gameFileUriBox = gameFileUriBox,
+                gameSaveUriBox = gameSaveUriBox
+            )
+        }
 
         val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
         if (isImmersiveEnabled) {
@@ -118,18 +119,6 @@ class GameActivity : ComponentActivity() {
                 WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         } else {
             windowInsetsController.show(WindowInsetsCompat.Type.systemBars())
-        }
-
-        rootComponent = retainedComponent {
-            RealGameComponent(
-                componentContext = it,
-                libAuthors = settingsRepository.settingsFlow.value.nativeLibFrom,
-                gameId = gameId,
-                gameTitle = gameTitle,
-                gameDirUriBox = gameDirUriBox,
-                gameFileUriBox = gameFileUriBox,
-                gameSaveUriBox = gameSaveUriBox
-            )
         }
 
         lifecycle.addObserver(object : DefaultLifecycleObserver {
