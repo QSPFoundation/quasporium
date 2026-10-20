@@ -14,8 +14,12 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
 import com.arkivanov.decompose.retainedComponent
 import com.pixnpunk.game.domain.model.VfsPath
+import com.pixnpunk.settings.domain.repository.GameSettingsPreloader
+import kotlinx.coroutines.launch
+import org.koin.android.ext.android.get
 
 class GameActivity : ComponentActivity() {
 
@@ -24,14 +28,20 @@ class GameActivity : ComponentActivity() {
     private val isImmersiveEnabled: Boolean
         get() = rootComponent.settingsState.value.isImmersModeEnabled
 
+    private val pendingComponentActions = mutableListOf<(RealGameComponent) -> Unit>()
+
+    private fun withComponent(action: (RealGameComponent) -> Unit) {
+        if (::rootComponent.isInitialized) action(rootComponent) else pendingComponentActions += action
+    }
+
     private val requestCreateFile =
         registerForActivityResult(CreateSaveFileContract()) { uri ->
-            rootComponent.onSaveFilePicked(uri?.let { VfsPath(it.toString()) })
+            withComponent { it.onSaveFilePicked(uri?.let { path -> VfsPath(path.toString()) }) }
         }
 
     private val requestOpenFile =
         registerForActivityResult(OpenSaveFileContract()) { uri ->
-            rootComponent.onLoadFilePicked(uri?.let { VfsPath(it.toString()) })
+            withComponent { it.onLoadFilePicked(uri?.let { path -> VfsPath(path.toString()) }) }
         }
 
     private val gameId: Long by lazy { intent.getLongExtra("gameId", -1L) }
@@ -42,7 +52,7 @@ class GameActivity : ComponentActivity() {
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        if (hasFocus && isImmersiveEnabled) {
+        if (hasFocus && ::rootComponent.isInitialized && isImmersiveEnabled) {
             WindowCompat.getInsetsController(window, window.decorView).apply {
                 systemBarsBehavior =
                     WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
@@ -55,6 +65,13 @@ class GameActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
+        lifecycleScope.launch {
+            get<GameSettingsPreloader>().preloadGameSettings(gameId)
+            setUpGame()
+        }
+    }
+
+    private fun setUpGame() {
         rootComponent = retainedComponent {
             RealGameComponent(
                 componentContext = it,
@@ -65,6 +82,8 @@ class GameActivity : ComponentActivity() {
                 gameSaveUriBox = gameSaveUriBox
             )
         }
+        pendingComponentActions.forEach { it(rootComponent) }
+        pendingComponentActions.clear()
 
         val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
         if (isImmersiveEnabled) {

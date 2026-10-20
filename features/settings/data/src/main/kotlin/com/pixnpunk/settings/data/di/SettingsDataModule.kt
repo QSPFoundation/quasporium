@@ -38,7 +38,12 @@ val settingsDataModule = module {
         )
     } onClose { it?.cancel() }
 
-    single<GameSettingsPreloader> { GameSettingsPreloaderImpl(androidContext()) }
+    single<GameSettingsPreloader> {
+        GameSettingsPreloaderImpl(
+            androidContext(),
+            inject<SharedPreferences>(globalPrefsQualifier)
+        )
+    }
 }
 
 fun Koin.preloadGlobalSettings() {
