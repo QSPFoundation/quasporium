@@ -1,12 +1,14 @@
 package com.pixnpunk.details.presentation
 
 import com.arkivanov.decompose.ComponentContext
+import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
 import com.arkivanov.essenty.statekeeper.ExperimentalStateKeeperApi
 import com.arkivanov.essenty.statekeeper.saveable
 import com.arkivanov.mvikotlin.core.instancekeeper.getStore
 import com.arkivanov.mvikotlin.extensions.coroutines.labels
 import com.arkivanov.mvikotlin.extensions.coroutines.stateFlow
 import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
+import com.pixnpunk.details.presentation.mapper.withRelativeDates
 import com.pixnpunk.details.presentation.mvi.DetailsStore
 import com.pixnpunk.details.presentation.mvi.RealDetailsStore
 import com.pixnpunk.dto.GameEntry
@@ -14,16 +16,13 @@ import com.pixnpunk.dto.LaunchGameEntity
 import com.pixnpunk.dto.SettingsEntity
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.serialization.Serializable
 import org.koin.core.component.KoinComponent
 import org.ocpsoft.prettytime.PrettyTime
-import java.time.Instant
-import java.time.LocalDateTime
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
-import java.util.*
 
 class RealDetailsComponent(
     private val componentContext: ComponentContext,
@@ -53,6 +52,14 @@ class RealDetailsComponent(
     @OptIn(ExperimentalCoroutinesApi::class)
     override val model: StateFlow<DetailsStore.State> = store.stateFlow
     override val label: Flow<DetailsStore.Label> = store.labels
+
+    override val displayEntry: StateFlow<GameEntry> =
+        model.map { it.gameEntry.withRelativeDates(prettyTime) }
+            .stateIn(
+                scope = coroutineScope(),
+                started = SharingStarted.Eagerly,
+                initialValue = model.value.gameEntry.withRelativeDates(prettyTime)
+            )
 
     override fun onCreateProfile() =
         store.accept(DetailsStore.Intent.CreateProfile)
@@ -85,15 +92,6 @@ class RealDetailsComponent(
 
     override fun onContinueSave(presetId: Long, savePath: String) =
         store.accept(DetailsStore.Intent.ContinueGame(presetId, savePath))
-
-    override fun convEntryData(entry: GameEntry): GameEntry =
-        entry.copy(
-            pubDate = entry.pubDate.toRelativeTime(),
-            modDate = entry.modDate.toRelativeTime()
-        )
-
-    private fun String.toRelativeTime(): String =
-        parseCatalogDate(this)?.let { prettyTime.format(it) } ?: this
 
     @Serializable
     private data class Config(val presetId: Long? = null)

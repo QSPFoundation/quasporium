@@ -12,14 +12,14 @@ sealed interface DetailsComponent {
     val label: Flow<DetailsStore.Label>
     val settingsState: StateFlow<SettingsEntity>
 
+    val displayEntry: StateFlow<GameEntry>
+
     val launchFreshGame: (LaunchGameEntity) -> Unit
     val launchContinueGame: (LaunchGameEntity) -> Unit
     val showEditGameDialog: (GameEntry) -> Unit
     val showSettingsGamePanel: (GameEntry) -> Unit
     val showDownloadGameDialog: (GameEntry) -> Unit
     val onDismissed: () -> Unit
-
-    fun convEntryData(entry: GameEntry): GameEntry
 
     fun onCreateProfile()
     fun onUpdateVisuals(presetId: Long, newName: String, newColor: Long)

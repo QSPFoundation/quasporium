@@ -27,6 +27,7 @@ fun DetailsContent(
 ) {
     val state by component.model.collectAsState()
     val settings by component.settingsState.collectAsState()
+    val displayEntry by component.displayEntry.collectAsState()
 
     val entry = state.gameEntry
 
@@ -82,7 +83,7 @@ fun DetailsContent(
                 onShowEdit = { component.showEditGameDialog(entry) }
             )
             DetailsSecondaryInfo(
-                entry = component.convEntryData(entry),
+                entry = displayEntry,
                 prefFormat = settings.binaryPref
             )
             DetailsButtonsSet(
