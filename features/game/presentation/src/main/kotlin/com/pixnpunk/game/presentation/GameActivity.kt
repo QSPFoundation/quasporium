@@ -8,24 +8,14 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.core.net.toUri
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.anggrayudi.storage.contract.FileCreationContract
-import com.anggrayudi.storage.contract.FileCreationResult
-import com.anggrayudi.storage.contract.FilePickerResult
-import com.anggrayudi.storage.contract.OpenFilePickerContract
-import com.anggrayudi.storage.extension.toDocumentFile
-import com.anggrayudi.storage.file.FileFullPath
-import com.anggrayudi.storage.file.MimeType.BINARY_FILE
-import com.anggrayudi.storage.file.getAbsolutePath
 import com.arkivanov.decompose.retainedComponent
 import com.pixnpunk.game.domain.model.VfsPath
-import org.koin.android.ext.android.get
 
 class GameActivity : ComponentActivity() {
 
@@ -35,49 +25,13 @@ class GameActivity : ComponentActivity() {
         get() = rootComponent.settingsState.value.isImmersModeEnabled
 
     private val requestCreateFile =
-        registerForActivityResult(
-            FileCreationContract(get())
-        ) {
-            runCatching {
-                when (it) {
-                    is FileCreationResult.StoragePermissionDenied -> {
-                        rootComponent.onSaveFilePicked(null)
-                    }
-
-                    is FileCreationResult.CanceledByUser -> {
-                        rootComponent.onSaveFilePicked(null)
-                    }
-
-                    is FileCreationResult.Created -> {
-                        rootComponent.onSaveFilePicked(VfsPath(it.file.uri.toString()))
-                    }
-                }
-            }.onFailure { rootComponent.onSaveFilePicked(null) }
+        registerForActivityResult(CreateSaveFileContract()) { uri ->
+            rootComponent.onSaveFilePicked(uri?.let { VfsPath(it.toString()) })
         }
 
     private val requestOpenFile =
-        registerForActivityResult(
-            OpenFilePickerContract(get())
-        ) {
-            runCatching {
-                when (it) {
-                    is FilePickerResult.StoragePermissionDenied -> {
-                        rootComponent.onLoadFilePicked(null)
-                    }
-
-                    is FilePickerResult.CanceledByUser -> {
-                        rootComponent.onLoadFilePicked(null)
-                    }
-
-                    is FilePickerResult.Picked -> {
-                        rootComponent.onLoadFilePicked(
-                            VfsPath(
-                                it.files.first().uri.toString()
-                            )
-                        )
-                    }
-                }
-            }.onFailure { rootComponent.onLoadFilePicked(null) }
+        registerForActivityResult(OpenSaveFileContract()) { uri ->
+            rootComponent.onLoadFilePicked(uri?.let { VfsPath(it.toString()) })
         }
 
     private val gameId: Long by lazy { intent.getLongExtra("gameId", -1L) }
@@ -151,37 +105,21 @@ class GameActivity : ComponentActivity() {
             LaunchedEffect(state.isUserChooseSave) {
                 if (state.isUserChooseSave) {
                     runCatching {
-                        val rootDir =
-                            gameDirUriBox.toUri().toDocumentFile(this@GameActivity)!!
                         requestCreateFile.launch(
-                            FileCreationContract.Options(
-                                mimeType = BINARY_FILE,
+                            SaveFileRequest(
                                 fileName = "${(UInt.MIN_VALUE..UInt.MAX_VALUE).random()}.sav",
-                                initialPath = FileFullPath(
-                                    context = this@GameActivity,
-                                    fullPath = rootDir.getAbsolutePath(this@GameActivity)
-                                )
+                                initialUri = initialFolderUri(gameDirUriBox)
                             )
                         )
-                    }
+                    }.onFailure { rootComponent.onSaveFilePicked(null) }
                 }
             }
 
             LaunchedEffect(state.isUserChooseLoad) {
                 if (state.isUserChooseLoad) {
                     runCatching {
-                        val rootDir =
-                            gameDirUriBox.toUri().toDocumentFile(this@GameActivity)!!
-                        requestOpenFile.launch(
-                            OpenFilePickerContract.Options(
-                                initialPath = FileFullPath(
-                                    context = this@GameActivity,
-                                    fullPath = rootDir.getAbsolutePath(this@GameActivity)
-                                ),
-                                filterMimeTypes = setOf(BINARY_FILE)
-                            )
-                        )
-                    }
+                        requestOpenFile.launch(initialFolderUri(gameDirUriBox))
+                    }.onFailure { rootComponent.onLoadFilePicked(null) }
                 }
             }
 
