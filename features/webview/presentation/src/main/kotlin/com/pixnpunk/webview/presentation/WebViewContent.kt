@@ -104,7 +104,7 @@ fun GameWebView(
                 }
 
                 webViewClient = WebViewClient(
-                    assetLoader =
+                    assetLoader = lazy {
                         WebViewAssetLoader.Builder()
                             .addPathHandler(
                                 "/game_files/",
@@ -120,7 +120,8 @@ fun GameWebView(
                                     File(ctx.filesDir, "custom_fonts")
                                 )
                             )
-                            .build(),
+                            .build()
+                    },
                     onExecValue = component.onExecValue,
                     onStartActivity = { runCatching { ctx.startActivity(it) } },
                 )

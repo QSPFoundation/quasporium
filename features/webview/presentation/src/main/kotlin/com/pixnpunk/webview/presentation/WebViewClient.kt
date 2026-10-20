@@ -8,10 +8,9 @@ import android.webkit.WebViewClient
 import androidx.core.net.toUri
 import androidx.webkit.WebViewAssetLoader
 import com.pixnpunk.common.Base64Util.decodeBase64
-import kotlin.contracts.ExperimentalContracts
 
 internal class WebViewClient(
-    private val assetLoader: WebViewAssetLoader,
+    private val assetLoader: Lazy<WebViewAssetLoader>,
     private val onExecValue: (String) -> Unit,
     private val onStartActivity: (Intent) -> Unit
 ) : WebViewClient() {
@@ -44,12 +43,11 @@ internal class WebViewClient(
         return true
     }
 
-    @OptIn(ExperimentalContracts::class)
     override fun shouldInterceptRequest(
         view: WebView,
         request: WebResourceRequest
     ) = runCatching {
-        assetLoader.shouldInterceptRequest(
+        assetLoader.value.shouldInterceptRequest(
             request.url ?: throw NullPointerException()
         )
     }.getOrElse { super.shouldInterceptRequest(view, request) }
