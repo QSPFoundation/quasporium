@@ -8,16 +8,12 @@ android {
 
 dependencies {
     implementation(project(":core:ui"))
-    implementation(project(":core:database"))
     implementation(project(":core:dto"))
     implementation(project(":core:logger"))
 
-    implementation(project(":features:stock:data"))
     implementation(project(":features:stock:domain"))
 
     implementation(project(":features:details:presentation"))
-
-    implementation(project(":features:settings:data"))
 
     implementation(libs.androidx.compose.adaptive)
 

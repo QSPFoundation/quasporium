@@ -25,7 +25,7 @@ import com.anggrayudi.storage.file.MimeType.BINARY_FILE
 import com.anggrayudi.storage.file.getAbsolutePath
 import com.arkivanov.decompose.retainedComponent
 import com.pixnpunk.game.domain.model.VfsPath
-import com.pixnpunk.settings.dto.repository.SettingsRepository
+import com.pixnpunk.settings.domain.repository.SettingsRepository
 import org.koin.android.ext.android.get
 import org.koin.android.ext.android.inject
 import org.koin.core.parameter.parametersOf

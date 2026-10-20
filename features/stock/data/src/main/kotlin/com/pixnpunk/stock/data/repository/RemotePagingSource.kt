@@ -4,6 +4,7 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.stock.data.mapper.toDomain
+import com.pixnpunk.stock.data.remote.RemoteGamesList
 import com.pixnpunk.stock.data.repository.RemoteRepositoryImpl.Companion.API_QUERY_LANG
 import com.pixnpunk.stock.data.repository.RemoteRepositoryImpl.Companion.API_QUERY_ORDER
 import com.pixnpunk.stock.data.repository.RemoteRepositoryImpl.Companion.API_QUERY_PAGE
@@ -16,7 +17,6 @@ import com.pixnpunk.stock.data.repository.RemoteRepositoryImpl.Companion.API_SEA
 import com.pixnpunk.stock.data.repository.RemoteRepositoryImpl.Companion.INITIAL_PAGE_INDEX
 import com.pixnpunk.stock.data.repository.RemoteRepositoryImpl.Companion.PAGE_SIZE
 import com.pixnpunk.stock.data.repository.RemoteRepositoryImpl.Companion.REMOTE_GAMES_URL
-import com.pixnpunk.stock.domain.model.RemoteGamesList
 import com.pixnpunk.stock.domain.model.SearchToken
 import com.pixnpunk.stock.domain.model.SearchTokenType
 import com.pixnpunk.stock.domain.model.SortBy

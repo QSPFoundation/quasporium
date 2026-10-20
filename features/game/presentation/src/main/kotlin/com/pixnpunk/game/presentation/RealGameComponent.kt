@@ -41,7 +41,7 @@ import com.pixnpunk.game.presentation.model.BadgesState
 import com.pixnpunk.game.presentation.model.GameUIState
 import com.pixnpunk.main.presentation.MainComponent
 import com.pixnpunk.main.presentation.RealMainComponent
-import com.pixnpunk.settings.dto.repository.SettingsRepository
+import com.pixnpunk.settings.domain.repository.SettingsRepository
 import com.pixnpunk.storage.DirUtil.isGameDirIsInternal
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow

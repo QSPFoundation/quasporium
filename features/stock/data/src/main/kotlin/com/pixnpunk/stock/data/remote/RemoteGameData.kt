@@ -1,6 +1,5 @@
-package com.pixnpunk.stock.domain.model
+package com.pixnpunk.stock.data.remote
 
-import com.pixnpunk.stock.domain.mapper.SlugAsIdSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

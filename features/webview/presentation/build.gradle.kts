@@ -12,7 +12,6 @@ dependencies {
     implementation(project(":core:ui"))
     implementation(project(":core:dto"))
 
-    implementation(project(":features:webview:data"))
     implementation(project(":features:webview:domain"))
 
     implementation(project(":features:game:domain"))

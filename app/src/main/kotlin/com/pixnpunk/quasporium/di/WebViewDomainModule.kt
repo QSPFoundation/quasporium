@@ -1,4 +1,4 @@
-package com.pixnpunk.webview.domain.di
+package com.pixnpunk.quasporium.di
 
 import com.pixnpunk.webview.domain.usecase.FormatGameHtmlUseCase
 import org.koin.core.module.dsl.factoryOf

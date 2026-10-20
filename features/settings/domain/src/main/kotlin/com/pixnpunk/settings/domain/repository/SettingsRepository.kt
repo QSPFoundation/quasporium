@@ -1,4 +1,4 @@
-package com.pixnpunk.settings.dto.repository
+package com.pixnpunk.settings.domain.repository
 
 import com.pixnpunk.dto.AppThemeMode
 import com.pixnpunk.dto.BinaryPrefFormat

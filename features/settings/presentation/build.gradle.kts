@@ -9,7 +9,6 @@ android {
 dependencies {
     implementation(project(":core:dto"))
 
-    implementation(project(":features:settings:data"))
     implementation(project(":features:settings:domain"))
 
     implementation(libs.androidx.compose.adaptive)

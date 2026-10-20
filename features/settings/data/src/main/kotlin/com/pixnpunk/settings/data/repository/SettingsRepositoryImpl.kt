@@ -9,8 +9,8 @@ import com.pixnpunk.dto.FontTypeface
 import com.pixnpunk.dto.InputState
 import com.pixnpunk.dto.NativeLibAuthors
 import com.pixnpunk.dto.SettingsEntity
-import com.pixnpunk.settings.dto.model.PrefKeys
-import com.pixnpunk.settings.dto.repository.SettingsRepository
+import com.pixnpunk.settings.domain.model.PrefKeys
+import com.pixnpunk.settings.domain.repository.SettingsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

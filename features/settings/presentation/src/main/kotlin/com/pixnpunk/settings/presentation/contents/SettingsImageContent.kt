@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.res.stringResource
 import com.pixnpunk.dto.InputState
-import com.pixnpunk.settings.dto.model.PrefKeys
+import com.pixnpunk.settings.domain.model.PrefKeys
 import com.pixnpunk.settings.presentation.R
 import me.zhanghai.compose.preference.switchPreference
 import me.zhanghai.compose.preference.twoTargetSwitchPreference

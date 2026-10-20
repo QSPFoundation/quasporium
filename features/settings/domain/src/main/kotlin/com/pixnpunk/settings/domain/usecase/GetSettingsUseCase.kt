@@ -1,7 +1,7 @@
-package com.pixnpunk.settings.dto.usecase
+package com.pixnpunk.settings.domain.usecase
 
 import com.pixnpunk.dto.SettingsEntity
-import com.pixnpunk.settings.dto.repository.SettingsRepository
+import com.pixnpunk.settings.domain.repository.SettingsRepository
 import kotlinx.coroutines.flow.StateFlow
 
 class GetSettingsUseCase(

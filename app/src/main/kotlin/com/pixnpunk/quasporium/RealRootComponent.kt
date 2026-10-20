@@ -26,7 +26,7 @@ import com.pixnpunk.dto.OutputState
 import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.quasporium.mvi.RealRootStore
 import com.pixnpunk.quasporium.mvi.RootStore
-import com.pixnpunk.settings.dto.repository.SettingsRepository
+import com.pixnpunk.settings.domain.repository.SettingsRepository
 import com.pixnpunk.settings.presentation.RealSettingsComponent
 import com.pixnpunk.stock.presentation.RealStockComponent
 import kotlinx.coroutines.ExperimentalCoroutinesApi

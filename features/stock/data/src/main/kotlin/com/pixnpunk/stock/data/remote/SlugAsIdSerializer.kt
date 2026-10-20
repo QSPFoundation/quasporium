@@ -1,4 +1,4 @@
-package com.pixnpunk.stock.domain.mapper
+package com.pixnpunk.stock.data.remote
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind

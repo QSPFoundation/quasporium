@@ -16,7 +16,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import com.pixnpunk.dto.ColorPickerState
 import com.pixnpunk.dto.FontTypeface
-import com.pixnpunk.settings.dto.model.PrefKeys
+import com.pixnpunk.settings.domain.model.PrefKeys
 import com.pixnpunk.settings.presentation.R
 import me.zhanghai.compose.preference.listPreference
 import me.zhanghai.compose.preference.sliderPreference

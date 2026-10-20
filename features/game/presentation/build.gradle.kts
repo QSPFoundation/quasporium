@@ -11,7 +11,6 @@ dependencies {
     implementation(project(":core:dto"))
     implementation(project(":core:network"))
 
-    implementation(project(":features:game:data"))
     implementation(project(":features:game:domain"))
 
     implementation(project(":features:settings:domain"))

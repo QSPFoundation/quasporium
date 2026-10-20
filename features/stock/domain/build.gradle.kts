@@ -6,11 +6,8 @@ plugins {
 dependencies {
     implementation(project(":core:dto"))
 
-    implementation(libs.androidx.paging.compose)
+    implementation(libs.androidx.paging.common)
 
-    implementation(libs.kotlinx.coroutines.android)
-    implementation(libs.kotlinx.serialization.json)
-
-    implementation(project.dependencies.platform(libs.koin.bom))
-    implementation(libs.koin.core)
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.serialization.core)
 }

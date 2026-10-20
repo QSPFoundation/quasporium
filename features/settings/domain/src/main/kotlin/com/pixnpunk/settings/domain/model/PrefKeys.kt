@@ -1,4 +1,4 @@
-package com.pixnpunk.settings.dto.model
+package com.pixnpunk.settings.domain.model
 
 object PrefKeys {
     const val FONT_STYLE = "fontStylePref"

@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.quasporium.android.library)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -26,6 +27,7 @@ dependencies {
     implementation(libs.androidx.work)
 
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.serialization.core)
 
     implementation(project.dependencies.platform(libs.koin.bom))
     implementation(libs.koin.android)

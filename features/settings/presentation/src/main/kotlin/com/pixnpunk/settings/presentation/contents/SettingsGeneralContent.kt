@@ -15,7 +15,7 @@ import androidx.compose.ui.text.AnnotatedString
 import com.pixnpunk.dto.AppThemeMode
 import com.pixnpunk.dto.BinaryPrefFormat
 import com.pixnpunk.dto.NativeLibAuthors
-import com.pixnpunk.settings.dto.model.PrefKeys
+import com.pixnpunk.settings.domain.model.PrefKeys
 import com.pixnpunk.settings.presentation.R
 import me.zhanghai.compose.preference.listPreference
 import me.zhanghai.compose.preference.switchPreference

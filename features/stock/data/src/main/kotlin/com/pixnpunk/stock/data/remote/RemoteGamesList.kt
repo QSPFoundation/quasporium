@@ -1,4 +1,4 @@
-package com.pixnpunk.stock.domain.model
+package com.pixnpunk.stock.data.remote
 
 import kotlinx.serialization.Serializable
 

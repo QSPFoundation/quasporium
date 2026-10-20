@@ -11,10 +11,7 @@ dependencies {
 
     implementation(project(":features:webview:presentation"))
 
-    implementation(project(":features:game:data"))
     implementation(project(":features:game:domain"))
-
-    implementation(project(":features:settings:data"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

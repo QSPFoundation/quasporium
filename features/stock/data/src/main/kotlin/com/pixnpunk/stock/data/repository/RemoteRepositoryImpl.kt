@@ -20,14 +20,14 @@ import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.stock.data.mapper.toAuthorEntity
 import com.pixnpunk.stock.data.mapper.toDomain
 import com.pixnpunk.stock.data.mapper.toTranslatorEntity
+import com.pixnpunk.stock.data.remote.GenericApiResponse
+import com.pixnpunk.stock.data.remote.NameCountItemRemote
 import com.pixnpunk.stock.data.workers.DownloadGameWorker
 import com.pixnpunk.stock.data.workers.UnpackGameWorker
 import com.pixnpunk.stock.data.workers.WorkerKeys.DEST_DIR
 import com.pixnpunk.stock.data.workers.WorkerKeys.DOWNLOAD_URL
 import com.pixnpunk.stock.data.workers.WorkerKeys.GAME_DATA_JSON
 import com.pixnpunk.stock.domain.model.AuthorEntry
-import com.pixnpunk.stock.domain.model.GenericApiResponse
-import com.pixnpunk.stock.domain.model.NameCountItemRemote
 import com.pixnpunk.stock.domain.model.SearchState
 import com.pixnpunk.stock.domain.model.TranslatorEntry
 import com.pixnpunk.stock.domain.repository.RemoteRepository

@@ -1,4 +1,4 @@
-package com.pixnpunk.stock.domain.di
+package com.pixnpunk.quasporium.di
 
 import com.pixnpunk.stock.domain.usecase.DeleteLocalGameEntriesUseCase
 import com.pixnpunk.stock.domain.usecase.DownloadGameArchUseCase

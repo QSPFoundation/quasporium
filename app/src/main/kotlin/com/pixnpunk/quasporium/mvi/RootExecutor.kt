@@ -4,10 +4,10 @@ import androidx.compose.ui.graphics.toArgb
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
 import com.pixnpunk.logger.AppLogger
 import com.pixnpunk.logger.executorContext
-import com.pixnpunk.settings.dto.usecase.RestoreColorValueUseCase
-import com.pixnpunk.settings.dto.usecase.UpdateColorUseCase
-import com.pixnpunk.settings.dto.usecase.UpdateCustomFontPathUseCase
-import com.pixnpunk.settings.dto.usecase.UpdateImageSizeUseCase
+import com.pixnpunk.settings.domain.usecase.RestoreColorValueUseCase
+import com.pixnpunk.settings.domain.usecase.UpdateColorUseCase
+import com.pixnpunk.settings.domain.usecase.UpdateCustomFontPathUseCase
+import com.pixnpunk.settings.domain.usecase.UpdateImageSizeUseCase
 import com.pixnpunk.stock.domain.usecase.DownloadGameArchUseCase
 import com.pixnpunk.stock.domain.usecase.FillAndInsertEntryUseCase
 import com.pixnpunk.stock.domain.usecase.MigrateIfNeededUseCase

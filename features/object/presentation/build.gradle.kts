@@ -10,10 +10,7 @@ dependencies {
     implementation(project(":core:dto"))
     implementation(project(":core:ui"))
 
-    implementation(project(":features:game:data"))
     implementation(project(":features:game:domain"))
-
-    implementation(project(":features:settings:data"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

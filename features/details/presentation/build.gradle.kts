@@ -15,7 +15,6 @@ dependencies {
     implementation(project(":features:stock:domain"))
     implementation(project(":features:settings:domain"))
 
-    implementation(project(":features:details:data"))
     implementation(project(":features:details:domain"))
 
     implementation(libs.androidx.compose.adaptive)

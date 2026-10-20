@@ -1,7 +1,7 @@
 package com.pixnpunk.stock.data.mapper
 
 import com.pixnpunk.database.model.TranslatorEntity
-import com.pixnpunk.stock.domain.model.NameCountItemRemote
+import com.pixnpunk.stock.data.remote.NameCountItemRemote
 import com.pixnpunk.stock.domain.model.TranslatorEntry
 
 fun NameCountItemRemote.toTranslatorEntity(): TranslatorEntity =

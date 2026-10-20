@@ -2,7 +2,7 @@ package com.pixnpunk.stock.data.mapper
 
 import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.dto.GameListType
-import com.pixnpunk.stock.domain.model.RemoteGameData
+import com.pixnpunk.stock.data.remote.RemoteGameData
 
 fun List<RemoteGameData>.toDomain(): List<GameEntry> =
     map { remoteGameData ->

@@ -6,9 +6,6 @@ plugins {
 dependencies {
     implementation(project(":core:dto"))
 
-    implementation(libs.kotlinx.serialization.json)
-    implementation(libs.kotlinx.coroutines.android)
-
-    implementation(project.dependencies.platform(libs.koin.bom))
-    implementation(libs.koin.core)
+    implementation(libs.kotlinx.serialization.core)
+    implementation(libs.kotlinx.coroutines.core)
 }

@@ -11,7 +11,7 @@ import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
 import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.pixnpunk.dto.ColorPickerState
 import com.pixnpunk.dto.InputState
-import com.pixnpunk.settings.dto.repository.SettingsRepository
+import com.pixnpunk.settings.domain.repository.SettingsRepository
 import com.pixnpunk.settings.presentation.mappers.dispatch
 import com.pixnpunk.settings.presentation.mappers.toMap
 import kotlinx.coroutines.Dispatchers
