@@ -243,6 +243,10 @@ class RealGameComponent(
             }
             .launchIn(componentScope)
 
+        settingsState
+            .applySoundSetting(audioPlayer)
+            .launchIn(componentScope)
+
         engineState
             .filterIsInstance<GameState.Running>()
             .onEach { state ->
