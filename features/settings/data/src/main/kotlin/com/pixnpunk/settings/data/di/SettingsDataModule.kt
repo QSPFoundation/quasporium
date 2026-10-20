@@ -3,7 +3,10 @@ package com.pixnpunk.settings.data.di
 import android.content.Context
 import android.content.SharedPreferences
 import android.preference.PreferenceManager
+import com.pixnpunk.settings.data.repository.GameSettingsPreloaderImpl
 import com.pixnpunk.settings.data.repository.SettingsRepositoryImpl
+import com.pixnpunk.settings.data.repository.gameSettingsName
+import com.pixnpunk.settings.domain.repository.GameSettingsPreloader
 import com.pixnpunk.settings.domain.repository.SettingsRepository
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.Koin
@@ -24,7 +27,7 @@ val settingsDataModule = module {
         val globalSharedPrefs: SharedPreferences = get(globalPrefsQualifier)
         val localSharedPrefs: SharedPreferences? = if (gameId != null) {
             androidContext().getSharedPreferences(
-                "game_settings_${gameId}",
+                gameSettingsName(gameId),
                 Context.MODE_PRIVATE
             )
         } else null
@@ -34,6 +37,8 @@ val settingsDataModule = module {
             localPrefs = localSharedPrefs
         )
     } onClose { it?.cancel() }
+
+    single<GameSettingsPreloader> { GameSettingsPreloaderImpl(androidContext()) }
 }
 
 fun Koin.preloadGlobalSettings() {

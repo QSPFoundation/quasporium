@@ -7,6 +7,6 @@ import org.koin.dsl.module
 
 val presentationModule = module {
     factory { RootExecutor(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
-    factory { DetailsExecutor(get(), get(), get(), get(), get()) }
+    factory { DetailsExecutor(get(), get(), get(), get(), get(), get()) }
     factory { StockExecutor(get(), get()) }
 }

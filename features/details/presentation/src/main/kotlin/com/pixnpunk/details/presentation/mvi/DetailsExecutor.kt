@@ -9,6 +9,7 @@ import com.pixnpunk.details.presentation.model.PresetUIState
 import com.pixnpunk.dto.GameListType
 import com.pixnpunk.logger.AppLogger
 import com.pixnpunk.logger.executorContext
+import com.pixnpunk.settings.domain.repository.GameSettingsPreloader
 import com.pixnpunk.stock.domain.usecase.ObserveEntryByIdUseCase
 import com.pixnpunk.storage.GameFileStorage
 import kotlinx.coroutines.Dispatchers
@@ -26,6 +27,7 @@ class DetailsExecutor(
     private val presetRepository: PresetRepository,
     private val savesRepository: SavesRepository,
     private val gameFileStorage: GameFileStorage,
+    private val gameSettingsPreloader: GameSettingsPreloader,
     mainContext: CoroutineContext = logger.executorContext("DetailsExecutor"),
     private val ioContext: CoroutineContext = Dispatchers.IO
 ) : CoroutineExecutor<DetailsStore.Intent, DetailsStore.Action, DetailsStore.State, DetailsStore.Message, DetailsStore.Label>(
@@ -120,6 +122,7 @@ class DetailsExecutor(
 
         scope.launch(ioContext) { syncGameFiles(entry.gameDirPath) }
         scope.launch(ioContext) { syncSaves(entry.id, entry.gameDirPath) }
+        scope.launch(ioContext) { gameSettingsPreloader.preloadGameSettings(entry.id) }
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)

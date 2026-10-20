@@ -11,6 +11,7 @@ import com.pixnpunk.details.presentation.model.GameFileItem
 import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.dto.GameListType
 import com.pixnpunk.logger.AppLogger
+import com.pixnpunk.settings.domain.repository.GameSettingsPreloader
 import com.pixnpunk.stock.domain.repository.LocalRepository
 import com.pixnpunk.stock.domain.usecase.ObserveEntryByIdUseCase
 import com.pixnpunk.storage.GameFileStorage
@@ -109,6 +110,12 @@ class DetailsStoreTest {
         override fun receiveBaseName(path: String) = path.substringAfterLast('/').substringBeforeLast('.')
     }
 
+    private val gameSettingsPreloader = object : GameSettingsPreloader {
+        override suspend fun preloadGameSettings(gameId: Long) {
+            calls += "preload settings $gameId"
+        }
+    }
+
     private val logger = object : AppLogger {
         override fun recordBreadcrumb(message: String) = Unit
         override fun recordNonFatalException(throwable: Throwable) = Unit
@@ -138,6 +145,7 @@ class DetailsStoreTest {
                 presetRepository = presetRepository,
                 savesRepository = savesRepository,
                 gameFileStorage = gameFileStorage,
+                gameSettingsPreloader = gameSettingsPreloader,
                 mainContext = dispatcher,
                 ioContext = dispatcher
             )
@@ -171,6 +179,13 @@ class DetailsStoreTest {
         assertTrue("insert save new" in calls)
         assertTrue("delete save 11" in calls)
         assertFalse(calls.any { it.startsWith("insert save kept") })
+    }
+
+    @Test
+    fun `game settings are preloaded for a playable game`() {
+        createStore()
+
+        assertTrue("preload settings 7" in calls)
     }
 
     @Test
