@@ -106,6 +106,14 @@ jobs:
         run: >-
           ./gradlew pixel6Api34DebugAndroidTest
           -Pandroid.testoptions.manageddevices.emulator.gpu=swiftshader_indirect
+          --write-verification-metadata sha256
+
+      - name: Upload verification metadata
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: verification-metadata
+          path: gradle/verification-metadata.xml
 
       - name: Upload instrumented test reports
         if: always()
