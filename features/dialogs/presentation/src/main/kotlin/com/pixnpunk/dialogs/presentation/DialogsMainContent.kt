@@ -228,7 +228,8 @@ fun DialogsMainContent(
 
                                             else ->
                                                 KeyboardOptions()
-                                        }, cleanError = component.onCleanError,
+                                        },
+                                    cleanError = component.onCleanError,
                                     onDismiss = component.onDismissed
                                 )
                             }

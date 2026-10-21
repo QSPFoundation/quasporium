@@ -118,8 +118,11 @@ fun PresetDockStation(
                         modifier = Modifier.graphicsLayer { rotationZ = arrowRotation },
                         imageVector = Icons.Default.KeyboardArrowDown,
                         contentDescription = stringResource(
-                            if (isExpanded) R.string.collapse_presets_description
-                            else R.string.expand_presets_description
+                            if (isExpanded) {
+                                R.string.collapse_presets_description
+                            } else {
+                                R.string.expand_presets_description
+                            }
                         ),
                     )
                 }

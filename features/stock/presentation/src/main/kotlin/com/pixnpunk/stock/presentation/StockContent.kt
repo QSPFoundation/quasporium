@@ -6,7 +6,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
@@ -67,9 +66,10 @@ fun StockContent(
 
     val isAtTop by remember { derivedStateOf { !gridState.canScrollBackward } }
 
-    val isAnyScrollInProgress = gridState.isScrollInProgress ||
-            listState.isScrollInProgress ||
-            pagerState.isScrollInProgress
+    val isAnyScrollInProgress =
+        gridState.isScrollInProgress ||
+        listState.isScrollInProgress ||
+        pagerState.isScrollInProgress
     LaunchedEffect(isAnyScrollInProgress) {
         if (isAnyScrollInProgress) {
             focusManager.clearFocus()

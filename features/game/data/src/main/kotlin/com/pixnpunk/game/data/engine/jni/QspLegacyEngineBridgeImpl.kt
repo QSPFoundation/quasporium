@@ -238,8 +238,7 @@ internal class QspLegacyEngineBridgeImpl(
     }
 
     override fun onIsPlayingFile(path: String?): Boolean =
-        if (path.isNullOrBlank()) false
-        else engineListener?.onCheckAudioPlaying(path) ?: false
+        !path.isNullOrBlank() && engineListener?.onCheckAudioPlaying(path) ?: false
 
     override fun onPlayFile(path: String?, volume: Int) {
         if (!path.isNullOrBlank()) {

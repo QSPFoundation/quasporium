@@ -14,7 +14,6 @@ import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
 import com.arkivanov.essenty.lifecycle.doOnCreate
 import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.arkivanov.essenty.lifecycle.doOnStop
-import com.pixnpunk.`object`.presentation.RealObjectComponent
 import com.pixnpunk.dialogs.presentation.DialogsComponent
 import com.pixnpunk.dialogs.presentation.DialogsConfig
 import com.pixnpunk.dialogs.presentation.DialogsState
@@ -41,6 +40,7 @@ import com.pixnpunk.game.presentation.model.BadgesState
 import com.pixnpunk.game.presentation.model.GameUIState
 import com.pixnpunk.main.presentation.MainComponent
 import com.pixnpunk.main.presentation.RealMainComponent
+import com.pixnpunk.`object`.presentation.RealObjectComponent
 import com.pixnpunk.settings.domain.repository.SettingsRepository
 import com.pixnpunk.storage.DirUtil.isGameDirIsInternal
 import com.pixnpunk.ui.ViewUtil.loadCustomFontFamily

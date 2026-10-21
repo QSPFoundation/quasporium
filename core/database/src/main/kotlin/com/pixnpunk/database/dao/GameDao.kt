@@ -21,20 +21,24 @@ interface GameDao {
     @Query("SELECT * FROM game ORDER BY id DESC")
     fun getAllDesc(): PagingSource<Int, GameEntity>
 
-    @Query("""
+    @Query(
+        """
         SELECT game.* FROM game 
         JOIN game_fts ON game.id = game_fts.rowid
         WHERE game_fts MATCH :ftsQuery
         ORDER BY game.id ASC
-    """)
+        """
+    )
     fun searchAsc(ftsQuery: String): PagingSource<Int, GameEntity>
 
-    @Query("""
+    @Query(
+        """
         SELECT game.* FROM game 
         JOIN game_fts ON game.id = game_fts.rowid
         WHERE game_fts MATCH :ftsQuery
         ORDER BY game.id DESC
-    """)
+        """
+    )
     fun searchDesc(ftsQuery: String): PagingSource<Int, GameEntity>
 
     @Query("SELECT count(*) FROM game")

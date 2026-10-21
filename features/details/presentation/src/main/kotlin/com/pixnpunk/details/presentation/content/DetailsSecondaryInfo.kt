@@ -65,7 +65,10 @@ fun DetailsSecondaryInfo(
                         }
                         if (entry.fileSize != 0L) {
                             Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                                InfoStatItem(icon = Icons.Default.Code, text = formatFileSize(entry.fileSize, prefFormat))
+                                InfoStatItem(
+                                    icon = Icons.Default.Code,
+                                    text = formatFileSize(entry.fileSize, prefFormat)
+                                )
                             }
                         }
                     }

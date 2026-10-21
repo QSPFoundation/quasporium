@@ -50,10 +50,10 @@ fun DetailsPresetsCarouselDock(
         targetState = isLoading,
         transitionSpec = {
             fadeIn(animationSpec = tween(350, easing = FastOutSlowInEasing)) togetherWith
-                    fadeOut(animationSpec = tween(200))
+            fadeOut(animationSpec = tween(200))
         },
         label = "PresetsStateTransition",
-    ) { isLoading  ->
+    ) { isLoading ->
         if (isLoading) {
             Box(
                 modifier = Modifier

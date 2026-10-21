@@ -54,7 +54,7 @@ class MainActivity : ComponentActivity() {
                         contentResolver.takePersistableUriPermission(
                             it,
                             Intent.FLAG_GRANT_READ_URI_PERMISSION
-                                    or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                                or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                         )
 
                         val newGameDir = it.toDocumentFile(get())
@@ -76,7 +76,7 @@ class MainActivity : ComponentActivity() {
                             <b>For external storage:</b> tap "Allow access to..." when prompted.
                             <br>
                             <b>For SD cards:</b> select the main folder (root directory) of the SD card and tap "Allow access to..." when prompted.
-                        """.trimIndent(),
+                            """.trimIndent(),
                             outputState = OutputState.OUTPUT_REQUEST_PERM
                         )
                     }
@@ -95,7 +95,7 @@ class MainActivity : ComponentActivity() {
                         contentResolver.takePersistableUriPermission(
                             it,
                             Intent.FLAG_GRANT_READ_URI_PERMISSION
-                                    or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                                or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                         )
 
                         val newGameDir = it.toDocumentFile(this@MainActivity)
@@ -163,30 +163,24 @@ class MainActivity : ComponentActivity() {
         ) { result ->
             when (result) {
                 is RequestStorageAccessResult.CanceledByUser -> {
-
                 }
 
                 is RequestStorageAccessResult.ExpectedStorageNotSelected -> {
-
                 }
 
                 is RequestStorageAccessResult.RootPathNotSelected -> {
-
                 }
 
                 is RequestStorageAccessResult.RootPathPermissionGranted -> {
-
                 }
 
                 is RequestStorageAccessResult.StoragePermissionDenied -> {
-
                 }
             }
         }
 
     private val storagePermissionLauncher =
         registerForActivityResult(StoragePermissionContract()) { _ ->
-
         }
 
     private companion object {
@@ -200,7 +194,7 @@ class MainActivity : ComponentActivity() {
             }.getOrNull() ?: return false
             val tag = String(header, Charsets.ISO_8859_1)
             return header.contentEquals(byteArrayOf(0, 1, 0, 0)) ||
-                    tag == "OTTO" || tag == "true" || tag == "ttcf"
+                tag == "OTTO" || tag == "true" || tag == "ttcf"
         }
     }
 

@@ -31,6 +31,7 @@ internal class AudioPlayerInteractorImpl(
     private val mediaPlayers = ConcurrentHashMap<String, MediaPlayer>()
 
     @Volatile private var isPaused = false
+
     @Volatile override var isSoundEnabled = true
 
     internal fun close() {

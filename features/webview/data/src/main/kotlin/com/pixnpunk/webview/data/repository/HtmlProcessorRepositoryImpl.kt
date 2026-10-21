@@ -103,7 +103,7 @@ class HtmlProcessorRepositoryImpl(
                 command
                     .replace('\\', '/')
                     .encodeBase64()
-            }${quote}"
+            }$quote"
         }
     }
 

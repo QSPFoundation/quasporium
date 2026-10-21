@@ -165,7 +165,8 @@ internal class SevenZipArchiveExtractor(
                     onProgressUpdate(
                         ProgressState(
                             progress =
-                                if (totalSize > 0) complete.toFloat() / totalSize.toFloat() else 0f,
+                                if (totalSize < 0) 0f
+                                else complete.toFloat() / totalSize.toFloat(),
                             status = DownloadStatus.UNPACK_FILE,
                             time = etaString
                         )

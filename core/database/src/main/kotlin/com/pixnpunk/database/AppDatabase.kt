@@ -3,7 +3,6 @@ package com.pixnpunk.database
 import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
 import com.pixnpunk.database.dao.AuthorDao
 import com.pixnpunk.database.dao.GameDao
 import com.pixnpunk.database.dao.PresetDao

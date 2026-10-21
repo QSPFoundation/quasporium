@@ -28,7 +28,8 @@ fun LazyListScope.filterItemLang(
         )
         DropdownMenu(
             expanded = isLangMenuExpanded,
-            onDismissRequest = { isLangMenuExpanded = false }) {
+            onDismissRequest = { isLangMenuExpanded = false }
+        ) {
             DropdownMenuItem(text = { Text("Any (Clear)") }, onClick = {
                 selectLang(null)
                 isLangMenuExpanded = false

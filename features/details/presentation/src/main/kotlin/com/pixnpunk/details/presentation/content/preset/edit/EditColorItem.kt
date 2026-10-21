@@ -58,7 +58,6 @@ fun EditColorItem(
                 .background(color),
             contentAlignment = Alignment.Center
         ) {
-
             if (isSelected) {
                 Icon(
                     imageVector = Icons.Default.Check,

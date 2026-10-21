@@ -143,9 +143,12 @@ internal class GameEngineInteractorImpl(
             is EngineCommand.LoadGame -> {
                 val file = vfsProvider.resolve(command.file) ?: return
                 val unResolveDir = command.dir
-                val dir = if (unResolveDir != null) {
-                    vfsProvider.resolve(unResolveDir) ?: return
-                } else null
+                val dir =
+                    if (unResolveDir == null) {
+                        null
+                    } else {
+                        vfsProvider.resolve(unResolveDir) ?: return
+                    }
 
                 _state.value = GameState.Loading()
                 audioService.closeAllFiles()

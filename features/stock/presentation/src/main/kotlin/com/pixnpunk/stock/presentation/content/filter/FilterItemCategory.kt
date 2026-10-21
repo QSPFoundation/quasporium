@@ -18,11 +18,17 @@ fun LazyListScope.filterItemCategory(
         selected = isSelected,
         onClick = { selectSort(if (isSelected) SortBy.EMPTY else option) },
         label = {
-            Text(option.name.lowercase().replaceFirstChar { it.uppercase() }
-                .replace("_", " "))
+            Text(
+                option.name.lowercase()
+                    .replaceFirstChar { it.uppercase() }
+                    .replace("_", " ")
+            )
         },
-        leadingIcon = if (isSelected) {
-            { Icon(Icons.Default.Check, null) }
-        } else null
+        leadingIcon =
+            if (!isSelected) {
+                null
+            } else {
+                { Icon(Icons.Default.Check, null) }
+            }
     )
 }

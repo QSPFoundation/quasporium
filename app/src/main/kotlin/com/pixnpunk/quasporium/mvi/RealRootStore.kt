@@ -10,7 +10,8 @@ class RealRootStore(
 ) {
     internal fun create(): RootStore = RootImpl()
 
-    private inner class RootImpl : RootStore,
+    private inner class RootImpl :
+        RootStore,
         Store<RootStore.Intent, RootStore.State, RootStore.Label> by storeFactory.create(
             name = "RootStore",
             initialState = RootStore.State(),

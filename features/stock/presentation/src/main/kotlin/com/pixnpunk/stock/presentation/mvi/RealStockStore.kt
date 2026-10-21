@@ -9,7 +9,8 @@ class RealStockStore(
 ) {
     internal fun create(): StockStore = StockImpl()
 
-    private inner class StockImpl : StockStore,
+    private inner class StockImpl :
+        StockStore,
         Store<StockStore.Intent, StockStore.State, StockStore.Label> by storeFactory.create(
             name = "StockStore",
             initialState = StockStore.State(),

@@ -12,7 +12,8 @@ class RealDetailsStore(
 ) {
     internal fun create(): DetailsStore = DetailsImpl()
 
-    private inner class DetailsImpl : DetailsStore,
+    private inner class DetailsImpl :
+        DetailsStore,
         Store<DetailsStore.Intent, DetailsStore.State, DetailsStore.Label> by storeFactory.create(
             name = "DetailsStore",
             initialState = DetailsStore.State(gameEntry = entry),

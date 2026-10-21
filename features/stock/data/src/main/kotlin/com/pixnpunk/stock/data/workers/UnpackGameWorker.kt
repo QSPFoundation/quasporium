@@ -46,8 +46,9 @@ class UnpackGameWorker(
         val gameEntry = Json.decodeFromString<GameEntry>(dataJson)
 
         val sourceFile = File(archivePath)
-        val isDirectQspFile = sourceFile.extension.equals("qsp", ignoreCase = true) ||
-                sourceFile.extension.equals("gam", ignoreCase = true)
+        val isDirectQspFile =
+            sourceFile.extension.equals("qsp", ignoreCase = true) ||
+            sourceFile.extension.equals("gam", ignoreCase = true)
 
         updateForeground(if (isDirectQspFile) "Installing game..." else "Preparing to unpack", 0f)
 

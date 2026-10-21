@@ -118,8 +118,11 @@ class DownloadGameWorker(
 
                                 val averageSpeed = speedSamples.average()
                                 val etaSeconds =
-                                    if (averageSpeed > 0) (contentLength - bytesSentTotal) / averageSpeed
-                                    else Double.POSITIVE_INFINITY
+                                    if (averageSpeed > 0) {
+                                        (contentLength - bytesSentTotal) / averageSpeed
+                                    } else {
+                                        Double.POSITIVE_INFINITY
+                                    }
 
                                 updateForeground(
                                     "Downloading: $etaSeconds",

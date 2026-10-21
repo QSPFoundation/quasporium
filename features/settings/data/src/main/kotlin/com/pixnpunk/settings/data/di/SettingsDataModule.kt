@@ -25,12 +25,15 @@ val settingsDataModule = module {
         val gameId = params.getOrNull<Long>()?.takeIf { it != -1L }
 
         val globalSharedPrefs: SharedPreferences = get(globalPrefsQualifier)
-        val localSharedPrefs: SharedPreferences? = if (gameId != null) {
-            androidContext().getSharedPreferences(
-                gameSettingsName(gameId),
-                Context.MODE_PRIVATE
-            )
-        } else null
+        val localSharedPrefs: SharedPreferences? =
+            if (gameId == null) {
+                null
+            } else {
+                androidContext().getSharedPreferences(
+                    gameSettingsName(gameId),
+                    Context.MODE_PRIVATE
+                )
+            }
 
         SettingsRepositoryImpl(
             globalPrefs = globalSharedPrefs,

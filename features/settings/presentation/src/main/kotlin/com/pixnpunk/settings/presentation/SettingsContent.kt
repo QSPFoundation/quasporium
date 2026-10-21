@@ -17,7 +17,6 @@ import com.pixnpunk.settings.presentation.contents.SettingsImageContent
 import com.pixnpunk.settings.presentation.contents.SettingsRootContent
 import com.pixnpunk.settings.presentation.contents.SettingsTextContent
 import me.zhanghai.compose.preference.ProvidePreferenceLocals
-import me.zhanghai.compose.preference.createPreferenceFlow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

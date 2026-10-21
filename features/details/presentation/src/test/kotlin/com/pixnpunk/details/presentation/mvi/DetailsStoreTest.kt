@@ -46,12 +46,20 @@ class DetailsStoreTest {
     private val presets = MutableStateFlow(
         listOf(
             PresetItem(
-                id = 1, name = "First", timestamp = 0, lastPlayedFile = "content://games/game/main.qsp",
-                accentColor = 0, backImagePath = ""
+                id = 1,
+                name = "First",
+                timestamp = 0,
+                lastPlayedFile = "content://games/game/main.qsp",
+                accentColor = 0,
+                backImagePath = ""
             ),
             PresetItem(
-                id = 2, name = "Second", timestamp = 0, lastPlayedFile = null,
-                accentColor = 0xFF123456, backImagePath = ""
+                id = 2,
+                name = "Second",
+                timestamp = 0,
+                lastPlayedFile = null,
+                accentColor = 0xFF123456,
+                backImagePath = ""
             )
         )
     )

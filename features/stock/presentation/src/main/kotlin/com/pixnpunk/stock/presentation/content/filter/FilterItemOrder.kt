@@ -26,8 +26,11 @@ fun LazyListScope.filterItemOrder(
                         Icons.Default.ArrowDownward
                     },
                 contentDescription = stringResource(
-                    if (sortOrder == SortOrder.ASCENDING) R.string.sort_ascending_description
-                    else R.string.sort_descending_description
+                    if (sortOrder == SortOrder.ASCENDING) {
+                        R.string.sort_ascending_description
+                    } else {
+                        R.string.sort_descending_description
+                    }
                 )
             )
         }

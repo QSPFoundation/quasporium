@@ -39,7 +39,7 @@ fun MainContent(
         topBar = topAppBar,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         sheetPeekHeight = if (hasActions) BottomSheetDefaults.SheetPeekHeight else 0.dp,
-        sheetSwipeEnabled = if (hasActions) isSwipeEnabled else false,
+        sheetSwipeEnabled = hasActions && isSwipeEnabled,
         sheetContent = {
             if (hasActions) {
                 MainContentActionsList(

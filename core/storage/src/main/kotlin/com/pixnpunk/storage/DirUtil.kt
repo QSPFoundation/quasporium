@@ -246,8 +246,8 @@ object DirUtil : KoinComponent {
 
                             if (childMime == DocumentsContract.Document.MIME_TYPE_DIR) {
                                 if (
-                                    childName.lowercase() in ignoredDirNames
-                                    && nameRegex?.pattern?.contains(childName) != true
+                                    childName.lowercase() in ignoredDirNames &&
+                                    nameRegex?.pattern?.contains(childName) != true
                                 ) {
                                     continue
                                 }

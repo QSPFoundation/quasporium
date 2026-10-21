@@ -290,11 +290,10 @@ fun GameContent(
     }
 }
 
-/**
- * Asks to exit the game on Back while no side panel is open. An open panel is closed by the
- * component's own back callback, which is registered on the dispatcher before this one.
- */
 @Composable
-internal fun GameBackHandler(panelsOpen: Boolean, onExitRequest: () -> Unit) {
+internal fun GameBackHandler(
+    panelsOpen: Boolean,
+    onExitRequest: () -> Unit
+) {
     BackHandler(enabled = !panelsOpen, onBack = onExitRequest)
 }

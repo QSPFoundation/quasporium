@@ -3,7 +3,6 @@ package com.pixnpunk.stock.presentation
 import androidx.paging.PagingData
 import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.dto.SettingsEntity
-import com.pixnpunk.stock.domain.model.SearchToken
 import com.pixnpunk.stock.domain.model.SortBy
 import com.pixnpunk.stock.presentation.model.SearchTokenUI
 import com.pixnpunk.stock.presentation.mvi.StockStore
