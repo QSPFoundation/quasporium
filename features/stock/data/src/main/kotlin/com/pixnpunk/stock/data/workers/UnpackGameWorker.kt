@@ -10,9 +10,9 @@ import com.pixnpunk.logger.AppLogger
 import com.pixnpunk.notification.NotificationProvider
 import com.pixnpunk.stock.data.workers.WorkerKeys.GAME_DATA_JSON
 import com.pixnpunk.stock.domain.repository.LocalRepository
+import com.pixnpunk.storage.ArchiveExtractor
 import com.pixnpunk.storage.DirUtil.receiveGameDirFromFile
 import com.pixnpunk.storage.FileUtil.removeFileByPath
-import com.pixnpunk.storage.FileUtil.unpackFileToDir
 import kotlinx.serialization.json.Json
 import org.koin.core.component.KoinComponent
 import java.io.File
@@ -23,7 +23,8 @@ class UnpackGameWorker(
     workerParams: WorkerParameters,
     private val logger: AppLogger,
     private val localRepository: LocalRepository,
-    private val notificationProvider: NotificationProvider
+    private val notificationProvider: NotificationProvider,
+    private val archiveExtractor: ArchiveExtractor
 ) : CoroutineWorker(appContext, workerParams), KoinComponent {
 
     private var isForeground = true
@@ -56,7 +57,7 @@ class UnpackGameWorker(
                     gameEntry.copy(gameDirPath = destDirPath)
                 )
             } else {
-                unpackFileToDir(
+                archiveExtractor.unpack(
                     filePath = archivePath,
                     destDirPath = destDirPath,
                     onProgressUpdate = { state ->
