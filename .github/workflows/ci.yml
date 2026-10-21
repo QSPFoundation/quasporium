@@ -32,6 +32,9 @@ jobs:
       - name: Install NDK and CMake
         run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;27.3.13750724" "cmake;3.22.1" > /dev/null
 
+      - name: JNI bindings match the pinned engines
+        run: .github/ci/check-jni-bindings.sh
+
       - name: Build foss
         run: ./gradlew :app:assembleFossDebug :app:assembleFossRelease
 

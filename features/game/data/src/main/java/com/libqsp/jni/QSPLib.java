@@ -102,6 +102,7 @@ public abstract class QSPLib {
     // Main API
     public native void init();
     public native void terminate();
+
     public native void enableDebugMode(boolean isDebug);
     public native ExecutionState getCurrentState();
     public native String getVersion();
