@@ -1,0 +1,18 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:DialogsMainContent.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun DialogsMainContent( component: DialogsComponent )</ID>
+    <ID>LongParameterList:RealDialogsComponent.kt$RealDialogsComponent$( private val componentContext: ComponentContext, override val dialogsConfig: DialogsConfig, override val settingsEntity: SettingsEntity, override val addNewEntry: (GameEntry) -&gt; Unit = { }, override val editEntry: (GameEntry) -&gt; Unit = { }, override val downloadNewEntry: (GameEntry) -&gt; Unit = { }, override val selectFolder: () -&gt; Unit = { }, override val deselectDir: () -&gt; Unit = { }, override val selectCover: () -&gt; Unit = { }, override val deselectCover: () -&gt; Unit = { }, override val selectColor: (Pair&lt;ColorPickerState, Color&gt;) -&gt; Unit = { }, override val confirmMessage: (OutputStateValue) -&gt; Unit = { }, override val inputValue: (Pair&lt;InputState, String&gt;) -&gt; Unit = { }, override val onCleanError: () -&gt; Unit = { }, override val onDismissed: () -&gt; Unit = { }, )</ID>
+    <ID>MagicNumber:AddGameFormInputs.kt$0.6f</ID>
+    <ID>MagicNumber:DialogEditGameContent.kt$0.5f</ID>
+    <ID>MagicNumber:DialogOutputValueContent.kt$5f</ID>
+    <ID>MagicNumber:DialogSelectColorContent.kt$8f</ID>
+    <ID>MagicNumber:GameCoverSelector.kt$3</ID>
+    <ID>MaxLineLength:DialogsMainContent.kt$InputState.INPUT_IMAGE_HEIGHT -&gt; stringResource(R.string.input_height_title)</ID>
+    <ID>MaxLineLength:DialogsMainContent.kt$InputState.INPUT_IMAGE_WIDTH -&gt; stringResource(R.string.input_width_title)</ID>
+    <ID>MaximumLineLength:DialogsMainContent.kt$ </ID>
+    <ID>ModifierHeightWithText:AddGameFolderSection.kt$height(56.dp)</ID>
+    <ID>UnusedParameter:DialogOutputListValueContent.kt$onRemoveFile: (LibSaveItem) -&gt; Unit = { }</ID>
+  </CurrentIssues>
+</SmellBaseline>

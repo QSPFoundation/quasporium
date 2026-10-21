@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:DirUtil.kt$DirUtil$private suspend fun FlowCollector&lt;String&gt;.findFilesWithSaf( context: Context, rootTreeUri: Uri, allowedMimeTypes: Set&lt;String&gt;, nameRegex: Regex?, failOnError: Boolean, ignoredDirNames: Set&lt;String&gt; = setOf( "images", "img", "sounds", "sound", "audio", "video", "music" ) )</ID>
+    <ID>CyclomaticComplexMethod:FileUtil.kt$FileUtil$@OptIn(ExperimentalContracts::class) suspend fun writeFileToDir( fileChannel: ByteReadChannel, fileName: String, destDirPath: String, totalSize: Long, onProgressUpdate: suspend (state: ProgressState) -&gt; Unit ): Result&lt;String&gt;</ID>
+    <ID>EmptyFunctionBlock:ArchiveExtractor.kt$SevenZipArchiveExtractor.ArchiveExtractCallback${}</ID>
+    <ID>InstanceOfCheckForException:DirUtil.kt$DirUtil$e is CancellationException</ID>
+    <ID>LongMethod:DirUtil.kt$DirUtil$private suspend fun FlowCollector&lt;String&gt;.findFilesWithSaf( context: Context, rootTreeUri: Uri, allowedMimeTypes: Set&lt;String&gt;, nameRegex: Regex?, failOnError: Boolean, ignoredDirNames: Set&lt;String&gt; = setOf( "images", "img", "sounds", "sound", "audio", "video", "music" ) )</ID>
+    <ID>LongParameterList:DirUtil.kt$DirUtil$( context: Context, rootTreeUri: Uri, allowedMimeTypes: Set&lt;String&gt;, nameRegex: Regex?, failOnError: Boolean, ignoredDirNames: Set&lt;String&gt; = setOf( "images", "img", "sounds", "sound", "audio", "video", "music" ) )</ID>
+    <ID>LoopWithTooManyJumpStatements:DirUtil.kt$DirUtil$while</ID>
+    <ID>MagicNumber:DirUtil.kt$DirUtil$100L</ID>
+    <ID>MagicNumber:DirUtil.kt$DirUtil$3</ID>
+    <ID>MagicNumber:DirUtil.kt$DirUtil$30</ID>
+    <ID>MagicNumber:FileUtil.kt$FileUtil$1000</ID>
+    <ID>MagicNumber:FileUtil.kt$FileUtil$1024</ID>
+    <ID>MagicNumber:FileUtil.kt$FileUtil$500</ID>
+    <ID>MagicNumber:FileUtil.kt$FileUtil$60</ID>
+    <ID>MagicNumber:FileUtil.kt$FileUtil$8</ID>
+    <ID>NestedBlockDepth:DirUtil.kt$DirUtil$private suspend fun FlowCollector&lt;String&gt;.findFilesWithSaf( context: Context, rootTreeUri: Uri, allowedMimeTypes: Set&lt;String&gt;, nameRegex: Regex?, failOnError: Boolean, ignoredDirNames: Set&lt;String&gt; = setOf( "images", "img", "sounds", "sound", "audio", "video", "music" ) )</ID>
+    <ID>NoWildcardImports:FileUtil.kt$import io.ktor.utils.io.*</ID>
+    <ID>ReturnCount:ArchiveExtractor.kt$SevenZipArchiveExtractor.ArchiveExtractCallback$override fun getStream( index: Int, extractAskMode: ExtractAskMode? ): ISequentialOutStream?</ID>
+    <ID>ReturnCount:StoragePathUtil.kt$StoragePathUtil$@OptIn(ExperimentalContracts::class) fun String.getImageUriFromPath( context: Context, rootDirUriBox: String ): Uri</ID>
+    <ID>ThrowsCount:DirUtil.kt$DirUtil$private suspend fun FlowCollector&lt;String&gt;.findFilesWithNio( rootUri: Uri, nameRegex: Regex?, failOnError: Boolean )</ID>
+    <ID>ThrowsCount:DirUtil.kt$DirUtil$private suspend fun FlowCollector&lt;String&gt;.findFilesWithSaf( context: Context, rootTreeUri: Uri, allowedMimeTypes: Set&lt;String&gt;, nameRegex: Regex?, failOnError: Boolean, ignoredDirNames: Set&lt;String&gt; = setOf( "images", "img", "sounds", "sound", "audio", "video", "music" ) )</ID>
+    <ID>TooGenericExceptionCaught:DirUtil.kt$DirUtil$e: Exception</ID>
+    <ID>WildcardImport:FileUtil.kt$import io.ktor.utils.io.*</ID>
+  </CurrentIssues>
+</SmellBaseline>

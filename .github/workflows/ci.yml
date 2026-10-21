@@ -47,6 +47,9 @@ jobs:
       - name: Lint
         run: ./gradlew :app:lintFossDebug :app:lintPlayDebug
 
+      - name: Detekt
+        run: ./gradlew detekt
+
       - name: No proprietary dependencies in foss
         run: |
           ./gradlew -q :app:dependencies --configuration fossReleaseRuntimeClasspath > foss-dependencies.txt

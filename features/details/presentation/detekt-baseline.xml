@@ -1,0 +1,36 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>ComposableParametersOrdering:PresetDockStation.kt$modifier: Modifier = Modifier</ID>
+    <ID>CyclomaticComplexMethod:DetailsSecondaryInfo.kt$@Composable fun DetailsSecondaryInfo( entry: GameEntry, prefFormat: BinaryPrefFormat )</ID>
+    <ID>Filename:SavesSync.kt$com.pixnpunk.details.presentation.mvi.SavesSync.kt</ID>
+    <ID>InvalidPackageDeclaration:EditColorItem.kt$package com.pixnpunk.details.presentation.content.preset</ID>
+    <ID>InvalidPackageDeclaration:EditImageItem.kt$package com.pixnpunk.details.presentation.content.preset</ID>
+    <ID>LongMethod:DetailsExecutor.kt$DetailsExecutor$override fun executeIntent(intent: DetailsStore.Intent)</ID>
+    <ID>LongParameterList:DetailsExecutor.kt$DetailsExecutor$( private val logger: AppLogger, private val observeEntryByIdUseCase: ObserveEntryByIdUseCase, private val presetRepository: PresetRepository, private val savesRepository: SavesRepository, private val gameFileStorage: GameFileStorage, private val gameSettingsPreloader: GameSettingsPreloader, mainContext: CoroutineContext = logger.executorContext("DetailsExecutor"), private val ioContext: CoroutineContext = Dispatchers.IO )</ID>
+    <ID>LongParameterList:RealDetailsComponent.kt$RealDetailsComponent$( private val componentContext: ComponentContext, private val defEntry: GameEntry, override val settingsState: StateFlow&lt;SettingsEntity&gt;, private val launchBackPicker: () -&gt; Unit, override val launchFreshGame: (LaunchGameEntity) -&gt; Unit, override val launchContinueGame: (LaunchGameEntity) -&gt; Unit, override val showEditGameDialog: (GameEntry) -&gt; Unit, override val showSettingsGamePanel: (GameEntry) -&gt; Unit, override val showDownloadGameDialog: (GameEntry) -&gt; Unit, override val onDismissed: () -&gt; Unit )</ID>
+    <ID>MagicNumber:DetailsExecutor.kt$DetailsExecutor$0xFF3B9E9BL</ID>
+    <ID>MagicNumber:DetailsExecutor.kt$DetailsExecutor$0xFF8E6FB9L</ID>
+    <ID>MagicNumber:DetailsExecutor.kt$DetailsExecutor$0xFFD48B38L</ID>
+    <ID>MagicNumber:DetailsExecutor.kt$DetailsExecutor$0xFFD9534FL</ID>
+    <ID>MagicNumber:DetailsPresetsCarouselDock.kt$0.05f</ID>
+    <ID>MagicNumber:DetailsPresetsCarouselDock.kt$0.35f</ID>
+    <ID>MagicNumber:DetailsPresetsCarouselDock.kt$200</ID>
+    <ID>MagicNumber:DetailsPresetsCarouselDock.kt$350</ID>
+    <ID>MagicNumber:PlayPresetCard.kt$0.15f</ID>
+    <ID>MagicNumber:PlayPresetCard.kt$0.35f</ID>
+    <ID>MagicNumber:PlayPresetCard.kt$5f</ID>
+    <ID>MagicNumber:PresetSplitButton.kt$0.5f</ID>
+    <ID>MagicNumber:ProfileColorScheme.kt$0.5f</ID>
+    <ID>MagicNumber:ProfileColorScheme.kt$0xFF1E1E1E</ID>
+    <ID>MagicNumber:ProfileColorScheme.kt$0xFFF5F5F5</ID>
+    <ID>MatchingDeclarationName:SavesSync.kt$SavesSyncPlan</ID>
+    <ID>MaxLineLength:DetailsExecutor.kt$DetailsExecutor$)</ID>
+    <ID>MaxLineLength:DetailsPresetsCarouselDock.kt$key = { page -&gt; if (page &lt; presets.size) presets[page].id else "create_preset_card_${presets.size}" }</ID>
+    <ID>MaxLineLength:PlayPresetCard.kt$text = if (lastSave != null) "Restart (${targetFile.displayName})" else "Start (${targetFile.displayName})"</ID>
+    <ID>MaximumLineLength:DetailsExecutor.kt$DetailsExecutor$)</ID>
+    <ID>MaximumLineLength:DetailsPresetsCarouselDock.kt$ </ID>
+    <ID>MaximumLineLength:PlayPresetCard.kt$ </ID>
+  </CurrentIssues>
+</SmellBaseline>

@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>LongMethod:DatabaseModule.kt$&lt;no name provided&gt;$override fun migrate(db: SupportSQLiteDatabase)</ID>
+    <ID>MagicNumber:DatabaseModule.kt$&lt;no name provided&gt;$5</ID>
+    <ID>MagicNumber:DatabaseModule.kt$&lt;no name provided&gt;$6</ID>
+    <ID>MagicNumber:DatabaseModule.kt$&lt;no name provided&gt;$7</ID>
+    <ID>MaxLineLength:DatabaseModule.kt$&lt;no name provided&gt;$"CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_game_fts_AFTER_INSERT AFTER INSERT ON `game` BEGIN INSERT INTO `game_fts`(`docid`, `author`, `title`) VALUES (NEW.`rowid`, NEW.`author`, NEW.`title`); END"</ID>
+    <ID>MaxLineLength:DatabaseModule.kt$&lt;no name provided&gt;$"CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_game_fts_AFTER_UPDATE AFTER UPDATE ON `game` BEGIN INSERT INTO `game_fts`(`docid`, `author`, `title`) VALUES (NEW.`rowid`, NEW.`author`, NEW.`title`); END"</ID>
+    <ID>MaxLineLength:DatabaseModule.kt$&lt;no name provided&gt;$"CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_game_fts_BEFORE_DELETE BEFORE DELETE ON `game` BEGIN DELETE FROM `game_fts` WHERE `docid`=OLD.`rowid`; END"</ID>
+    <ID>MaxLineLength:DatabaseModule.kt$&lt;no name provided&gt;$"CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_game_fts_BEFORE_UPDATE BEFORE UPDATE ON `game` BEGIN DELETE FROM `game_fts` WHERE `docid`=OLD.`rowid`; END"</ID>
+    <ID>MaximumLineLength:DatabaseModule.kt$&lt;no name provided&gt;$ </ID>
+    <ID>SpreadOperator:DatabaseModule.kt$(*ALL_MIGRATIONS)</ID>
+    <ID>TooManyFunctions:GameDao.kt$GameDao</ID>
+  </CurrentIssues>
+</SmellBaseline>

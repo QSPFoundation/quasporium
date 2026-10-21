@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>MagicNumber:NetworkModule.kt$1024L</ID>
+    <ID>MagicNumber:NetworkModule.kt$15_000</ID>
+    <ID>MagicNumber:NetworkModule.kt$50L</ID>
+    <ID>NoWildcardImports:NetworkModule.kt$import io.ktor.client.*</ID>
+    <ID>NoWildcardImports:NetworkModule.kt$import io.ktor.client.engine.okhttp.*</ID>
+    <ID>NoWildcardImports:NetworkModule.kt$import io.ktor.client.plugins.*</ID>
+    <ID>NoWildcardImports:NetworkModule.kt$import io.ktor.client.plugins.contentnegotiation.*</ID>
+    <ID>NoWildcardImports:NetworkModule.kt$import io.ktor.serialization.kotlinx.json.*</ID>
+    <ID>WildcardImport:NetworkModule.kt$import io.ktor.client.*</ID>
+    <ID>WildcardImport:NetworkModule.kt$import io.ktor.client.engine.okhttp.*</ID>
+    <ID>WildcardImport:NetworkModule.kt$import io.ktor.client.plugins.*</ID>
+    <ID>WildcardImport:NetworkModule.kt$import io.ktor.client.plugins.contentnegotiation.*</ID>
+    <ID>WildcardImport:NetworkModule.kt$import io.ktor.serialization.kotlinx.json.*</ID>
+  </CurrentIssues>
+</SmellBaseline>

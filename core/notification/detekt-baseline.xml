@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>MagicNumber:NotificationProviderImpl.kt$NotificationProviderImpl$100</ID>
+    <ID>MagicNumber:NotificationProviderImpl.kt$NotificationProviderImpl$10000</ID>
+  </CurrentIssues>
+</SmellBaseline>

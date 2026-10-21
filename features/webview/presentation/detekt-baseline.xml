@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>LongParameterList:RealWebViewComponent.kt$RealWebViewComponent$( private val componentContext: ComponentContext, private val htmlContentFlow: Flow&lt;String&gt;, private val settingsStateFlow: StateFlow&lt;SettingsEntity&gt;, private val engineSettingsStateFlow: Flow&lt;LibUIConfig&gt;, private val isMainComponent: Boolean = false, override val gameDirUriBox: String, override val onExecValue: (String) -&gt; Unit )</ID>
+    <ID>MagicNumber:ExternalStoragePathHandler.kt$ExternalStoragePathHandler$200</ID>
+    <ID>MagicNumber:WebViewClient.kt$WebViewClient$5</ID>
+    <ID>ThrowingExceptionsWithoutMessageOrCause:WebViewClient.kt$WebViewClient$NullPointerException()</ID>
+  </CurrentIssues>
+</SmellBaseline>

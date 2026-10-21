@@ -1,0 +1,31 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:GameEngineInteractorImpl.kt$GameEngineInteractorImpl$private suspend fun processCommand(command: EngineCommand)</ID>
+    <ID>EmptyFunctionBlock:GameEngineInteractorImplTest.kt$GameEngineInteractorImplTest.&lt;no name provided&gt;${}</ID>
+    <ID>EmptyFunctionBlock:GameEngineInteractorImplTest.kt$GameEngineInteractorImplTest.AnyFiles${}</ID>
+    <ID>EmptyFunctionBlock:GameEngineInteractorImplTest.kt$GameEngineInteractorImplTest.FakeAudio${}</ID>
+    <ID>EmptyFunctionBlock:GameEngineInteractorImplTest.kt$GameEngineInteractorImplTest.FakeBridge${}</ID>
+    <ID>EmptyFunctionBlock:GameEngineInteractorImplTest.kt$GameEngineInteractorImplTest.NoFiles${}</ID>
+    <ID>MagicNumber:AudioPlayerInteractorImpl.kt$AudioPlayerInteractorImpl$100f</ID>
+    <ID>MagicNumber:GameEngineInteractorImpl.kt$GameEngineInteractorImpl$500L</ID>
+    <ID>MagicNumber:QspEngineBridgeImpl.kt$QspEngineBridgeImpl$1_000_000L</ID>
+    <ID>MagicNumber:QspLegacyEngineBridgeImpl.kt$QspLegacyEngineBridgeImpl$1_000_000L</ID>
+    <ID>MagicNumber:QspLegacyEngineBridgeImpl.kt$QspLegacyEngineBridgeImpl$3</ID>
+    <ID>ReturnCount:FileSystemProviderImpl.kt$FileSystemProviderImpl$override fun resolveRelative(path: String): VirtualFile?</ID>
+    <ID>ReturnCount:GameEngineInteractorImpl.kt$GameEngineInteractorImpl$private suspend fun processCommand(command: EngineCommand)</ID>
+    <ID>ReturnCount:QspEngineBridgeImpl.kt$QspEngineBridgeImpl$private fun ListItem?.toRawItem(): RawItem?</ID>
+    <ID>ReturnCount:QspEngineBridgeImpl.kt$QspEngineBridgeImpl$private fun ObjectItem?.toObjectRawItem(): RawItem?</ID>
+    <ID>TooGenericExceptionCaught:GameEngineInteractorImpl.kt$GameEngineInteractorImpl$e: Exception</ID>
+    <ID>TooManyFunctions:AudioPlayerInteractorImpl.kt$AudioPlayerInteractorImpl : AudioPlayerInteractor</ID>
+    <ID>TooManyFunctions:GameEngineInteractorImpl.kt$GameEngineInteractorImpl : GameEngineInteractorNativeEngineListener</ID>
+    <ID>TooManyFunctions:NativeEngineBridge.kt$NativeEngineBridge</ID>
+    <ID>TooManyFunctions:NativeEngineListener.kt$NativeEngineListener</ID>
+    <ID>TooManyFunctions:QspEngineBridgeImpl.kt$QspEngineBridgeImpl : QSPLibNativeEngineBridge</ID>
+    <ID>TooManyFunctions:QspLegacyEngineBridgeImpl.kt$QspLegacyEngineBridgeImpl : QSPLegacyLibNativeEngineBridge</ID>
+    <ID>UseCheckOrError:DocumentVirtualFile.kt$DocumentVirtualFile$throw IllegalStateException("Cannot open InputStream")</ID>
+    <ID>UseCheckOrError:DocumentVirtualFile.kt$DocumentVirtualFile$throw IllegalStateException("Cannot open OutputStream")</ID>
+    <ID>UseCheckOrError:GameEngineInteractorImplTest.kt$GameEngineInteractorImplTest.FakeBridge$throw IllegalStateException("native call failed")</ID>
+  </CurrentIssues>
+</SmellBaseline>

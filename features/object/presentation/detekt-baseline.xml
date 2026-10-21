@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>ComposableParametersOrdering:ObjectCell.kt$modifier: Modifier = Modifier</ID>
+    <ID>MagicNumber:RealObjectComponent.kt$RealObjectComponent$5000</ID>
+    <ID>PackageName:ObjectCell.kt$package com.pixnpunk.`object`.presentation.content</ID>
+    <ID>PackageName:ObjectComponent.kt$package com.pixnpunk.`object`.presentation</ID>
+    <ID>PackageName:ObjectContent.kt$package com.pixnpunk.`object`.presentation</ID>
+    <ID>PackageName:ObjectUIState.kt$package com.pixnpunk.`object`.presentation.model</ID>
+    <ID>PackageName:ParsedObjectItem.kt$package com.pixnpunk.`object`.presentation.model</ID>
+    <ID>PackageName:RealObjectComponent.kt$package com.pixnpunk.`object`.presentation</ID>
+  </CurrentIssues>
+</SmellBaseline>

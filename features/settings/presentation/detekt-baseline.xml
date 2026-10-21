@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:SettingsUIMappers.kt$suspend fun SettingsRepository.dispatch(key: String, value: Any)</ID>
+    <ID>LongParameterList:RealSettingsComponent.kt$RealSettingsComponent$( private val componentContext: ComponentContext, private val gameId: Long? = null, override val gameTitle: String = "", override val showColorDialog: (ColorPickerState) -&gt; Unit, override val showInputDialog: (InputState) -&gt; Unit, override val showFontDialog: () -&gt; Unit, override val onDismissed: () -&gt; Unit )</ID>
+    <ID>MagicNumber:SettingsGeneralContent.kt$3</ID>
+    <ID>MagicNumber:SettingsGeneralContent.kt$4</ID>
+    <ID>MagicNumber:SettingsGeneralContent.kt$5</ID>
+    <ID>MagicNumber:SettingsGeneralContent.kt$6</ID>
+    <ID>MagicNumber:SettingsImageContent.kt$90f</ID>
+    <ID>UnusedParameter:SettingsRootContent.kt$isLocalSettings: Boolean</ID>
+  </CurrentIssues>
+</SmellBaseline>

@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>ImplicitDefaultLocale:ColorUtil.kt$ColorUtil$String.format("#%06X", 0xFFFFFF and this)</ID>
+    <ID>MagicNumber:ColorUtil.kt$ColorUtil$0xFFFFFF</ID>
+    <ID>MagicNumber:TimeUtil.kt$TimeUtil$60</ID>
+    <ID>TooGenericExceptionCaught:ResultUtil.kt$e: Throwable</ID>
+  </CurrentIssues>
+</SmellBaseline>

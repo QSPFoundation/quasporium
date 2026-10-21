@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>ComposableFunctionName:SearchInputField.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun SearchInputField( searchBarState: SearchBarState, textFieldState: TextFieldState, searchQuery: String, isSearchExpanded: Boolean, updateSearchQuery: (String) -&gt; Unit, executeSearch: () -&gt; Unit, toggleSearch: (Boolean) -&gt; Unit, navigateToSettings: () -&gt; Unit )</ID>
+    <ID>CyclomaticComplexMethod:StockContent.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun StockContent( component: StockComponent )</ID>
+    <ID>CyclomaticComplexMethod:StockExecutor.kt$StockExecutor$override fun executeIntent(intent: StockStore.Intent)</ID>
+    <ID>CyclomaticComplexMethod:StockInstalledChild.kt$@Composable fun StockInstalledChild( component: StockComponent, prefFormat: BinaryPrefFormat, listState: LazyListState, lazyPagingItems: LazyPagingItems&lt;GameEntry&gt; )</ID>
+    <ID>LongMethod:StockExecutor.kt$StockExecutor$override fun executeIntent(intent: StockStore.Intent)</ID>
+    <ID>LongParameterList:ExpandedSearchQuery.kt$( searchQuery: String, recentSearches: List&lt;SearchTokenUI&gt;, suggestedAuthors: List&lt;String&gt;, suggestedTranslators: List&lt;String&gt;, addSearch: (String) -&gt; Unit, addToken: (SearchTokenUI) -&gt; Unit )</ID>
+    <ID>MagicNumber:SharedSearchSuggestionColumn.kt$3</ID>
+    <ID>MagicNumber:StockExecutor.kt$StockExecutor$3</ID>
+    <ID>TooManyFunctions:RealStockComponent.kt$RealStockComponent : ComponentContextStockComponentKoinComponent</ID>
+    <ID>TooManyFunctions:StockComponent.kt$StockComponent</ID>
+  </CurrentIssues>
+</SmellBaseline>

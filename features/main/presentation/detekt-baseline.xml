@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>ComposableParametersOrdering:ActionCell.kt$modifier: Modifier = Modifier</ID>
+    <ID>MagicNumber:MainActionsList.kt$200</ID>
+    <ID>MagicNumber:MainActionsList.kt$300</ID>
+    <ID>MagicNumber:RealMainComponent.kt$RealMainComponent$5000</ID>
+  </CurrentIssues>
+</SmellBaseline>

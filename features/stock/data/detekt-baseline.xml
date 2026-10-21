@@ -1,0 +1,47 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:LocalRepositoryImpl.kt$LocalRepositoryImpl$override fun getGameEntriesPager( searchState: SearchState ): Flow&lt;PagingData&lt;GameEntry&gt;&gt;</ID>
+    <ID>CyclomaticComplexMethod:LocalRepositoryImpl.kt$LocalRepositoryImpl$override suspend fun migrateIfNeeded()</ID>
+    <ID>InstanceOfCheckForException:DownloadGameWorker.kt$DownloadGameWorker$e is CancellationException</ID>
+    <ID>InstanceOfCheckForException:UnpackGameWorker.kt$UnpackGameWorker$e is CancellationException</ID>
+    <ID>LongMethod:DownloadGameWorker.kt$DownloadGameWorker$override suspend fun doWork(): Result</ID>
+    <ID>MagicNumber:DownloadGameWorker.kt$DownloadGameWorker$0.5</ID>
+    <ID>MagicNumber:DownloadGameWorker.kt$DownloadGameWorker$1000.0</ID>
+    <ID>MagicNumber:DownloadGameWorker.kt$DownloadGameWorker$5</ID>
+    <ID>MagicNumber:RemoteRepositoryImpl.kt$RemoteRepositoryImpl$100</ID>
+    <ID>NoWildcardImports:DownloadGameWorker.kt$import io.ktor.client.*</ID>
+    <ID>NoWildcardImports:DownloadGameWorker.kt$import io.ktor.client.plugins.*</ID>
+    <ID>NoWildcardImports:DownloadGameWorker.kt$import io.ktor.client.request.*</ID>
+    <ID>NoWildcardImports:DownloadGameWorker.kt$import io.ktor.client.statement.*</ID>
+    <ID>NoWildcardImports:DownloadGameWorker.kt$import io.ktor.http.*</ID>
+    <ID>NoWildcardImports:RemotePagingSource.kt$import io.ktor.client.*</ID>
+    <ID>NoWildcardImports:RemotePagingSource.kt$import io.ktor.client.call.*</ID>
+    <ID>NoWildcardImports:RemotePagingSource.kt$import io.ktor.client.request.*</ID>
+    <ID>NoWildcardImports:RemoteRepositoryImpl.kt$import io.ktor.client.*</ID>
+    <ID>NoWildcardImports:RemoteRepositoryImpl.kt$import io.ktor.client.call.*</ID>
+    <ID>NoWildcardImports:RemoteRepositoryImpl.kt$import io.ktor.client.request.*</ID>
+    <ID>NoWildcardImports:StockDataModule.kt$import io.ktor.client.*</ID>
+    <ID>ReturnCount:DownloadGameWorker.kt$DownloadGameWorker$fun extractFileName(response: HttpResponse): String?</ID>
+    <ID>ReturnCount:DownloadGameWorker.kt$DownloadGameWorker$override suspend fun doWork(): Result</ID>
+    <ID>ReturnCount:UnpackGameWorker.kt$UnpackGameWorker$override suspend fun doWork(): Result</ID>
+    <ID>TooGenericExceptionCaught:DownloadGameWorker.kt$DownloadGameWorker$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:RemotePagingSource.kt$RemotePagingSource$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:UnpackGameWorker.kt$UnpackGameWorker$e: Exception</ID>
+    <ID>TooGenericExceptionThrown:DownloadGameWorker.kt$DownloadGameWorker$throw RuntimeException("Could not resolve file name")</ID>
+    <ID>TooGenericExceptionThrown:DownloadGameWorker.kt$DownloadGameWorker$throw RuntimeException("HTTP Error ${response.status}")</ID>
+    <ID>WildcardImport:DownloadGameWorker.kt$import io.ktor.client.*</ID>
+    <ID>WildcardImport:DownloadGameWorker.kt$import io.ktor.client.plugins.*</ID>
+    <ID>WildcardImport:DownloadGameWorker.kt$import io.ktor.client.request.*</ID>
+    <ID>WildcardImport:DownloadGameWorker.kt$import io.ktor.client.statement.*</ID>
+    <ID>WildcardImport:DownloadGameWorker.kt$import io.ktor.http.*</ID>
+    <ID>WildcardImport:RemotePagingSource.kt$import io.ktor.client.*</ID>
+    <ID>WildcardImport:RemotePagingSource.kt$import io.ktor.client.call.*</ID>
+    <ID>WildcardImport:RemotePagingSource.kt$import io.ktor.client.request.*</ID>
+    <ID>WildcardImport:RemoteRepositoryImpl.kt$import io.ktor.client.*</ID>
+    <ID>WildcardImport:RemoteRepositoryImpl.kt$import io.ktor.client.call.*</ID>
+    <ID>WildcardImport:RemoteRepositoryImpl.kt$import io.ktor.client.request.*</ID>
+    <ID>WildcardImport:StockDataModule.kt$import io.ktor.client.*</ID>
+  </CurrentIssues>
+</SmellBaseline>
