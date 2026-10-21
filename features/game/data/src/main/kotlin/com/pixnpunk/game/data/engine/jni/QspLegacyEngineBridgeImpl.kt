@@ -149,7 +149,7 @@ internal class QspLegacyEngineBridgeImpl(
             linkColor = getVarValues("LCOLOR", 0)?.intValue ?: 0
         )
 
-    override fun onRefreshInt() {
+    override fun onRefreshInt(isRedraw: Boolean) {
         val listener = engineListener ?: return
 
         val mainDesc = mainDesc ?: ""

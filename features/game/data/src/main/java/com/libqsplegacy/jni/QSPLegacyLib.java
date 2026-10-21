@@ -80,7 +80,7 @@ public abstract class QSPLegacyLib {
 
     // --- Callbacks from Native Code ---
     public void onCallDebug(String str) {}
-    public void onRefreshInt() {}
+    public void onRefreshInt(boolean isRedraw) {}
 
     public void onShowImage(String path) {}
     public void onShowMessage(String message) {}
