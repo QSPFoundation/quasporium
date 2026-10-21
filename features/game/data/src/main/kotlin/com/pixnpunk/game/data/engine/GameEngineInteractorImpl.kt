@@ -126,7 +126,7 @@ internal class GameEngineInteractorImpl(
         }
     }
 
-    private fun processCommand(command: EngineCommand) {
+    private suspend fun processCommand(command: EngineCommand) {
         when (command) {
             is EngineCommand.ExecuteAction -> bridge.executeAction(command.index)
             is EngineCommand.ExecuteString -> bridge.executeString(command.input)
@@ -137,7 +137,7 @@ internal class GameEngineInteractorImpl(
                 _state.value = GameState.Loading()
                 audioService.closeAllFiles()
 
-                engineScope.launch { bridge.restartGame() }
+                bridge.restartGame()
             }
 
             is EngineCommand.LoadGame -> {
@@ -156,32 +156,26 @@ internal class GameEngineInteractorImpl(
                     vfsProvider.setGameRoot(file.uriPath)
                 }
 
-                engineScope.launch {
-                    val isLoaded = bridge.loadGame(file, isGame = true)
-                    if (isLoaded) {
-                        bridge.restartGame()
-                    } else {
-                        _state.value = GameState.Idle()
-                        onError("Failed to load game!")
-                    }
+                val isLoaded = bridge.loadGame(file, isGame = true)
+                if (isLoaded) {
+                    bridge.restartGame()
+                } else {
+                    _state.value = GameState.Idle()
+                    onError("Failed to load game!")
                 }
             }
 
             is EngineCommand.SaveGame -> {
                 val saveFile = vfsProvider.resolve(command.path) ?: return
 
-                engineScope.launch {
-                    bridge.saveGameState(saveFile)
-                }
+                bridge.saveGameState(saveFile)
             }
 
             is EngineCommand.LoadSave -> {
                 val saveFile = vfsProvider.resolve(command.path) ?: return
 
-                engineScope.launch {
-                    bridge.loadGameState(saveFile)
-                    bridge.executeCounter()
-                }
+                bridge.loadGameState(saveFile)
+                bridge.executeCounter()
             }
 
             else -> Unit

@@ -4,6 +4,7 @@ import com.pixnpunk.game.data.engine.jni.NativeEngineBridge
 import com.pixnpunk.game.data.engine.jni.NativeEngineListener
 import com.pixnpunk.game.data.vfs.FileSystemProvider
 import com.pixnpunk.game.data.vfs.VirtualFile
+import com.pixnpunk.game.data.vfs.VirtualFileStream
 import com.pixnpunk.game.domain.model.EngineDialog
 import com.pixnpunk.game.domain.model.LibUIConfig
 import com.pixnpunk.game.domain.model.VfsPath
@@ -15,6 +16,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
 class GameEngineInteractorImplTest {
@@ -22,6 +25,7 @@ class GameEngineInteractorImplTest {
     private class FakeBridge(val log: MutableList<String>) : NativeEngineBridge {
         lateinit var engineListener: NativeEngineListener
         val counterTicks = AtomicInteger()
+        val release = CountDownLatch(1)
 
         override fun initializeEngine() {
             log += "init"
@@ -45,6 +49,7 @@ class GameEngineInteractorImplTest {
                     log += "input2=" + engineListener.onInputBox("2")
                 }
                 ACTION_FAILING -> throw IllegalStateException("native call failed")
+                ACTION_BLOCKING -> release.await(3, TimeUnit.SECONDS)
             }
             return true
         }
@@ -54,11 +59,31 @@ class GameEngineInteractorImplTest {
             return true
         }
 
-        override fun executeString(input: String) = true
-        override suspend fun loadGame(file: VirtualFile, isGame: Boolean) = true
-        override suspend fun saveGameState(file: VirtualFile) = true
-        override suspend fun loadGameState(file: VirtualFile) = true
-        override fun restartGame() = true
+        override fun executeString(input: String): Boolean {
+            log += "exec:$input"
+            return true
+        }
+
+        override suspend fun loadGame(file: VirtualFile, isGame: Boolean): Boolean {
+            log += "loadGame"
+            return true
+        }
+
+        override suspend fun saveGameState(file: VirtualFile): Boolean {
+            log += "saveGame"
+            return true
+        }
+
+        override suspend fun loadGameState(file: VirtualFile): Boolean {
+            log += "loadSave"
+            return true
+        }
+
+        override fun restartGame(): Boolean {
+            log += "restart"
+            return true
+        }
+
         override fun selectObject(index: Int) = true
         override fun onInputAreaClicked(text: String) {}
 
@@ -71,6 +96,27 @@ class GameEngineInteractorImplTest {
         override fun setGameRoot(rootPath: VfsPath) {}
         override fun resolve(path: VfsPath): VirtualFile? = null
         override fun resolveRelative(path: String): VirtualFile? = null
+    }
+
+    private object AnyFiles : FileSystemProvider {
+        override fun setGameRoot(rootPath: VfsPath) {}
+        override fun resolve(path: VfsPath): VirtualFile = FakeFile(path)
+        override fun resolveRelative(path: String): VirtualFile = FakeFile(VfsPath(path))
+    }
+
+    private class FakeFile(override val uriPath: VfsPath) : VirtualFile {
+        override val absPath = uriPath
+        override val name = uriPath.value.substringAfterLast('/')
+        override val isDirectory = false
+        override val isWritable = true
+        override suspend fun readBytes() = Result.success(ByteArray(0))
+        override suspend fun writeBytes(data: ByteArray) = Result.success(Unit)
+        override fun getChild(name: String): VirtualFile? = null
+        override fun getParent(): VirtualFile? = null
+        override fun makeDir(name: String): VirtualFile? = null
+        override fun makeFile(name: String, mimeType: String): VirtualFile? = null
+        override fun delete() = false
+        override fun openStream(): Result<VirtualFileStream> = Result.failure(UnsupportedOperationException())
     }
 
     private class FakeAudio(val log: MutableList<String>) : AudioPlayerInteractor {
@@ -97,8 +143,8 @@ class GameEngineInteractorImplTest {
     }
     private val engines = mutableListOf<GameEngineInteractorImpl>()
 
-    private fun newEngine() =
-        GameEngineInteractorImpl(lazyOf(bridge), NoFiles, FakeAudio(log), logger).also { engines += it }
+    private fun newEngine(files: FileSystemProvider = NoFiles) =
+        GameEngineInteractorImpl(lazyOf(bridge), files, FakeAudio(log), logger).also { engines += it }
 
     private fun waitUntil(timeoutMs: Long = 3000, condition: () -> Boolean): Boolean {
         val end = System.currentTimeMillis() + timeoutMs
@@ -107,6 +153,28 @@ class GameEngineInteractorImplTest {
             Thread.sleep(10)
         }
         return condition()
+    }
+
+    private fun callsAfterBusyEngine(vararg commands: EngineCommand, lastCall: String): List<String> {
+        val engine = newEngine(AnyFiles)
+        engine.submitCommand(EngineCommand.ExecuteAction(ACTION_BLOCKING))
+        assertTrue(waitUntil { "action$ACTION_BLOCKING" in log })
+
+        commands.forEach(engine::submitCommand)
+        bridge.release.countDown()
+
+        assertTrue("$log", waitUntil { lastCall in log })
+        return log.dropWhile { it != "action$ACTION_BLOCKING" }.drop(1).filter { it != "audioClosed" }
+    }
+
+    private companion object {
+        const val ACTION_INPUT = 0
+        const val ACTION_SIMPLE = 1
+        const val ACTION_MENU = 2
+        const val ACTION_LONG_SCRIPT = 3
+        const val ACTION_TWO_INPUTS = 4
+        const val ACTION_FAILING = 5
+        const val ACTION_BLOCKING = 6
     }
 
     @After
@@ -205,12 +273,47 @@ class GameEngineInteractorImplTest {
         assertTrue("$order", destroyIndex < order.lastIndexOf("init"))
     }
 
-    private companion object {
-        const val ACTION_INPUT = 0
-        const val ACTION_SIMPLE = 1
-        const val ACTION_MENU = 2
-        const val ACTION_LONG_SCRIPT = 3
-        const val ACTION_TWO_INPUTS = 4
-        const val ACTION_FAILING = 5
+    @Test
+    fun loadedSaveIsInPlaceForTheNextCommand() {
+        val calls = callsAfterBusyEngine(
+            EngineCommand.LoadSave(VfsPath("/game.sav")),
+            EngineCommand.ExecuteString("check"),
+            lastCall = "exec:check"
+        )
+
+        assertEquals(listOf("loadSave", "exec:check"), calls)
+    }
+
+    @Test
+    fun loadedGameIsStartedBeforeTheNextCommand() {
+        val calls = callsAfterBusyEngine(
+            EngineCommand.LoadGame(VfsPath("/game.qsp")),
+            EngineCommand.ExecuteAction(ACTION_SIMPLE),
+            lastCall = "action$ACTION_SIMPLE"
+        )
+
+        assertEquals(listOf("loadGame", "restart", "action$ACTION_SIMPLE"), calls)
+    }
+
+    @Test
+    fun gameIsSavedBeforeTheNextCommand() {
+        val calls = callsAfterBusyEngine(
+            EngineCommand.SaveGame(VfsPath("/game.sav")),
+            EngineCommand.ExecuteAction(ACTION_SIMPLE),
+            lastCall = "action$ACTION_SIMPLE"
+        )
+
+        assertEquals(listOf("saveGame", "action$ACTION_SIMPLE"), calls)
+    }
+
+    @Test
+    fun gameIsRestartedBeforeTheNextCommand() {
+        val calls = callsAfterBusyEngine(
+            EngineCommand.RestartGame,
+            EngineCommand.ExecuteString("check"),
+            lastCall = "exec:check"
+        )
+
+        assertEquals(listOf("restart", "exec:check"), calls)
     }
 }
