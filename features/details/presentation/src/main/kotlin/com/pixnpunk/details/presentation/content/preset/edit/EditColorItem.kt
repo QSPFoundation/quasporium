@@ -21,7 +21,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.pixnpunk.details.presentation.R
 
 @Composable
 fun EditColorItem(
@@ -60,7 +62,7 @@ fun EditColorItem(
             if (isSelected) {
                 Icon(
                     imageVector = Icons.Default.Check,
-                    contentDescription = "Selected",
+                    contentDescription = stringResource(R.string.selected_color_description),
                     tint = if (color.luminance() > 0.4f) Color.Black else Color.White,
                     modifier = Modifier.size(18.dp)
                 )

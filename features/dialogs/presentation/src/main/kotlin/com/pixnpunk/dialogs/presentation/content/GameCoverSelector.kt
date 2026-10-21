@@ -88,7 +88,7 @@ internal fun GameCoverSelector(
             ) {
                 Icon(
                     imageVector = Icons.Default.Close,
-                    contentDescription = "Remove cover",
+                    contentDescription = stringResource(R.string.remove_cover_description),
                     modifier = Modifier.size(16.dp)
                 )
             }

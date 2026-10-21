@@ -17,7 +17,9 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.pixnpunk.details.presentation.R
 
 @Composable
 fun EditImageItem(
@@ -58,7 +60,7 @@ fun EditImageItem(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
-                        contentDescription = "Remove background",
+                        contentDescription = stringResource(R.string.remove_background_description),
                         modifier = Modifier.size(16.dp)
                     )
                 }

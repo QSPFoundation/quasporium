@@ -49,7 +49,7 @@ fun GameAppBar(
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Terminal,
-                        contentDescription = null
+                        contentDescription = stringResource(R.string.terminal_button_description)
                     )
                 }
             }

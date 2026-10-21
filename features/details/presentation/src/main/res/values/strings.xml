@@ -13,4 +13,8 @@
     <string name="ported_by_title">Ported by: %1$s</string>
     <string name="published_title">Published: %1$s</string>
     <string name="updated_title">Updated: %1$s</string>
+    <string name="expand_presets_description">Expand</string>
+    <string name="collapse_presets_description">Collapse</string>
+    <string name="selected_color_description">Selected</string>
+    <string name="remove_background_description">Remove background</string>
 </resources>

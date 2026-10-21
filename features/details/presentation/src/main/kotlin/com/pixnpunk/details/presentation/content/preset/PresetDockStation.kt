@@ -43,9 +43,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.pixnpunk.details.presentation.R
 import com.pixnpunk.details.presentation.model.PresetUIState
 
 @Composable
@@ -115,7 +117,10 @@ fun PresetDockStation(
                     Icon(
                         modifier = Modifier.graphicsLayer { rotationZ = arrowRotation },
                         imageVector = Icons.Default.KeyboardArrowDown,
-                        contentDescription = if (isExpanded) "Collapse" else "Expand",
+                        contentDescription = stringResource(
+                            if (isExpanded) R.string.collapse_presets_description
+                            else R.string.expand_presets_description
+                        ),
                     )
                 }
             }

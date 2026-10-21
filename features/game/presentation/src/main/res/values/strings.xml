@@ -8,4 +8,5 @@
     <string name="load_button_description">Load game from file</string>
     <string name="restart_button_description">Restart game</string>
     <string name="exit_button_description">Close game</string>
+    <string name="terminal_button_description">Execute input</string>
 </resources>

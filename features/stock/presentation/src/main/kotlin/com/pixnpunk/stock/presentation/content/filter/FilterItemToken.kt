@@ -15,7 +15,9 @@ import androidx.compose.material3.InputChip
 import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import com.pixnpunk.stock.domain.model.SearchTokenType
+import com.pixnpunk.stock.presentation.R
 import com.pixnpunk.stock.presentation.model.SearchTokenUI
 
 fun LazyListScope.filterItemToken(
@@ -41,7 +43,7 @@ fun LazyListScope.filterItemToken(
         trailingIcon = {
             Icon(
                 imageVector = Icons.Default.Close,
-                contentDescription = "Remove",
+                contentDescription = stringResource(R.string.remove_filter_description),
                 modifier = Modifier
                     .size(InputChipDefaults.IconSize)
                     .clickable { removeToken(token) }

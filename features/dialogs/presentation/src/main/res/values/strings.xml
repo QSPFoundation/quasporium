@@ -19,4 +19,5 @@
     <string name="input_generic_title">Enter something</string>
     <string name="choose_cover_description">Choose cover image</string>
     <string name="close_button_description">Close</string>
+    <string name="remove_cover_description">Remove cover</string>
 </resources>
