@@ -36,11 +36,11 @@ object StoragePathUtil {
         rootDirUriBox: String
     ): Uri {
         val rootDir = rootDirUriBox.toUri().toDocumentFile(context)
-        if (!rootDir.isWritableDir()) return Uri.EMPTY
+        if (!rootDir.isWritableDir(context)) return Uri.EMPTY
         val relPath = this.toUri().path
         if (relPath.isNullOrEmpty()) return Uri.EMPTY
         val imageFile = relPath.pathToFile(context, rootDir)
-        if (!imageFile.isWritableFile()) return Uri.EMPTY
+        if (!imageFile.isWritableFile(context)) return Uri.EMPTY
         return imageFile.uri
     }
 }

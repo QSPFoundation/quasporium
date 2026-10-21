@@ -1,5 +1,6 @@
 package com.pixnpunk.storage
 
+import android.content.Context
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import com.anggrayudi.storage.extension.toDocumentFile
@@ -27,21 +28,21 @@ object FileUtil : KoinComponent {
     private const val NOSEARCH_FILENAME: String = ".nosearch"
 
     @ExperimentalContracts
-    fun DocumentFile?.isWritableFile(): Boolean {
+    fun DocumentFile?.isWritableFile(context: Context = get()): Boolean {
         contract {
             returns(true) implies (this@isWritableFile != null)
         }
         if (this == null) return false
-        return this.exists() && this.isFile && this.isWritable(get())
+        return this.exists() && this.isFile && this.isWritable(context)
     }
 
     @ExperimentalContracts
-    fun DocumentFile?.isWritableDir(): Boolean {
+    fun DocumentFile?.isWritableDir(context: Context = get()): Boolean {
         contract {
             returns(true) implies (this@isWritableDir != null)
         }
         if (this == null) return false
-        return this.exists() && this.isDirectory && this.isWritable(get())
+        return this.exists() && this.isDirectory && this.isWritable(context)
     }
 
     fun String.receiveBaseName() =

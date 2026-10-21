@@ -24,7 +24,7 @@ internal class ExternalStoragePathHandler(
                     context = context,
                     rootDirUriBox = gameDirUriBox,
                 ).toDocumentFile(context)
-            if (!mediaFile.isWritableFile()) {
+            if (!mediaFile.isWritableFile(context)) {
                 throw FileNotFoundException()
             } else {
                 WebResourceResponse(
