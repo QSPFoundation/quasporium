@@ -131,6 +131,8 @@ val MIGRATION_6_7 = object : Migration(6, 7) {
     }
 }
 
+internal val ALL_MIGRATIONS = arrayOf(MIGRATION_1_2, MIGRATION_5_6, MIGRATION_6_7)
+
 val databaseModule = module {
     single {
         Room.databaseBuilder(
@@ -138,11 +140,7 @@ val databaseModule = module {
             klass = AppDatabase::class.java,
             name = "games.db"
         )
-            .addMigrations(
-                MIGRATION_1_2,
-                MIGRATION_5_6,
-                MIGRATION_6_7
-            )
+            .addMigrations(*ALL_MIGRATIONS)
             .build()
     }
     single { get<AppDatabase>().gameDao() }

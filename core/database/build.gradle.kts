@@ -25,4 +25,6 @@ dependencies {
     implementation(libs.koin.android)
 
     ksp(libs.androidx.room.compiler)
+
+    androidTestImplementation(libs.androidx.room.testing)
 }

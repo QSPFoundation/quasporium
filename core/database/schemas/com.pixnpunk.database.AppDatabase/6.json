@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 6,
-    "identityHash": "77396b06a390763ae5f4fcf6cf368dc5",
+    "identityHash": "ec3d6e9865b03c7f317d2c4f3316bcc9",
     "entities": [
       {
         "tableName": "game",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `listId` TEXT NOT NULL, `author` TEXT NOT NULL, `portedBy` TEXT NOT NULL, `version` TEXT NOT NULL, `title` TEXT NOT NULL, `lang` TEXT NOT NULL, `player` TEXT NOT NULL, `gameIconPath` TEXT NOT NULL, `fileUrl` TEXT NOT NULL, `fileSize` INTEGER NOT NULL, `fileExt` TEXT NOT NULL, `descUrl` TEXT NOT NULL, `pubDate` TEXT NOT NULL, `modDate` TEXT NOT NULL, `gameDirPath` TEXT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `listId` TEXT NOT NULL, `author` TEXT NOT NULL, `portedBy` TEXT NOT NULL, `version` TEXT NOT NULL, `title` TEXT NOT NULL, `lang` TEXT NOT NULL, `player` TEXT NOT NULL, `gameIconPath` TEXT NOT NULL, `fileUrl` TEXT NOT NULL, `fileSize` INTEGER NOT NULL, `fileExt` TEXT NOT NULL, `descUrl` TEXT NOT NULL, `pubDate` TEXT NOT NULL, `modDate` TEXT NOT NULL, `gameDirPath` TEXT NOT NULL, `gameFilesPath` TEXT NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -103,6 +103,12 @@
             "columnName": "gameDirPath",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "gameFilesPath",
+            "columnName": "gameFilesPath",
+            "affinity": "TEXT",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -113,8 +119,8 @@
         }
       },
       {
-        "tableName": "profile",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `gameId` INTEGER NOT NULL, `profileName` TEXT NOT NULL, `entryFilePath` TEXT NOT NULL, `timestamp` INTEGER NOT NULL, `totalPlayTime` INTEGER NOT NULL, FOREIGN KEY(`gameId`) REFERENCES `game`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "tableName": "save",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `gameId` INTEGER NOT NULL, `userTitle` TEXT NOT NULL, `filePath` TEXT NOT NULL, `timestamp` INTEGER NOT NULL, `playTime` INTEGER NOT NULL, FOREIGN KEY(`gameId`) REFERENCES `game`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -125,78 +131,6 @@
           {
             "fieldPath": "gameId",
             "columnName": "gameId",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "profileName",
-            "columnName": "profileName",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "entryFilePath",
-            "columnName": "entryFilePath",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "timestamp",
-            "columnName": "timestamp",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "totalPlayTime",
-            "columnName": "totalPlayTime",
-            "affinity": "INTEGER",
-            "notNull": true
-          }
-        ],
-        "primaryKey": {
-          "autoGenerate": true,
-          "columnNames": [
-            "id"
-          ]
-        },
-        "indices": [
-          {
-            "name": "index_profile_gameId",
-            "unique": false,
-            "columnNames": [
-              "gameId"
-            ],
-            "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_profile_gameId` ON `${TABLE_NAME}` (`gameId`)"
-          }
-        ],
-        "foreignKeys": [
-          {
-            "table": "game",
-            "onDelete": "CASCADE",
-            "onUpdate": "NO ACTION",
-            "columns": [
-              "gameId"
-            ],
-            "referencedColumns": [
-              "id"
-            ]
-          }
-        ]
-      },
-      {
-        "tableName": "save",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `profileId` INTEGER NOT NULL, `userTitle` TEXT NOT NULL, `filePath` TEXT NOT NULL, `timestamp` INTEGER NOT NULL, `playTime` INTEGER NOT NULL, FOREIGN KEY(`profileId`) REFERENCES `profile`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
-        "fields": [
-          {
-            "fieldPath": "id",
-            "columnName": "id",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "profileId",
-            "columnName": "profileId",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -233,22 +167,22 @@
         },
         "indices": [
           {
-            "name": "index_save_profileId",
+            "name": "index_save_gameId",
             "unique": false,
             "columnNames": [
-              "profileId"
+              "gameId"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_save_profileId` ON `${TABLE_NAME}` (`profileId`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_save_gameId` ON `${TABLE_NAME}` (`gameId`)"
           }
         ],
         "foreignKeys": [
           {
-            "table": "profile",
+            "table": "game",
             "onDelete": "CASCADE",
             "onUpdate": "NO ACTION",
             "columns": [
-              "profileId"
+              "gameId"
             ],
             "referencedColumns": [
               "id"
@@ -362,7 +296,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '77396b06a390763ae5f4fcf6cf368dc5')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ec3d6e9865b03c7f317d2c4f3316bcc9')"
     ]
   }
 }
