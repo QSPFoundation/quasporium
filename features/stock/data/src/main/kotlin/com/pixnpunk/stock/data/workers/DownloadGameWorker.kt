@@ -16,8 +16,6 @@ import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.get
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import java.util.*
@@ -28,8 +26,9 @@ class DownloadGameWorker(
     appContext: Context,
     workerParams: WorkerParameters,
     private val logger: AppLogger,
-    private val notificationProvider: NotificationProvider
-) : CoroutineWorker(appContext, workerParams), KoinComponent {
+    private val notificationProvider: NotificationProvider,
+    private val httpClient: HttpClient
+) : CoroutineWorker(appContext, workerParams) {
 
     private var isForeground = true
 
@@ -85,7 +84,7 @@ class DownloadGameWorker(
         updateForeground("Preparing to download", 0f)
 
         return try {
-            get<HttpClient>().prepareGet(
+            httpClient.prepareGet(
                 urlString = downloadLink,
                 block = {
                     header(HttpHeaders.CacheControl, "no-cache, no-store")

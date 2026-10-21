@@ -35,4 +35,7 @@ dependencies {
 
     implementation(libs.jsoup)
     implementation(libs.storage)
+
+    androidTestImplementation(libs.androidx.work.testing)
+    androidTestImplementation(libs.ktor.client.mock)
 }
