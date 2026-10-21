@@ -17,8 +17,6 @@ android {
         applicationId = "com.pixnpunk.quasporium"
         versionCode = 30140901
         versionName = "1.14.5"
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {

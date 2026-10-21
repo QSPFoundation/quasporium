@@ -1,7 +1,10 @@
 import com.android.build.api.dsl.ApplicationExtension
+import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.dsl.LibraryExtension
+import com.android.build.api.dsl.ManagedVirtualDevice
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
+import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -53,4 +56,23 @@ internal fun Project.configureKotlinJvmTarget() =
 internal fun Project.configureUnitTests() = dependencies {
     "testImplementation"(libs.library("junit"))
     "testImplementation"(libs.library("kotlinx-coroutines-test"))
+}
+
+internal fun Project.configureInstrumentedTests(extension: CommonExtension) = with(extension) {
+    defaultConfig.testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+    testOptions.managedDevices.allDevices.create<ManagedVirtualDevice>("atd") {
+        device = "Pixel 6"
+        apiLevel = 34
+        systemImageSource = "aosp-atd"
+    }
+
+    dependencies {
+        "androidTestImplementation"(libs.library("androidx-junit"))
+        "androidTestImplementation"(libs.library("androidx-test-core"))
+        "androidTestImplementation"(libs.library("androidx-test-rules"))
+        "androidTestImplementation"(libs.library("androidx-test-runner"))
+        "androidTestImplementation"(libs.library("androidx-espresso-core"))
+        "androidTestImplementation"(libs.library("kotlinx-coroutines-test"))
+    }
 }

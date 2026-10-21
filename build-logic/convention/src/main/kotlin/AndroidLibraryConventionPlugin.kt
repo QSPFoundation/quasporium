@@ -8,7 +8,11 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
         pluginManager.apply(libs.pluginId("android-library"))
         pluginManager.apply(libs.pluginId("quasporium-detekt"))
 
-        extensions.configure<LibraryExtension> { configureKotlinAndroid(this) }
+        extensions.configure<LibraryExtension> {
+            configureKotlinAndroid(this)
+            configureInstrumentedTests(this)
+        }
+
         configureUnitTests()
     }
 }
