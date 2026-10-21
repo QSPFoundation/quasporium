@@ -61,10 +61,10 @@ internal fun Project.configureUnitTests() = dependencies {
 internal fun Project.configureInstrumentedTests(extension: CommonExtension) = with(extension) {
     defaultConfig.testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-    testOptions.managedDevices.allDevices.create<ManagedVirtualDevice>("atd") {
+    testOptions.managedDevices.allDevices.create<ManagedVirtualDevice>("pixel6Api34") {
         device = "Pixel 6"
         apiLevel = 34
-        systemImageSource = "aosp-atd"
+        systemImageSource = "aosp"
     }
 
     dependencies {
