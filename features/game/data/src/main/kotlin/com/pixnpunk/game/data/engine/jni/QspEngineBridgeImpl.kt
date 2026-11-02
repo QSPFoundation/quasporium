@@ -91,11 +91,11 @@ internal class QspEngineBridgeImpl : QSPLib(), NativeEngineBridge {
         executeCommand { execUserInput(true) }
     }
 
-    private fun loadUIConfiguration(isNewDesc: Boolean) =
+    private fun loadUIConfiguration(isNewLoc: Boolean) =
         LibUIConfig(
             isNoSave = getNumVarValue("NOSAVE", 0) != 0L,
             isUseHtml = getNumVarValue("USEHTML", 0) != 0L,
-            isYesScrollMain = getNumVarValue("DISABLESCROLL", 0) == 0L && !isNewDesc,
+            isYesScrollMain = getNumVarValue("DISABLESCROLL", 0) == 0L && !isNewLoc,
             isYesScrollExtra = getNumVarValue("DISABLESCROLL", 0) == 0L,
             fontSize = getNumVarValue("FSIZE", 0).toInt(),
             backColor = getNumVarValue("BCOLOR", 0).toInt(),
@@ -103,7 +103,7 @@ internal class QspEngineBridgeImpl : QSPLib(), NativeEngineBridge {
             linkColor = getNumVarValue("LCOLOR", 0).toInt(),
         )
 
-    override fun onRefreshInt(isForced: Boolean, isNewDesc: Boolean) {
+    override fun onRefreshInt(isForced: Boolean, isNewLoc: Boolean) {
         val listener = engineListener ?: return
 
         val mainDesc = mainDesc ?: ""
@@ -115,7 +115,7 @@ internal class QspEngineBridgeImpl : QSPLib(), NativeEngineBridge {
         listener.onStateRefreshed(
             mainDesc,
             varsDesc,
-            loadUIConfiguration(isNewDesc),
+            loadUIConfiguration(isNewLoc),
             actions,
             objects
         )

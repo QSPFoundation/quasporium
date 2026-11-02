@@ -135,9 +135,16 @@ public abstract class QSPLib {
     public native boolean execUserInput(boolean toRefreshUI);
     public native ErrorInfo getLastErrorData();
     public native String getErrorDesc(int errorNum);
+
     public native boolean loadGameWorldFromData(byte[] data, boolean isNewGame);
+    public native boolean loadGameWorldFromFD(int fileDescriptor, boolean isNewGame);
+
     public native byte[] saveGameAsData(boolean toRefreshUI);
+    public native boolean saveGameByFD(int fileDescriptor, boolean toRefreshUI);
+
     public native boolean openSavedGameFromData(byte[] data, boolean toRefreshUI);
+    public native boolean openSavedGameFromFD(int fileDescriptor, boolean toRefreshUI);
+
     public native boolean restartGame(boolean toRefreshUI);
 
     // Callbacks
@@ -149,7 +156,7 @@ public abstract class QSPLib {
     public void onShowWindow(int type /* Window bit flags */, boolean toShow) {}
     public int onShowMenu(ListItem[] items) { return -1; }
     public void onShowMessage(String text) {}
-    public void onRefreshInt(boolean isForced, boolean isNewDesc) {}
+    public void onRefreshInt(boolean isForced, boolean isNewLoc) {}
     public void onSetTimer(int msecs) {}
     public void onSetInputStrText(String text) {}
     public void onSystem(String cmd) {}
