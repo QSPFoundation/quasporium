@@ -28,10 +28,10 @@ sealed interface SettingsComponent {
     fun backToRoot()
 
     sealed class Child {
-        class AudioChild : Child()
-        class GeneralChild : Child()
-        class PicturesChild : Child()
-        class RootChild : Child()
-        class TextChild : Child()
+        data object AudioChild : Child()
+        data object GeneralChild : Child()
+        data object PicturesChild : Child()
+        data object RootChild : Child()
+        data object TextChild : Child()
     }
 }

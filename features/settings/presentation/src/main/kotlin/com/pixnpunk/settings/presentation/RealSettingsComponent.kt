@@ -101,15 +101,15 @@ class RealSettingsComponent(
             handleBackButton = true,
             childFactory = { config, _ ->
                 when (config) {
-                    is ChildConfig.Audio -> SettingsComponent.Child.AudioChild()
+                    is ChildConfig.Audio -> SettingsComponent.Child.AudioChild
 
-                    is ChildConfig.General -> SettingsComponent.Child.GeneralChild()
+                    is ChildConfig.General -> SettingsComponent.Child.GeneralChild
 
-                    is ChildConfig.Pictures -> SettingsComponent.Child.PicturesChild()
+                    is ChildConfig.Pictures -> SettingsComponent.Child.PicturesChild
 
-                    is ChildConfig.Root -> SettingsComponent.Child.RootChild()
+                    is ChildConfig.Root -> SettingsComponent.Child.RootChild
 
-                    is ChildConfig.Text -> SettingsComponent.Child.TextChild()
+                    is ChildConfig.Text -> SettingsComponent.Child.TextChild
                 }
             }
         )
