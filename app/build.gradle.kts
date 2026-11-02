@@ -63,6 +63,10 @@ android {
         }
         create("play") {
             dimension = "distribution"
+
+            configure<CrashlyticsExtension> {
+                nativeSymbolUploadEnabled = true
+            }
         }
     }
 
@@ -119,6 +123,7 @@ dependencies {
 
     "playImplementation"(platform(libs.firebase.bom))
     "playImplementation"(libs.firebase.crashlytics)
+    "playImplementation"(libs.firebase.crashlytics.ndk)
     "playImplementation"(libs.firebase.analytics)
     "playImplementation"(libs.firebase.perf)
 
