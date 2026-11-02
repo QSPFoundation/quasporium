@@ -102,15 +102,29 @@ class SettingsRepositoryImplTest {
     }
 
     @Test
-    fun restoringAColorWritesTheDefaultIntoTheGameFile() = runBlocking {
+    fun restoringAGameColorInheritsTheGlobalOneAgain() = runBlocking {
         globalPrefs.edit(commit = true) { putInt(PrefKeys.TEXT_COLOR, 0x112233) }
         val game = repository(localPrefs)
         game.updateColorValue(ColorPickerState.COLOR_TEXT, 0x445566)
+        game.awaitSettings { it.textColor == 0x445566 }
 
         game.restoreColorValue(ColorPickerState.COLOR_TEXT)
 
-        assertEquals(SettingsEntity().textColor, localPrefs.getInt(PrefKeys.TEXT_COLOR, 0))
+        assertFalse(localPrefs.contains(PrefKeys.TEXT_COLOR))
         assertEquals(0x112233, globalPrefs.getInt(PrefKeys.TEXT_COLOR, 0))
+        game.awaitSettings { it.textColor == 0x112233 }
+    }
+
+    @Test
+    fun restoringAGlobalColorBringsBackTheDefault() = runBlocking {
+        val global = repository(null)
+        global.updateColorValue(ColorPickerState.COLOR_TEXT, 0x445566)
+        global.awaitSettings { it.textColor == 0x445566 }
+
+        global.restoreColorValue(ColorPickerState.COLOR_TEXT)
+
+        assertFalse(globalPrefs.contains(PrefKeys.TEXT_COLOR))
+        global.awaitSettings { it.textColor == SettingsEntity().textColor }
     }
 
     private fun repository(local: SharedPreferences?) =

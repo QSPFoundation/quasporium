@@ -11,6 +11,7 @@ import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
 import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.pixnpunk.dto.ColorPickerState
 import com.pixnpunk.dto.InputState
+import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.logger.Telemetry
 import com.pixnpunk.settings.domain.repository.SettingsRepository
 import com.pixnpunk.settings.presentation.mappers.dispatch
@@ -22,6 +23,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
 import me.zhanghai.compose.preference.Preferences
@@ -29,6 +31,7 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import org.koin.core.component.inject
 import org.koin.core.parameter.parametersOf
+import java.io.File
 
 class RealSettingsComponent(
     private val componentContext: ComponentContext,
@@ -48,6 +51,9 @@ class RealSettingsComponent(
 
     override val isLocalSettings: Boolean = gameId != null
 
+    val currentSettings: SettingsEntity
+        get() = settingsRepository.settingsFlow.value
+
     override val isTelemetryAvailable: Boolean = get<Telemetry>().isAvailable
 
     override val preferencesState = MutableStateFlow<Preferences>(
@@ -66,9 +72,18 @@ class RealSettingsComponent(
         scope.launch { settingsRepository.updateImageSize(state, value) }
     }
 
-    fun updateCustomFontPath(path: String) {
-        scope.launch { settingsRepository.updateCustomFontPath(path) }
-    }
+    fun updateCustomFontPath(
+        path: String,
+        inheritedPath: String
+    ) =
+        currentSettings.customFontPath
+            .takeIf { it.isNotEmpty() && it != path && it != inheritedPath }
+            .let {
+                scope.launch {
+                    settingsRepository.updateCustomFontPath(path)
+                    it?.let { withContext(Dispatchers.IO) { File(it).delete() } }
+                }
+            }
 
     init {
         lifecycle.doOnDestroy { settingsRepository.cancel() }

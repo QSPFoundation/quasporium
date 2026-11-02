@@ -19,10 +19,10 @@ import com.pixnpunk.dialogs.presentation.content.DialogOutputValueContent
 import com.pixnpunk.dialogs.presentation.content.DialogSelectColorContent
 import com.pixnpunk.dialogs.presentation.content.add.DialogAddGameContent
 import com.pixnpunk.dialogs.presentation.content.edit.DialogEditGameContent
-import com.pixnpunk.dto.ColorPickerState
 import com.pixnpunk.dto.InputState
 import com.pixnpunk.dto.OutputState
 import com.pixnpunk.dto.OutputStateValue
+import com.pixnpunk.dto.colorOf
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -205,13 +205,7 @@ fun DialogsMainContent(
                             } else {
                                 DialogSelectColorContent(
                                     selectColor = { c -> component.selectColor(it to c) },
-                                    initialColor = Color(
-                                        when (it) {
-                                            ColorPickerState.COLOR_TEXT -> settings.textColor
-                                            ColorPickerState.COLOR_BACK -> settings.backColor
-                                            ColorPickerState.COLOR_LINK -> settings.linkColor
-                                        }
-                                    ),
+                                    initialColor = Color(config.initialColor ?: settings.colorOf(it)),
                                     onDismiss = component.onDismissed
                                 )
                             }

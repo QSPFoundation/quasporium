@@ -25,6 +25,7 @@ import com.pixnpunk.dto.InputState
 import com.pixnpunk.dto.LaunchGameEntity
 import com.pixnpunk.dto.OutputState
 import com.pixnpunk.dto.SettingsEntity
+import com.pixnpunk.dto.colorOf
 import com.pixnpunk.quasporium.mvi.RealRootStore
 import com.pixnpunk.quasporium.mvi.RootStore
 import com.pixnpunk.settings.domain.repository.SettingsRepository
@@ -110,7 +111,10 @@ class RealRootComponent(
     fun processPickedFont(fontPath: String) {
         val settings = settingsSlot.child?.instance
         if (settings != null && settings.isLocalSettings) {
-            settings.updateCustomFontPath(fontPath)
+            settings.updateCustomFontPath(
+                path = fontPath,
+                inheritedPath = settingsState.value.customFontPath
+            )
             return
         }
 
@@ -313,11 +317,14 @@ class RealRootComponent(
 
     override fun doShowDialog(
         pickerState: ColorPickerState
-    ) =
+    ): Unit =
         dialogsNavigation.activate(
             DialogsConfig(
                 dialogsState = DialogsState.DIALOG_SELECT_COLOR,
-                colorPickerState = pickerState
+                colorPickerState = pickerState,
+                initialColor = (
+                        settingsSlot.child?.instance?.currentSettings ?: settingsState.value
+                ).colorOf(pickerState)
             )
         )
 

@@ -156,14 +156,13 @@ class SettingsRepositoryImpl(
         }
 
     override suspend fun restoreColorValue(state: ColorPickerState) =
-        updateColorValue(
-            state,
+        targetPrefs.edit {
             when (state) {
-                ColorPickerState.COLOR_TEXT -> defValue.textColor
-                ColorPickerState.COLOR_BACK -> defValue.backColor
-                ColorPickerState.COLOR_LINK -> defValue.linkColor
+                ColorPickerState.COLOR_TEXT -> remove(PrefKeys.TEXT_COLOR)
+                ColorPickerState.COLOR_BACK -> remove(PrefKeys.BACK_COLOR)
+                ColorPickerState.COLOR_LINK -> remove(PrefKeys.LINK_COLOR)
             }
-        )
+        }
 
     override suspend fun toggleImageLoading(isDisabled: Boolean) =
         targetPrefs.edit { putBoolean(PrefKeys.IMG_LOAD_DISABLE, isDisabled) }

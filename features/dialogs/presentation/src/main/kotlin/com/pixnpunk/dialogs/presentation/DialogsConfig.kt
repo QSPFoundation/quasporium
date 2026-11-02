@@ -17,6 +17,7 @@ data class DialogsConfig(
     val outputState: OutputState? = null,
     val inputState: InputState? = null,
     val colorPickerState: ColorPickerState? = null,
+    val initialColor: Int? = null,
     val unfilledEntry: GameEntry = GameEntry(),
     val isError: Boolean = false,
     val initialValue: String = "",

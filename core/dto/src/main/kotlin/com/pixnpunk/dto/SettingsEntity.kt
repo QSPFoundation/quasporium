@@ -42,3 +42,10 @@ data class SettingsEntity(
     @Transient
     val binaryPref: BinaryPrefFormat = BinaryPrefFormat.SI,
 )
+
+fun SettingsEntity.colorOf(state: ColorPickerState): Int =
+    when (state) {
+        ColorPickerState.COLOR_TEXT -> textColor
+        ColorPickerState.COLOR_BACK -> backColor
+        ColorPickerState.COLOR_LINK -> linkColor
+    }
