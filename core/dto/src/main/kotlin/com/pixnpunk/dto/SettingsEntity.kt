@@ -30,7 +30,7 @@ data class SettingsEntity(
 
     val isUseExecString: Boolean = false,
     val isImmersModeEnabled: Boolean = true,
-    val nativeLibFrom: NativeLibAuthors = NativeLibAuthors.SEEDHARTHA,
+    val nativeLib: NativeLib = NativeLib.QSPLEGACY,
     val visActsCount: Int = 3,
     val language: String = "",
     val appThemeMode: AppThemeMode = AppThemeMode.SYSTEM,

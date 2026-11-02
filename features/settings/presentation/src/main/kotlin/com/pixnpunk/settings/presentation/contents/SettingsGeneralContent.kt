@@ -16,7 +16,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import com.pixnpunk.dto.AppThemeMode
 import com.pixnpunk.dto.BinaryPrefFormat
-import com.pixnpunk.dto.NativeLibAuthors
+import com.pixnpunk.dto.NativeLib
 import com.pixnpunk.settings.domain.model.PrefKeys
 import com.pixnpunk.settings.presentation.R
 import me.zhanghai.compose.preference.listPreference
@@ -79,13 +79,13 @@ fun SettingsGeneralContent(
                 contentDescription = null
             )
         },
-        defaultValue = NativeLibAuthors.SEEDHARTHA.name,
-        values = NativeLibAuthors.entries.map { it.toString() },
+        defaultValue = NativeLib.QSPLEGACY.name,
+        values = NativeLib.entries.map { it.toString() },
         valueToText = {
             AnnotatedString(
-                when (NativeLibAuthors.valueOf(it)) {
-                    NativeLibAuthors.SEEDHARTHA -> "5.7.0 (by seedHarta)"
-                    NativeLibAuthors.BYTE -> "5.9.5 (by Byte)"
+                when (NativeLib.valueOf(it)) {
+                    NativeLib.QSPLEGACY -> "5.7.0 (legacy)"
+                    NativeLib.QSP -> "5.9.5"
                 }
             )
         },

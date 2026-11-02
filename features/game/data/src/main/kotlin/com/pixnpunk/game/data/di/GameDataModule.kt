@@ -1,6 +1,6 @@
 package com.pixnpunk.game.data.di
 
-import com.pixnpunk.dto.NativeLibAuthors
+import com.pixnpunk.dto.NativeLib
 import com.pixnpunk.game.data.audio.AudioPlayerInteractorImpl
 import com.pixnpunk.game.data.engine.GameEngineInteractorImpl
 import com.pixnpunk.game.data.engine.jni.NativeEngineBridge
@@ -24,12 +24,12 @@ val gameDataModule = module {
     } onClose { it?.close() }
 
     single<NativeEngineBridge>(
-        named(NativeLibAuthors.BYTE)
+        named(NativeLib.QSP)
     ) { QspEngineBridgeImpl() }
     single<NativeEngineBridge>(
-        named(NativeLibAuthors.SEEDHARTHA)
+        named(NativeLib.QSPLEGACY)
     ) { QspLegacyEngineBridgeImpl(context = get()) }
-    factory<GameEngineInteractor> { (author: NativeLibAuthors) ->
+    factory<GameEngineInteractor> { (author: NativeLib) ->
         GameEngineInteractorImpl(
             bridgeProvider = inject(named(author)),
             vfsProvider = get(),

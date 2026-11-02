@@ -7,7 +7,7 @@ import com.pixnpunk.dto.BinaryPrefFormat
 import com.pixnpunk.dto.ColorPickerState
 import com.pixnpunk.dto.FontTypeface
 import com.pixnpunk.dto.InputState
-import com.pixnpunk.dto.NativeLibAuthors
+import com.pixnpunk.dto.NativeLib
 import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.settings.domain.model.PrefKeys
 import com.pixnpunk.settings.domain.repository.SettingsRepository
@@ -102,9 +102,9 @@ class SettingsRepositoryImpl(
             defValue.typeface
         ),
 
-        nativeLibFrom = parseEnumSafety(
-            getStringMerged(PrefKeys.LIB_VERSION, defValue.nativeLibFrom.name),
-            defValue.nativeLibFrom
+        nativeLib = parseEnumSafety(
+            getStringMerged(PrefKeys.LIB_VERSION, defValue.nativeLib.name),
+            defValue.nativeLib
         ),
 
         appThemeMode = parseEnumSafety(
@@ -210,7 +210,7 @@ class SettingsRepositoryImpl(
     override suspend fun updateBinaryPref(format: BinaryPrefFormat) =
         targetPrefs.edit { putString(PrefKeys.BINARY_PREF, format.name) }
 
-    override suspend fun updateNativeLibVersion(version: NativeLibAuthors) =
+    override suspend fun updateNativeLibVersion(version: NativeLib) =
         targetPrefs.edit { putString(PrefKeys.LIB_VERSION, version.name) }
 
     override suspend fun updateActsCount(count: Int) =

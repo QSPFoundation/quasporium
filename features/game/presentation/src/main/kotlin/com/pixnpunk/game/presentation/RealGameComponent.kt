@@ -84,7 +84,7 @@ class RealGameComponent(
     internal val audioPlayer: AudioPlayerInteractor = get()
     private val settingsRepository: SettingsRepository = get { parametersOf(gameId) }
     private val engineInteractor: GameEngineInteractor by inject {
-        parametersOf(settingsRepository.settingsFlow.value.nativeLibFrom)
+        parametersOf(settingsRepository.settingsFlow.value.nativeLib)
     }
     private val saveGameInteractor: SaveGameInteractor by inject { parametersOf(engineInteractor) }
 

@@ -5,7 +5,7 @@ import com.pixnpunk.dto.BinaryPrefFormat
 import com.pixnpunk.dto.ColorPickerState
 import com.pixnpunk.dto.FontTypeface
 import com.pixnpunk.dto.InputState
-import com.pixnpunk.dto.NativeLibAuthors
+import com.pixnpunk.dto.NativeLib
 import com.pixnpunk.dto.SettingsEntity
 import com.pixnpunk.settings.domain.model.PrefKeys
 import com.pixnpunk.settings.domain.repository.SettingsRepository
@@ -33,7 +33,7 @@ fun SettingsEntity.toMap(): Map<String, Any> = mapOf(
     PrefKeys.AUDIO_DEBUG to isUseMusicDebug,
     PrefKeys.EXEC_STRING to isUseExecString,
     PrefKeys.IMMERSIVE_MODE to isImmersModeEnabled,
-    PrefKeys.LIB_VERSION to nativeLibFrom.name,
+    PrefKeys.LIB_VERSION to nativeLib.name,
     PrefKeys.ACTS_COUNT to visActsCount,
     PrefKeys.APP_LANG to language,
     PrefKeys.APP_THEME to appThemeMode.name,
@@ -70,7 +70,7 @@ suspend fun SettingsRepository.dispatch(key: String, value: Any) = when (key) {
 
     PrefKeys.EXEC_STRING -> toggleExecString(value as Boolean)
     PrefKeys.IMMERSIVE_MODE -> toggleImmersiveMode(value as Boolean)
-    PrefKeys.LIB_VERSION -> updateNativeLibVersion(NativeLibAuthors.valueOf(value as String))
+    PrefKeys.LIB_VERSION -> updateNativeLibVersion(NativeLib.valueOf(value as String))
     PrefKeys.ACTS_COUNT -> updateActsCount(value as Int)
     PrefKeys.APP_LANG -> updateLanguage(value as String)
     PrefKeys.APP_THEME -> updateTheme(AppThemeMode.valueOf(value as String))

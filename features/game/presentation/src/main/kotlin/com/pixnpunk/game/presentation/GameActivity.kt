@@ -16,7 +16,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.arkivanov.decompose.retainedComponent
-import com.pixnpunk.dto.NativeLibAuthors
+import com.pixnpunk.dto.NativeLib
 import com.pixnpunk.game.domain.model.VfsPath
 import com.pixnpunk.logger.GameStartEvent
 import com.pixnpunk.logger.Telemetry
@@ -80,10 +80,10 @@ class GameActivity : ComponentActivity() {
 
     private fun logGameStarted() {
         val engine = when (
-            rootComponent.settingsState.value.nativeLibFrom
+            rootComponent.settingsState.value.nativeLib
         ) {
-            NativeLibAuthors.BYTE -> "qsp"
-            NativeLibAuthors.SEEDHARTHA -> "qsp-legacy"
+            NativeLib.QSP -> "qsp"
+            NativeLib.QSPLEGACY -> "qsp-legacy"
         }
         get<Telemetry>().logGameStarted(
             GameStartEvent(
