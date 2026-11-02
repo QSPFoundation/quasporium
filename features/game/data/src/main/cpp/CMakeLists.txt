@@ -11,7 +11,7 @@ FetchContent_Declare(oniguruma-custom
 
 FetchContent_Declare(qsplegacy-external
         GIT_REPOSITORY https://github.com/QSPFoundation/qsp-legacy.git
-        GIT_TAG db05147962dcef6e43df5232fc69d95978dac91f
+        GIT_TAG 02136ee3512a2cf695a7ba044f4ba7cde8513ebe
         GIT_PROGRESS true
         SUBBUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/qsplegacy-download"
         SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/qsplegacy-src"
@@ -21,7 +21,7 @@ FetchContent_MakeAvailable(qsplegacy-external)
 
 FetchContent_Declare(qsp-external
         GIT_REPOSITORY https://github.com/QSPFoundation/qsp.git
-        GIT_TAG 0445921b0640c68bc7e7ab03393fc15e8373c8e9
+        GIT_TAG bc7e567c1241d9dec8fbdbefeada8eab424d2e3d
         GIT_PROGRESS true
         SUBBUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/qsp-download"
         SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/qsp-src"
