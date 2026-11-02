@@ -64,7 +64,7 @@ fun DialogInputValueContent(
             keyboardOptions = keyboardOptions,
             supportingText = {
                 if (isError) {
-                    val annotatedError = remember(supportValue) {
+                    val annotatedError = remember(supportErrorValue) {
                         AnnotatedString.fromHtml(supportErrorValue)
                     }
                     Text(

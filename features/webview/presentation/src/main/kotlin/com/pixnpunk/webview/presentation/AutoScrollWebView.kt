@@ -2,12 +2,14 @@ package com.pixnpunk.webview.presentation
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.view.MotionEvent
 import android.view.ViewTreeObserver
 import android.webkit.WebView
 
 @SuppressLint("ViewConstructor")
 internal class AutoScrollWebView(
     context: Context,
+    private val onTouchDown: () -> Unit,
     private val onPreDraw: AutoScrollWebView.() -> Unit
 ) : WebView(context) {
 
@@ -18,6 +20,9 @@ internal class AutoScrollWebView(
         true
     }
 
+    var contentHash: Int? = null
+    var themeHash: Int? = null
+
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         viewTreeObserver.addOnPreDrawListener(preDrawListener)
@@ -26,6 +31,11 @@ internal class AutoScrollWebView(
     override fun onDetachedFromWindow() {
         viewTreeObserver.removeOnPreDrawListener(preDrawListener)
         super.onDetachedFromWindow()
+    }
+
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        if (event.actionMasked == MotionEvent.ACTION_DOWN) onTouchDown()
+        return super.dispatchTouchEvent(event)
     }
 
     override fun destroy() {

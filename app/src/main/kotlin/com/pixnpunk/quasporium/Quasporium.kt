@@ -34,14 +34,7 @@ class Quasporium : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        if (BuildConfig.DEBUG) {
-            StrictMode.setThreadPolicy(
-                StrictMode.ThreadPolicy.Builder()
-                    .detectAll()
-                    .penaltyLog()
-                    .build()
-            )
-        }
+        if (BuildConfig.DEBUG) { StrictMode.enableDefaults() }
 
         val koin = startKoin {
             androidContext(this@Quasporium)

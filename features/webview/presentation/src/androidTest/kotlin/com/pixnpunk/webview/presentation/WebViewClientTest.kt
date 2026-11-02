@@ -3,6 +3,7 @@ package com.pixnpunk.webview.presentation
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.webkit.RenderProcessGoneDetail
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import androidx.test.core.app.ApplicationProvider
@@ -20,11 +21,13 @@ class WebViewClientTest {
     private val context = ApplicationProvider.getApplicationContext<Context>()
     private val execValues = mutableListOf<String>()
     private val startedIntents = mutableListOf<Intent>()
+    private var renderProcessGoneCount = 0
 
     private val client = WebViewClient(
         assetLoader = lazy { WebViewAssetLoader.Builder().build() },
         onExecValue = { execValues += it },
-        onStartActivity = { startedIntents += it }
+        onStartActivity = { startedIntents += it },
+        onRenderProcessGone = { renderProcessGoneCount++ }
     )
 
     private fun request(url: String, hasGesture: Boolean = true) = object : WebResourceRequest {
@@ -71,6 +74,18 @@ class WebViewClientTest {
 
         assertEquals(emptyList<Intent>(), startedIntents)
         assertEquals(emptyList<String>(), execValues)
+    }
+
+    @Test
+    fun aCrashedRendererIsHandled() = onMainThread { view ->
+        val detail = object : RenderProcessGoneDetail() {
+            override fun didCrash() = true
+            override fun rendererPriorityAtExit() = WebView.RENDERER_PRIORITY_IMPORTANT
+        }
+
+        assertTrue(client.onRenderProcessGone(view, detail))
+
+        assertEquals(1, renderProcessGoneCount)
     }
 
     private fun onMainThread(block: (WebView) -> Unit) {

@@ -38,7 +38,7 @@ internal class SaveGameInteractorImpl(
         }
 
     override suspend fun createAndSaveSlot(gameId: Long, saveName: String, gameDir: VfsPath) =
-        withContext(Dispatchers.Default) {
+        withContext(Dispatchers.IO) {
             val gameRoot = vfsProvider.resolve(gameDir) ?: return@withContext
 
             val savesDir = gameRoot.makeDir("QuasporiumSaves") ?: return@withContext

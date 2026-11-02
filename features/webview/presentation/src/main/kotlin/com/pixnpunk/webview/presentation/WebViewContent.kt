@@ -1,18 +1,19 @@
 package com.pixnpunk.webview.presentation
 
-import android.annotation.SuppressLint
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.webkit.WebViewAssetLoader
 import com.pixnpunk.common.ColorUtil.toHexColorStr
-import com.pixnpunk.ui.webview.R
 import java.io.File
 
 @Composable
@@ -21,111 +22,100 @@ fun GameWebView(
     modifier: Modifier = Modifier
 ) {
     val state by component.model.collectAsState()
+    var rendererCrashes by remember { mutableIntStateOf(0) }
 
-    AndroidView(
-        modifier = modifier,
-        onRelease = { webView ->
-            webView.stopLoading()
-            webView.setOnTouchListener(null)
-            webView.destroy()
-        },
-        update = { webView ->
-            val contentHash = state.htmlContentHash
-            val themeHash = arrayOf(
-                state.htmlConfig.backColor,
-                state.htmlConfig.textColor,
-                state.htmlConfig.linkColor
-            ).contentHashCode()
+    key(rendererCrashes) {
+        AndroidView(
+            modifier = modifier,
+            onRelease = { webView ->
+                webView.stopLoading()
+                webView.destroy()
+            },
+            update = { webView ->
+                val contentHash = state.htmlContentHash
+                val themeHash = arrayOf(
+                    state.htmlConfig.backColor,
+                    state.htmlConfig.textColor,
+                    state.htmlConfig.linkColor
+                ).contentHashCode()
 
-            if (webView.getTag(R.id.tag_content_hash) != contentHash) {
-                webView.loadDataWithBaseURL(
-                    "https://appassets.androidplatform.net/game_files/",
-                    state.htmlContent,
-                    "text/html", "UTF-8", null
-                )
-                webView.setTag(R.id.tag_content_hash, contentHash)
-                webView.setTag(R.id.tag_theme_hash, themeHash)
-            } else if (webView.getTag(R.id.tag_theme_hash) != themeHash) {
-                webView.evaluateJavascript(
-                    """
-                        document.documentElement.style.setProperty('--qsp-bg-color', '${state.htmlConfig.backColor.toHexColorStr()}');
-                        document.documentElement.style.setProperty('--qsp-text-color', '${state.htmlConfig.textColor.toHexColorStr()}');
-                        document.documentElement.style.setProperty('--qsp-link-color', '${state.htmlConfig.linkColor.toHexColorStr()}');
-                        document.documentElement.style.setProperty('--qsp-font-size', '${state.htmlConfig.fontSize}');
-                    """.trimIndent(),
-                    null
-                )
-                webView.setTag(R.id.tag_theme_hash, themeHash)
-            }
-        },
-        factory = { ctx ->
-            val density = ctx.resources.displayMetrics.density
-            var lastContentHeight = 0
-
-            AutoScrollWebView(ctx) {
-                val currentState = component.model.value
-                val currentHeight = contentHeight
-
-                if (currentHeight != lastContentHeight) {
-                    lastContentHeight = currentHeight
+                if (webView.contentHash != contentHash) {
+                    webView.loadDataWithBaseURL(
+                        "https://appassets.androidplatform.net/game_files/",
+                        state.htmlContent,
+                        "text/html", "UTF-8", null
+                    )
+                    webView.contentHash = contentHash
+                    webView.themeHash = themeHash
+                } else if (webView.themeHash != themeHash) {
+                    webView.evaluateJavascript(
+                        """
+                            document.documentElement.style.setProperty('--qsp-bg-color', '${state.htmlConfig.backColor.toHexColorStr()}');
+                            document.documentElement.style.setProperty('--qsp-text-color', '${state.htmlConfig.textColor.toHexColorStr()}');
+                            document.documentElement.style.setProperty('--qsp-link-color', '${state.htmlConfig.linkColor.toHexColorStr()}');
+                            document.documentElement.style.setProperty('--qsp-font-size', '${state.htmlConfig.fontSize}');
+                        """.trimIndent(),
+                        null
+                    )
+                    webView.themeHash = themeHash
                 }
+            },
+            factory = { ctx ->
+                val density = ctx.resources.displayMetrics.density
 
-                if (currentState.isAutoScrollActive) {
-                    val targetY = (currentHeight * density).toInt()
-                    if (scrollY != targetY) {
-                        scrollTo(0, targetY)
-                    }
-                } else if (currentState.restoreScrollY > 0) {
-                    if (scrollY != currentState.restoreScrollY) {
-                        scrollTo(0, currentState.restoreScrollY)
-                    }
-                }
-            }.apply {
-                setBackgroundColor(state.htmlConfig.backColor)
-                layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+                AutoScrollWebView(ctx, onTouchDown = component::onUserTouched) {
+                    val currentState = component.model.value
 
-                settings.apply {
-                    allowFileAccess = false
-                    javaScriptEnabled = true
-                    blockNetworkLoads = true
-                    domStorageEnabled = true
-                    if (state.htmlConfig.isVideoMute) {
-                        settings.mediaPlaybackRequiresUserGesture = false
+                    if (currentState.isAutoScrollActive) {
+                        val targetY = (contentHeight * density).toInt()
+                        if (scrollY != targetY) {
+                            scrollTo(0, targetY)
+                        }
+                    } else if (currentState.restoreScrollY > 0) {
+                        if (scrollY != currentState.restoreScrollY) {
+                            scrollTo(0, currentState.restoreScrollY)
+                        }
                     }
-                }
-                overScrollMode = View.OVER_SCROLL_NEVER
+                }.apply {
+                    setBackgroundColor(state.htmlConfig.backColor)
+                    layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
 
-                @SuppressLint("ClickableViewAccessibility")
-                setOnTouchListener { _, event ->
-                    if (event.action == MotionEvent.ACTION_DOWN) {
-                        component.onUserTouched()
+                    settings.apply {
+                        allowFileAccess = false
+                        javaScriptEnabled = true
+                        blockNetworkLoads = true
+                        domStorageEnabled = true
+                        if (state.htmlConfig.isVideoMute) {
+                            settings.mediaPlaybackRequiresUserGesture = false
+                        }
                     }
-                    false
-                }
+                    overScrollMode = View.OVER_SCROLL_NEVER
 
-                webViewClient = WebViewClient(
-                    assetLoader = lazy {
-                        WebViewAssetLoader.Builder()
-                            .addPathHandler(
-                                "/game_files/",
-                                ExternalStoragePathHandler(
-                                    ctx,
-                                    component.gameDirUriBox
+                    webViewClient = WebViewClient(
+                        assetLoader = lazy {
+                            WebViewAssetLoader.Builder()
+                                .addPathHandler(
+                                    "/game_files/",
+                                    ExternalStoragePathHandler(
+                                        ctx,
+                                        component.gameDirUriBox
+                                    )
                                 )
-                            )
-                            .addPathHandler(
-                                "/fonts/",
-                                WebViewAssetLoader.InternalStoragePathHandler(
-                                    ctx,
-                                    File(ctx.filesDir, "custom_fonts")
+                                .addPathHandler(
+                                    "/fonts/",
+                                    WebViewAssetLoader.InternalStoragePathHandler(
+                                        ctx,
+                                        File(ctx.filesDir, "custom_fonts")
+                                    )
                                 )
-                            )
-                            .build()
-                    },
-                    onExecValue = component.onExecValue,
-                    onStartActivity = { runCatching { ctx.startActivity(it) } },
-                )
+                                .build()
+                        },
+                        onExecValue = component.onExecValue,
+                        onStartActivity = { runCatching { ctx.startActivity(it) } },
+                        onRenderProcessGone = { rendererCrashes++ }
+                    )
+                }
             }
-        }
-    )
+        )
+    }
 }

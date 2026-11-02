@@ -1,7 +1,9 @@
 package com.pixnpunk.webview.presentation
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
+import android.webkit.RenderProcessGoneDetail
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -9,11 +11,21 @@ import androidx.core.net.toUri
 import androidx.webkit.WebViewAssetLoader
 import com.pixnpunk.common.Base64Util.decodeBase64
 
+@SuppressLint("MissingOnRenderProcessGone")
 internal class WebViewClient(
     private val assetLoader: Lazy<WebViewAssetLoader>,
     private val onExecValue: (String) -> Unit,
-    private val onStartActivity: (Intent) -> Unit
+    private val onStartActivity: (Intent) -> Unit,
+    private val onRenderProcessGone: () -> Unit
 ) : WebViewClient() {
+
+    override fun onRenderProcessGone(
+        view: WebView,
+        detail: RenderProcessGoneDetail
+    ): Boolean {
+        onRenderProcessGone()
+        return true
+    }
 
     override fun shouldOverrideUrlLoading(
         view: WebView,
