@@ -20,7 +20,6 @@ import com.pixnpunk.dto.NativeLibAuthors
 import com.pixnpunk.settings.domain.model.PrefKeys
 import com.pixnpunk.settings.presentation.R
 import me.zhanghai.compose.preference.listPreference
-import me.zhanghai.compose.preference.preferenceCategory
 import me.zhanghai.compose.preference.switchPreference
 
 @Composable
@@ -145,10 +144,6 @@ fun SettingsGeneralContent(
     )
 
     if (!isLocalSettings && isTelemetryAvailable) {
-        preferenceCategory(
-            key = "privacy_category",
-            title = { Text(stringResource(R.string.privacy_category_title)) }
-        )
         switchPreference(
             key = PrefKeys.USAGE_STATS,
             icon = {
@@ -159,7 +154,6 @@ fun SettingsGeneralContent(
             },
             defaultValue = false,
             title = { Text(stringResource(R.string.usage_stats_switch_title)) },
-            summary = { Text(stringResource(R.string.usage_stats_switch_summary)) }
         )
         switchPreference(
             key = PrefKeys.CRASH_REPORTS,
@@ -171,7 +165,6 @@ fun SettingsGeneralContent(
             },
             defaultValue = true,
             title = { Text(stringResource(R.string.crash_reports_switch_title)) },
-            summary = { Text(stringResource(R.string.crash_reports_switch_summary)) }
         )
     }
 }

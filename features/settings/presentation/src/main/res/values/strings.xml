@@ -36,9 +36,6 @@
     <string name="image_width_twotarswitch_title">%1$s game image width</string>
     <string name="close_button_description">Close settings</string>
     <string name="back_button_description">Navigate back</string>
-    <string name="privacy_category_title">Privacy</string>
     <string name="usage_stats_switch_title">Share usage statistics</string>
-    <string name="usage_stats_switch_summary">Which features are used, which catalog games are started and how fast screens open. Never your files, saves or the names of games you added.</string>
     <string name="crash_reports_switch_title">Send crash reports</string>
-    <string name="crash_reports_switch_summary">When the app or a game engine crashes, a report with the stack trace and device model is sent so the error can be fixed. File paths are removed.</string>
 </resources>
