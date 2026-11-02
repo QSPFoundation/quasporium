@@ -3,11 +3,11 @@ package com.pixnpunk.storage
 import android.content.ContentResolver
 import android.net.Uri
 import android.os.ParcelFileDescriptor
-import kotlinx.io.files.FileNotFoundException
 import net.sf.sevenzipjbinding.IInStream
 import net.sf.sevenzipjbinding.ISeekableStream
 import net.sf.sevenzipjbinding.SevenZipException
 import java.io.FileInputStream
+import java.io.FileNotFoundException
 import java.io.IOException
 import java.nio.ByteBuffer.wrap
 import java.nio.channels.FileChannel

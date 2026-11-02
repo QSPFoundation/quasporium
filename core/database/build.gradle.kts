@@ -13,16 +13,16 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:dto"))
+    api(project(":core:dto"))
 
-    implementation(libs.bundles.roomEcosystem)
+    api(libs.bundles.roomEcosystem)
 
-    implementation(libs.androidx.paging.runtime)
+    api(libs.androidx.paging.runtime)
 
-    implementation(libs.kotlinx.coroutines.android)
+    api(libs.kotlinx.coroutines.core)
 
     implementation(project.dependencies.platform(libs.koin.bom))
-    implementation(libs.koin.android)
+    api(libs.koin.android)
 
     ksp(libs.androidx.room.compiler)
 

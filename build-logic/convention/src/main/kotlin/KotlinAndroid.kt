@@ -53,9 +53,13 @@ internal fun Project.configureKotlinJvmTarget() =
         compilerOptions.jvmTarget.set(JVM_TARGET)
     }
 
-internal fun Project.configureUnitTests() = dependencies {
-    "testImplementation"(libs.library("junit"))
-    "testImplementation"(libs.library("kotlinx-coroutines-test"))
+internal fun Project.configureUnitTests() {
+    if (!file("src/test").exists()) return
+
+    dependencies {
+        "testImplementation"(libs.library("junit"))
+        "testImplementation"(libs.library("kotlinx-coroutines-test"))
+    }
 }
 
 internal fun Project.configureInstrumentedTests(extension: CommonExtension) = with(extension) {
@@ -67,12 +71,14 @@ internal fun Project.configureInstrumentedTests(extension: CommonExtension) = wi
         systemImageSource = "aosp"
     }
 
+    if (!file("src/androidTest").exists()) return@with
+
     dependencies {
+        "androidTestImplementation"(libs.library("junit"))
         "androidTestImplementation"(libs.library("androidx-junit"))
         "androidTestImplementation"(libs.library("androidx-test-core"))
-        "androidTestImplementation"(libs.library("androidx-test-rules"))
-        "androidTestImplementation"(libs.library("androidx-test-runner"))
-        "androidTestImplementation"(libs.library("androidx-espresso-core"))
         "androidTestImplementation"(libs.library("kotlinx-coroutines-test"))
+        "androidTestRuntimeOnly"(libs.library("androidx-test-runner"))
+        "androidTestRuntimeOnly"(libs.library("androidx-espresso-core"))
     }
 }

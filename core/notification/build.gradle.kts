@@ -7,13 +7,10 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:dto"))
-
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.work)
+    api(libs.androidx.work)
 
     implementation(platform(libs.koin.bom))
-    implementation(libs.koin.core)
-    implementation(libs.koin.android)
+    api(libs.koin.core)
+    implementation(libs.androidx.annotation)
 }

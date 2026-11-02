@@ -43,19 +43,16 @@ dependencies {
 
     implementation(project(":features:game:domain"))
 
-    implementation(project(":features:settings:domain"))
-
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
 
-    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.atomicfu)
 
     implementation(platform(libs.koin.bom))
-    implementation(libs.koin.core)
-    implementation(libs.koin.android)
+    api(libs.koin.core)
 
     implementation(libs.storage)
 
-    implementation(libs.decompose.core)
+    implementation(libs.androidx.documentfile)
+    api(libs.kotlinx.serialization.core)
 }

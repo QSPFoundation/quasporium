@@ -4,8 +4,8 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":core:dto"))
+    api(project(":core:dto"))
 
-    implementation(libs.kotlinx.serialization.core)
-    implementation(libs.kotlinx.coroutines.core)
+    api(libs.kotlinx.serialization.core)
+    api(libs.kotlinx.coroutines.core)
 }

@@ -10,9 +10,9 @@ android {
 dependencies {
     implementation(libs.bundles.ktorClientEcosystem)
 
-    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.serialization.json)
 
     implementation(platform(libs.koin.bom))
-    implementation(libs.koin.android)
+    api(libs.koin.android)
 }

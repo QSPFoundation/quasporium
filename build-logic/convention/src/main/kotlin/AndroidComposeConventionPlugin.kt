@@ -19,11 +19,14 @@ class AndroidComposeConventionPlugin : Plugin<Project> {
         dependencies {
             val bom = platform(libs.library("androidx-compose-bom"))
             "implementation"(bom)
-            "androidTestImplementation"(bom)
             "implementation"(libs.library("androidx-compose-ui-tooling-preview"))
             "debugImplementation"(libs.library("androidx-compose-ui-tooling"))
-            "androidTestImplementation"(libs.library("androidx-compose-ui-test-junit4"))
-            "debugImplementation"(libs.library("androidx-compose-ui-test-manifest"))
+
+            if (file("src/androidTest").exists()) {
+                "androidTestImplementation"(bom)
+                "androidTestImplementation"(libs.library("androidx-compose-ui-test-junit4"))
+                "debugRuntimeOnly"(libs.library("androidx-compose-ui-test-manifest"))
+            }
         }
     }
 }

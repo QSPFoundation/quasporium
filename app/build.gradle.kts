@@ -102,7 +102,6 @@ dependencies {
 
     implementation(project(":features:webview:data"))
     implementation(project(":features:webview:domain"))
-    implementation(project(":features:webview:presentation"))
 
     implementation(project(":features:dialogs:presentation"))
 
@@ -117,7 +116,6 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)
-    implementation(libs.androidx.appcompat)
 
     "playImplementation"(platform(libs.firebase.bom))
     "playImplementation"(libs.firebase.crashlytics)
@@ -139,7 +137,13 @@ dependencies {
     implementation(libs.mvikotlin.main)
     implementation(libs.mvikotlin.coro.ext)
 
-    implementation(libs.preference)
+    runtimeOnly(libs.kotlinx.coroutines.android)
+    implementation(libs.androidx.activity)
+    implementation(libs.androidx.documentfile)
+    implementation(libs.androidx.savedstate)
+    implementation(libs.androidx.work)
+    implementation(libs.kotlinx.serialization.core)
+    testImplementation(libs.androidx.paging.common)
 }
 
 tasks.configureEach {

@@ -7,23 +7,22 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:dto"))
+    api(libs.androidx.compose.material3)
+    implementation(libs.koin.core)
+    api(libs.decompose.core)
+
+    api(project(":core:dto"))
     implementation(project(":core:ui"))
 
-    implementation(project(":features:game:domain"))
+    api(project(":features:game:domain"))
 
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
+    api(libs.kotlinx.coroutines.core)
 
-    implementation(libs.kotlinx.coroutines.android)
-
-    implementation(libs.koin.core)
+    api(libs.koin.core)
 
     implementation(libs.coil.compose)
-    implementation(libs.coil.gif)
+    runtimeOnly(libs.coil.gif)
 
     implementation(libs.essenty.coroutines)
-    implementation(libs.mvikotlin.core)
-    implementation(libs.mvikotlin.main)
-    implementation(libs.mvikotlin.coro.ext)
+    implementation(libs.androidx.lifecycle.runtime.compose)
 }

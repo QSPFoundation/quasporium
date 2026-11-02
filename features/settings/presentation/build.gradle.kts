@@ -7,17 +7,21 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:dto"))
+    api(libs.androidx.compose.material3)
+    api(libs.koin.core)
+    api(libs.decompose.core)
 
-    implementation(project(":features:settings:domain"))
+    api(project(":core:dto"))
+
+    api(project(":features:settings:domain"))
 
     implementation(libs.androidx.compose.adaptive)
-
-    implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
 
     implementation(libs.essenty.coroutines)
     implementation(libs.decompose.ext.exp)
 
-    implementation(libs.preference)
+    api(libs.preference)
+    implementation(libs.androidx.window.core)
+    api(libs.kotlinx.coroutines.core)
+    api(libs.kotlinx.serialization.core)
 }

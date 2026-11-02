@@ -4,10 +4,10 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":core:dto"))
+    api(project(":core:dto"))
 
     implementation(libs.androidx.paging.common)
 
-    implementation(libs.kotlinx.coroutines.core)
-    implementation(libs.kotlinx.serialization.core)
+    api(libs.kotlinx.coroutines.core)
+    api(libs.kotlinx.serialization.core)
 }

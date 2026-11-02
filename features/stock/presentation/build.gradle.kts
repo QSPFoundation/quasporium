@@ -7,36 +7,36 @@ android {
 }
 
 dependencies {
+    api(libs.androidx.compose.material3)
+    implementation(libs.koin.core)
+    api(libs.decompose.core)
+
     implementation(project(":core:ui"))
-    implementation(project(":core:dto"))
-    implementation(project(":core:logger"))
+    api(project(":core:dto"))
+    api(project(":core:logger"))
 
-    implementation(project(":features:stock:domain"))
-
-    implementation(project(":features:details:presentation"))
+    api(project(":features:stock:domain"))
 
     implementation(libs.androidx.compose.adaptive)
 
-    implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
-
     implementation(libs.androidx.paging.runtime)
-    implementation(libs.androidx.paging.compose)
+    api(libs.androidx.paging.compose)
 
-    implementation(libs.storage)
+    runtimeOnly(libs.storage)
 
-    implementation(libs.coil.gif)
+    runtimeOnly(libs.coil.gif)
 
-    implementation(libs.kotlinx.serialization.json)
+    api(libs.kotlinx.serialization.json)
 
-    implementation(libs.koin.core)
+    api(libs.koin.core)
 
     implementation(libs.coil.compose)
     implementation(libs.coil.network.ktor3)
     
     implementation(libs.essenty.coroutines)
     implementation(libs.decompose.ext.exp)
-    implementation(libs.mvikotlin.core)
+    api(libs.mvikotlin.core)
     implementation(libs.mvikotlin.main)
-    implementation(libs.mvikotlin.coro.ext)
+    api(libs.mvikotlin.coro.ext)
+    implementation(libs.androidx.window.core)
 }

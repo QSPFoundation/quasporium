@@ -7,14 +7,15 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:dto"))
+    api(libs.androidx.compose.material3)
+    api(libs.koin.core)
+    api(libs.decompose.core)
 
-    implementation(project(":features:webview:presentation"))
+    api(project(":core:dto"))
 
-    implementation(project(":features:game:domain"))
+    api(project(":features:webview:presentation"))
 
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
+    api(project(":features:game:domain"))
 
-    implementation(libs.kotlinx.coroutines.android)
+    api(libs.kotlinx.coroutines.core)
 }

@@ -9,33 +9,34 @@ android {
 
 dependencies {
     implementation(project(":core:common"))
-    implementation(project(":core:storage"))
-    implementation(project(":core:database"))
-    implementation(project(":core:dto"))
-    implementation(project(":core:network"))
-    implementation(project(":core:notification"))
-    implementation(project(":core:logger"))
+    api(project(":core:storage"))
+    api(project(":core:database"))
+    api(project(":core:dto"))
+    api(project(":core:notification"))
+    api(project(":core:logger"))
 
-    implementation(project(":features:details:domain"))
-
-    implementation(project(":features:stock:domain"))
+    api(project(":features:stock:domain"))
 
     implementation(libs.bundles.roomEcosystem)
-    implementation(libs.bundles.ktorClientEcosystem)
+    api(libs.bundles.ktorClientEcosystem)
 
-    implementation(libs.androidx.paging.runtime)
-    implementation(libs.androidx.work)
+    api(libs.androidx.paging.runtime)
+    api(libs.androidx.work)
 
-    implementation(libs.kotlinx.coroutines.android)
-    implementation(libs.kotlinx.serialization.core)
+    api(libs.kotlinx.coroutines.core)
+    api(libs.kotlinx.serialization.core)
 
     implementation(project.dependencies.platform(libs.koin.bom))
-    implementation(libs.koin.android)
+    api(libs.koin.android)
     implementation(libs.koin.workmanager)
 
-    implementation(libs.jsoup)
     implementation(libs.storage)
 
     androidTestImplementation(libs.androidx.work.testing)
     androidTestImplementation(libs.ktor.client.mock)
+    androidTestImplementation(libs.androidx.concurrent.futures)
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.documentfile)
+    androidTestImplementation(libs.guava.listenablefuture)
+    implementation(libs.kotlinx.serialization.json)
 }

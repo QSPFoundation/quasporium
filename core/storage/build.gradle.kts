@@ -8,18 +8,19 @@ android {
 
 dependencies {
     implementation(project(":core:common"))
-    implementation(project(":core:dto"))
+    api(project(":core:dto"))
     implementation(project(":core:logger"))
 
     implementation(libs.androidx.core.ktx)
-    implementation(libs.kotlinx.coroutines.android)
+    api(libs.kotlinx.coroutines.core)
 
     implementation(platform(libs.koin.bom))
-    implementation(libs.koin.android)
+    api(libs.koin.android)
 
-    implementation(libs.ktor.client.core)
+    api(libs.ktor.client.core)
 
     implementation(libs.storage)
 
     implementation(libs.sevenzip.jbinding.android)
+    api(libs.androidx.documentfile)
 }

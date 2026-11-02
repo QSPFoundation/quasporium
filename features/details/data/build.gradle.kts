@@ -7,22 +7,20 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:database"))
-    implementation(project(":core:dto"))
+    api(project(":core:database"))
 
-    implementation(project(":features:details:domain"))
+    api(project(":features:details:domain"))
 
     implementation(libs.bundles.roomEcosystem)
-    implementation(libs.bundles.ktorClientEcosystem)
 
-    implementation(libs.androidx.paging.runtime)
     implementation(libs.androidx.work)
 
-    implementation(libs.kotlinx.coroutines.android)
+    api(libs.kotlinx.coroutines.core)
 
     implementation(project.dependencies.platform(libs.koin.bom))
-    implementation(libs.koin.android)
+    api(libs.koin.core)
 
-    implementation(libs.jsoup)
     implementation(libs.storage)
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.documentfile)
 }

@@ -10,16 +10,13 @@ dependencies {
     implementation(project(":core:common"))
     implementation(project(":core:dto"))
 
-    implementation(project(":features:webview:domain"))
+    api(project(":features:webview:domain"))
 
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-
-    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.coroutines.core)
 
     implementation(platform(libs.koin.bom))
-    implementation(libs.koin.core)
-    implementation(libs.koin.android)
+    api(libs.koin.core)
 
     implementation(libs.jsoup)
+    runtimeOnly(libs.kotlinx.coroutines.android)
 }

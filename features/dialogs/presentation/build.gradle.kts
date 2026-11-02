@@ -7,24 +7,22 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:dto"))
+    api(libs.androidx.compose.material3)
+    api(libs.decompose.core)
+
+    api(project(":core:dto"))
     implementation(project(":core:storage"))
 
-    implementation(project(":features:settings:domain"))
-    implementation(project(":features:game:domain"))
-
-    implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    api(project(":features:game:domain"))
 
     implementation(libs.coil.compose)
-    implementation(libs.coil.gif)
+    runtimeOnly(libs.coil.gif)
     implementation(libs.coil.network.ktor3)
 
     implementation(libs.colorpicker.compose)
 
     implementation(libs.prettytime)
 
-    implementation(libs.mvikotlin.core)
-    implementation(libs.mvikotlin.main)
-    implementation(libs.mvikotlin.coro.ext)
+    implementation(libs.androidx.core.ktx)
+    api(libs.kotlinx.serialization.core)
 }

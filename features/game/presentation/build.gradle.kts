@@ -7,35 +7,38 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.koin.core)
+    api(libs.decompose.core)
+
     implementation(project(":core:storage"))
-    implementation(project(":core:dto"))
-    implementation(project(":core:network"))
+    api(project(":core:dto"))
     implementation(project(":core:ui"))
 
-    implementation(project(":features:game:domain"))
+    api(project(":features:game:domain"))
 
     implementation(project(":features:settings:domain"))
 
-    implementation(project(":features:dialogs:presentation"))
-    implementation(project(":features:main:presentation"))
-    implementation(project(":features:object:presentation"))
-    implementation(project(":features:extra:presentation"))
+    api(project(":features:dialogs:presentation"))
+    api(project(":features:main:presentation"))
+    api(project(":features:object:presentation"))
+    api(project(":features:extra:presentation"))
 
     implementation(libs.androidx.compose.adaptive)
-    implementation(libs.androidx.compose.adaptive.layout)
+    api(libs.androidx.compose.adaptive.layout)
     implementation(libs.androidx.compose.adaptive.navigation)
-    implementation(libs.androidx.compose.material3.adaptive.navigation.suite)
+    api(libs.androidx.compose.material3.adaptive.navigation.suite)
 
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
 
     implementation(libs.storage)
 
+    api(libs.koin.android)
+
     implementation(libs.essenty.coroutines)
     implementation(libs.decompose.ext.exp)
-    implementation(libs.mvikotlin.core)
-    implementation(libs.mvikotlin.main)
-    implementation(libs.mvikotlin.coro.ext)
+    api(libs.androidx.activity)
+    api(libs.kotlinx.serialization.core)
 }

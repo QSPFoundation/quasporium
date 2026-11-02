@@ -8,7 +8,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:dto"))
+    api(project(":core:dto"))
 
     implementation(libs.androidx.compose.ui)
 }

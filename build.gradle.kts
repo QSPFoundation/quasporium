@@ -11,3 +11,41 @@ plugins {
     alias(libs.plugins.firebase.perf) apply false
     alias(libs.plugins.detekt) apply false
 }
+
+dependencyAnalysis {
+    structure {
+        ignoreKtx(true)
+
+        bundle("compose") { include("androidx\\.compose\\..*:.*") }
+        bundle("lifecycle") { includeGroup("androidx.lifecycle") }
+        bundle("paging") { includeGroup("androidx.paging") }
+        bundle("room") {
+            includeGroup("androidx.room")
+            includeGroup("androidx.sqlite")
+        }
+        bundle("androidx-test") { include("androidx\\.test.*:.*") }
+        bundle("decompose") {
+            includeGroup("com.arkivanov.decompose")
+            includeGroup("com.arkivanov.essenty")
+        }
+        bundle("mvikotlin") { includeGroup("com.arkivanov.mvikotlin") }
+        bundle("koin") { includeGroup("io.insert-koin") }
+        bundle("ktor") {
+            includeGroup("io.ktor")
+            includeGroup("com.squareup.okhttp3")
+        }
+        bundle("coil") { includeGroup("io.coil-kt.coil3") }
+        bundle("coroutines") { include("org\\.jetbrains\\.kotlinx:kotlinx-coroutines-.*") }
+        bundle("serialization") { include("org\\.jetbrains\\.kotlinx:kotlinx-serialization-.*") }
+    }
+    issues {
+        all {
+            onUnusedDependencies {
+                exclude("androidx.compose.ui:ui-tooling-preview")
+            }
+            onUsedTransitiveDependencies {
+                exclude("org.jspecify:jspecify")
+            }
+        }
+    }
+}

@@ -9,14 +9,11 @@ class AndroidFeatureConventionPlugin : Plugin<Project> {
         pluginManager.apply(libs.pluginId("kotlin-serialization"))
 
         dependencies {
-            "implementation"(libs.library("androidx-compose-material3"))
             "implementation"(libs.library("androidx-compose-material-icons-extended"))
 
             "implementation"(platform(libs.library("koin-bom")))
-            "implementation"(libs.library("koin-android"))
 
             "implementation"(libs.library("essenty-lifecycle"))
-            "implementation"(libs.library("decompose-core"))
             "implementation"(libs.library("decompose-ext"))
         }
     }
