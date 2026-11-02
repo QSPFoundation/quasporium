@@ -3,10 +3,12 @@ package com.pixnpunk.settings.presentation.contents
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.Height
+import androidx.compose.material.icons.filled.QueryStats
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,11 +20,13 @@ import com.pixnpunk.dto.NativeLibAuthors
 import com.pixnpunk.settings.domain.model.PrefKeys
 import com.pixnpunk.settings.presentation.R
 import me.zhanghai.compose.preference.listPreference
+import me.zhanghai.compose.preference.preferenceCategory
 import me.zhanghai.compose.preference.switchPreference
 
 @Composable
 fun SettingsGeneralContent(
-    isLocalSettings: Boolean
+    isLocalSettings: Boolean,
+    isTelemetryAvailable: Boolean
 ) = LazyColumn {
     if (!isLocalSettings) {
         listPreference(
@@ -139,4 +143,35 @@ fun SettingsGeneralContent(
         defaultValue = true,
         title = { Text(stringResource(R.string.immersive_switch_title)) }
     )
+
+    if (!isLocalSettings && isTelemetryAvailable) {
+        preferenceCategory(
+            key = "privacy_category",
+            title = { Text(stringResource(R.string.privacy_category_title)) }
+        )
+        switchPreference(
+            key = PrefKeys.USAGE_STATS,
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.QueryStats,
+                    contentDescription = null
+                )
+            },
+            defaultValue = false,
+            title = { Text(stringResource(R.string.usage_stats_switch_title)) },
+            summary = { Text(stringResource(R.string.usage_stats_switch_summary)) }
+        )
+        switchPreference(
+            key = PrefKeys.CRASH_REPORTS,
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.BugReport,
+                    contentDescription = null
+                )
+            },
+            defaultValue = true,
+            title = { Text(stringResource(R.string.crash_reports_switch_title)) },
+            summary = { Text(stringResource(R.string.crash_reports_switch_summary)) }
+        )
+    }
 }

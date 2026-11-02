@@ -35,6 +35,10 @@ data class SettingsEntity(
     val language: String = "",
     val appThemeMode: AppThemeMode = AppThemeMode.SYSTEM,
 
+    val isUsageStatsEnabled: Boolean = false,
+    val isCrashReportsEnabled: Boolean = true,
+    val isTelemetryConsentAsked: Boolean = false,
+
     @Transient
     val binaryPref: BinaryPrefFormat = BinaryPrefFormat.SI,
 )

@@ -16,7 +16,10 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.arkivanov.decompose.retainedComponent
+import com.pixnpunk.dto.NativeLibAuthors
 import com.pixnpunk.game.domain.model.VfsPath
+import com.pixnpunk.logger.GameStartEvent
+import com.pixnpunk.logger.Telemetry
 import com.pixnpunk.settings.domain.repository.GameSettingsPreloader
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.get
@@ -49,6 +52,7 @@ class GameActivity : ComponentActivity() {
     private val gameDirUriBox: String by lazy { intent.getStringExtra("gameDirUri") ?: "" }
     private val gameFileUriBox: String by lazy { intent.getStringExtra("gameFileUri") ?: "" }
     private val gameSaveUriBox: String by lazy { intent.getStringExtra("gameSaveUri") ?: "" }
+    private val isCatalogGame: Boolean by lazy { intent.getBooleanExtra("gameFromCatalog", false) }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
@@ -65,10 +69,30 @@ class GameActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
+        val isNewStart = savedInstanceState == null
+
         lifecycleScope.launch {
             get<GameSettingsPreloader>().preloadGameSettings(gameId)
             setUpGame()
+            if (isNewStart) logGameStarted()
         }
+    }
+
+    private fun logGameStarted() {
+        val engine = when (
+            rootComponent.settingsState.value.nativeLibFrom
+        ) {
+            NativeLibAuthors.BYTE -> "qsp"
+            NativeLibAuthors.SEEDHARTHA -> "qsp-legacy"
+        }
+        get<Telemetry>().logGameStarted(
+            GameStartEvent(
+                engine = engine,
+                isCatalogGame = isCatalogGame,
+                title = gameTitle,
+                isContinue = gameSaveUriBox.isNotBlank()
+            )
+        )
     }
 
     private fun setUpGame() {

@@ -10,6 +10,7 @@ import com.arkivanov.decompose.router.slot.child
 import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
 import com.arkivanov.decompose.value.Value
+import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
 import com.arkivanov.mvikotlin.core.instancekeeper.getStore
 import com.arkivanov.mvikotlin.extensions.coroutines.stateFlow
 import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
@@ -31,6 +32,7 @@ import com.pixnpunk.settings.presentation.RealSettingsComponent
 import com.pixnpunk.stock.presentation.RealStockComponent
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
 import org.koin.core.component.KoinComponent
@@ -45,6 +47,8 @@ class RealRootComponent(
     private val launchStorageAccess: () -> Unit,
     private val launchEngineIntent: (LaunchGameEntity) -> Unit,
 ) : ComponentContext by componentContext, RootComponent, KoinComponent {
+
+    private val scope = coroutineScope()
 
     private val dialogsNavigation = SlotNavigation<DialogsConfig>()
     private val detailsNavigation = SlotNavigation<DetailsConfig>()
@@ -152,7 +156,16 @@ class RealRootComponent(
                 confirmMessage = {
                     when (it.state) {
                         OutputState.OUTPUT_REQUEST_PERM -> launchStorageAccess()
+                        OutputState.OUTPUT_CONSENT ->
+                            scope.launch {
+                                settingsRepository.answerTelemetryConsent(isGranted = true)
+                            }
                         else -> {}
+                    }
+                },
+                declineMessage = {
+                    if (it.state == OutputState.OUTPUT_CONSENT) {
+                        scope.launch { settingsRepository.answerTelemetryConsent(isGranted = false) }
                     }
                 },
                 inputValue = { (state, input) ->

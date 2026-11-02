@@ -13,13 +13,18 @@ import com.pixnpunk.notification.notificationModule
 import com.pixnpunk.quasporium.di.presentationModule
 import com.pixnpunk.quasporium.di.settingsDomainModule
 import com.pixnpunk.quasporium.di.stockDomainModule
+import com.pixnpunk.quasporium.di.telemetryModule
 import com.pixnpunk.quasporium.di.webViewDomainModule
 import com.pixnpunk.quasporium.logger.distributionLoggerModule
+import com.pixnpunk.quasporium.telemetry.TelemetrySync
 import com.pixnpunk.settings.data.di.preloadGlobalSettings
 import com.pixnpunk.settings.data.di.settingsDataModule
 import com.pixnpunk.stock.data.di.stockDataModule
 import com.pixnpunk.storage.di.storageModule
 import com.pixnpunk.webview.data.di.webViewDataModule
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.workmanager.koin.workManagerFactory
 import org.koin.core.context.startKoin
@@ -50,10 +55,15 @@ class Quasporium : Application() {
                 stockDataModule, webViewDataModule
             )
             modules(settingsDomainModule, stockDomainModule, webViewDomainModule)
-            modules(presentationModule)
+            modules(presentationModule, telemetryModule)
         }.koin
 
-        thread(name = "SettingsPreload") { koin.preloadGlobalSettings() }
+        thread(name = "SettingsPreload") {
+            koin.preloadGlobalSettings()
+            koin.get<TelemetrySync>().start(
+                CoroutineScope(SupervisorJob() + Dispatchers.Default)
+            )
+        }
 
         WorkManager.getInstance(this).enqueueUniqueWork(
             "AppStartupWork",

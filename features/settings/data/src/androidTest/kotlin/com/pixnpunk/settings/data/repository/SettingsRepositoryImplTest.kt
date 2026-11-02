@@ -87,6 +87,21 @@ class SettingsRepositoryImplTest {
     }
 
     @Test
+    fun telemetryChoicesGoToTheGlobalFile() = runBlocking {
+        val game = repository(localPrefs)
+
+        game.answerTelemetryConsent(isGranted = true)
+        game.toggleCrashReports(false)
+
+        assertEquals(true, globalPrefs.getBoolean(PrefKeys.USAGE_STATS, false))
+        assertEquals(true, globalPrefs.getBoolean(PrefKeys.TELEMETRY_CONSENT_ASKED, false))
+        assertEquals(false, globalPrefs.getBoolean(PrefKeys.CRASH_REPORTS, true))
+        assertFalse(localPrefs.contains(PrefKeys.USAGE_STATS))
+        assertFalse(localPrefs.contains(PrefKeys.CRASH_REPORTS))
+        game.awaitSettings { it.isUsageStatsEnabled && it.isTelemetryConsentAsked && !it.isCrashReportsEnabled }
+    }
+
+    @Test
     fun restoringAColorWritesTheDefaultIntoTheGameFile() = runBlocking {
         globalPrefs.edit(commit = true) { putInt(PrefKeys.TEXT_COLOR, 0x112233) }
         val game = repository(localPrefs)

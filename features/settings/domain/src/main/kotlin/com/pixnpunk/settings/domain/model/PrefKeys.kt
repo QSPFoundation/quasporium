@@ -33,4 +33,8 @@ object PrefKeys {
     const val APP_LANG = "appLangPref"
     const val APP_THEME = "appThemePref"
     const val BINARY_PREF = "appBinPref"
+
+    const val USAGE_STATS = "appUsageStatsPref"
+    const val CRASH_REPORTS = "appCrashReportsPref"
+    const val TELEMETRY_CONSENT_ASKED = "appTelemetryAskedPref"
 }

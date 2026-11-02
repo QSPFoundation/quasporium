@@ -50,7 +50,10 @@ fun DialogOutputValueContent(
     message: String,
     isImage: Boolean,
     isMsg: Boolean,
+    confirmLabel: String,
+    cancelLabel: String,
     onConfirm: () -> Unit,
+    onCancel: () -> Unit,
     onDismiss: () -> Unit
 ) {
     if (!isImage) {
@@ -80,15 +83,15 @@ fun DialogOutputValueContent(
             ) {
                 if (!isMsg) {
                     TextButton(
-                        onClick = onDismiss
+                        onClick = { onCancel(); onDismiss() }
                     ) {
-                        Text(stringResource(R.string.cancel_button_description))
+                        Text(cancelLabel)
                     }
                 }
                 TextButton(
                     onClick = { onConfirm(); onDismiss() }
                 ) {
-                    Text(stringResource(R.string.confirm_button_description))
+                    Text(confirmLabel)
                 }
             }
         }

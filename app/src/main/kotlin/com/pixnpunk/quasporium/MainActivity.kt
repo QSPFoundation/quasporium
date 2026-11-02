@@ -26,6 +26,7 @@ import com.anggrayudi.storage.file.openInputStream
 import com.arkivanov.decompose.defaultComponentContext
 import com.pixnpunk.dto.OutputState
 import com.pixnpunk.game.presentation.GameActivity
+import com.pixnpunk.quasporium.telemetry.askTelemetryConsentIfNeeded
 import com.pixnpunk.storage.AddonsUtils
 import com.pixnpunk.storage.FileUtil.isWritableDir
 import com.pixnpunk.storage.FileUtil.isWritableFile
@@ -297,7 +298,20 @@ class MainActivity : ComponentActivity() {
 
         lifecycleScope.launch {
             root.model.first { it.isMigrationComplete }
-
+            root.askTelemetryConsentIfNeeded(
+                telemetry = get(),
+                message = """
+                    <b>Help improve Quasporium</b>
+                    <br>
+                    May the app send usage statistics? They show which features are used, which games from the catalog are started and how fast screens open. 
+                    They never include your files, your saves or the names of games you added yourself. 
+                    Google Analytics for Firebase and Firebase Performance Monitoring collect them.
+                    <br>
+                    Crash reports are separate: they are sent unless you turn them off.
+                    <br>
+                    You can change both at any time in Settings → General → Privacy.
+                """.trimIndent()
+            )
             withResumed { checkAndRequestPermissions() }
         }
 

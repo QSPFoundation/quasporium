@@ -12,6 +12,7 @@ dependencies {
     api(libs.decompose.core)
 
     api(project(":core:dto"))
+    implementation(project(":core:logger"))
 
     api(project(":features:settings:domain"))
 

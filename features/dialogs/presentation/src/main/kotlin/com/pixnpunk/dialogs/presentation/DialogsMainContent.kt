@@ -78,17 +78,23 @@ fun DialogsMainContent(
             if (it == null) {
                 LaunchedEffect(Unit) { component.onDismissed() }
             } else {
+                val isConsent = it == OutputState.OUTPUT_CONSENT
                 BasicAlertDialog(
-                    onDismissRequest = component.onDismissed,
+                    onDismissRequest = { if (!isConsent) component.onDismissed() },
                     properties =
-                        if (it != OutputState.OUTPUT_IMAGE) {
-                            DialogProperties()
-                        } else {
-                            DialogProperties(
+                        when (it) {
+                            OutputState.OUTPUT_IMAGE -> DialogProperties(
                                 usePlatformDefaultWidth = false,
                                 dismissOnBackPress = true,
                                 dismissOnClickOutside = false
                             )
+
+                            OutputState.OUTPUT_CONSENT -> DialogProperties(
+                                dismissOnBackPress = false,
+                                dismissOnClickOutside = false
+                            )
+
+                            else -> DialogProperties()
                         }
                 ) {
                     Surface(
@@ -102,8 +108,21 @@ fun DialogsMainContent(
                                     message = config.outputValue,
                                     isImage = it == OutputState.OUTPUT_IMAGE,
                                     isMsg = it == OutputState.OUTPUT_SIMPLE_MSG,
+                                    confirmLabel = stringResource(
+                                        if (isConsent) R.string.allow_button_description
+                                        else R.string.confirm_button_description
+                                    ),
+                                    cancelLabel = stringResource(
+                                        if (isConsent) R.string.deny_button_description
+                                        else R.string.cancel_button_description
+                                    ),
                                     onConfirm = {
                                         component.confirmMessage(
+                                            OutputStateValue(it)
+                                        )
+                                    },
+                                    onCancel = {
+                                        component.declineMessage(
                                             OutputStateValue(it)
                                         )
                                     },

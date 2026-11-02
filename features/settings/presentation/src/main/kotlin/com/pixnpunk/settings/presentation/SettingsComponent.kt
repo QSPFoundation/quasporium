@@ -20,6 +20,8 @@ sealed interface SettingsComponent {
 
     val isLocalSettings: Boolean
 
+    val isTelemetryAvailable: Boolean
+
     val gameTitle: String
 
     fun moveToChild(config: RealSettingsComponent.ChildConfig)

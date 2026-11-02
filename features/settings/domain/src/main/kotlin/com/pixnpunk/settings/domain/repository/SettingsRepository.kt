@@ -41,4 +41,8 @@ interface SettingsRepository {
     suspend fun updateActsCount(count: Int)
     suspend fun toggleImmersiveMode(isEnabled: Boolean)
     suspend fun toggleExecString(isEnabled: Boolean)
+
+    suspend fun toggleUsageStats(isEnabled: Boolean)
+    suspend fun toggleCrashReports(isEnabled: Boolean)
+    suspend fun answerTelemetryConsent(isGranted: Boolean)
 }

@@ -37,6 +37,7 @@ object AddonsUtils : KoinComponent {
                 Intent(get<Context>(), clazz).apply {
                     putExtra("gameId", entry.id)
                     putExtra("gameTitle", entry.title)
+                    putExtra("gameFromCatalog", entry.fileUrl.isNotBlank())
                     putExtra("gameDirUri", gameDir.uri.toString())
                     putExtra("gameFileUri", gameFile.uri.toString())
                 }
@@ -53,6 +54,7 @@ object AddonsUtils : KoinComponent {
                 Intent(get<Context>(), clazz).apply {
                     putExtra("gameId", entry.id)
                     putExtra("gameTitle", entry.title)
+                    putExtra("gameFromCatalog", entry.fileUrl.isNotBlank())
                     putExtra("gameDirUri", gameDir.uri.toString())
                     putExtra("gameFileUri", gameFile.uri.toString())
                     putExtra("gameSaveUri", gameSave.uri.toString())

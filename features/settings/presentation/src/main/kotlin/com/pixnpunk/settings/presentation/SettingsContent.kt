@@ -61,7 +61,8 @@ fun SettingsContent(
 
                     is SettingsComponent.Child.GeneralChild ->
                         SettingsGeneralContent(
-                            isLocalSettings = component.isLocalSettings
+                            isLocalSettings = component.isLocalSettings,
+                            isTelemetryAvailable = component.isTelemetryAvailable
                         )
 
                     is SettingsComponent.Child.PicturesChild ->

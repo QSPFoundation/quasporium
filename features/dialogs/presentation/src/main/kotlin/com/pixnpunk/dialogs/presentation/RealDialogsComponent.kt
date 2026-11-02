@@ -21,6 +21,7 @@ class RealDialogsComponent(
     override val deselectCover: () -> Unit = { },
     override val selectColor: (Pair<ColorPickerState, Color>) -> Unit = { },
     override val confirmMessage: (OutputStateValue) -> Unit = { },
+    override val declineMessage: (OutputStateValue) -> Unit = { },
     override val inputValue: (Pair<InputState, String>) -> Unit = { },
     override val onCleanError: () -> Unit = { },
     override val onDismissed: () -> Unit = { },

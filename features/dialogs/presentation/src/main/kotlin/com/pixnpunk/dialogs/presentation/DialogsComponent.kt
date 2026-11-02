@@ -19,6 +19,7 @@ sealed interface DialogsComponent {
     val deselectCover: () -> Unit
     val selectColor: (Pair<ColorPickerState, Color>) -> Unit
     val confirmMessage: (OutputStateValue) -> Unit
+    val declineMessage: (OutputStateValue) -> Unit
     val inputValue: (Pair<InputState, String>) -> Unit
     val onCleanError: () -> Unit
     val onDismissed: () -> Unit

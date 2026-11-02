@@ -116,6 +116,13 @@ class SettingsRepositoryImpl(
             getStringMerged(PrefKeys.BINARY_PREF, defValue.binaryPref.name),
             defValue.binaryPref
         ),
+
+        isUsageStatsEnabled =
+            globalPrefs.getBoolean(PrefKeys.USAGE_STATS, defValue.isUsageStatsEnabled),
+        isCrashReportsEnabled =
+            globalPrefs.getBoolean(PrefKeys.CRASH_REPORTS, defValue.isCrashReportsEnabled),
+        isTelemetryConsentAsked =
+            globalPrefs.getBoolean(PrefKeys.TELEMETRY_CONSENT_ASKED, defValue.isTelemetryConsentAsked),
     )
 
     override suspend fun updateFontSize(fontSize: Int) =
@@ -214,4 +221,16 @@ class SettingsRepositoryImpl(
 
     override suspend fun toggleExecString(isEnabled: Boolean) =
         targetPrefs.edit { putBoolean(PrefKeys.EXEC_STRING, isEnabled) }
+
+    override suspend fun toggleUsageStats(isEnabled: Boolean) =
+        globalPrefs.edit { putBoolean(PrefKeys.USAGE_STATS, isEnabled) }
+
+    override suspend fun toggleCrashReports(isEnabled: Boolean) =
+        globalPrefs.edit { putBoolean(PrefKeys.CRASH_REPORTS, isEnabled) }
+
+    override suspend fun answerTelemetryConsent(isGranted: Boolean) =
+        globalPrefs.edit {
+            putBoolean(PrefKeys.USAGE_STATS, isGranted)
+            putBoolean(PrefKeys.TELEMETRY_CONSENT_ASKED, true)
+        }
 }

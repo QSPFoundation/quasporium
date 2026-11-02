@@ -11,6 +11,7 @@ import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
 import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.pixnpunk.dto.ColorPickerState
 import com.pixnpunk.dto.InputState
+import com.pixnpunk.logger.Telemetry
 import com.pixnpunk.settings.domain.repository.SettingsRepository
 import com.pixnpunk.settings.presentation.mappers.dispatch
 import com.pixnpunk.settings.presentation.mappers.toMap
@@ -25,6 +26,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
 import me.zhanghai.compose.preference.Preferences
 import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
 import org.koin.core.component.inject
 import org.koin.core.parameter.parametersOf
 
@@ -45,6 +47,8 @@ class RealSettingsComponent(
     private val settingsRepository: SettingsRepository by inject { parametersOf(gameId ?: -1L) }
 
     override val isLocalSettings: Boolean = gameId != null
+
+    override val isTelemetryAvailable: Boolean = get<Telemetry>().isAvailable
 
     override val preferencesState = MutableStateFlow<Preferences>(
         ProxyPreference(emptyMap()) { _, _ -> }
