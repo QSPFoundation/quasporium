@@ -102,7 +102,7 @@ class SettingsRepositoryImpl(
             defValue.typeface
         ),
 
-        nativeLib = parseEnumSafety(
+        nativeLib = nativeLibFromPref(
             getStringMerged(PrefKeys.LIB_VERSION, defValue.nativeLib.name),
             defValue.nativeLib
         ),
