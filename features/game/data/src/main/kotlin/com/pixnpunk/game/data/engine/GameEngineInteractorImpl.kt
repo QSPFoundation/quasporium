@@ -79,7 +79,7 @@ internal class GameEngineInteractorImpl(
     }
 
     override fun shutdown() {
-        if (!isShutdown.compareAndSet(false, true)) return
+        if (!isShutdown.compareAndSet(expect = false, update = true)) return
 
         commandChannel.close()
         pendingDialog.getAndSet(null)?.complete(DialogResult.Dismissed)
