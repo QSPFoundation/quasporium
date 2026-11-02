@@ -9,7 +9,6 @@ import android.provider.DocumentsContract.getDocumentMetadata
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import com.anggrayudi.storage.file.DocumentFileCompat.fromUri
-import com.anggrayudi.storage.file.DocumentFileType
 import com.anggrayudi.storage.file.MimeType
 import com.anggrayudi.storage.file.StorageId
 import com.anggrayudi.storage.file.findParent
@@ -23,10 +22,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
@@ -62,14 +60,11 @@ object DirUtil : KoinComponent {
         val gameDir = fromUri(get(), rootDirPath.toUri())
         if (!gameDir.isWritableDir()) return null
 
-        val targetFile = gameDir.search(
-            recursive = true,
-            documentType = DocumentFileType.FILE,
-            mimeTypes = arrayOf(MimeType.BINARY_FILE),
-            regex = Regex(".*\\.(qsp|gam)$", RegexOption.IGNORE_CASE)
-        ).mapNotNull { it.firstOrNull() }.first()
-
-        return targetFile.findParent(get())
+        return get<Context>().findGameFiles(
+            rootTreeUri = gameDir.uri,
+            allowedMimeTypes = setOf(MimeType.BINARY_FILE),
+            nameRegex = Regex(".*\\.(qsp|gam)$", RegexOption.IGNORE_CASE)
+        ).firstOrNull()?.let { fromUri(get(), it.toUri())?.findParent(get()) }
     }
 
     @OptIn(ExperimentalContracts::class)
