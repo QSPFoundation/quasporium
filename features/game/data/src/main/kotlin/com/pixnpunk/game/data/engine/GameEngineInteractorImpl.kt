@@ -31,13 +31,18 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 internal class GameEngineInteractorImpl(
     bridgeProvider: Lazy<NativeEngineBridge>,
     private val vfsProvider: FileSystemProvider,
     private val audioService: AudioPlayerInteractor,
-    private val logger: AppLogger
+    private val logger: AppLogger,
+    private val engineReleaseTimeout: Duration = 5.seconds
 ) : GameEngineInteractor, NativeEngineListener {
 
     private val bridge by bridgeProvider
@@ -53,6 +58,7 @@ internal class GameEngineInteractorImpl(
 
     private val isUiBlocked = atomic(false)
     private val isShutdown = atomic(false)
+    private val isInitialized = atomic(false)
     private val isTimerPaused = atomic(false)
     private val counterIntervalMs = atomic(500L)
 
@@ -69,14 +75,28 @@ internal class GameEngineInteractorImpl(
     }
 
     init {
-        engineScope.launch {
-            bridge.setListener(this@GameEngineInteractorImpl)
-            bridge.initializeEngine()
-        }
+        engineScope.launch(Dispatchers.Default) {
+            if (!awaitEngineThread()) {
+                _state.value = GameState.Idle(EngineDialog.PreviousGameRunning)
+                return@launch
+            }
 
-        startActorLoop()
-        startGameLoopTimer()
+            withContext(engineDispatcher) {
+                bridge.setListener(this@GameEngineInteractorImpl)
+                bridge.initializeEngine()
+                isInitialized.value = true
+            }
+
+            startActorLoop()
+            startGameLoopTimer()
+        }
     }
+
+    private suspend fun awaitEngineThread(): Boolean =
+        CompletableDeferred<Unit>().let {
+            engineScope.launch { it.complete(Unit) }
+            withTimeoutOrNull(engineReleaseTimeout) { it.await() } != null
+        }
 
     override fun shutdown() {
         if (!isShutdown.compareAndSet(expect = false, update = true)) return
@@ -86,7 +106,9 @@ internal class GameEngineInteractorImpl(
         engineScope.cancel()
         audioService.closeAllFiles()
 
-        CoroutineScope(engineDispatcher).launch { bridge.destroyEngine() }
+        CoroutineScope(engineDispatcher).launch {
+            if (isInitialized.value) bridge.destroyEngine()
+        }
     }
 
     private fun startActorLoop() = engineScope.launch {

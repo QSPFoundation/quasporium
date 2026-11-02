@@ -6,4 +6,5 @@ sealed interface EngineDialog {
     data class Picture(val imagePath: VfsPath) : EngineDialog
     data class Menu(val items: List<InteractableItem>) : EngineDialog
     data class Error(val details: String) : EngineDialog
+    data object PreviousGameRunning : EngineDialog
 }

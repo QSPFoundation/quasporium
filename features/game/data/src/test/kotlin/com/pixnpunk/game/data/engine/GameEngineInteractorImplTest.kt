@@ -6,6 +6,7 @@ import com.pixnpunk.game.data.vfs.FileSystemProvider
 import com.pixnpunk.game.data.vfs.VirtualFile
 import com.pixnpunk.game.data.vfs.VirtualFileStream
 import com.pixnpunk.game.domain.model.EngineDialog
+import com.pixnpunk.game.domain.model.GameState
 import com.pixnpunk.game.domain.model.LibUIConfig
 import com.pixnpunk.game.domain.model.VfsPath
 import com.pixnpunk.game.domain.repository.AudioPlayerInteractor
@@ -19,6 +20,9 @@ import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 class GameEngineInteractorImplTest {
 
@@ -143,8 +147,14 @@ class GameEngineInteractorImplTest {
     }
     private val engines = mutableListOf<GameEngineInteractorImpl>()
 
-    private fun newEngine(files: FileSystemProvider = NoFiles) =
-        GameEngineInteractorImpl(lazyOf(bridge), files, FakeAudio(log), logger).also { engines += it }
+    private fun newEngine(files: FileSystemProvider = NoFiles, releaseTimeout: Duration = 5.seconds) =
+        GameEngineInteractorImpl(
+            lazyOf(bridge),
+            files,
+            FakeAudio(log),
+            logger,
+            releaseTimeout
+        ).also { engines += it }
 
     private fun waitUntil(timeoutMs: Long = 3000, condition: () -> Boolean): Boolean {
         val end = System.currentTimeMillis() + timeoutMs
@@ -271,6 +281,32 @@ class GameEngineInteractorImplTest {
         val destroyIndex = order.indexOfFirst { it.startsWith("destroy") }
         assertTrue("$order", order.indexOf("longScriptDone") < destroyIndex)
         assertTrue("$order", destroyIndex < order.lastIndexOf("init"))
+    }
+
+    @Test
+    fun newEngineReportsAPreviousGameThatDoesNotFinish() {
+        val first = newEngine()
+        first.submitCommand(EngineCommand.ExecuteAction(ACTION_BLOCKING))
+        assertTrue(waitUntil { "action$ACTION_BLOCKING" in log })
+        first.shutdown()
+
+        val second = newEngine(releaseTimeout = 200.milliseconds)
+        second.submitCommand(EngineCommand.LoadGame(VfsPath("/game.qsp")))
+
+        assertTrue("$log", waitUntil(1000) { second.state.value.activeDialog == EngineDialog.PreviousGameRunning })
+        assertTrue(second.state.value is GameState.Idle)
+
+        bridge.release.countDown()
+        assertTrue("$log", waitUntil { log.any { it.startsWith("destroy") } })
+        second.shutdown()
+        newEngine()
+
+        assertTrue("$log", waitUntil { log.count { it == "init" } == 2 })
+
+        assertEquals(
+            listOf("init", "action$ACTION_BLOCKING", "destroy@DefaultDispatcher", "init"),
+            log.filter { it != "audioClosed" }
+        )
     }
 
     @Test

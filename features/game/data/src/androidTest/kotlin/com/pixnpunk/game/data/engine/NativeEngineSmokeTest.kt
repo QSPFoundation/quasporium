@@ -75,6 +75,26 @@ internal abstract class NativeEngineSmokeTest {
     }
 
     @Test
+    fun playsAgainAfterTheEngineIsTerminated() = runBlocking {
+        val game = File(dir, "game.qsp").apply { writeBytes(TestGame.bytes) }
+        assertTrue(listener.failure(), bridge.loadGame(DirectVirtualFile(game), isGame = true))
+        assertTrue(listener.failure(), bridge.restartGame())
+        assertTrue(listener.failure(), bridge.executeAction(0))
+
+        repeat(2) {
+            bridge.destroyEngine()
+            bridge.initializeEngine()
+
+            assertTrue(listener.failure(), bridge.loadGame(DirectVirtualFile(game), isGame = true))
+            assertTrue(listener.failure(), bridge.restartGame())
+            assertEquals(TestGame.START_TEXT, listener.mainDesc.trim())
+            assertTrue(listener.failure(), bridge.executeString(TestGame.CHECK_RESTORED))
+            assertEquals("", listener.mainDesc.trim())
+        }
+        assertEquals(emptyList<String>(), listener.errors)
+    }
+
+    @Test
     fun rejectsAFileThatIsNotAGame() = runBlocking {
         val game = File(dir, "broken.qsp").apply { writeBytes(byteArrayOf(1, 2, 3)) }
 

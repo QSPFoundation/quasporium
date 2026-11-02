@@ -22,4 +22,5 @@
     <string name="remove_cover_description">Remove cover</string>
     <string name="allow_button_description">Allow</string>
     <string name="deny_button_description">Don\'t allow</string>
+    <string name="restart_app_button_description">Restart app</string>
 </resources>

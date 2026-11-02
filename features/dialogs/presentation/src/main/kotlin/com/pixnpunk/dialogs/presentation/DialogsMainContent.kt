@@ -79,8 +79,9 @@ fun DialogsMainContent(
                 LaunchedEffect(Unit) { component.onDismissed() }
             } else {
                 val isConsent = it == OutputState.OUTPUT_CONSENT
+                val isEngineBusy = it == OutputState.OUTPUT_ENGINE_BUSY
                 BasicAlertDialog(
-                    onDismissRequest = { if (!isConsent) component.onDismissed() },
+                    onDismissRequest = { if (!isConsent && !isEngineBusy) component.onDismissed() },
                     properties =
                         when (it) {
                             OutputState.OUTPUT_IMAGE -> DialogProperties(
@@ -89,7 +90,8 @@ fun DialogsMainContent(
                                 dismissOnClickOutside = false
                             )
 
-                            OutputState.OUTPUT_CONSENT -> DialogProperties(
+                            OutputState.OUTPUT_CONSENT,
+                            OutputState.OUTPUT_ENGINE_BUSY -> DialogProperties(
                                 dismissOnBackPress = false,
                                 dismissOnClickOutside = false
                             )
@@ -109,12 +111,18 @@ fun DialogsMainContent(
                                     isImage = it == OutputState.OUTPUT_IMAGE,
                                     isMsg = it == OutputState.OUTPUT_SIMPLE_MSG,
                                     confirmLabel = stringResource(
-                                        if (isConsent) R.string.allow_button_description
-                                        else R.string.confirm_button_description
+                                        when {
+                                            isConsent -> R.string.allow_button_description
+                                            isEngineBusy -> R.string.restart_app_button_description
+                                            else -> R.string.confirm_button_description
+                                        }
                                     ),
                                     cancelLabel = stringResource(
-                                        if (isConsent) R.string.deny_button_description
-                                        else R.string.cancel_button_description
+                                        when {
+                                            isConsent -> R.string.deny_button_description
+                                            isEngineBusy -> R.string.close_button_description
+                                            else -> R.string.cancel_button_description
+                                        }
                                     ),
                                     onConfirm = {
                                         component.confirmMessage(

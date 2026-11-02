@@ -154,6 +154,10 @@ class RealGameComponent(
                     isAnswered = true
                     onConfirmMessage(it)
                 },
+                declineMessage = {
+                    isAnswered = true
+                    onDeclineMessage(it)
+                },
                 onDismissed = {
                     if (!isAnswered) {
                         engineInteractor.submitCommand(EngineCommand.DismissDialog)
@@ -308,6 +312,16 @@ class RealGameComponent(
                                 LibTypeDialog.DIALOG_MENU,
                                 inputListItems = dialog.items
                             )
+
+                        EngineDialog.PreviousGameRunning ->
+                            dialogNavigation.activate(
+                                DialogsConfig(
+                                    dialogsState = DialogsState.DIALOG_OUTPUT_VALUE,
+                                    outputState = OutputState.OUTPUT_ENGINE_BUSY,
+                                    outputValue = "The previous game is still finishing. " +
+                                        "Restart the app to start this game?"
+                                )
+                            )
                     }
                 }
             }
@@ -378,7 +392,16 @@ class RealGameComponent(
             OutputState.OUTPUT_SIMPLE_MSG ->
                 engineInteractor.submitCommand(EngineCommand.DismissDialog)
 
+            OutputState.OUTPUT_ENGINE_BUSY ->
+                _uiState.update { it.copy(isAppRestartRequested = true) }
+
             else -> {}
+        }
+    }
+
+    private fun onDeclineMessage(value: OutputStateValue) {
+        if (value.state == OutputState.OUTPUT_ENGINE_BUSY) {
+            _uiState.update { it.copy(isFinishRequested = true) }
         }
     }
 

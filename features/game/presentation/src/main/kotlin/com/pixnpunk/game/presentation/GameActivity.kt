@@ -1,5 +1,6 @@
 package com.pixnpunk.game.presentation
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -95,6 +96,12 @@ class GameActivity : ComponentActivity() {
         )
     }
 
+    private fun restartApp() {
+        val launchIntent = packageManager.getLaunchIntentForPackage(packageName) ?: return
+        startActivity(Intent.makeRestartActivityTask(launchIntent.component))
+        Runtime.getRuntime().exit(0)
+    }
+
     private fun setUpGame() {
         rootComponent = retainedComponent {
             RealGameComponent(
@@ -143,6 +150,10 @@ class GameActivity : ComponentActivity() {
 
             if (state.isFinishRequested) {
                 LaunchedEffect(Unit) { finish() }
+            }
+
+            if (state.isAppRestartRequested) {
+                LaunchedEffect(Unit) { restartApp() }
             }
 
             LaunchedEffect(state.isUserChooseSave) {
