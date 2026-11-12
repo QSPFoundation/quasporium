@@ -5,7 +5,7 @@ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 
 private const val MAX_SHOWN_URL_LENGTH = 200
 
-val HttpUrl.displayHost: String
+private val HttpUrl.displayHost: String
     get() = if (':' in host) "[$host]" else host
 
 fun String.escapeHtml(): String =

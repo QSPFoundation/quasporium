@@ -25,8 +25,17 @@ class LinkUtilTest {
     }
 
     @Test
+    fun `extra slashes and backslashes are read as a browser reads them`() {
+        assertEquals("path", "https:///path".makeLinkHost())
+        assertEquals("qsp.org", "https:\\\\qsp.org\\forum".makeLinkHost())
+        assertEquals("qsp.org", "https://qsp.org\\@evil.example/".makeLinkHost())
+        assertEquals("qsp.org", "  https://qsp.org/  ".makeLinkHost())
+    }
+
+    @Test
     fun `an address without a host has none`() {
-        assertNull("https:///path".makeLinkHost()) // TODO FAIL, FIX IT
+        assertNull("https://".makeLinkHost())
+        assertNull("mailto:player@qsp.org".makeLinkHost())
         assertNull("not a link".makeLinkHost())
     }
 
@@ -54,7 +63,8 @@ class LinkUtilTest {
 
     @Test
     fun `a long address is cut`() {
-        "https://a.example/" + "x".repeat(500).makeLinkPrompt().let {
+        ("https://a.example/" + "x".repeat(500)).makeLinkPrompt().let {
+            assertTrue(it, it.contains("<b>a.example</b>"))
             assertTrue(it, it.endsWith("x…"))
             assertEquals(200 + 1, it.substringAfterLast("<br>").length)
         }
