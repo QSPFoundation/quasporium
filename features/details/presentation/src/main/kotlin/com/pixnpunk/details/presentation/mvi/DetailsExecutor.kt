@@ -87,6 +87,7 @@ class DetailsExecutor(
                     publish(
                         DetailsStore.Label.LaunchEngine(
                             presetId = intent.presetId,
+                            entry = state().gameEntry,
                             entryFile = intent.fileName
                         )
                     )
@@ -104,6 +105,7 @@ class DetailsExecutor(
                     publish(
                         DetailsStore.Label.LaunchEngine(
                             presetId = intent.presetId,
+                            entry = state().gameEntry,
                             entryFile = targetFile.path,
                             saveFile = intent.savePath
                         )

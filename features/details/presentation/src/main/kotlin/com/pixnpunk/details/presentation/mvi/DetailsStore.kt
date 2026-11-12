@@ -34,7 +34,12 @@ sealed interface DetailsStore : Store<DetailsStore.Intent, DetailsStore.State, D
 
     sealed interface Label {
         data object NullUpdateReceived : Label
-        data class LaunchEngine(val presetId: Long, val entryFile: String, val saveFile: String? = null) : Label
+        data class LaunchEngine(
+            val presetId: Long,
+            val entry: GameEntry,
+            val entryFile: String,
+            val saveFile: String? = null
+        ) : Label
     }
 
     sealed interface Action {

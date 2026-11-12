@@ -23,6 +23,7 @@ import androidx.compose.material3.adaptive.layout.calculateThreePaneScaffoldValu
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.arkivanov.decompose.ExperimentalDecomposeApi
@@ -33,7 +34,7 @@ import com.pixnpunk.quasporium.theme.QuasporiumTheme
 import com.pixnpunk.settings.presentation.SettingsContent
 import com.pixnpunk.stock.presentation.StockContent
 
-@OptIn(ExperimentalDecomposeApi::class, ExperimentalMaterial3AdaptiveApi::class)
+@OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 fun RootContent(
     component: RootComponent
@@ -99,7 +100,7 @@ fun RootContent(
                     detailPane = {
                         AnimatedPane {
                             detailsSlot.child?.instance?.also {
-                                DetailsContent(it)
+                                key(it) { DetailsContent(it) }
                             }
                         }
                     },

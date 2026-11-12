@@ -40,7 +40,7 @@ fun DetailsContent(
                         component.launchFreshGame(
                             LaunchGameEntity(
                                 entryFile = it.entryFile,
-                                gameEntry = entry
+                                gameEntry = it.entry
                             )
                         )
                     } else {
@@ -48,7 +48,7 @@ fun DetailsContent(
                             LaunchGameEntity(
                                 entryFile = it.entryFile,
                                 saveFile = it.saveFile,
-                                gameEntry = entry
+                                gameEntry = it.entry
                             )
                         )
                     }

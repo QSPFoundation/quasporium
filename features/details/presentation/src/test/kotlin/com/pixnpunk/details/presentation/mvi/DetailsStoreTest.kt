@@ -227,7 +227,12 @@ class DetailsStoreTest {
 
         assertEquals("timestamp 1", calls.last())
         assertEquals(
-            DetailsStore.Label.LaunchEngine(1, "content://games/game/main.qsp", "s.sav"),
+            DetailsStore.Label.LaunchEngine(
+                presetId = 1,
+                entry = entry,
+                entryFile = "content://games/game/main.qsp",
+                saveFile = "s.sav"
+            ),
             labels.last()
         )
     }
@@ -237,9 +242,35 @@ class DetailsStoreTest {
         createStore().accept(DetailsStore.Intent.ContinueGame(presetId = 2, savePath = "s.sav"))
 
         assertEquals(
-            DetailsStore.Label.LaunchEngine(2, "content://games/game/main.qsp", "s.sav"),
+            DetailsStore.Label.LaunchEngine(
+                presetId = 2,
+                entry = entry,
+                entryFile = "content://games/game/main.qsp",
+                saveFile = "s.sav"
+            ),
             labels.last()
         )
+    }
+
+    @Test
+    fun `the launch carries the entry the store has, updated from the database`() {
+        val store = createStore()
+        val renamed = entry.copy(
+            title = "Renamed",
+            gameDirPath = "content://games/moved"
+        )
+        entryFlow.value = renamed
+
+        store.accept(
+            DetailsStore.Intent.StartFresh(
+                presetId = 2,
+                fileName = "content://games/moved/main.qsp"
+            )
+        )
+
+        val launch = labels.last() as DetailsStore.Label.LaunchEngine
+        assertEquals(renamed, launch.entry)
+        assertEquals("content://games/moved/main.qsp", launch.entryFile)
     }
 
     @Test
@@ -247,7 +278,7 @@ class DetailsStoreTest {
         createStore().accept(DetailsStore.Intent.StartFresh(presetId = 2, fileName = "extra.qsp"))
 
         assertEquals(listOf("last played 2 extra.qsp", "timestamp 2"), calls.takeLast(2))
-        assertEquals(DetailsStore.Label.LaunchEngine(2, "extra.qsp"), labels.last())
+        assertEquals(DetailsStore.Label.LaunchEngine(2, entry, "extra.qsp"), labels.last())
     }
 }
 
