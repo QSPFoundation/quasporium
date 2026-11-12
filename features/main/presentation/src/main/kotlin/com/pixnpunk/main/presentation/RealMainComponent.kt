@@ -92,7 +92,9 @@ class RealMainComponent(
             parsedActions = gameState.actions.map { item ->
                 ParsedActionItem(
                     original = item,
-                    annotatedText = AnnotatedString.fromHtml(item.title)
+                    annotatedText =
+                        if (libConfig.isUseHtml) AnnotatedString.fromHtml(item.title)
+                        else AnnotatedString(item.title)
                 )
             },
             textColor =

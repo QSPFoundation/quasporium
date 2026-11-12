@@ -62,7 +62,9 @@ class RealObjectComponent(
             parsedObjects = gameState.objects.map { item ->
                 ParsedObjectItem(
                     original = item,
-                    annotatedText = AnnotatedString.fromHtml(item.title)
+                    annotatedText =
+                        if (libConfig.isUseHtml) AnnotatedString.fromHtml(item.title)
+                        else AnnotatedString(item.title)
                 )
             },
             textColor =

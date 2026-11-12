@@ -29,15 +29,18 @@ class HtmlProcessorRepositoryImpl(
         rawBody: String,
         config: HtmlConfig
     ): String = withContext(Dispatchers.IO) {
-        var preCleanedBody = rawBody.replace("\n", "<br>")
+        var preCleanedBody: String
 
         if (config.isUseHtml) {
+            preCleanedBody = rawBody.replace("\n", "<br>")
             if (preCleanedBody.contains("\\\"")) {
                 preCleanedBody = preCleanedBody.replace(
                     "\\\"", "'"
                 )
             }
             preCleanedBody = preCleanedBody.encodeExecLinks()
+        } else {
+            preCleanedBody = rawBody.plainTextBody()
         }
 
         val document = Jsoup.parse(
@@ -46,6 +49,11 @@ class HtmlProcessorRepositoryImpl(
                 config = config
             )
         ).apply { outputSettings().prettyPrint(false) }
+
+        if (!config.isUseHtml) {
+            document.body().addClass(PLAIN_TEXT_CLASS)
+            document.forbidPageScripts()
+        }
 
         if (config.isImgLoadDis) {
             document.body().select("img, video").remove()
