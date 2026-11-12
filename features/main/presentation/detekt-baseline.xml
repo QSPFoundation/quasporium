@@ -2,6 +2,7 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
+    <ID>LongParameterList:RealMainComponent.kt$RealMainComponent$( private val componentContext: ComponentContext, private val engineInteractor: GameEngineInteractor, private val settingsState: StateFlow&lt;SettingsEntity&gt;, private val gameDirUriBox: String, private val onExecValue: (String) -&gt; Unit, private val onOpenLink: (String) -&gt; Unit, private val onOpenImage: (String) -&gt; Unit )</ID>
     <ID>ComposableParametersOrdering:ActionCell.kt$modifier: Modifier = Modifier</ID>
     <ID>MagicNumber:MainActionsList.kt$200</ID>
     <ID>MagicNumber:MainActionsList.kt$300</ID>

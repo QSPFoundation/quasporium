@@ -3,6 +3,7 @@ package com.pixnpunk.webview.presentation
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.webkit.WebView
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -105,6 +106,18 @@ fun GameWebView(
                     }
                     overScrollMode = View.OVER_SCROLL_NEVER
 
+                    setOnLongClickListener { view ->
+                        if (!component.model.value.htmlConfig.isUseFullscreenImages) {
+                            return@setOnLongClickListener false
+                        }
+                        val hit = (view as WebView).hitTestResult
+                        val isImage = hit.type == WebView.HitTestResult.IMAGE_TYPE ||
+                                hit.type == WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE
+                        val path = hit.extra?.takeIf { isImage }?.let(::gameImagePath)
+                        path?.let(component.onOpenImage)
+                        path != null
+                    }
+
                     webViewClient = WebViewClient(
                         assetLoader = lazy {
                             WebViewAssetLoader.Builder()
@@ -126,6 +139,7 @@ fun GameWebView(
                         },
                         onExecValue = component.onExecValue,
                         onOpenLink = component.onOpenLink,
+                        onOpenImage = component.onOpenImage,
                         onRenderProcessGone = { rendererCrashes++ }
                     )
                 }

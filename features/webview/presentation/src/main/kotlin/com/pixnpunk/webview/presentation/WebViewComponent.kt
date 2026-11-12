@@ -9,4 +9,5 @@ sealed interface WebViewComponent {
     val gameDirUriBox: String
     val onExecValue: (String) -> Unit
     val onOpenLink: (String) -> Unit
+    val onOpenImage: (String) -> Unit
 }

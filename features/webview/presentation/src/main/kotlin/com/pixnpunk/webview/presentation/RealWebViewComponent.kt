@@ -28,7 +28,8 @@ class RealWebViewComponent(
     private val isMainComponent: Boolean = false,
     override val gameDirUriBox: String,
     override val onExecValue: (String) -> Unit,
-    override val onOpenLink: (String) -> Unit
+    override val onOpenLink: (String) -> Unit,
+    override val onOpenImage: (String) -> Unit
 ) : ComponentContext by componentContext, WebViewComponent, KoinComponent {
 
     private val scope = coroutineScope()

@@ -61,6 +61,7 @@ class HtmlProcessorRepositoryImpl(
             document.body().apply {
                 handleImagesInHtml(config)
                 handleVideosInHtml(config)
+                if (config.isUseFullscreenImages) linkImagesToFullscreen()
             }
         }
 
@@ -119,14 +120,6 @@ class HtmlProcessorRepositoryImpl(
         config: HtmlConfig
     ) = select("img").forEach { img ->
         img.attr("loading", "lazy")
-
-        if (config.isUseFullscreenImages) {
-            val parent = img.parent()
-            val isInsideLink = parent != null && parent.tagName() == "a"
-            if (!isInsideLink && !img.hasAttr("onclick")) {
-                img.attr("onclick", "img.onClickImage(this.src);")
-            }
-        }
 
         val styleBuilder = StringBuilder()
         val oldStyle = img.attr("style")

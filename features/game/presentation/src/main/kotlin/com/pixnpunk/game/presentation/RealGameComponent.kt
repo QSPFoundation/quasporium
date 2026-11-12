@@ -1,5 +1,6 @@
 package com.pixnpunk.game.presentation
 
+import android.net.Uri
 import androidx.compose.ui.text.font.FontFamily
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
@@ -14,6 +15,7 @@ import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
 import com.arkivanov.essenty.lifecycle.doOnCreate
 import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.arkivanov.essenty.lifecycle.doOnStop
+import com.pixnpunk.common.PathUtil.normalizeContentPath
 import com.pixnpunk.common.makeLinkPrompt
 import com.pixnpunk.dialogs.presentation.DialogsComponent
 import com.pixnpunk.dialogs.presentation.DialogsConfig
@@ -45,6 +47,7 @@ import com.pixnpunk.main.presentation.RealMainComponent
 import com.pixnpunk.`object`.presentation.RealObjectComponent
 import com.pixnpunk.settings.domain.repository.SettingsRepository
 import com.pixnpunk.storage.DirUtil.isGameDirIsInternal
+import com.pixnpunk.storage.StoragePathUtil.getImageUriFromPath
 import com.pixnpunk.ui.ViewUtil.loadCustomFontFamily
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
@@ -183,7 +186,8 @@ class RealGameComponent(
                 settingsState = settingsState,
                 gameDirUriBox = gameDirUriBox,
                 onExecValue = ::onExecValue,
-                onOpenLink = ::onOpenLink
+                onOpenLink = ::onOpenLink,
+                onOpenImage = ::onOpenImage
             )
         }
 
@@ -207,7 +211,8 @@ class RealGameComponent(
         settingsState = settingsState,
         gameDirUriBox = gameDirUriBox,
         onExecValue = ::onExecValue,
-        onOpenLink = ::onOpenLink
+        onOpenLink = ::onOpenLink,
+        onOpenImage = ::onOpenImage
     )
 
     private companion object {
@@ -451,6 +456,22 @@ class RealGameComponent(
 
     private fun onExecValue(inputString: String) =
         engineInteractor.submitCommand(EngineCommand.ExecuteString(inputString))
+
+    private fun onOpenImage(path: String) =
+        componentScope.launch {
+            val uri = withContext(Dispatchers.IO) {
+                path.normalizeContentPath().getImageUriFromPath(
+                    context = get(),
+                    rootDirUriBox = gameDirUriBox
+                )
+            }
+            if (uri != Uri.EMPTY) {
+                doShowDialog(
+                    dialogState = LibTypeDialog.DIALOG_PICTURE,
+                    inputString = uri.toString()
+                )
+            }
+        }
 
     private fun onOpenLink(url: String) =
         if (!settingsState.value.isLinkConfirmEnabled) {

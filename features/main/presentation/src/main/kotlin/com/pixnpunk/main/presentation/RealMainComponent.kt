@@ -35,7 +35,8 @@ class RealMainComponent(
     private val settingsState: StateFlow<SettingsEntity>,
     private val gameDirUriBox: String,
     private val onExecValue: (String) -> Unit,
-    private val onOpenLink: (String) -> Unit
+    private val onOpenLink: (String) -> Unit,
+    private val onOpenImage: (String) -> Unit
 ) : ComponentContext by componentContext, MainComponent, KoinComponent {
 
     override val onActionClicked: (Int) -> Unit = { index ->
@@ -74,7 +75,8 @@ class RealMainComponent(
             isMainComponent = true,
             gameDirUriBox = gameDirUriBox,
             onExecValue = onExecValue,
-            onOpenLink = onOpenLink
+            onOpenLink = onOpenLink,
+            onOpenImage = onOpenImage
         )
 
     override val uiState: StateFlow<MainUIState> = combine(

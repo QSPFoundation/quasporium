@@ -2,6 +2,7 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
+    <ID>LongParameterList:RealExtraComponent.kt$RealExtraComponent$( private val componentContext: ComponentContext, private val engineInteractor: GameEngineInteractor, private val settingsState: StateFlow&lt;SettingsEntity&gt;, private val gameDirUriBox: String, private val onExecValue: (String) -&gt; Unit, private val onOpenLink: (String) -&gt; Unit, private val onOpenImage: (String) -&gt; Unit )</ID>
     <ID>EmptyKtFile:ExtraExecutor.kt$.ExtraExecutor.kt</ID>
     <ID>EmptyKtFile:ExtraReducer.kt$.ExtraReducer.kt</ID>
   </CurrentIssues>

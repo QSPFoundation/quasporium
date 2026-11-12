@@ -20,12 +20,14 @@ class WebViewClientTest {
     private val context = ApplicationProvider.getApplicationContext<Context>()
     private val execValues = mutableListOf<String>()
     private val openedLinks = mutableListOf<String>()
+    private val openedImages = mutableListOf<String>()
     private var renderProcessGoneCount = 0
 
     private val client = WebViewClient(
         assetLoader = lazy { WebViewAssetLoader.Builder().build() },
         onExecValue = { execValues += it },
         onOpenLink = { openedLinks += it },
+        onOpenImage = { openedImages += it },
         onRenderProcessGone = { renderProcessGoneCount++ }
     )
 
@@ -73,6 +75,29 @@ class WebViewClientTest {
         assertTrue(client.shouldOverrideUrlLoading(view, request("exec:${code.encodeBase64()}")))
 
         assertEquals(listOf(code), execValues)
+    }
+
+    @Test
+    fun tappedImagesOpenInFullScreen() = onMainThread { view ->
+        val src = "images/pic one.png"
+
+        assertTrue(
+            client.shouldOverrideUrlLoading(
+                view, request("qspimg:${src.encodeBase64()}")
+            )
+        )
+        assertTrue(
+            client.shouldOverrideUrlLoading(
+                view, request("qspimg:${src.encodeBase64()}", hasGesture = false)
+            )
+        )
+        assertTrue(
+            client.shouldOverrideUrlLoading(
+                view, request("qspimg:${"https://example.org/a.png".encodeBase64()}")
+            )
+        )
+
+        assertEquals(listOf(src), openedImages)
     }
 
     @Test

@@ -14,6 +14,7 @@ internal class WebViewClient(
     private val assetLoader: Lazy<WebViewAssetLoader>,
     private val onExecValue: (String) -> Unit,
     private val onOpenLink: (String) -> Unit,
+    private val onOpenImage: (String) -> Unit,
     private val onRenderProcessGone: () -> Unit
 ) : WebViewClient() {
 
@@ -45,6 +46,14 @@ internal class WebViewClient(
 
             "https", "http" ->
                 if (request.hasGesture()) onOpenLink(request.url.toString())
+
+            "qspimg" ->
+                if (request.hasGesture()) {
+                    runCatching { request.url.schemeSpecificPart.decodeBase64() }
+                        .getOrNull()
+                        ?.let(::gameImagePath)
+                        ?.let(onOpenImage)
+                }
         }
         return true
     }
