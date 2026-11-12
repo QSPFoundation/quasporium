@@ -22,6 +22,7 @@ internal class AutoScrollWebView(
 
     var contentHash: Int? = null
     var themeHash: Int? = null
+    var bottomInset: Int? = null
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()

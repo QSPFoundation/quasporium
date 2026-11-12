@@ -13,6 +13,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pixnpunk.main.presentation.content.MainContentActionsList
@@ -29,6 +30,7 @@ fun MainContent(
 
     val hasActions = uiState.isActionsVis && uiState.parsedActions.isNotEmpty()
     val scrollState = rememberScrollState()
+    val sheetPeekHeight = if (hasActions) BottomSheetDefaults.SheetPeekHeight else 0.dp
 
     val isSwipeEnabled by remember {
         derivedStateOf { scrollState.value == 0 }
@@ -38,7 +40,8 @@ fun MainContent(
         modifier = Modifier.fillMaxSize(),
         topBar = topAppBar,
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        sheetPeekHeight = if (hasActions) BottomSheetDefaults.SheetPeekHeight else 0.dp,
+        containerColor = Color(uiState.backColor),
+        sheetPeekHeight = sheetPeekHeight,
         sheetSwipeEnabled = hasActions && isSwipeEnabled,
         sheetContent = {
             if (hasActions) {
@@ -55,9 +58,10 @@ fun MainContent(
     ) { paddingValues ->
         GameWebView(
             modifier = Modifier
-                .padding(paddingValues)
+                .padding(top = paddingValues.calculateTopPadding())
                 .fillMaxSize(),
-            component = component.gameWebViewComponent
+            component = component.gameWebViewComponent,
+            bottomInset = sheetPeekHeight
         )
     }
 }

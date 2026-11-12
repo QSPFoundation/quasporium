@@ -11,15 +11,19 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.webkit.WebViewAssetLoader
 import com.pixnpunk.common.ColorUtil.toHexColorStr
 import java.io.File
+import kotlin.math.roundToInt
 
 @Composable
 fun GameWebView(
     component: WebViewComponent,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    bottomInset: Dp = 0.dp
 ) {
     val state by component.model.collectAsState()
     var rendererCrashes by remember { mutableIntStateOf(0) }
@@ -38,15 +42,17 @@ fun GameWebView(
                     state.htmlConfig.textColor,
                     state.htmlConfig.linkColor
                 ).contentHashCode()
+                val bottomInsetPx = bottomInset.value.roundToInt()
 
                 if (webView.contentHash != contentHash) {
                     webView.loadDataWithBaseURL(
                         "https://appassets.androidplatform.net/game_files/",
-                        state.htmlContent,
+                        state.htmlContent.withBottomInset(bottomInsetPx),
                         "text/html", "UTF-8", null
                     )
                     webView.contentHash = contentHash
                     webView.themeHash = themeHash
+                    webView.bottomInset = bottomInsetPx
                 } else if (webView.themeHash != themeHash) {
                     webView.evaluateJavascript(
                         """
@@ -58,6 +64,14 @@ fun GameWebView(
                         null
                     )
                     webView.themeHash = themeHash
+                }
+
+                if (webView.bottomInset != bottomInsetPx) {
+                    webView.evaluateJavascript(
+                        bottomInsetScript(bottomInsetPx),
+                        null
+                    )
+                    webView.bottomInset = bottomInsetPx
                 }
             },
             factory = { ctx ->

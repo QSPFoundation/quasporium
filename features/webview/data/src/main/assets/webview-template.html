@@ -12,11 +12,13 @@
             --qsp-link-color: QSPLINKCOLOR;
             --qsp-font-size: QSPFONTSIZE;
             --qsp-font-style: QSPFONTSTYLE;
+            --qsp-bottom-inset: 0px;
         }
 
         body {
           margin: 0;
           padding: 0.5em;
+          padding-bottom: calc(0.5em + var(--qsp-bottom-inset));
           color: var(--qsp-text-color);
           background-color: var(--qsp-bg-color);
           font-size: var(--qsp-font-size);
