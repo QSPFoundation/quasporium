@@ -1,5 +1,6 @@
 package com.pixnpunk.game.data.engine
 
+import com.pixnpunk.game.data.engine.GameEngineInteractorImpl.ScriptThresholds
 import com.pixnpunk.game.data.engine.jni.NativeEngineBridge
 import com.pixnpunk.game.data.engine.jni.NativeEngineListener
 import com.pixnpunk.game.data.vfs.FileSystemProvider
@@ -8,10 +9,15 @@ import com.pixnpunk.game.data.vfs.VirtualFileStream
 import com.pixnpunk.game.domain.model.EngineDialog
 import com.pixnpunk.game.domain.model.GameState
 import com.pixnpunk.game.domain.model.LibUIConfig
+import com.pixnpunk.game.domain.model.ScriptState
 import com.pixnpunk.game.domain.model.VfsPath
 import com.pixnpunk.game.domain.repository.AudioPlayerInteractor
 import com.pixnpunk.game.domain.repository.EngineCommand
 import com.pixnpunk.logger.AppLogger
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -146,15 +152,28 @@ class GameEngineInteractorImplTest {
         }
     }
     private val engines = mutableListOf<GameEngineInteractorImpl>()
+    private val watchers = mutableListOf<Job>()
+    private val fastThresholds = ScriptThresholds(busy = 300.milliseconds, runningLong = 900.milliseconds)
 
-    private fun newEngine(files: FileSystemProvider = NoFiles, releaseTimeout: Duration = 5.seconds) =
+    private fun newEngine(
+        files: FileSystemProvider = NoFiles,
+        releaseTimeout: Duration = 5.seconds,
+        thresholds: ScriptThresholds = ScriptThresholds()
+    ) =
         GameEngineInteractorImpl(
             lazyOf(bridge),
             files,
             FakeAudio(log),
             logger,
-            releaseTimeout
+            releaseTimeout,
+            thresholds
         ).also { engines += it }
+
+    private fun GameEngineInteractorImpl.recordActivity(): List<ScriptState> {
+        val seen = CopyOnWriteArrayList<ScriptState>()
+        watchers += CoroutineScope(Dispatchers.Default).launch { scriptState.collect { seen += it } }
+        return seen
+    }
 
     private fun waitUntil(timeoutMs: Long = 3000, condition: () -> Boolean): Boolean {
         val end = System.currentTimeMillis() + timeoutMs
@@ -190,6 +209,7 @@ class GameEngineInteractorImplTest {
     @After
     fun shutdownEngines() {
         // The engine thread is shared by all instances: leave it free for the next test
+        watchers.forEach { it.cancel() }
         engines.forEach { it.shutdown() }
         waitUntil { log.count { it.startsWith("destroy") } >= log.count { it == "init" } }
     }
@@ -307,6 +327,50 @@ class GameEngineInteractorImplTest {
             listOf("init", "action$ACTION_BLOCKING", "destroy@DefaultDispatcher", "init"),
             log.filter { it != "audioClosed" }
         )
+    }
+
+    @Test
+    fun longScriptIsReportedAndPlayerInputIsNotQueuedBehindIt() {
+        val engine = newEngine(thresholds = fastThresholds)
+        engine.submitCommand(EngineCommand.ExecuteAction(ACTION_BLOCKING))
+
+        assertTrue(waitUntil { engine.scriptState.value == ScriptState.BUSY })
+        engine.submitCommand(EngineCommand.ExecuteAction(ACTION_SIMPLE))
+        engine.submitCommand(EngineCommand.ExecuteString("tap"))
+        assertTrue(waitUntil { engine.scriptState.value == ScriptState.RUNNING_LONG })
+
+        bridge.release.countDown()
+        assertTrue(waitUntil { engine.scriptState.value == ScriptState.IDLE })
+        engine.submitCommand(EngineCommand.ExecuteString("after"))
+
+        assertTrue("$log", waitUntil { "exec:after" in log })
+        assertEquals(listOf("init", "action$ACTION_BLOCKING", "exec:after"), log.toList())
+    }
+
+    @Test
+    fun waitingForThePlayerIsNotALongScript() {
+        val engine = newEngine(thresholds = fastThresholds)
+        val activity = engine.recordActivity()
+        engine.submitCommand(EngineCommand.ExecuteAction(ACTION_INPUT))
+        assertTrue(waitUntil { engine.state.value.activeDialog is EngineDialog.Input })
+
+        Thread.sleep(1200)
+        engine.submitCommand(EngineCommand.SubmitInput("name"))
+
+        assertTrue("$log", waitUntil { "input=name" in log })
+        assertEquals(listOf(ScriptState.IDLE), activity.toList())
+    }
+
+    @Test
+    fun shortScriptIsNotReported() {
+        val engine = newEngine()
+        val activity = engine.recordActivity()
+
+        engine.submitCommand(EngineCommand.ExecuteAction(ACTION_LONG_SCRIPT))
+        engine.submitCommand(EngineCommand.ExecuteAction(ACTION_SIMPLE))
+
+        assertTrue("$log", waitUntil { "action$ACTION_SIMPLE" in log })
+        assertEquals(listOf(ScriptState.IDLE), activity.toList())
     }
 
     @Test

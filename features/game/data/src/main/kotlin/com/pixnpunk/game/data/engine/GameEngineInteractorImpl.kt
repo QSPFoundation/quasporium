@@ -9,6 +9,7 @@ import com.pixnpunk.game.domain.model.GameId
 import com.pixnpunk.game.domain.model.GameState
 import com.pixnpunk.game.domain.model.InteractableItem
 import com.pixnpunk.game.domain.model.LibUIConfig
+import com.pixnpunk.game.domain.model.ScriptState
 import com.pixnpunk.game.domain.model.VfsPath
 import com.pixnpunk.game.domain.model.WindowType
 import com.pixnpunk.game.domain.repository.AudioPlayerInteractor
@@ -36,25 +37,33 @@ import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.TimeMark
+import kotlin.time.TimeSource
 
 internal class GameEngineInteractorImpl(
     bridgeProvider: Lazy<NativeEngineBridge>,
     private val vfsProvider: FileSystemProvider,
     private val audioService: AudioPlayerInteractor,
     private val logger: AppLogger,
-    private val engineReleaseTimeout: Duration = 5.seconds
+    private val engineReleaseTimeout: Duration = 5.seconds,
+    private val scriptThresholds: ScriptThresholds = ScriptThresholds()
 ) : GameEngineInteractor, NativeEngineListener {
 
     private val bridge by bridgeProvider
 
     private val engineScope = CoroutineScope(
-        engineDispatcher + SupervisorJob() + CoroutineExceptionHandler { _, e -> reportFailure(e) }
+        engineDispatcher
+                + SupervisorJob()
+                + CoroutineExceptionHandler { _, e -> reportFailure(e) }
     )
 
     private val commandChannel = Channel<EngineCommand>(Channel.UNLIMITED)
 
     private val _state = MutableStateFlow<GameState>(GameState.Idle())
     override val state = _state.asStateFlow()
+
+    private val _scriptState = MutableStateFlow(ScriptState.IDLE)
+    override val scriptState = _scriptState.asStateFlow()
 
     private val isUiBlocked = atomic(false)
     private val isShutdown = atomic(false)
@@ -63,10 +72,23 @@ internal class GameEngineInteractorImpl(
     private val counterIntervalMs = atomic(500L)
 
     private val pendingDialog = atomic<CompletableDeferred<DialogResult>?>(null)
+    private val busySince = atomic<TimeMark?>(null)
+
+    private val EngineCommand.isPlayerInput: Boolean
+        get() = this is EngineCommand.ExecuteAction ||
+                this is EngineCommand.SelectObject ||
+                this is EngineCommand.ExecuteString ||
+                this is EngineCommand.SubmitInputArea
 
     private companion object {
         val engineDispatcher = Dispatchers.IO.limitedParallelism(1)
+        val WATCHDOG_PERIOD = 250.milliseconds
     }
+
+    data class ScriptThresholds(
+        val busy: Duration = 1500.milliseconds,
+        val runningLong: Duration = 10.seconds
+    )
 
     private sealed interface DialogResult {
         data object Dismissed : DialogResult
@@ -89,8 +111,45 @@ internal class GameEngineInteractorImpl(
 
             startActorLoop()
             startGameLoopTimer()
+            startScriptWatchdog()
         }
     }
+
+    private fun startStopwatch() {
+        busySince.value = TimeSource.Monotonic.markNow()
+    }
+
+    private fun stopStopwatch() {
+        busySince.value = null
+        _scriptState.value = ScriptState.IDLE
+    }
+
+    private inline fun tracked(block: () -> Unit) {
+        startStopwatch()
+        try {
+            block()
+        } finally {
+            stopStopwatch()
+        }
+    }
+
+    private fun startScriptWatchdog() =
+        engineScope.launch(Dispatchers.Default) {
+            while (isActive) {
+                delay(WATCHDOG_PERIOD)
+
+                val since = busySince.value
+                val elapsed = since?.elapsedNow() ?: Duration.ZERO
+
+                if (busySince.value === since) {
+                    _scriptState.value = when {
+                        elapsed >= scriptThresholds.runningLong -> ScriptState.RUNNING_LONG
+                        elapsed >= scriptThresholds.busy -> ScriptState.BUSY
+                        else -> ScriptState.IDLE
+                    }
+                }
+            }
+        }
 
     private suspend fun awaitEngineThread(): Boolean =
         CompletableDeferred<Unit>().let {
@@ -113,7 +172,7 @@ internal class GameEngineInteractorImpl(
 
     private fun startActorLoop() = engineScope.launch {
         for (command in commandChannel) {
-            runGuarded { processCommand(command) }
+            runGuarded { tracked { processCommand(command) } }
         }
     }
 
@@ -125,7 +184,7 @@ internal class GameEngineInteractorImpl(
             } else {
                 delay(delayMs.milliseconds)
                 if (_state.value is GameState.Running && !isUiBlocked.value && !isTimerPaused.value) {
-                    runGuarded { bridge.executeCounter() }
+                    runGuarded { tracked { bridge.executeCounter() } }
                 }
             }
         }
@@ -144,7 +203,10 @@ internal class GameEngineInteractorImpl(
             is EngineCommand.SubmitInput -> completeDialog(DialogResult.Input(command.text))
             is EngineCommand.SelectMenuItem -> completeDialog(DialogResult.MenuItem(command.index))
             is EngineCommand.DismissDialog -> completeDialog(DialogResult.Dismissed)
-            else -> commandChannel.trySend(command)
+            else ->
+                if (!command.isPlayerInput || _scriptState.value == ScriptState.IDLE) {
+                    commandChannel.trySend(command)
+                }
         }
     }
 
@@ -282,7 +344,10 @@ internal class GameEngineInteractorImpl(
 
             updateDialogState(dialog)
 
+            val isTracked = busySince.value != null
+            stopStopwatch()
             val result = deferred.await()
+            if (isTracked) startStopwatch()
             isUiBlocked.value = false
             result
         }

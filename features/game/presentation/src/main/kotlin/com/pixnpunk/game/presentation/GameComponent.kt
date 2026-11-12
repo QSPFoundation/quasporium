@@ -10,6 +10,7 @@ import com.pixnpunk.extra.presentation.RealExtraComponent
 import com.pixnpunk.game.domain.model.GameState
 import com.pixnpunk.game.domain.model.InteractableItem
 import com.pixnpunk.game.domain.model.LibTypeDialog
+import com.pixnpunk.game.domain.model.ScriptState
 import com.pixnpunk.game.domain.model.VfsPath
 import com.pixnpunk.game.presentation.model.BadgesState
 import com.pixnpunk.game.presentation.model.GameUIState
@@ -28,6 +29,7 @@ sealed interface GameComponent {
     val model: StateFlow<GameUIState>
     val badgesState: StateFlow<BadgesState>
     val engineState: StateFlow<GameState>
+    val scriptState: StateFlow<ScriptState>
     val events: Flow<GameEvent>
 
     val settingsState: StateFlow<SettingsEntity>
@@ -35,6 +37,7 @@ sealed interface GameComponent {
 
     fun doRestartGame()
     fun doFinishGame()
+    fun doRestartApp()
 
     fun doShowDialog()
     fun doShowDialog(listSaves: List<LibSaveItem>)

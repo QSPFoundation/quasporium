@@ -30,6 +30,7 @@ import com.pixnpunk.game.domain.model.GameId
 import com.pixnpunk.game.domain.model.GameState
 import com.pixnpunk.game.domain.model.InteractableItem
 import com.pixnpunk.game.domain.model.LibTypeDialog
+import com.pixnpunk.game.domain.model.ScriptState
 import com.pixnpunk.game.domain.model.VfsPath
 import com.pixnpunk.game.domain.model.WindowType
 import com.pixnpunk.game.domain.repository.AudioPlayerInteractor
@@ -98,6 +99,7 @@ class RealGameComponent(
             .stateIn(componentScope, SharingStarted.Eagerly, null)
 
     override val engineState: StateFlow<GameState> = engineInteractor.state
+    override val scriptState: StateFlow<ScriptState> = engineInteractor.scriptState
 
     private val _uiState = MutableStateFlow(
         GameUIState(
@@ -634,6 +636,8 @@ class RealGameComponent(
             )
         )
     }
+
+    override fun doRestartApp() = _uiState.update { it.copy(isAppRestartRequested = true) }
 
     override fun doFinishGame() {
         engineInteractor.shutdown()

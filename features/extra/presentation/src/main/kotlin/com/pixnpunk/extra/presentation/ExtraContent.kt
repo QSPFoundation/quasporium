@@ -1,5 +1,7 @@
 package com.pixnpunk.extra.presentation
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -19,21 +21,25 @@ import com.pixnpunk.webview.presentation.GameWebView
 @Composable
 fun ExtraContent(
     component: ExtraComponent,
-    dismiss: () -> Unit
+    dismiss: () -> Unit,
+    topBarOverlay: @Composable BoxScope.() -> Unit = {}
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Extra") },
-                navigationIcon = {
-                    IconButton(onClick = dismiss) {
-                        Icon(
-                            imageVector = Icons.Filled.Close,
-                            contentDescription = stringResource(R.string.close_button_description)
-                        )
+            Box {
+                TopAppBar(
+                    title = { Text("Extra") },
+                    navigationIcon = {
+                        IconButton(onClick = dismiss) {
+                            Icon(
+                                imageVector = Icons.Filled.Close,
+                                contentDescription = stringResource(R.string.close_button_description)
+                            )
+                        }
                     }
-                }
-            )
+                )
+                topBarOverlay()
+            }
         }
     ) { paddingValues ->
         GameWebView(

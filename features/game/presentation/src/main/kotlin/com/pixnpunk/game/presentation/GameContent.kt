@@ -3,13 +3,17 @@ package com.pixnpunk.game.presentation
 import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Button
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.Typography
 import androidx.compose.material3.VerticalDragHandle
@@ -31,6 +35,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalViewConfiguration
@@ -41,8 +46,10 @@ import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.pixnpunk.dialogs.presentation.DialogsMainContent
 import com.pixnpunk.extra.presentation.ExtraContent
 import com.pixnpunk.game.domain.model.GameState
+import com.pixnpunk.game.domain.model.ScriptState
 import com.pixnpunk.game.presentation.component.GameAppBar
 import com.pixnpunk.game.presentation.component.GameBottomBar
+import com.pixnpunk.game.presentation.component.ScriptBusyIndicator
 import com.pixnpunk.game.presentation.model.GameUIState
 import com.pixnpunk.game.presentation.theme.AppTypography
 import com.pixnpunk.game.presentation.theme.QuasporiumTheme
@@ -71,6 +78,9 @@ fun GameContent(
     val badges by component.badgesState.collectAsStateWithLifecycle()
 
     val engineState by component.engineState.collectAsStateWithLifecycle()
+    val scriptActivity by component.scriptState.collectAsStateWithLifecycle()
+    val isScriptBusy = scriptActivity != ScriptState.IDLE
+    val longScriptSnackbarState = remember { SnackbarHostState() }
 
     val extraSlotIsNotEmpty = extraSlot.child != null
     val objectSlotIsNotEmpty = objectSlot.child != null
@@ -123,6 +133,18 @@ fun GameContent(
                         )
                     }
             }
+        }
+    }
+
+    LaunchedEffect(scriptActivity) {
+        if (scriptActivity == ScriptState.RUNNING_LONG) {
+            val result = longScriptSnackbarState.showSnackbar(
+                message = "The game script has been running for a long time. " +
+                    "Restarting the app loses unsaved progress.",
+                actionLabel = "Restart app",
+                duration = SnackbarDuration.Indefinite
+            )
+            if (result == SnackbarResult.ActionPerformed) component.doRestartApp()
         }
     }
 
@@ -282,7 +304,8 @@ fun GameContent(
                                     },
                                     doSaveFile = component::doSaveFile,
                                     doLoadFile = component::doLoadFile,
-                                    doRestartGame = component::doRestartGame
+                                    doRestartGame = component::doRestartGame,
+                                    isScriptBusy = isScriptBusy
                                 )
                             },
                             snackbarHostState = snackbarHostState
@@ -292,18 +315,24 @@ fun GameContent(
                 supportingPane = {
                     AnimatedPane {
                         extraSlot.child?.instance?.let { child ->
-                            ExtraContent(child, component::clearAllSlot)
+                            ExtraContent(child, component::clearAllSlot) { ScriptBusyIndicator(isScriptBusy) }
                         }
                     }
                 },
                 extraPane = {
                     AnimatedPane {
                         objectSlot.child?.instance?.let { child ->
-                            ObjectContent(child, component::clearAllSlot)
+                            ObjectContent(child, component::clearAllSlot) { ScriptBusyIndicator(isScriptBusy) }
                         }
                     }
                 }
             )
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.BottomCenter
+            ) {
+                SnackbarHost(longScriptSnackbarState)
+            }
         }
     }
 }

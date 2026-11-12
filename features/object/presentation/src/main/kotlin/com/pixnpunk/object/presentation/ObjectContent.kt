@@ -1,5 +1,7 @@
 package com.pixnpunk.`object`.presentation
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -28,7 +30,8 @@ import com.pixnpunk.`object`.presentation.content.ObjectCell
 @Composable
 fun ObjectContent(
     component: ObjectComponent,
-    dismiss: () -> Unit
+    dismiss: () -> Unit,
+    topBarOverlay: @Composable BoxScope.() -> Unit = {}
 ) {
     val uiState by component.uiState.collectAsStateWithLifecycle()
 
@@ -43,17 +46,20 @@ fun ObjectContent(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Objects") },
-                navigationIcon = {
-                    IconButton(onClick = dismiss) {
-                        Icon(
-                            imageVector = Icons.Filled.Close,
-                            contentDescription = stringResource(R.string.close_button_description)
-                        )
+            Box {
+                TopAppBar(
+                    title = { Text("Objects") },
+                    navigationIcon = {
+                        IconButton(onClick = dismiss) {
+                            Icon(
+                                imageVector = Icons.Filled.Close,
+                                contentDescription = stringResource(R.string.close_button_description)
+                            )
+                        }
                     }
-                }
-            )
+                )
+                topBarOverlay()
+            }
         },
         containerColor = Color(uiState.backColor)
     ) { paddingValues ->

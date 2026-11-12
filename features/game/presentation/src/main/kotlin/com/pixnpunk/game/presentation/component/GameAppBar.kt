@@ -1,5 +1,6 @@
 package com.pixnpunk.game.presentation.component
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.RestartAlt
@@ -20,12 +21,13 @@ fun GameAppBar(
     isInputExecutorVis: Boolean,
     isAppBarMenuVis: Boolean,
     isSaveMenuItemVis: Boolean,
+    isScriptBusy: Boolean = false,
     showDialog: () -> Unit,
     doCloseGame: () -> Unit,
     doSaveFile: () -> Unit,
     doLoadFile: () -> Unit,
     doRestartGame: () -> Unit
-) {
+) = Box {
     TopAppBar(
         title = { Text(titleText) },
         navigationIcon = {
@@ -62,4 +64,5 @@ fun GameAppBar(
             }
         }
     )
+    ScriptBusyIndicator(isScriptBusy)
 }
