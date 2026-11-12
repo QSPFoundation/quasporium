@@ -80,8 +80,11 @@ fun DialogsMainContent(
             } else {
                 val isConsent = it == OutputState.OUTPUT_CONSENT
                 val isEngineBusy = it == OutputState.OUTPUT_ENGINE_BUSY
+                val isOpenLink = it == OutputState.OUTPUT_OPEN_LINK
                 BasicAlertDialog(
-                    onDismissRequest = { if (!isConsent && !isEngineBusy) component.onDismissed() },
+                    onDismissRequest = {
+                        if (!isConsent && !isEngineBusy) component.onDismissed()
+                    },
                     properties =
                         when (it) {
                             OutputState.OUTPUT_IMAGE -> DialogProperties(
@@ -114,6 +117,7 @@ fun DialogsMainContent(
                                         when {
                                             isConsent -> R.string.allow_button_description
                                             isEngineBusy -> R.string.restart_app_button_description
+                                            isOpenLink -> R.string.open_button_description
                                             else -> R.string.confirm_button_description
                                         }
                                     ),
@@ -124,9 +128,17 @@ fun DialogsMainContent(
                                             else -> R.string.cancel_button_description
                                         }
                                     ),
-                                    onConfirm = {
+                                    checkboxLabel =
+                                        when {
+                                            isOpenLink -> stringResource(R.string.link_dont_ask_checkbox)
+                                            else -> null
+                                        },
+                                    onConfirm = { isChecked ->
                                         component.confirmMessage(
-                                            OutputStateValue(it)
+                                            OutputStateValue(
+                                                state = it,
+                                                isChecked = isChecked
+                                            )
                                         )
                                     },
                                     onCancel = {

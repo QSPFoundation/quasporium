@@ -27,7 +27,8 @@ class RealWebViewComponent(
     private val engineSettingsStateFlow: Flow<LibUIConfig>,
     private val isMainComponent: Boolean = false,
     override val gameDirUriBox: String,
-    override val onExecValue: (String) -> Unit
+    override val onExecValue: (String) -> Unit,
+    override val onOpenLink: (String) -> Unit
 ) : ComponentContext by componentContext, WebViewComponent, KoinComponent {
 
     private val scope = coroutineScope()

@@ -1,13 +1,11 @@
 package com.pixnpunk.webview.presentation
 
 import android.annotation.SuppressLint
-import android.content.Intent
 import android.net.Uri
 import android.webkit.RenderProcessGoneDetail
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import androidx.core.net.toUri
 import androidx.webkit.WebViewAssetLoader
 import com.pixnpunk.common.Base64Util.decodeBase64
 
@@ -15,7 +13,7 @@ import com.pixnpunk.common.Base64Util.decodeBase64
 internal class WebViewClient(
     private val assetLoader: Lazy<WebViewAssetLoader>,
     private val onExecValue: (String) -> Unit,
-    private val onStartActivity: (Intent) -> Unit,
+    private val onOpenLink: (String) -> Unit,
     private val onRenderProcessGone: () -> Unit
 ) : WebViewClient() {
 
@@ -46,11 +44,7 @@ internal class WebViewClient(
                     }
 
             "https", "http" ->
-                if (request.hasGesture()) {
-                    Intent(Intent.ACTION_VIEW, uriDecode.toUri())
-                        .apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK }
-                        .also(onStartActivity)
-                }
+                if (request.hasGesture()) onOpenLink(request.url.toString())
         }
         return true
     }

@@ -20,7 +20,8 @@ class RealExtraComponent(
     private val engineInteractor: GameEngineInteractor,
     private val settingsState: StateFlow<SettingsEntity>,
     private val gameDirUriBox: String,
-    private val onExecValue: (String) -> Unit
+    private val onExecValue: (String) -> Unit,
+    private val onOpenLink: (String) -> Unit
 ) : ComponentContext by componentContext, ExtraComponent, KoinComponent {
 
     override val gameWebViewComponent: WebViewComponent =
@@ -39,5 +40,6 @@ class RealExtraComponent(
             settingsStateFlow = settingsState,
             gameDirUriBox = gameDirUriBox,
             onExecValue = onExecValue,
+            onOpenLink = onOpenLink
         )
 }

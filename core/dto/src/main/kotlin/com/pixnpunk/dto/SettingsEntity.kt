@@ -38,6 +38,7 @@ data class SettingsEntity(
     val isUsageStatsEnabled: Boolean = false,
     val isCrashReportsEnabled: Boolean = true,
     val isTelemetryConsentAsked: Boolean = false,
+    val isLinkConfirmEnabled: Boolean = true,
 
     @Transient
     val binaryPref: BinaryPrefFormat = BinaryPrefFormat.SI,

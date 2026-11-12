@@ -127,6 +127,20 @@ class SettingsRepositoryImplTest {
         global.awaitSettings { it.textColor == SettingsEntity().textColor }
     }
 
+    @Test
+    fun linkConfirmationIsAGameSetting() = runBlocking {
+        val game = repository(localPrefs)
+        val global = repository(null)
+
+        game.toggleLinkConfirm(false)
+        global.toggleLinkConfirm(false)
+
+        assertEquals(false, localPrefs.getBoolean(PrefKeys.LINK_CONFIRM, true))
+        assertFalse(globalPrefs.contains(PrefKeys.LINK_CONFIRM))
+        game.awaitSettings { !it.isLinkConfirmEnabled }
+        assertEquals(true, global.settingsFlow.value.isLinkConfirmEnabled)
+    }
+
     private fun repository(local: SharedPreferences?) =
         SettingsRepositoryImpl(globalPrefs, local).also { repositories += it }
 

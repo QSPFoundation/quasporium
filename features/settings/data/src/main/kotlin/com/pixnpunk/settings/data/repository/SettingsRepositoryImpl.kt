@@ -54,6 +54,13 @@ class SettingsRepositoryImpl(
             globalPrefs.getBoolean(key, default)
         }
 
+    private fun getBooleanLocal(key: String, default: Boolean): Boolean =
+        if (localPrefs == null || !localPrefs.contains(key)) {
+            default
+        } else {
+            localPrefs.getBoolean(key, default)
+        }
+
     private fun getStringMerged(key: String, default: String): String =
         if (localPrefs != null && localPrefs.contains(key)) {
             localPrefs.getString(key, default) ?: default
@@ -116,6 +123,9 @@ class SettingsRepositoryImpl(
             getStringMerged(PrefKeys.BINARY_PREF, defValue.binaryPref.name),
             defValue.binaryPref
         ),
+
+        isLinkConfirmEnabled =
+            getBooleanLocal(PrefKeys.LINK_CONFIRM, defValue.isLinkConfirmEnabled),
 
         isUsageStatsEnabled =
             globalPrefs.getBoolean(PrefKeys.USAGE_STATS, defValue.isUsageStatsEnabled),
@@ -220,6 +230,10 @@ class SettingsRepositoryImpl(
 
     override suspend fun toggleExecString(isEnabled: Boolean) =
         targetPrefs.edit { putBoolean(PrefKeys.EXEC_STRING, isEnabled) }
+
+    override suspend fun toggleLinkConfirm(isEnabled: Boolean) {
+        localPrefs?.edit { putBoolean(PrefKeys.LINK_CONFIRM, isEnabled) }
+    }
 
     override suspend fun toggleUsageStats(isEnabled: Boolean) =
         globalPrefs.edit { putBoolean(PrefKeys.USAGE_STATS, isEnabled) }

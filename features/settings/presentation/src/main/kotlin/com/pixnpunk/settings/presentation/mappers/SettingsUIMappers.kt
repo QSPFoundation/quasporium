@@ -38,6 +38,7 @@ fun SettingsEntity.toMap(): Map<String, Any> = mapOf(
     PrefKeys.APP_LANG to language,
     PrefKeys.APP_THEME to appThemeMode.name,
     PrefKeys.BINARY_PREF to binaryPref.name,
+    PrefKeys.LINK_CONFIRM to isLinkConfirmEnabled,
     PrefKeys.USAGE_STATS to isUsageStatsEnabled,
     PrefKeys.CRASH_REPORTS to isCrashReportsEnabled,
 )
@@ -75,6 +76,7 @@ suspend fun SettingsRepository.dispatch(key: String, value: Any) = when (key) {
     PrefKeys.APP_LANG -> updateLanguage(value as String)
     PrefKeys.APP_THEME -> updateTheme(AppThemeMode.valueOf(value as String))
     PrefKeys.BINARY_PREF -> updateBinaryPref(BinaryPrefFormat.valueOf(value as String))
+    PrefKeys.LINK_CONFIRM -> toggleLinkConfirm(value as Boolean)
 
     PrefKeys.USAGE_STATS -> toggleUsageStats(value as Boolean)
     PrefKeys.CRASH_REPORTS -> toggleCrashReports(value as Boolean)

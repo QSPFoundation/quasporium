@@ -1,7 +1,6 @@
 package com.pixnpunk.webview.presentation
 
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import android.webkit.RenderProcessGoneDetail
 import android.webkit.WebResourceRequest
@@ -20,13 +19,13 @@ import org.junit.runner.RunWith
 class WebViewClientTest {
     private val context = ApplicationProvider.getApplicationContext<Context>()
     private val execValues = mutableListOf<String>()
-    private val startedIntents = mutableListOf<Intent>()
+    private val openedLinks = mutableListOf<String>()
     private var renderProcessGoneCount = 0
 
     private val client = WebViewClient(
         assetLoader = lazy { WebViewAssetLoader.Builder().build() },
         onExecValue = { execValues += it },
-        onStartActivity = { startedIntents += it },
+        onOpenLink = { openedLinks += it },
         onRenderProcessGone = { renderProcessGoneCount++ }
     )
 
@@ -45,16 +44,26 @@ class WebViewClientTest {
             assertTrue(url, client.shouldOverrideUrlLoading(view, request(url, hasGesture = false)))
         }
 
-        assertEquals(emptyList<Intent>(), startedIntents)
+        assertEquals(emptyList<String>(), openedLinks)
     }
 
     @Test
-    fun tappedLinksOpenInABrowser() = onMainThread { view ->
-        assertTrue(client.shouldOverrideUrlLoading(view, request("https://example.org/a", hasGesture = true)))
+    fun tappedLinksAreReportedAsTheyAre() = onMainThread { view ->
+        val urls = listOf(
+            "https://example.org/a",
+            "http://example.org/a%2Fb?q=%23c#d"
+        )
 
-        val intent = startedIntents.single()
-        assertEquals(Intent.ACTION_VIEW, intent.action)
-        assertEquals(Uri.parse("https://example.org/a"), intent.data)
+        for (url in urls) {
+            assertTrue(
+                url,
+                client.shouldOverrideUrlLoading(
+                    view, request(url, hasGesture = true)
+                )
+            )
+        }
+
+        assertEquals(urls, openedLinks)
     }
 
     @Test
@@ -68,11 +77,20 @@ class WebViewClientTest {
 
     @Test
     fun otherSchemesAreNotLoaded() = onMainThread { view ->
-        for (url in listOf("file:///sdcard/a.txt", "intent://scan/#Intent;end", "javascript:alert(1)")) {
-            assertTrue(url, client.shouldOverrideUrlLoading(view, request(url, hasGesture = true)))
+        listOf(
+            "file:///sdcard/a.txt",
+            "intent://scan/#Intent;end",
+            "javascript:alert(1)"
+        ).forEach {
+            assertTrue(
+                it,
+                client.shouldOverrideUrlLoading(
+                    view, request(url = it, hasGesture = true)
+                )
+            )
         }
 
-        assertEquals(emptyList<Intent>(), startedIntents)
+        assertEquals(emptyList<String>(), openedLinks)
         assertEquals(emptyList<String>(), execValues)
     }
 

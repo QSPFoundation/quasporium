@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.Height
+import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.QueryStats
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -142,6 +143,19 @@ fun SettingsGeneralContent(
         defaultValue = true,
         title = { Text(stringResource(R.string.immersive_switch_title)) }
     )
+    if (isLocalSettings) {
+        switchPreference(
+            key = PrefKeys.LINK_CONFIRM,
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Link,
+                    contentDescription = null
+                )
+            },
+            defaultValue = true,
+            title = { Text(stringResource(R.string.link_confirm_switch_title)) }
+        )
+    }
 
     if (!isLocalSettings && isTelemetryAvailable) {
         switchPreference(

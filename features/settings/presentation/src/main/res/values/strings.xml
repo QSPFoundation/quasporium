@@ -9,6 +9,7 @@
     <string name="prefixes_list_title">File size units</string>
     <string name="count_action_list_title">Visible actions count</string>
     <string name="immersive_switch_title">Immersive mode</string>
+    <string name="link_confirm_switch_title">Ask before opening links</string>
     <string name="disable_images_switch_title">Disable game images</string>
     <string name="image_path_switch_title">Image path debugger</string>
     <string name="font_style_list_title">Game font style</string>

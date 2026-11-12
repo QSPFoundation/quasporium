@@ -15,6 +15,7 @@ dependencies {
     api(project(":core:dto"))
     implementation(project(":core:logger"))
     implementation(project(":core:ui"))
+    implementation(project(":core:common"))
 
     api(project(":features:game:domain"))
 

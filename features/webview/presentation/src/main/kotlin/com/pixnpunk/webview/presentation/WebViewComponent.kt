@@ -8,4 +8,5 @@ sealed interface WebViewComponent {
     val model: StateFlow<WebViewState>
     val gameDirUriBox: String
     val onExecValue: (String) -> Unit
+    val onOpenLink: (String) -> Unit
 }

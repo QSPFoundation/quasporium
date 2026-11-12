@@ -41,6 +41,7 @@ ktor = "3.6.0"
 lifecycleViewmodelCompose = "2.11.0"
 material = "1.14.0"
 mvikotlin = "4.4.0"
+okhttp3 = "5.5.0"
 paging = "3.5.2"
 preference = "2.2.0"
 prettytime = "5.0.9.Final"
@@ -128,6 +129,7 @@ koin-workmanager = { module = "io.insert-koin:koin-androidx-workmanager" }
 mvikotlin-coro-ext = { module = "com.arkivanov.mvikotlin:mvikotlin-extensions-coroutines", version.ref = "mvikotlin" }
 mvikotlin-core = { module = "com.arkivanov.mvikotlin:mvikotlin", version.ref = "mvikotlin" }
 mvikotlin-main = { module = "com.arkivanov.mvikotlin:mvikotlin-main", version.ref = "mvikotlin" }
+okhttp3 = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp3" }
 preference = { module = "me.zhanghai.compose.preference:preference", version.ref = "preference" }
 prettytime = { module = "org.ocpsoft.prettytime:prettytime", version.ref = "prettytime" }
 sevenzip-jbinding-android = { module = "com.github.omicronapps:7-Zip-JBinding-4Android", version.ref = "xZipJbindingXandroid" }

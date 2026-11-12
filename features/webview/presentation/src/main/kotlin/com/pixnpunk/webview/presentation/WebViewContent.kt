@@ -111,7 +111,7 @@ fun GameWebView(
                                 .build()
                         },
                         onExecValue = component.onExecValue,
-                        onStartActivity = { runCatching { ctx.startActivity(it) } },
+                        onOpenLink = component.onOpenLink,
                         onRenderProcessGone = { rendererCrashes++ }
                     )
                 }

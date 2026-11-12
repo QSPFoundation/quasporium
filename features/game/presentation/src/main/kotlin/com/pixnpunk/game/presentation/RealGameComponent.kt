@@ -14,6 +14,7 @@ import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
 import com.arkivanov.essenty.lifecycle.doOnCreate
 import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.arkivanov.essenty.lifecycle.doOnStop
+import com.pixnpunk.common.makeLinkPrompt
 import com.pixnpunk.dialogs.presentation.DialogsComponent
 import com.pixnpunk.dialogs.presentation.DialogsConfig
 import com.pixnpunk.dialogs.presentation.DialogsState
@@ -179,7 +180,8 @@ class RealGameComponent(
                 engineInteractor = engineInteractor,
                 settingsState = settingsState,
                 gameDirUriBox = gameDirUriBox,
-                onExecValue = ::onExecValue
+                onExecValue = ::onExecValue,
+                onOpenLink = ::onOpenLink
             )
         }
 
@@ -202,7 +204,8 @@ class RealGameComponent(
         engineInteractor = engineInteractor,
         settingsState = settingsState,
         gameDirUriBox = gameDirUriBox,
-        onExecValue = ::onExecValue
+        onExecValue = ::onExecValue,
+        onOpenLink = ::onOpenLink
     )
 
     private companion object {
@@ -395,6 +398,21 @@ class RealGameComponent(
             OutputState.OUTPUT_ENGINE_BUSY ->
                 _uiState.update { it.copy(isAppRestartRequested = true) }
 
+            OutputState.OUTPUT_OPEN_LINK -> {
+                val url =
+                    dialogSlot.child?.instance?.dialogsConfig?.link ?: return
+
+                if (value.isChecked) {
+                    componentScope.launch {
+                        settingsRepository.toggleLinkConfirm(
+                            isEnabled = false
+                        )
+                    }
+                }
+
+                _events.trySend(GameEvent.OpenLink(url))
+            }
+
             else -> {}
         }
     }
@@ -431,6 +449,20 @@ class RealGameComponent(
 
     private fun onExecValue(inputString: String) =
         engineInteractor.submitCommand(EngineCommand.ExecuteString(inputString))
+
+    private fun onOpenLink(url: String) =
+        if (!settingsState.value.isLinkConfirmEnabled) {
+            _events.trySend(GameEvent.OpenLink(url))
+        } else {
+            dialogNavigation.activate(
+                DialogsConfig(
+                    dialogsState = DialogsState.DIALOG_OUTPUT_VALUE,
+                    outputState = OutputState.OUTPUT_OPEN_LINK,
+                    outputValue = url.makeLinkPrompt(),
+                    link = url
+                )
+            )
+        }
 
     private fun onCleanError() {
         val oldConfig = dialogSlot.child?.configuration as DialogsConfig

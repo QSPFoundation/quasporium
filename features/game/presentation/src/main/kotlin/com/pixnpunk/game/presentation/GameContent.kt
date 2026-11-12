@@ -1,5 +1,6 @@
 package com.pixnpunk.game.presentation
 
+import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.material3.AlertDialog
@@ -31,8 +32,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.res.stringResource
+import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.pixnpunk.dialogs.presentation.DialogsMainContent
@@ -77,6 +80,7 @@ fun GameContent(
     val isObjectsListUpdated = badges.hasNewObjects
     val isActionsListUpdated = badges.hasNewActions
 
+    val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val doubleTapTimeout = LocalViewConfiguration.current.doubleTapTimeoutMillis
     var clickJob by remember { mutableStateOf<Job?>(null) }
@@ -98,12 +102,26 @@ fun GameContent(
     LaunchedEffect(component) {
         component.events.collect { event ->
             when (event) {
-                is GameEvent.ShowSnackbar -> {
+                is GameEvent.ShowSnackbar ->
                     snackbarHostState.showSnackbar(
                         message = event.message,
                         duration = SnackbarDuration.Short
                     )
-                }
+
+                is GameEvent.OpenLink ->
+                    runCatching {
+                        context.startActivity(
+                            Intent(
+                                Intent.ACTION_VIEW,
+                                event.url.toUri()
+                            ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        )
+                    }.getOrElse {
+                        snackbarHostState.showSnackbar(
+                            message = "No app can open this link",
+                            duration = SnackbarDuration.Short
+                        )
+                    }
             }
         }
     }

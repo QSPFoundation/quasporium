@@ -23,4 +23,6 @@
     <string name="allow_button_description">Allow</string>
     <string name="deny_button_description">Don\'t allow</string>
     <string name="restart_app_button_description">Restart app</string>
+    <string name="open_button_description">Open</string>
+    <string name="link_dont_ask_checkbox">Don\'t ask again for this game</string>
 </resources>

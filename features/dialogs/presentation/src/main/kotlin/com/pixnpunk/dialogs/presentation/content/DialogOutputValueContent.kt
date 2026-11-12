@@ -13,9 +13,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -26,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,6 +39,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.AnnotatedString
@@ -52,7 +56,8 @@ fun DialogOutputValueContent(
     isMsg: Boolean,
     confirmLabel: String,
     cancelLabel: String,
-    onConfirm: () -> Unit,
+    checkboxLabel: String? = null,
+    onConfirm: (isChecked: Boolean) -> Unit,
     onCancel: () -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -77,6 +82,26 @@ fun DialogOutputValueContent(
                 text = annotatedMessage,
                 style = MaterialTheme.typography.bodyMedium
             )
+            var isChecked by rememberSaveable { mutableStateOf(false) }
+            if (checkboxLabel != null) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .toggleable(
+                            value = isChecked,
+                            role = Role.Checkbox,
+                            onValueChange = { isChecked = it }
+                        ),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Checkbox(checked = isChecked, onCheckedChange = null)
+                    Text(
+                        text = checkboxLabel,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
@@ -89,7 +114,7 @@ fun DialogOutputValueContent(
                     }
                 }
                 TextButton(
-                    onClick = { onConfirm(); onDismiss() }
+                    onClick = { onConfirm(isChecked); onDismiss() }
                 ) {
                     Text(confirmLabel)
                 }
