@@ -17,8 +17,6 @@ dependencies {
     implementation(platform(libs.koin.bom))
     api(libs.koin.android)
 
-    api(libs.ktor.client.core)
-
     implementation(libs.storage)
 
     implementation(libs.sevenzip.jbinding.android)

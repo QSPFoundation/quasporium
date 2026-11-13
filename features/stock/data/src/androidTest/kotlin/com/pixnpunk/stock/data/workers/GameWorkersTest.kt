@@ -27,9 +27,11 @@ import com.pixnpunk.storage.ArchiveExtractor
 import com.pixnpunk.storage.di.storageModule
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
+import io.ktor.client.engine.mock.MockRequestHandler
 import io.ktor.client.engine.mock.respond
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay
@@ -158,6 +160,53 @@ class GameWorkersTest {
         assertTrue(logger.breadcrumbs.any { "Foreground service is not allowed" in it })
     }
 
+    @Test
+    fun interruptedDownloadIsRetriedAndKeepsTheFile() = runBlocking {
+        val worker = downloadWorker {
+            respond(
+                content = "ga".toByteArray(),
+                headers = headersOf(
+                    HttpHeaders.ContentDisposition to listOf("attachment; filename=\"game.qsp\""),
+                    HttpHeaders.ContentLength to listOf("4"),
+                    HttpHeaders.ETag to listOf("\"1\"")
+                )
+            )
+        }
+
+        val result = worker.doWork()
+
+        assertEquals(ListenableWorker.Result.retry(), result)
+        assertEquals(emptyList<Throwable>(), logger.errors)
+        assertEquals(emptyList<String>(), notifications.shown)
+        assertArrayEquals("ga".toByteArray(), File(gameDir, "game.qsp").readBytes())
+        assertTrue(File(gameDir, ".download").exists())
+    }
+
+    @Test
+    fun missingDownloadFailsAndDeletesGameDir() = runBlocking {
+        val worker = downloadWorker { respond(content = "", status = HttpStatusCode.NotFound) }
+
+        val result = worker.doWork()
+
+        assertEquals(ListenableWorker.Result.failure(), result)
+        assertEquals(listOf("Download failed: The game file was not found."), notifications.shown)
+        assertFalse(gameDir.exists())
+    }
+
+    private fun downloadWorker(handler: MockRequestHandler) =
+        buildWorker(
+            workDataOf(
+                DOWNLOAD_URL to "https://example.org/download?id=1",
+                DEST_DIR to gameDir.toUri().toString()
+            ),
+            deniedForeground
+        ) { appContext, params ->
+            DownloadGameWorker(
+                appContext, params, logger, notifications,
+                HttpClient(MockEngine(handler)) { install(HttpTimeout) }
+            )
+        }
+
     private fun unpackWorker(archive: File, foregroundUpdater: ForegroundUpdater) =
         buildWorker(
             workDataOf(
@@ -225,6 +274,7 @@ class GameWorkersTest {
 
     private inner class RecordingNotifications : NotificationProvider {
         var onTitle: (String) -> Unit = {}
+        val shown = CopyOnWriteArrayList<String>()
 
         override fun createForegroundInfo(workId: UUID, title: String, progress: Float): ForegroundInfo {
             onTitle(title)
@@ -234,7 +284,9 @@ class GameWorkersTest {
             return ForegroundInfo(1, notification)
         }
 
-        override fun showNotification(title: String, message: String) = Unit
+        override fun showNotification(title: String, message: String) {
+            shown += "$title: $message"
+        }
     }
 
     private class RecordingLocalRepository : LocalRepository {

@@ -6,6 +6,7 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.room.withTransaction
+import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
@@ -43,6 +44,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import java.io.File
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 class RemoteRepositoryImpl(
     private val context: Context,
@@ -65,7 +67,7 @@ class RemoteRepositoryImpl(
         const val API_QUERY_SORT = "sort"
         const val API_QUERY_ORDER = "order"
         const val API_QUERY_LANG = "language"
-
+        const val DOWNLOAD_BACKOFF_SECONDS = 10L
         const val REMOTE_GAMES_URL = "https://qsp.org/api/v1/games"
         const val REMOTE_AUTHORS_URL = "$REMOTE_GAMES_URL/authors"
         const val REMOTE_TRANSLATORS_URL = "$REMOTE_GAMES_URL/translators"
@@ -123,6 +125,11 @@ class RemoteRepositoryImpl(
                     Constraints.Builder()
                         .setRequiredNetworkType(NetworkType.CONNECTED)
                         .build()
+                )
+                .setBackoffCriteria(
+                    BackoffPolicy.EXPONENTIAL,
+                    DOWNLOAD_BACKOFF_SECONDS,
+                    TimeUnit.SECONDS
                 )
                 .build()
 

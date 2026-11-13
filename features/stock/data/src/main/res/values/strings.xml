@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="download_error_title">Download failed</string>
+    <string name="download_error_no_connection">No internet connection.</string>
+    <string name="download_error_timeout">The server is not responding.</string>
+    <string name="download_error_not_found">The game file was not found.</string>
+    <string name="download_error_server">Server error (%1$d).</string>
+    <string name="download_error_unexpected">Could not save the game file.</string>
+</resources>

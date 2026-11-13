@@ -8,29 +8,33 @@ import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.pixnpunk.logger.AppLogger
 import com.pixnpunk.notification.NotificationProvider
+import com.pixnpunk.stock.data.R
+import com.pixnpunk.stock.data.download.GameDownloader
+import com.pixnpunk.stock.data.download.isTransientDownloadError
+import com.pixnpunk.stock.data.mapper.toNetworkError
 import com.pixnpunk.stock.data.workers.WorkerKeys.DEST_DIR
 import com.pixnpunk.stock.data.workers.WorkerKeys.DOWNLOAD_URL
-import com.pixnpunk.storage.FileUtil.writeFileToDir
-import io.ktor.client.*
-import io.ktor.client.plugins.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
-import java.net.URLDecoder
-import java.nio.charset.StandardCharsets
-import java.util.*
+import com.pixnpunk.stock.domain.model.NetworkError
+import io.ktor.client.HttpClient
+import java.util.LinkedList
 import kotlin.coroutines.cancellation.CancellationException
-import kotlin.time.Duration.Companion.minutes
 
 class DownloadGameWorker(
     appContext: Context,
     workerParams: WorkerParameters,
     private val logger: AppLogger,
     private val notificationProvider: NotificationProvider,
-    private val httpClient: HttpClient
+    httpClient: HttpClient
 ) : CoroutineWorker(appContext, workerParams) {
 
+    private val downloader = GameDownloader(httpClient)
     private var isForeground = true
+
+    private companion object {
+        const val MAX_ATTEMPTS = 5
+        const val PROGRESS_INTERVAL_SECONDS = 0.5
+        const val SPEED_SAMPLES = 5
+    }
 
     private suspend fun updateForeground(title: String, progress: Float) {
         if (!isForeground) return
@@ -42,124 +46,71 @@ class DownloadGameWorker(
         }
     }
 
-    fun extractFileName(response: HttpResponse): String? {
-        val contentDisposition = response.headers[HttpHeaders.ContentDisposition]
-        if (!contentDisposition.isNullOrBlank()) {
-            val parsed = parseHeaderValue(contentDisposition).firstOrNull()
-
-            val filenameStar =
-                parsed?.params?.find { it.name.equals("filename*", ignoreCase = true) }?.value
-            if (!filenameStar.isNullOrBlank()) {
-                val encodedValue = filenameStar.substringAfter("''", filenameStar)
-                runCatching {
-                    return URLDecoder.decode(encodedValue, StandardCharsets.UTF_8.name()).trim('"')
-                }
-            }
-
-            val filename =
-                parsed?.params?.find { it.name.equals("filename", ignoreCase = true) }?.value
-            if (!filename.isNullOrBlank()) {
-                return filename.trim('"')
-            }
+    private fun failureMessage(error: Throwable): String =
+        when (val networkError = error.toNetworkError()) {
+            NetworkError.NoConnection -> applicationContext.getString(R.string.download_error_no_connection)
+            NetworkError.Timeout -> applicationContext.getString(R.string.download_error_timeout)
+            NetworkError.NotFound -> applicationContext.getString(R.string.download_error_not_found)
+            is NetworkError.Server ->
+                applicationContext.getString(R.string.download_error_server, networkError.code)
+            NetworkError.Unexpected -> applicationContext.getString(R.string.download_error_unexpected)
         }
 
-        val urlPathName = response.request.url.segments.lastOrNull { it.isNotBlank() }
-        if (!urlPathName.isNullOrBlank()) {
-            val decoded = runCatching {
-                URLDecoder.decode(urlPathName, StandardCharsets.UTF_8.name())
-            }.getOrDefault(urlPathName)
+    private fun progressReporter(): suspend (Long, Long?) -> Unit {
+        var lastTime = System.currentTimeMillis()
+        var lastBytes = -1L
+        val speedSamples = LinkedList<Double>()
 
-            if (decoded.isNotBlank()) {
-                return decoded
+        return { downloaded, total ->
+            val currentTime = System.currentTimeMillis()
+            val timeDelta = (currentTime - lastTime) / 1000.0
+
+            if (lastBytes < 0) {
+                lastBytes = downloaded
+            } else if (total != null && timeDelta > PROGRESS_INTERVAL_SECONDS) {
+                speedSamples.add((downloaded - lastBytes) / timeDelta)
+                if (speedSamples.size > SPEED_SAMPLES) speedSamples.removeFirst()
+
+                lastTime = currentTime
+                lastBytes = downloaded
+
+                val averageSpeed = speedSamples.average()
+                val etaSeconds =
+                    if (averageSpeed > 0) (total - downloaded) / averageSpeed
+                    else Double.POSITIVE_INFINITY
+
+                updateForeground(
+                    "Downloading: $etaSeconds",
+                    downloaded.toFloat() / total.toFloat()
+                )
             }
         }
-
-        return null
     }
 
     override suspend fun doWork(): Result {
         val downloadLink = inputData.getString(DOWNLOAD_URL) ?: return Result.failure()
         val destDirPath = inputData.getString(DEST_DIR) ?: return Result.failure()
+        val destDir = destDirPath.toUri().toFile()
 
         updateForeground("Preparing to download", 0f)
 
         return try {
-            httpClient.prepareGet(
-                urlString = downloadLink,
-                block = {
-                    header(HttpHeaders.CacheControl, "no-cache, no-store")
-                    retry { noRetry() }
-
-                    var lastTime = System.currentTimeMillis()
-                    var lastBytesSent = 0L
-                    val speedSamples = LinkedList<Double>()
-
-                    val timeout = 30.minutes.inWholeMilliseconds
-                    timeout {
-                        requestTimeoutMillis = timeout
-                        connectTimeoutMillis = timeout
-                        socketTimeoutMillis = timeout
-                    }
-
-                    onDownload { bytesSentTotal, contentLength ->
-                        if (contentLength != null) {
-                            val currentTime = System.currentTimeMillis()
-                            val timeDelta = (currentTime - lastTime) / 1000.0
-
-                            if (timeDelta > 0.5) {
-                                val instantSpeed = (bytesSentTotal - lastBytesSent) / timeDelta
-
-                                speedSamples.add(instantSpeed)
-                                if (speedSamples.size > 5) {
-                                    speedSamples.removeFirst()
-                                }
-
-                                lastTime = currentTime
-                                lastBytesSent = bytesSentTotal
-
-                                val averageSpeed = speedSamples.average()
-                                val etaSeconds =
-                                    if (averageSpeed > 0) {
-                                        (contentLength - bytesSentTotal) / averageSpeed
-                                    } else {
-                                        Double.POSITIVE_INFINITY
-                                    }
-
-                                updateForeground(
-                                    "Downloading: $etaSeconds",
-                                    bytesSentTotal.toFloat() / contentLength.toFloat()
-                                )
-                            }
-                        }
-                    }
-                }
-            ).execute { response ->
-                if (!response.status.isSuccess()) {
-                    throw RuntimeException("HTTP Error ${response.status}")
-                }
-
-                val file = writeFileToDir(
-                    fileChannel = response.bodyAsChannel(),
-                    fileName = extractFileName(response)
-                        ?: throw RuntimeException("Could not resolve file name"),
-                    destDirPath = destDirPath,
-                    totalSize = response.contentLength() ?: -1L,
-                    onProgressUpdate = { state ->
-                        updateForeground("Writing: ${state.time}", state.progress)
-                    }
+            val file = downloader.download(downloadLink, destDir, progressReporter())
+            Result.success(
+                workDataOf(
+                    "filePath" to file.toUri().toString(),
+                    "destDirPath" to destDirPath
                 )
-
-                Result.success(
-                    workDataOf(
-                        "filePath" to file.getOrThrow(),
-                        "destDirPath" to destDirPath
-                    )
-                )
-            }
+            )
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
-            if (e is CancellationException) {
-                destDirPath.toUri().toFile().deleteRecursively()
-                throw e
+            if (e.isTransientDownloadError() && runAttemptCount < MAX_ATTEMPTS - 1) {
+                logger.recordBreadcrumb(
+                    "Download interrupted, retrying | attempt: $runAttemptCount | " +
+                        "link: $downloadLink | ${e.javaClass.simpleName}"
+                )
+                return Result.retry()
             }
 
             logger.apply {
@@ -168,11 +119,11 @@ class DownloadGameWorker(
             }
 
             notificationProvider.showNotification(
-                "Error",
-                "Failed to download file"
+                applicationContext.getString(R.string.download_error_title),
+                failureMessage(e)
             )
 
-            destDirPath.toUri().toFile().deleteRecursively()
+            destDir.deleteRecursively()
             Result.failure()
         }
     }
