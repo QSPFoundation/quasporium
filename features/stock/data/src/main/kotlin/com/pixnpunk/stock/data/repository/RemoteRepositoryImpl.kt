@@ -23,27 +23,31 @@ import com.pixnpunk.stock.data.mapper.toDomain
 import com.pixnpunk.stock.data.mapper.toTranslatorEntity
 import com.pixnpunk.stock.data.remote.GenericApiResponse
 import com.pixnpunk.stock.data.remote.NameCountItemRemote
-import com.pixnpunk.stock.data.workers.DownloadGameWorker
-import com.pixnpunk.stock.data.workers.UnpackGameWorker
-import com.pixnpunk.stock.data.workers.WorkerKeys.DEST_DIR
+import com.pixnpunk.stock.data.workers.InstallGameWorker
 import com.pixnpunk.stock.data.workers.WorkerKeys.DOWNLOAD_URL
 import com.pixnpunk.stock.data.workers.WorkerKeys.GAME_DATA_JSON
+import com.pixnpunk.stock.data.workers.WorkerKeys.GAME_DIR_NAME
+import com.pixnpunk.stock.data.workers.WorkerKeys.GAME_DIR_PREFIX
+import com.pixnpunk.stock.data.workers.WorkerKeys.GAME_DIR_TAG_PREFIX
+import com.pixnpunk.stock.data.workers.WorkerKeys.INSTALL_TAG
+import com.pixnpunk.stock.data.workers.WorkerKeys.installWorkName
 import com.pixnpunk.stock.domain.model.AuthorEntry
 import com.pixnpunk.stock.domain.model.SearchState
 import com.pixnpunk.stock.domain.model.TranslatorEntry
 import com.pixnpunk.stock.domain.repository.RemoteRepository
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.request.*
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.request.get
+import io.ktor.client.request.parameter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import java.io.File
-import java.util.*
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 class RemoteRepositoryImpl(
@@ -109,16 +113,15 @@ class RemoteRepositoryImpl(
         }
 
     override suspend fun downloadGame(downloadEntry: GameEntry) {
-        val gameDirName = "Game_${UUID.randomUUID().toString().replace("-", "")}"
-        val gameDir = File(context.filesDir, gameDirName)
-        gameDir.mkdir()
+        val gameDirName = GAME_DIR_PREFIX + UUID.randomUUID().toString().replace("-", "")
 
-        val downloadRequest =
-            OneTimeWorkRequestBuilder<DownloadGameWorker>()
+        val installRequest =
+            OneTimeWorkRequestBuilder<InstallGameWorker>()
                 .setInputData(
                     workDataOf(
                         DOWNLOAD_URL to downloadEntry.fileUrl,
-                        DEST_DIR to gameDir.toUri().toString()
+                        GAME_DIR_NAME to gameDirName,
+                        GAME_DATA_JSON to Json.encodeToString(downloadEntry)
                     )
                 )
                 .setConstraints(
@@ -131,42 +134,59 @@ class RemoteRepositoryImpl(
                     DOWNLOAD_BACKOFF_SECONDS,
                     TimeUnit.SECONDS
                 )
+                .addTag(INSTALL_TAG)
+                .addTag(GAME_DIR_TAG_PREFIX + gameDirName)
                 .build()
 
-        val unpackRequest =
-            OneTimeWorkRequestBuilder<UnpackGameWorker>()
-                .setInputData(
-                    workDataOf(
-                        GAME_DATA_JSON to Json.encodeToString(downloadEntry)
-                    )
-                )
-                .build()
-
-        workManager
-            .beginUniqueWork(
-                "GameDownload_${downloadEntry.fileUrl}",
-                ExistingWorkPolicy.KEEP,
-                downloadRequest
-            )
-            .then(unpackRequest)
-            .enqueue()
+        workManager.enqueueUniqueWork(
+            installWorkName(downloadEntry.fileUrl),
+            ExistingWorkPolicy.KEEP,
+            installRequest
+        )
     }
 
-    override suspend fun syncDictionaries() = withContext(Dispatchers.IO) {
-        runCatchingCancellable {
-            coroutineScope {
-                val allAuthors = async { fetchAllPages(REMOTE_AUTHORS_URL) }.await()
-                val allTranslators = async { fetchAllPages(REMOTE_TRANSLATORS_URL) }.await()
-                appDatabase.withTransaction {
-                    authorDao.clearAll()
-                    authorDao.insertAll(allAuthors.map { it.toAuthorEntity() })
+    override suspend fun removeAbandonedInstalls() =
+        withContext(Dispatchers.IO) {
+            val gameDirs = context.filesDir
+                .listFiles { file ->
+                    file.isDirectory && file.name.startsWith(GAME_DIR_PREFIX)
+                }
+                .orEmpty()
+            if (gameDirs.isEmpty()) return@withContext
 
-                    translatorDao.clearAll()
-                    translatorDao.insertAll(allTranslators.map { it.toTranslatorEntity() })
+            val installing =
+                workManager.getWorkInfosByTagFlow(INSTALL_TAG).first()
+                    .filterNot { it.state.isFinished }
+                    .flatMap { it.tags }
+                    .filter { it.startsWith(GAME_DIR_TAG_PREFIX) }
+                    .map { it.removePrefix(GAME_DIR_TAG_PREFIX) }
+                    .toSet()
+            val installed =
+                appDatabase.gameDao().getAll()
+                    .flatMap { it.gameDirPath.toUri().pathSegments }
+                    .toSet()
+
+            gameDirs
+                .filter { it.name !in installing && it.name !in installed }
+                .forEach { it.deleteRecursively() }
+        }
+
+    override suspend fun syncDictionaries() =
+        withContext(Dispatchers.IO) {
+            runCatchingCancellable {
+                coroutineScope {
+                    val allAuthors = async { fetchAllPages(REMOTE_AUTHORS_URL) }.await()
+                    val allTranslators = async { fetchAllPages(REMOTE_TRANSLATORS_URL) }.await()
+                    appDatabase.withTransaction {
+                        authorDao.clearAll()
+                        authorDao.insertAll(allAuthors.map { it.toAuthorEntity() })
+
+                        translatorDao.clearAll()
+                        translatorDao.insertAll(allTranslators.map { it.toTranslatorEntity() })
+                    }
                 }
             }
         }
-    }
 
     private suspend fun fetchAllPages(url: String): List<NameCountItemRemote> {
         val allItems = mutableListOf<NameCountItemRemote>()

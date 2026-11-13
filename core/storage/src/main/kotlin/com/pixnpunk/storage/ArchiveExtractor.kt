@@ -116,7 +116,7 @@ internal class SevenZipArchiveExtractor(
                 mode = CreateMode.REUSE
             ) ?: throw IOException("Could not create file: $safePath")
 
-            val outputStream = file.openOutputStream(context)
+            val outputStream = file.openOutputStream(context, append = false)
                 ?: throw IOException("Could not open stream for: $safePath")
 
             stream = SequentialOutStream(outputStream)

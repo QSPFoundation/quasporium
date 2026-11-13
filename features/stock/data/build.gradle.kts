@@ -9,11 +9,11 @@ android {
 
 dependencies {
     implementation(project(":core:common"))
-    api(project(":core:storage"))
+    implementation(project(":core:storage"))
     api(project(":core:database"))
     api(project(":core:dto"))
-    api(project(":core:notification"))
-    api(project(":core:logger"))
+    implementation(project(":core:notification"))
+    implementation(project(":core:logger"))
 
     api(project(":features:stock:domain"))
 

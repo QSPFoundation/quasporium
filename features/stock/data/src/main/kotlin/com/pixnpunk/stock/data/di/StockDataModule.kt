@@ -1,10 +1,10 @@
 package com.pixnpunk.stock.data.di
 
 import androidx.work.WorkManager
+import com.pixnpunk.stock.data.download.GameDownloader
 import com.pixnpunk.stock.data.repository.LocalRepositoryImpl
 import com.pixnpunk.stock.data.repository.RemoteRepositoryImpl
-import com.pixnpunk.stock.data.workers.DownloadGameWorker
-import com.pixnpunk.stock.data.workers.UnpackGameWorker
+import com.pixnpunk.stock.data.workers.InstallGameWorker
 import com.pixnpunk.stock.domain.repository.LocalRepository
 import com.pixnpunk.stock.domain.repository.RemoteRepository
 import io.ktor.client.*
@@ -15,8 +15,8 @@ import org.koin.dsl.module
 
 val stockDataModule = module {
     single { WorkManager.getInstance(get()) }
-    workerOf(::DownloadGameWorker)
-    workerOf(::UnpackGameWorker)
+    factory { GameDownloader(get()) }
+    workerOf(::InstallGameWorker)
 
     singleOf(::LocalRepositoryImpl) {
         bind<LocalRepository>()

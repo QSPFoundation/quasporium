@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="download_error_title">Download failed</string>
+    <string name="install_preparing">Preparing to download</string>
+    <string name="install_downloading">Downloading</string>
+    <string name="install_downloading_eta">Downloading · %1$s left</string>
+    <string name="install_unpacking">Unpacking</string>
+    <string name="install_unpacking_eta">Unpacking · %1$s left</string>
+    <string name="install_complete_title">Installation complete</string>
+    <string name="install_complete_text">%1$s is ready to play!</string>
+    <string name="install_error_title">Installation failed</string>
+    <string name="install_error_unpack">Could not unpack the game archive.</string>
     <string name="download_error_no_connection">No internet connection.</string>
     <string name="download_error_timeout">The server is not responding.</string>
     <string name="download_error_not_found">The game file was not found.</string>

@@ -3,6 +3,7 @@ package com.pixnpunk.quasporium
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.pixnpunk.stock.domain.usecase.RemoveAbandonedInstallsUseCase
 import com.pixnpunk.stock.domain.usecase.SyncDictionariesUseCase
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
@@ -12,6 +13,7 @@ class StartupWorker(
     workerParams: WorkerParameters,
 ) : CoroutineWorker(appContext, workerParams), KoinComponent {
     override suspend fun doWork(): Result {
+        get<RemoveAbandonedInstallsUseCase>().execute()
         get<SyncDictionariesUseCase>().execute()
         return Result.success()
     }

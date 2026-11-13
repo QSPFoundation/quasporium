@@ -12,5 +12,6 @@ interface RemoteRepository {
     fun getAuthorSuggestions(query: String): Flow<List<AuthorEntry>>
     fun getTranslatorSuggestions(query: String): Flow<List<TranslatorEntry>>
     suspend fun downloadGame(downloadEntry: GameEntry)
+    suspend fun removeAbandonedInstalls()
     suspend fun syncDictionaries(): Result<Unit>
 }

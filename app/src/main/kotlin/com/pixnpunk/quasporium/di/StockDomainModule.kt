@@ -9,6 +9,7 @@ import com.pixnpunk.stock.domain.usecase.GetRemoteGameEntriesExcludingLocalUseCa
 import com.pixnpunk.stock.domain.usecase.GetTranslatorSuggestionUseCase
 import com.pixnpunk.stock.domain.usecase.MigrateIfNeededUseCase
 import com.pixnpunk.stock.domain.usecase.ObserveEntryByIdUseCase
+import com.pixnpunk.stock.domain.usecase.RemoveAbandonedInstallsUseCase
 import com.pixnpunk.stock.domain.usecase.SyncDictionariesUseCase
 import com.pixnpunk.stock.domain.usecase.UpsertEntryUseCase
 import org.koin.core.module.dsl.factoryOf
@@ -21,6 +22,7 @@ val stockDomainModule = module {
     factoryOf(::ObserveEntryByIdUseCase)
     factoryOf(::UpsertEntryUseCase)
     factoryOf(::SyncDictionariesUseCase)
+    factoryOf(::RemoveAbandonedInstallsUseCase)
     factoryOf(::GetLocalGameEntriesUseCase)
     factoryOf(::GetRemoteGameEntriesExcludingLocalUseCase)
     factoryOf(::GetAuthorSuggestionUseCase)
