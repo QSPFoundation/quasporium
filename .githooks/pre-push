@@ -1,0 +1,8 @@
+#!/bin/sh
+echo "Running detekt…"
+./gradlew detekt --quiet
+status=$?
+if [ $status -ne 0 ]; then
+  echo "detekt failed — push aborted (use --no-verify to skip)."
+fi
+exit $status
