@@ -10,6 +10,10 @@ android {
 dependencies {
     implementation(libs.bundles.ktorClientEcosystem)
 
+    api(libs.coil.core)
+    implementation(libs.coil.gif)
+    implementation(libs.coil.network.ktor3)
+
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.serialization.json)
 
@@ -17,4 +21,5 @@ dependencies {
     api(libs.koin.android)
 
     testImplementation(libs.ktor.client.mock)
+    androidTestImplementation(libs.ktor.client.mock)
 }

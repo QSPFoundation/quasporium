@@ -13,8 +13,8 @@ import kotlinx.serialization.json.Json
 import kotlin.coroutines.cancellation.CancellationException
 
 private const val MAX_RETRIES = 2
-private const val TIMEOUT_MILLIS = 15_000L
-private const val CONNECT_TIMEOUT_MILLIS = 10_000L
+internal const val TIMEOUT_MILLIS = 15_000L
+internal const val CONNECT_TIMEOUT_MILLIS = 10_000L
 private const val FIRST_SERVER_ERROR = 500
 
 private val transientStatuses = setOf(

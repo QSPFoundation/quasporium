@@ -24,15 +24,12 @@ dependencies {
 
     runtimeOnly(libs.storage)
 
-    runtimeOnly(libs.coil.gif)
-
     api(libs.kotlinx.serialization.json)
 
     api(libs.koin.core)
 
     implementation(libs.coil.compose)
-    implementation(libs.coil.network.ktor3)
-    
+
     implementation(libs.essenty.coroutines)
     implementation(libs.decompose.ext.exp)
     api(libs.mvikotlin.core)

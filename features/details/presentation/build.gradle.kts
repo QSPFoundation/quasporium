@@ -24,8 +24,6 @@ dependencies {
     implementation(libs.androidx.compose.adaptive)
 
     implementation(libs.coil.compose)
-    runtimeOnly(libs.coil.gif)
-    implementation(libs.coil.network.ktor3)
 
     implementation(libs.prettytime)
 

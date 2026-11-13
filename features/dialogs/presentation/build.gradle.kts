@@ -16,8 +16,6 @@ dependencies {
     api(project(":features:game:domain"))
 
     implementation(libs.coil.compose)
-    runtimeOnly(libs.coil.gif)
-    implementation(libs.coil.network.ktor3)
 
     implementation(libs.colorpicker.compose)
 

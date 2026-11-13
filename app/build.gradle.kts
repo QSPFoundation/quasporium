@@ -129,6 +129,8 @@ dependencies {
 
     implementation(libs.storage)
 
+    implementation(libs.coil.android)
+
     implementation(platform(libs.koin.bom))
     implementation(libs.koin.android)
     implementation(libs.koin.workmanager)

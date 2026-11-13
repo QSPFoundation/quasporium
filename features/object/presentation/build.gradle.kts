@@ -21,7 +21,6 @@ dependencies {
     api(libs.koin.core)
 
     implementation(libs.coil.compose)
-    runtimeOnly(libs.coil.gif)
 
     implementation(libs.essenty.coroutines)
     implementation(libs.androidx.lifecycle.runtime.compose)

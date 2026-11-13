@@ -6,6 +6,9 @@ import android.os.StrictMode
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import coil3.ImageLoader
+import coil3.PlatformContext
+import coil3.SingletonImageLoader
 import com.pixnpunk.database.di.databaseModule
 import com.pixnpunk.details.data.di.detailsDataModule
 import com.pixnpunk.game.data.di.gameDataModule
@@ -28,14 +31,18 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.workmanager.koin.workManagerFactory
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
 import org.koin.core.context.startKoin
 import kotlin.concurrent.thread
 
-class Quasporium : Application() {
+class Quasporium : Application(), SingletonImageLoader.Factory, KoinComponent {
 
     private val userAgent: String
         get() = "Quasporium/${BuildConfig.VERSION_NAME} " +
             "(Android ${Build.VERSION.RELEASE}; ${BuildConfig.FLAVOR})"
+
+    override fun newImageLoader(context: PlatformContext): ImageLoader = get()
 
     override fun onCreate() {
         super.onCreate()
