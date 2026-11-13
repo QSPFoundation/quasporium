@@ -1,12 +1,12 @@
-package com.pixnpunk.stock.data.remote
+package com.pixnpunk.stock.data.mapper
 
-import com.pixnpunk.stock.data.mapper.toNetworkError
 import com.pixnpunk.stock.domain.model.NetworkError
-import io.ktor.client.*
-import io.ktor.client.engine.mock.*
-import io.ktor.client.network.sockets.*
-import io.ktor.client.request.*
-import io.ktor.http.*
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.mock.MockEngine
+import io.ktor.client.engine.mock.respond
+import io.ktor.client.network.sockets.ConnectTimeoutException
+import io.ktor.client.request.get
+import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.SerializationException
 import org.junit.Assert.assertEquals
