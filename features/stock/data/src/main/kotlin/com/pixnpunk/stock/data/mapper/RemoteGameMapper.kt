@@ -4,6 +4,9 @@ import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.dto.GameListType
 import com.pixnpunk.stock.data.remote.RemoteGameData
 
+private fun String?.orIfBlank(other: String?): String =
+    this?.takeUnless(String::isBlank) ?: other.orEmpty()
+
 fun List<RemoteGameData>.toDomain(): List<GameEntry> =
     map { remoteGameData ->
         GameEntry(
@@ -14,7 +17,7 @@ fun List<RemoteGameData>.toDomain(): List<GameEntry> =
             version = remoteGameData.ver,
             title = remoteGameData.name,
             lang = remoteGameData.lang ?: "",
-            gameIconPath = remoteGameData.iconUrl ?: "",
+            gameIconPath = remoteGameData.coverUrl.orIfBlank(remoteGameData.iconUrl),
             fileUrl = remoteGameData.fileUrl,
             fileSize = remoteGameData.fileSize ?: 0,
             descUrl = remoteGameData.descriptionHtml,
