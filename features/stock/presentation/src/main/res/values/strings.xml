@@ -7,6 +7,11 @@
     <string name="games_list_error_template">An error occurred: %1$s</string>
     <string name="games_list_empty">No Games Found</string>
     <string name="games_list_error_append">Failed to load more games.</string>
+    <string name="catalog_error_no_connection">No internet connection.</string>
+    <string name="catalog_error_timeout">The catalog is not responding.</string>
+    <string name="catalog_error_not_found">The catalog was not found.</string>
+    <string name="catalog_error_server">Catalog server error (%1$d).</string>
+    <string name="catalog_error_unexpected">Could not load the catalog.</string>
     <string name="first_tab_text">Installed</string>
     <string name="second_tab_text">Library</string>
     <string name="placeholder_searchbar">Search game</string>

@@ -29,6 +29,7 @@ import com.pixnpunk.stock.presentation.content.paging.AppendErrorItem
 import com.pixnpunk.stock.presentation.content.paging.StockAppendLoadingItem
 import com.pixnpunk.stock.presentation.content.paging.StockFullScreenError
 import com.pixnpunk.stock.presentation.content.paging.StockFullScreenLoading
+import com.pixnpunk.stock.presentation.content.paging.catalogErrorMessage
 
 @Composable
 fun StockLibraryChild(
@@ -84,7 +85,7 @@ fun StockLibraryChild(
                         is LoadState.Error -> {
                             item(span = { GridItemSpan(maxLineSpan) }) {
                                 AppendErrorItem(
-                                    message = stringResource(R.string.games_list_error_append),
+                                    message = catalogErrorMessage(appendState.error),
                                     onRetry = { lazyPagingItems.retry() }
                                 )
                             }
@@ -104,10 +105,7 @@ fun StockLibraryChild(
             isInitialError -> {
                 val error = (lazyPagingItems.loadState.refresh as LoadState.Error).error
                 StockFullScreenError(
-                    message = stringResource(
-                        R.string.games_list_error_template,
-                        error.message ?: "Unknown error"
-                    ),
+                    message = catalogErrorMessage(error),
                     onRetry = { lazyPagingItems.retry() }
                 )
             }

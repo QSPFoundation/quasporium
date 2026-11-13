@@ -88,6 +88,7 @@ class DownloadGameWorker(
                 urlString = downloadLink,
                 block = {
                     header(HttpHeaders.CacheControl, "no-cache, no-store")
+                    retry { noRetry() }
 
                     var lastTime = System.currentTimeMillis()
                     var lastBytesSent = 0L

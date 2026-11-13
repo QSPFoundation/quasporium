@@ -1,6 +1,7 @@
 package com.pixnpunk.quasporium
 
 import android.app.Application
+import android.os.Build
 import android.os.StrictMode
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
@@ -31,6 +32,11 @@ import org.koin.core.context.startKoin
 import kotlin.concurrent.thread
 
 class Quasporium : Application() {
+
+    private val userAgent: String
+        get() = "Quasporium/${BuildConfig.VERSION_NAME} " +
+            "(Android ${Build.VERSION.RELEASE}; ${BuildConfig.FLAVOR})"
+
     override fun onCreate() {
         super.onCreate()
 
@@ -41,7 +47,7 @@ class Quasporium : Application() {
             workManagerFactory()
             modules(
                 distributionLoggerModule, databaseModule,
-                networkModule, notificationModule, storageModule
+                networkModule(userAgent), notificationModule, storageModule
             )
             modules(
                 detailsDataModule, gameDataModule, settingsDataModule,

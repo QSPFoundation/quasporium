@@ -15,4 +15,6 @@ dependencies {
 
     implementation(platform(libs.koin.bom))
     api(libs.koin.android)
+
+    testImplementation(libs.ktor.client.mock)
 }

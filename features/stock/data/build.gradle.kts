@@ -34,6 +34,7 @@ dependencies {
 
     androidTestImplementation(libs.androidx.work.testing)
     androidTestImplementation(libs.ktor.client.mock)
+    testImplementation(libs.ktor.client.mock)
     androidTestImplementation(libs.androidx.concurrent.futures)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.documentfile)

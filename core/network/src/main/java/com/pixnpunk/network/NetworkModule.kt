@@ -1,19 +1,16 @@
 package com.pixnpunk.network
 
-import io.ktor.client.*
-import io.ktor.client.engine.okhttp.*
-import io.ktor.client.plugins.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.serialization.kotlinx.json.*
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.okhttp.OkHttp
 import kotlinx.coroutines.Dispatchers
-import kotlinx.serialization.json.Json
 import okhttp3.Cache
 import okhttp3.OkHttpClient
 import org.koin.android.ext.koin.androidContext
+import org.koin.core.module.Module
 import org.koin.dsl.module
 import java.io.File
 
-val networkModule = module {
+fun networkModule(userAgent: String): Module = module {
     single<OkHttpClient> {
         OkHttpClient.Builder()
             .cache(
@@ -22,6 +19,7 @@ val networkModule = module {
                     50L * 1024L * 1024L
                 )
             )
+            .addInterceptor(UserAgentInterceptor(userAgent))
             .build()
     }
 
@@ -31,17 +29,7 @@ val networkModule = module {
                 preconfigured = get()
                 dispatcher = Dispatchers.IO
             }
-            install(HttpTimeout) {
-                requestTimeoutMillis = 15_000
-            }
-            install(ContentNegotiation) {
-                json(
-                    Json {
-                        ignoreUnknownKeys = true
-                        coerceInputValues = true
-                    }
-                )
-            }
+            installApiDefaults()
         }
     }
 }
