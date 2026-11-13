@@ -12,5 +12,4 @@ dependencies {
 
     implementation(platform(libs.koin.bom))
     api(libs.koin.core)
-    implementation(libs.androidx.annotation)
 }

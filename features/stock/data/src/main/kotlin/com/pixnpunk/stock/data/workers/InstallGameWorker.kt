@@ -43,6 +43,8 @@ internal class InstallGameWorker(
 ) : CoroutineWorker(appContext, workerParams) {
 
     private var isForeground = true
+    private var gameTitle = ""
+    private var lastProgress = 0f
 
     private companion object {
         const val MAX_ATTEMPTS = 5
@@ -53,11 +55,12 @@ internal class InstallGameWorker(
         val gameFileExtensions = setOf("qsp", "gam")
     }
 
-    private suspend fun report(step: InstallStep, progress: Float, title: String) {
+    private suspend fun report(step: InstallStep, progress: Float, text: String) {
+        lastProgress = progress
         setProgress(workDataOf(PROGRESS_STEP to step.name, PROGRESS_VALUE to progress))
         if (!isForeground) return
         isForeground = trySetForeground(
-            notificationProvider.createForegroundInfo(id, title, progress)
+            notificationProvider.createForegroundInfo(id, gameTitle, text, progress)
         )
         if (!isForeground) {
             logger.recordBreadcrumb(
@@ -83,7 +86,7 @@ internal class InstallGameWorker(
                 lastBytes = downloaded
 
                 val bytesPerMs = speedSamples.average()
-                val title =
+                val text =
                     if (total != null && bytesPerMs > 0)
                         applicationContext.getString(
                             R.string.install_downloading_eta,
@@ -92,7 +95,7 @@ internal class InstallGameWorker(
                     else applicationContext.getString(R.string.install_downloading)
                 val progress = if (total != null && total > 0) downloaded.toFloat() / total else 0f
 
-                report(InstallStep.DOWNLOAD, progress, title)
+                report(InstallStep.DOWNLOAD, progress, text)
             }
         }
     }
@@ -117,10 +120,10 @@ internal class InstallGameWorker(
 
         report(InstallStep.UNPACK, 0f, applicationContext.getString(R.string.install_unpacking))
         archiveExtractor.unpack(archive.toUri().toString(), gameDirPath) { state ->
-            val title =
+            val text =
                 if (state.time == UNKNOWN_ETA) applicationContext.getString(R.string.install_unpacking)
                 else applicationContext.getString(R.string.install_unpacking_eta, state.time)
-            report(InstallStep.UNPACK, state.progress, title)
+            report(InstallStep.UNPACK, state.progress, text)
         }.onFailure { if (it !is CancellationException) throw UnpackException(it) }.getOrThrow()
 
         archive.delete()
@@ -135,6 +138,14 @@ internal class InstallGameWorker(
                     .first()
                     ?.state == WorkInfo.State.CANCELLED
             }.getOrDefault(false)
+        }
+
+    private fun pausedMessage(error: Throwable?): String =
+        when (error?.toNetworkError()) {
+            null -> applicationContext.getString(R.string.install_paused)
+            NetworkError.NoConnection, NetworkError.Timeout ->
+                applicationContext.getString(R.string.install_paused_network)
+            else -> applicationContext.getString(R.string.install_paused_retry)
         }
 
     private fun failureMessage(error: Throwable): String =
@@ -171,6 +182,8 @@ internal class InstallGameWorker(
     override suspend fun doWork(): Result {
         val (url, gameDirName, entry) = readInput() ?: return Result.failure()
         val gameDir = File(applicationContext.filesDir, gameDirName).apply { mkdirs() }
+        gameTitle = entry.title
+        notificationProvider.cancel(id)
 
         return try {
             val archive = download(url, gameDir)
@@ -178,18 +191,15 @@ internal class InstallGameWorker(
             File(gameDir, ARCHIVE_MARKER).delete()
             localRepository.fillAndInsertEntry(entry.copy(gameDirPath = gameDirPath))
 
-            notificationProvider.showNotification(
-                applicationContext.getString(
-                    R.string.install_complete_title
-                ),
-                applicationContext.getString(
-                    R.string.install_complete_text,
-                    entry.title
-                )
+            notificationProvider.showResult(
+                id,
+                applicationContext.getString(R.string.install_complete_title, entry.title),
+                applicationContext.getString(R.string.install_complete_text)
             )
             Result.success()
         } catch (e: CancellationException) {
             if (isCancelledByUser()) gameDir.deleteRecursively()
+            else notificationProvider.showPaused(id, entry.title, pausedMessage(null), lastProgress)
             throw e
         } catch (e: Exception) {
             if (e.isTransientDownloadError() && runAttemptCount < MAX_ATTEMPTS - 1) {
@@ -197,6 +207,7 @@ internal class InstallGameWorker(
                     "Installation interrupted, retrying | attempt: $runAttemptCount | " +
                             "link: $url | ${e.javaClass.simpleName}"
                 )
+                notificationProvider.showPaused(id, entry.title, pausedMessage(e), lastProgress)
                 Result.retry()
             } else {
                 logger.apply {
@@ -204,8 +215,9 @@ internal class InstallGameWorker(
                     recordNonFatalException(e)
                 }
 
-                notificationProvider.showNotification(
-                    applicationContext.getString(R.string.install_error_title),
+                notificationProvider.showResult(
+                    id,
+                    applicationContext.getString(R.string.install_error_title, entry.title),
                     failureMessage(e)
                 )
 

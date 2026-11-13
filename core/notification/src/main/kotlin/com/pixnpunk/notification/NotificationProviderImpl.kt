@@ -1,12 +1,12 @@
 package com.pixnpunk.notification
 
-import android.Manifest
+import android.annotation.SuppressLint
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
 import android.os.Build
-import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.work.ForegroundInfo
@@ -22,6 +22,7 @@ class NotificationProviderImpl(
     private companion object {
         const val CHANNEL_ID = "com.pixnpunk.quasporium.channel.download_channel"
         const val NOTIFICATION_ID = 300
+        const val MAX_PROGRESS = 100
     }
 
     init {
@@ -36,71 +37,71 @@ class NotificationProviderImpl(
         )
     }
 
+    private val UUID.notificationId: Int
+        get() = hashCode()
+
+    private fun progressNotification(
+        workId: UUID,
+        title: String,
+        text: String,
+        progress: Float,
+        ongoing: Boolean
+    ) = NotificationCompat.Builder(context, CHANNEL_ID)
+        .setContentTitle(title)
+        .setTicker(title)
+        .setContentText(text)
+        .setSmallIcon(android.R.drawable.stat_sys_download)
+        .setOngoing(ongoing)
+        .setOnlyAlertOnce(true)
+        .setProgress(
+            MAX_PROGRESS,
+            (progress * MAX_PROGRESS).toInt(),
+            ongoing && progress <= 0
+        )
+        .addAction(
+            android.R.drawable.ic_delete,
+            "Cancel",
+            workManager.createCancelPendingIntent(workId)
+        )
+        .setPriority(NotificationCompat.PRIORITY_LOW)
+        .build()
+
+    @SuppressLint("MissingPermission")
+    private fun notify(workId: UUID, notification: Notification) =
+        notificationManager.notify(workId.notificationId, notification)
+
     override fun createForegroundInfo(
         workId: UUID,
         title: String,
+        text: String,
         progress: Float
-    ) = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        ForegroundInfo(
-            NOTIFICATION_ID,
-            NotificationCompat.Builder(context, CHANNEL_ID)
-                .setContentTitle(title)
-                .setTicker(title)
-                .setContentText(
-                    if (progress <= 0) "Setup..." else "${(progress * 100).toInt()}%"
-                )
-                .setSmallIcon(android.R.drawable.stat_sys_download)
-                .setOngoing(true)
-                .setProgress(
-                    100,
-                    (progress * 100).toInt(),
-                    progress <= 0
-                )
-                .addAction(
-                    android.R.drawable.ic_delete,
-                    "Cancel",
-                    workManager.createCancelPendingIntent(workId)
-                )
-                .setPriority(NotificationCompat.PRIORITY_LOW)
-                .build(),
-            FOREGROUND_SERVICE_TYPE_DATA_SYNC
-        )
-    } else {
-        ForegroundInfo(
-            NOTIFICATION_ID,
-            NotificationCompat.Builder(context, CHANNEL_ID)
-                .setContentTitle(title)
-                .setTicker(title)
-                .setContentText(
-                    if (progress <= 0) "Setup..." else "${(progress * 100).toInt()}%"
-                )
-                .setSmallIcon(android.R.drawable.stat_sys_download)
-                .setOngoing(true)
-                .setProgress(
-                    100,
-                    (progress * 100).toInt(),
-                    progress <= 0
-                )
-                .addAction(
-                    android.R.drawable.ic_delete,
-                    "Cancel",
-                    workManager.createCancelPendingIntent(workId)
-                )
-                .setPriority(NotificationCompat.PRIORITY_LOW)
-                .build()
-        )
+    ): ForegroundInfo {
+        val notification = progressNotification(workId, title, text, progress, ongoing = true)
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+            ForegroundInfo(
+                NOTIFICATION_ID, notification,
+                FOREGROUND_SERVICE_TYPE_DATA_SYNC
+            )
+        else ForegroundInfo(NOTIFICATION_ID, notification)
     }
 
-    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
-    override fun showNotification(title: String, message: String) =
-        notificationManager.notify(
-            (System.currentTimeMillis() % 10000).toInt(),
+    override fun showPaused(workId: UUID, title: String, text: String, progress: Float) =
+        notify(
+            workId,
+            progressNotification(workId, title, text, progress, ongoing = false)
+        )
+
+    override fun showResult(workId: UUID, title: String, text: String) =
+        notify(
+            workId,
             NotificationCompat.Builder(context, CHANNEL_ID)
                 .setContentTitle(title)
-                .setContentText(message)
+                .setContentText(text)
                 .setSmallIcon(android.R.drawable.stat_sys_download_done)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true)
                 .build()
         )
+
+    override fun cancel(workId: UUID) = notificationManager.cancel(workId.notificationId)
 }

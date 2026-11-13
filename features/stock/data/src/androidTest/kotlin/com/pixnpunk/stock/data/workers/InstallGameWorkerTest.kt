@@ -159,9 +159,9 @@ class InstallGameWorkerTest {
         return zip((0 until 200).associate { "file$it.bin" to payload })
     }
 
-    private suspend fun awaitTitle(prefix: String) {
+    private suspend fun awaitText(prefix: String) {
         val started = CompletableDeferred<Unit>()
-        notifications.onTitle = { if (it.startsWith(prefix)) started.complete(Unit) }
+        notifications.onText = { if (it.startsWith(prefix)) started.complete(Unit) }
         withTimeout(10.seconds) { started.await() }
     }
 
@@ -196,6 +196,7 @@ class InstallGameWorkerTest {
         assertArrayEquals(game, File(gameDir, "game.qsp").readBytes())
         assertEquals(listOf("game.qsp"), gameDir.list()?.toList())
         assertEquals(listOf(gameDir.toUri().toString()), repository.inserted.map { it.gameDirPath })
+        assertEquals(listOf("Test is ready to play: Installation complete."), notifications.shown)
         assertTrue(logger.breadcrumbs.any { "Foreground service is not allowed" in it })
     }
 
@@ -242,6 +243,7 @@ class InstallGameWorkerTest {
         assertEquals(ListenableWorker.Result.retry(), result)
         assertEquals(emptyList<Throwable>(), logger.errors)
         assertEquals(emptyList<String>(), notifications.shown)
+        assertEquals(listOf("Test: Paused · waiting for network"), notifications.paused)
         assertArrayEquals("ga".toByteArray(), File(gameDir, "game.qsp").readBytes())
         assertTrue(File(gameDir, ".download").exists())
     }
@@ -253,7 +255,7 @@ class InstallGameWorkerTest {
         val result = worker().doWork()
 
         assertEquals(ListenableWorker.Result.failure(), result)
-        assertEquals(listOf("Installation failed: The game file was not found."), notifications.shown)
+        assertEquals(listOf("Couldn't install Test: The game file was not found."), notifications.shown)
         assertFalse(gameDir.exists())
     }
 
@@ -264,7 +266,7 @@ class InstallGameWorkerTest {
         val result = worker().doWork()
 
         assertEquals(ListenableWorker.Result.failure(), result)
-        assertEquals(listOf("Installation failed: Could not unpack the game archive."), notifications.shown)
+        assertEquals(listOf("Couldn't install Test: Could not unpack the game archive."), notifications.shown)
         assertFalse(gameDir.exists())
     }
 
@@ -273,7 +275,7 @@ class InstallGameWorkerTest {
         serve("big.zip", bigArchive())
         val future = worker(allowedForeground).startWork()
 
-        awaitTitle("Unpacking")
+        awaitText("Unpacking")
         future.cancel(true)
         delay(500.milliseconds)
 
@@ -293,7 +295,7 @@ class InstallGameWorkerTest {
         workManager.enqueue(request).result.get()
         val future = worker(allowedForeground, request.id).startWork()
 
-        awaitTitle("Unpacking")
+        awaitText("Unpacking")
         workManager.cancelWorkById(request.id).result.get()
         future.cancel(true)
 
@@ -318,20 +320,34 @@ class InstallGameWorkerTest {
 
     private inner class RecordingNotifications : NotificationProvider {
         @Volatile
-        var onTitle: (String) -> Unit = {}
+        var onText: (String) -> Unit = {}
+        val titles = CopyOnWriteArrayList<String>()
+        val paused = CopyOnWriteArrayList<String>()
         val shown = CopyOnWriteArrayList<String>()
 
-        override fun createForegroundInfo(workId: UUID, title: String, progress: Float): ForegroundInfo {
-            onTitle(title)
+        override fun createForegroundInfo(
+            workId: UUID,
+            title: String,
+            text: String,
+            progress: Float
+        ): ForegroundInfo {
+            titles += title
+            onText(text)
             val notification = Notification.Builder(context, "test")
                 .setSmallIcon(android.R.drawable.stat_sys_download)
                 .build()
             return ForegroundInfo(1, notification)
         }
 
-        override fun showNotification(title: String, message: String) {
-            shown += "$title: $message"
+        override fun showPaused(workId: UUID, title: String, text: String, progress: Float) {
+            paused += "$title: $text"
         }
+
+        override fun showResult(workId: UUID, title: String, text: String) {
+            shown += "$title: $text"
+        }
+
+        override fun cancel(workId: UUID) = Unit
     }
 
     private class RecordingLocalRepository : LocalRepository {
