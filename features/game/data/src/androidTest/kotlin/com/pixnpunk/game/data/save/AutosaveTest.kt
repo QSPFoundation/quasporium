@@ -108,6 +108,7 @@ internal class AutosaveTest {
     @After
     fun tearDown(): Unit = runBlocking {
         engine.shutdown()
+        withTimeout(TIMEOUT_MS.milliseconds) { engine.awaitRelease() }
         saves.deleteAutosave(gamePath)
         dir.deleteRecursively()
     }

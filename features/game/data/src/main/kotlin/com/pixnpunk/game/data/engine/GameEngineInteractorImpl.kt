@@ -22,6 +22,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
@@ -68,6 +69,7 @@ internal class GameEngineInteractorImpl(
     private val isUiBlocked = atomic(false)
     private val isShutdown = atomic(false)
     private val isInitialized = atomic(false)
+    private val releaseJob = atomic<Job?>(null)
     private val isTimerPaused = atomic(false)
     private val counterIntervalMs = atomic(500L)
 
@@ -165,9 +167,13 @@ internal class GameEngineInteractorImpl(
         engineScope.cancel()
         audioService.closeAllFiles()
 
-        CoroutineScope(engineDispatcher).launch {
+        releaseJob.value = CoroutineScope(engineDispatcher).launch {
             if (isInitialized.value) bridge.destroyEngine()
         }
+    }
+
+    internal suspend fun awaitRelease() {
+        releaseJob.value?.join()
     }
 
     private fun startActorLoop() = engineScope.launch {

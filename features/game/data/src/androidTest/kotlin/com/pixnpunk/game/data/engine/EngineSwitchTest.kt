@@ -16,6 +16,7 @@ import com.pixnpunk.game.domain.repository.EngineCommand
 import com.pixnpunk.logger.AppLogger
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.withTimeoutOrNull
 import org.junit.After
 import org.junit.Assert.fail
@@ -67,7 +68,12 @@ internal class EngineSwitchTest {
         )
         return File(dir, "main.qsp").apply {
             writeBytes(
-                TestGame.build(TestGame.Location(name = "start", code = "$include 'ext.qsp' & gt 'extloc'"))
+                TestGame.build(
+                    TestGame.Location(
+                        name = "start",
+                        code = "$include 'ext.qsp' & gt 'extloc'"
+                    )
+                )
             )
         }
     }
@@ -79,28 +85,45 @@ internal class EngineSwitchTest {
         }
     }
 
-    private fun play(step: String, bridge: NativeEngineBridge, game: File, expected: String) = runBlocking {
-        engine?.shutdown()
-        val current = GameEngineInteractorImpl(lazyOf(bridge), vfs, NoAudio, logger)
-        engine = current
+    private fun play(step: String, bridge: NativeEngineBridge, game: File, expected: String) =
+        runBlocking {
+            engine?.release()
+            val current = GameEngineInteractorImpl(
+                bridgeProvider = lazyOf(bridge),
+                vfsProvider = vfs,
+                audioService = NoAudio,
+                logger = logger
+            )
+            engine = current
 
-        current.submitCommand(EngineCommand.LoadGame(VfsPath(game.absolutePath), VfsPath(game.parent!!)))
+            current.submitCommand(
+                EngineCommand.LoadGame(
+                    VfsPath(game.absolutePath),
+                    VfsPath(game.parent!!)
+                )
+            )
 
-        val reached = withTimeoutOrNull(10.seconds) {
-            current.state.first {
-                (it as? GameState.Running)?.mainDescription?.trim() == expected ||
-                    it.activeDialog is EngineDialog.Error
+            val reached = withTimeoutOrNull(10.seconds) {
+                current.state.first {
+                    (it as? GameState.Running)?.mainDescription?.trim() == expected ||
+                            it.activeDialog is EngineDialog.Error
+                }
+            }
+            val state = current.state.value
+            val desc = (state as? GameState.Running)?.mainDescription?.trim()
+            if (reached == null || desc != expected) {
+                fail(
+                    "Step '$step': expected '$expected', state=${state::class.simpleName}, " +
+                            "mainDescription=${desc?.let { "'$it'" }}, dialog=${state.activeDialog}, errors=$errors"
+                )
             }
         }
-        val state = current.state.value
-        val desc = (state as? GameState.Running)?.mainDescription?.trim()
-        if (reached == null || desc != expected) {
-            fail(
-                "Step '$step': expected '$expected', state=${state::class.simpleName}, " +
-                    "mainDescription=${desc?.let { "'$it'" }}, dialog=${state.activeDialog}, errors=$errors"
-            )
+
+    private fun GameEngineInteractorImpl.release() =
+        runBlocking {
+            shutdown()
+            withTimeout(10.seconds) { awaitRelease() }
         }
-    }
 
     @Before
     fun setUp() {
@@ -109,7 +132,7 @@ internal class EngineSwitchTest {
 
     @After
     fun tearDown() {
-        engine?.shutdown()
+        engine?.release()
         root.deleteRecursively()
     }
 
