@@ -7,7 +7,9 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.ui.res.stringResource
 import com.pixnpunk.stock.domain.model.SortBy
+import com.pixnpunk.stock.presentation.R
 
 fun LazyListScope.filterItemCategory(
     sortBy: SortBy,
@@ -19,9 +21,17 @@ fun LazyListScope.filterItemCategory(
         onClick = { selectSort(if (isSelected) SortBy.EMPTY else option) },
         label = {
             Text(
-                option.name.lowercase()
-                    .replaceFirstChar { it.uppercase() }
-                    .replace("_", " ")
+                stringResource(
+                    when (option) {
+                        SortBy.CREATED -> R.string.stock_sort_created
+                        SortBy.UPDATED -> R.string.stock_sort_updated
+                        SortBy.COMMENTS -> R.string.stock_sort_comments
+                        SortBy.LIKES -> R.string.stock_sort_likes
+                        SortBy.DOWNLOADS -> R.string.stock_sort_downloads
+                        SortBy.PLAYS -> R.string.stock_sort_plays
+                        SortBy.EMPTY -> R.string.stock_sort_none
+                    }
+                )
             )
         },
         leadingIcon =

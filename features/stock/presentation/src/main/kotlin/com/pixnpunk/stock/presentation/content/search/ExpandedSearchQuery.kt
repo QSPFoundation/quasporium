@@ -19,9 +19,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.pixnpunk.stock.domain.model.SearchTokenType
+import com.pixnpunk.stock.presentation.R
 import com.pixnpunk.stock.presentation.model.SearchTokenUI
+
+private const val MIN_QUERY_LENGTH = 3
 
 fun LazyListScope.expandedSearchQueryDefault(
     searchQuery: String,
@@ -32,7 +37,7 @@ fun LazyListScope.expandedSearchQueryDefault(
     addToken: (SearchTokenUI) -> Unit
 ) {
     if (recentSearches.isNotEmpty()) {
-        item { SearchSectionHeader("Recent") }
+        item { SearchSectionHeader(stringResource(R.string.stock_search_recent)) }
         items(recentSearches) { token ->
             SearchSuggestionItem(
                 token = token,
@@ -76,7 +81,11 @@ fun LazyListScope.expandedSearchQueryEmpty(
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Enter ${3 - searchQuery.length} more characters to search",
+                text = pluralStringResource(
+                    R.plurals.stock_search_more_characters,
+                    MIN_QUERY_LENGTH - searchQuery.length,
+                    MIN_QUERY_LENGTH - searchQuery.length
+                ),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -102,7 +111,7 @@ fun LazyListScope.expandedSearchQueryNotEmpty(
         val titleToken = SearchTokenUI(
             value = searchQuery,
             type = SearchTokenType.TITLE,
-            displayText = "In title: $searchQuery"
+            displayText = stringResource(R.string.stock_search_in_title, searchQuery)
         )
         SearchSuggestionItem(
             token = titleToken,
@@ -115,7 +124,7 @@ fun LazyListScope.expandedSearchQueryNotEmpty(
         val descToken = SearchTokenUI(
             value = searchQuery,
             type = SearchTokenType.DESCRIPTION,
-            displayText = "In description: $searchQuery"
+            displayText = stringResource(R.string.stock_search_in_description, searchQuery)
         )
         SearchSuggestionItem(
             token = descToken,
@@ -141,11 +150,10 @@ fun LazyListScope.expandedSearchListsSuggestion(
     if (suggestedAuthors.isNotEmpty()) {
         item {
             SearchSectionHeader(
-                if (isSearch) {
-                    "Authors"
-                } else {
-                    "Random authors"
-                }
+                stringResource(
+                    if (isSearch) R.string.stock_search_authors
+                    else R.string.stock_search_random_authors
+                )
             )
         }
         items(suggestedAuthors) { author ->
@@ -165,11 +173,10 @@ fun LazyListScope.expandedSearchListsSuggestion(
     if (suggestedTranslators.isNotEmpty()) {
         item {
             SearchSectionHeader(
-                if (isSearch) {
-                    "Translators"
-                } else {
-                    "Random translators"
-                }
+                stringResource(
+                    if (isSearch) R.string.stock_search_translators
+                    else R.string.stock_search_random_translators
+                )
             )
         }
         items(suggestedTranslators) { translator ->

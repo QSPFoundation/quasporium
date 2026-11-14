@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name" translatable="false">Quasporium</string>
+    <string name="app_storage_access_rationale"><![CDATA[We require full access to your device storage so that you can easily select and add games from any folder where they are stored.\nThis permission ensures stable file management on older Android versions (8, 9 and 10).\n<br><br>\n<b>For external storage:</b> tap \"Allow access to...\" when prompted.\n<br>\n<b>For SD cards:</b> select the main folder (root directory) of the SD card and tap \"Allow access to...\" when prompted.]]></string>
+    <string name="app_no_file_picker">No app was found on your device to choose folders. Please make sure the system Files app is enabled in your device settings.</string>
+    <string name="app_font_not_supported">The selected file is not a TrueType or OpenType font.</string>
+    <string name="app_telemetry_consent"><![CDATA[<b>Help improve Quasporium</b>\n\nMay the app send usage statistics? They show which features are used, which games from the catalog are started and how fast screens open. They never include your files, your saves or the names of games you added yourself. Google Analytics for Firebase and Firebase Performance Monitoring collect them.\n\nCrash reports are separate: they are sent unless you turn them off.\n\nYou can change both at any time in Settings → General.]]></string>
 </resources>

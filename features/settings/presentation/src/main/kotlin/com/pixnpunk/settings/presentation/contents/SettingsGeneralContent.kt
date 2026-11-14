@@ -27,158 +27,143 @@ import me.zhanghai.compose.preference.switchPreference
 fun SettingsGeneralContent(
     isLocalSettings: Boolean,
     isTelemetryAvailable: Boolean
-) = LazyColumn {
-    if (!isLocalSettings) {
+) {
+    val themeLabels = mapOf(
+        AppThemeMode.SYSTEM to stringResource(R.string.settings_theme_system),
+        AppThemeMode.LIGHT to stringResource(R.string.settings_theme_light),
+        AppThemeMode.DARK to stringResource(R.string.settings_theme_dark)
+    )
+    val legacyEngineLabel = stringResource(R.string.settings_engine_legacy, "5.7.0")
+    val sizeUnitLabels = mapOf(
+        BinaryPrefFormat.SI to stringResource(R.string.settings_size_units_si),
+        BinaryPrefFormat.ISO to stringResource(R.string.settings_size_units_iso)
+    )
+
+    LazyColumn {
+        if (!isLocalSettings) {
+            listPreference(
+                key = PrefKeys.APP_THEME,
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.DarkMode,
+                        contentDescription = null
+                    )
+                },
+                defaultValue = AppThemeMode.SYSTEM.toString(),
+                values = AppThemeMode.entries.map { it.toString() },
+                valueToText = {
+                    AnnotatedString(
+                        themeLabels.getValue(AppThemeMode.valueOf(it))
+                    )
+                },
+                title = { Text(stringResource(R.string.theme_list_title)) }
+            )
+        }
         listPreference(
-            key = PrefKeys.APP_THEME,
+            key = PrefKeys.LIB_VERSION,
             icon = {
                 Icon(
-                    imageVector = Icons.Default.DarkMode,
+                    imageVector = Icons.Default.Book,
                     contentDescription = null
                 )
             },
-            defaultValue = AppThemeMode.SYSTEM.toString(),
-            values = AppThemeMode.entries.map { it.toString() },
+            defaultValue = NativeLib.QSPLEGACY.name,
+            values = NativeLib.entries.map { it.toString() },
             valueToText = {
                 AnnotatedString(
-                    when (AppThemeMode.valueOf(it)) {
-                        AppThemeMode.SYSTEM -> "System"
-                        AppThemeMode.LIGHT -> "Light"
-                        AppThemeMode.DARK -> "Dark"
+                    when (NativeLib.valueOf(it)) {
+                        NativeLib.QSPLEGACY -> legacyEngineLabel
+                        NativeLib.QSP -> "5.9.5"
                     }
                 )
             },
-            title = { Text(stringResource(R.string.theme_list_title)) }
+            title = {
+                Text(
+                    if (isLocalSettings) {
+                        stringResource(R.string.local_library_version_list_title)
+                    } else {
+                        stringResource(R.string.global_library_version_list_title)
+                    }
+                )
+            }
         )
-    }
-//        listPreference(
-//            key = "appLangPref",
-//            icon = {
-//                Icon(
-//                    imageVector = Icons.Default.Language,
-//                    contentDescription = null
-//                )
-//            },
-//            defaultValue = "en",
-//            values = listOf("en", "ru"),
-//            valueToText = {
-//                AnnotatedString(
-//                    when (it) {
-//                        "en" -> "English"
-//                        "ru" -> "Russian"
-//                        else -> it
-//                    }
-//                )
-//            },
-//            title = { Text("Application language") }
-//        )
-    listPreference(
-        key = PrefKeys.LIB_VERSION,
-        icon = {
-            Icon(
-                imageVector = Icons.Default.Book,
-                contentDescription = null
-            )
-        },
-        defaultValue = NativeLib.QSPLEGACY.name,
-        values = NativeLib.entries.map { it.toString() },
-        valueToText = {
-            AnnotatedString(
-                when (NativeLib.valueOf(it)) {
-                    NativeLib.QSPLEGACY -> "5.7.0 (legacy)"
-                    NativeLib.QSP -> "5.9.5"
-                }
-            )
-        },
-        title = {
-            Text(
-                if (isLocalSettings) {
-                    stringResource(R.string.local_library_version_list_title)
-                } else {
-                    stringResource(R.string.global_library_version_list_title)
-                }
+        listPreference(
+            key = PrefKeys.BINARY_PREF,
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Code,
+                    contentDescription = null
+                )
+            },
+            defaultValue = BinaryPrefFormat.SI.name,
+            values = BinaryPrefFormat.entries.map { it.toString() },
+            valueToText = {
+                AnnotatedString(
+                    sizeUnitLabels.getValue(BinaryPrefFormat.valueOf(it))
+                )
+            },
+            title = { Text(stringResource(R.string.prefixes_list_title)) }
+        )
+        listPreference(
+            key = PrefKeys.ACTS_COUNT,
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Height,
+                    contentDescription = null
+                )
+            },
+            defaultValue = 3,
+            values = listOf(3, 4, 5, 6),
+            title = { Text(stringResource(R.string.count_action_list_title)) }
+        )
+        switchPreference(
+            key = PrefKeys.IMMERSIVE_MODE,
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Fullscreen,
+                    contentDescription = null
+                )
+            },
+            defaultValue = true,
+            title = { Text(stringResource(R.string.immersive_switch_title)) }
+        )
+        if (isLocalSettings) {
+            switchPreference(
+                key = PrefKeys.LINK_CONFIRM,
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.Link,
+                        contentDescription = null
+                    )
+                },
+                defaultValue = true,
+                title = { Text(stringResource(R.string.link_confirm_switch_title)) }
             )
         }
-    )
-    listPreference(
-        key = PrefKeys.BINARY_PREF,
-        icon = {
-            Icon(
-                imageVector = Icons.Default.Code,
-                contentDescription = null
-            )
-        },
-        defaultValue = BinaryPrefFormat.SI.name,
-        values = BinaryPrefFormat.entries.map { it.toString() },
-        valueToText = {
-            AnnotatedString(
-                when (BinaryPrefFormat.valueOf(it)) {
-                    BinaryPrefFormat.SI -> "B/KB/MB/GB/TB"
-                    BinaryPrefFormat.ISO -> "B/KiB/MiB/GiB/TiB"
-                }
-            )
-        },
-        title = { Text(stringResource(R.string.prefixes_list_title)) }
-    )
-    listPreference(
-        key = PrefKeys.ACTS_COUNT,
-        icon = {
-            Icon(
-                imageVector = Icons.Default.Height,
-                contentDescription = null
-            )
-        },
-        defaultValue = 3,
-        values = listOf(3, 4, 5, 6),
-        title = { Text(stringResource(R.string.count_action_list_title)) }
-    )
-    switchPreference(
-        key = PrefKeys.IMMERSIVE_MODE,
-        icon = {
-            Icon(
-                imageVector = Icons.Default.Fullscreen,
-                contentDescription = null
-            )
-        },
-        defaultValue = true,
-        title = { Text(stringResource(R.string.immersive_switch_title)) }
-    )
-    if (isLocalSettings) {
-        switchPreference(
-            key = PrefKeys.LINK_CONFIRM,
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.Link,
-                    contentDescription = null
-                )
-            },
-            defaultValue = true,
-            title = { Text(stringResource(R.string.link_confirm_switch_title)) }
-        )
-    }
 
-    if (!isLocalSettings && isTelemetryAvailable) {
-        switchPreference(
-            key = PrefKeys.USAGE_STATS,
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.QueryStats,
-                    contentDescription = null
-                )
-            },
-            defaultValue = false,
-            title = { Text(stringResource(R.string.usage_stats_switch_title)) },
-        )
-        switchPreference(
-            key = PrefKeys.CRASH_REPORTS,
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.BugReport,
-                    contentDescription = null
-                )
-            },
-            defaultValue = true,
-            title = { Text(stringResource(R.string.crash_reports_switch_title)) },
-        )
+        if (!isLocalSettings && isTelemetryAvailable) {
+            switchPreference(
+                key = PrefKeys.USAGE_STATS,
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.QueryStats,
+                        contentDescription = null
+                    )
+                },
+                defaultValue = false,
+                title = { Text(stringResource(R.string.usage_stats_switch_title)) },
+            )
+            switchPreference(
+                key = PrefKeys.CRASH_REPORTS,
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.BugReport,
+                        contentDescription = null
+                    )
+                },
+                defaultValue = true,
+                title = { Text(stringResource(R.string.crash_reports_switch_title)) },
+            )
+        }
     }
 }

@@ -15,9 +15,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.pixnpunk.details.presentation.R
 import com.pixnpunk.details.presentation.content.preset.EditColorItem
 import com.pixnpunk.details.presentation.content.preset.EditImageItem
 import com.pixnpunk.details.presentation.theme.LocalProfileColors
@@ -38,7 +40,7 @@ fun EditRootColumn(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
-            text = "ACCENT COLOR",
+            text = stringResource(R.string.details_accent_color).uppercase(),
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Bold,
             letterSpacing = 1.sp,
@@ -61,7 +63,7 @@ fun EditRootColumn(
         }
 
         Text(
-            text = "BACKGROUND IMAGE",
+            text = stringResource(R.string.details_background_image).uppercase(),
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Bold,
             letterSpacing = 1.sp,
@@ -84,7 +86,7 @@ fun EditRootColumn(
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.details_edit_cancel)) }
             Spacer(modifier = Modifier.width(8.dp))
             Button(
                 onClick = {
@@ -97,7 +99,7 @@ fun EditRootColumn(
                     containerColor = LocalProfileColors.current.primaryButton,
                     contentColor = LocalProfileColors.current.onPrimaryButton
                 )
-            ) { Text("Save") }
+            ) { Text(stringResource(R.string.details_edit_save)) }
         }
     }
 }

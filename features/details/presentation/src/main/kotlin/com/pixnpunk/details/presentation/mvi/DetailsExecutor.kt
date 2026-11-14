@@ -40,7 +40,7 @@ class DetailsExecutor(
                 scope.launch {
                     presetRepository.createPreset(
                         state().gameEntry.id,
-                        "Playthrough ${state().gameProfiles.size + 1}"
+                        intent.name
                     )
                 }
 

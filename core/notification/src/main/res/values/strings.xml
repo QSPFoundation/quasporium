@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notification_channel_downloads">Game downloads</string>
+    <string name="notification_channel_downloads_description">Notifications about downloading and unpacking</string>
+    <string name="notification_cancel">Cancel</string>
+</resources>

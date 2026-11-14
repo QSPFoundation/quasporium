@@ -57,7 +57,7 @@ fun SettingsAppBar(
                     ) -> {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = stringResource(R.string.close_button_description)
+                            contentDescription = stringResource(R.string.settings_close_button_description)
                         )
                     }
 

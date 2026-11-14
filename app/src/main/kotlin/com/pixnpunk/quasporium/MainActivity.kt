@@ -70,14 +70,7 @@ class MainActivity : ComponentActivity() {
                         }
                     } else {
                         root.doShowDialog(
-                            outputValue = """
-                            We require full access to your device storage so that you can easily select and add games from any folder where they are stored.
-                            This permission ensures stable file management on older Android versions (8, 9 and 10).
-                            <br><br>
-                            <b>For external storage:</b> tap "Allow access to..." when prompted.
-                            <br>
-                            <b>For SD cards:</b> select the main folder (root directory) of the SD card and tap "Allow access to..." when prompted.
-                            """.trimIndent(),
+                            outputValue = getString(R.string.app_storage_access_rationale),
                             outputState = OutputState.OUTPUT_REQUEST_PERM
                         )
                     }
@@ -150,7 +143,7 @@ class MainActivity : ComponentActivity() {
                         root.processPickedFont(cachedFontFile.absolutePath)
                     } else {
                         root.doShowDialog(
-                            outputValue = "The selected file is not a TrueType or OpenType font.",
+                            outputValue = getString(R.string.app_font_not_supported),
                             outputState = OutputState.OUTPUT_SIMPLE_MSG
                         )
                     }
@@ -241,9 +234,7 @@ class MainActivity : ComponentActivity() {
                     dirPickerLauncher.launch(null)
                 } catch (_: ActivityNotFoundException) {
                     root.doShowDialog(
-                        outputValue = """
-                            No app was found on your device to choose folders. Please make sure the system Files app is enabled in your device settings.
-                        """.trimIndent(),
+                        outputValue = getString(R.string.app_no_file_picker),
                         outputState = OutputState.OUTPUT_SIMPLE_MSG
                     )
                 }
@@ -253,9 +244,7 @@ class MainActivity : ComponentActivity() {
                     filePickerLauncher.launch(arrayOf(MimeType.IMAGE))
                 } catch (_: ActivityNotFoundException) {
                     root.doShowDialog(
-                        outputValue = """
-                            No app was found on your device to choose folders. Please make sure the system Files app is enabled in your device settings.
-                        """.trimIndent(),
+                        outputValue = getString(R.string.app_no_file_picker),
                         outputState = OutputState.OUTPUT_SIMPLE_MSG
                     )
                 }
@@ -265,9 +254,7 @@ class MainActivity : ComponentActivity() {
                     fontPickerLauncher.launch(arrayOf(MimeType.FONT))
                 } catch (_: ActivityNotFoundException) {
                     root.doShowDialog(
-                        outputValue = """
-                            No app was found on your device to choose folders. Please make sure the system Files app is enabled in your device settings.
-                        """.trimIndent(),
+                        outputValue = getString(R.string.app_no_file_picker),
                         outputState = OutputState.OUTPUT_SIMPLE_MSG
                     )
                 }
@@ -300,15 +287,7 @@ class MainActivity : ComponentActivity() {
             root.model.first { it.isMigrationComplete }
             root.askTelemetryConsentIfNeeded(
                 telemetry = get(),
-                message = """
-                    <b>Help improve Quasporium</b>
-
-                    May the app send usage statistics? They show which features are used, which games from the catalog are started and how fast screens open. They never include your files, your saves or the names of games you added yourself. Google Analytics for Firebase and Firebase Performance Monitoring collect them.
-
-                    Crash reports are separate: they are sent unless you turn them off.
-
-                    You can change both at any time in Settings → General.
-                """.trimIndent()
+                message = getString(R.string.app_telemetry_consent)
             )
             withResumed { checkAndRequestPermissions() }
         }

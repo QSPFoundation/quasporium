@@ -215,8 +215,8 @@ class DetailsStoreTest {
     }
 
     @Test
-    fun `new profile is numbered after the existing ones`() {
-        createStore().accept(DetailsStore.Intent.CreateProfile)
+    fun `new profile is created with the given name`() {
+        createStore().accept(DetailsStore.Intent.CreateProfile("Playthrough 3"))
 
         assertEquals("create 7 Playthrough 3", calls.last())
     }

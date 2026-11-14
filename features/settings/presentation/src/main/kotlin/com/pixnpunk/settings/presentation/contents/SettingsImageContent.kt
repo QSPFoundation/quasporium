@@ -48,7 +48,10 @@ fun SettingsImageContent(
                 Text(
                     stringResource(
                         R.string.image_width_twotarswitch_title,
-                        if (it) "Auto" else "Manual"
+                        stringResource(
+                            if (it) R.string.settings_size_auto
+                            else R.string.settings_size_manual
+                        )
                     )
                 )
             },
@@ -76,7 +79,10 @@ fun SettingsImageContent(
                 Text(
                     stringResource(
                         R.string.image_height_twotarswitch_title,
-                        if (it) "Auto" else "Manual"
+                        stringResource(
+                            if (it) R.string.settings_size_auto
+                            else R.string.settings_size_manual
+                        )
                     )
                 )
             },

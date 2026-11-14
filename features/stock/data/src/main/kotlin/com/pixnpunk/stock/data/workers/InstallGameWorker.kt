@@ -1,6 +1,7 @@
 package com.pixnpunk.stock.data.workers
 
 import android.content.Context
+import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.work.CoroutineWorker
 import androidx.work.WorkInfo
@@ -43,6 +44,7 @@ internal class InstallGameWorker(
 ) : CoroutineWorker(appContext, workerParams) {
 
     private var isForeground = true
+    private val strings: Context by lazy { ContextCompat.getContextForLanguage(applicationContext) }
     private var gameTitle = ""
     private var lastProgress = 0f
 
@@ -88,11 +90,11 @@ internal class InstallGameWorker(
                 val bytesPerMs = speedSamples.average()
                 val text =
                     if (total != null && bytesPerMs > 0)
-                        applicationContext.getString(
+                        strings.getString(
                             R.string.install_downloading_eta,
                             ((total - downloaded) / bytesPerMs).toLong().formatEta()
                         )
-                    else applicationContext.getString(R.string.install_downloading)
+                    else strings.getString(R.string.install_downloading)
                 val progress = if (total != null && total > 0) downloaded.toFloat() / total else 0f
 
                 report(InstallStep.DOWNLOAD, progress, text)
@@ -108,7 +110,7 @@ internal class InstallGameWorker(
                 ?.takeIf { it.exists() }
         if (downloaded != null) return downloaded
 
-        report(InstallStep.DOWNLOAD, 0f, applicationContext.getString(R.string.install_preparing))
+        report(InstallStep.DOWNLOAD, 0f, strings.getString(R.string.install_preparing))
         val archive = downloader.download(url, gameDir, downloadProgress())
         marker.writeText(archive.name)
         return archive
@@ -118,11 +120,11 @@ internal class InstallGameWorker(
         val gameDirPath = gameDir.toUri().toString()
         if (archive.extension.lowercase(Locale.ROOT) in gameFileExtensions) return gameDirPath
 
-        report(InstallStep.UNPACK, 0f, applicationContext.getString(R.string.install_unpacking))
+        report(InstallStep.UNPACK, 0f, strings.getString(R.string.install_unpacking))
         archiveExtractor.unpack(archive.toUri().toString(), gameDirPath) { state ->
             val text =
-                if (state.time == UNKNOWN_ETA) applicationContext.getString(R.string.install_unpacking)
-                else applicationContext.getString(R.string.install_unpacking_eta, state.time)
+                if (state.time == UNKNOWN_ETA) strings.getString(R.string.install_unpacking)
+                else strings.getString(R.string.install_unpacking_eta, state.time)
             report(InstallStep.UNPACK, state.progress, text)
         }.onFailure { if (it !is CancellationException) throw UnpackException(it) }.getOrThrow()
 
@@ -142,29 +144,29 @@ internal class InstallGameWorker(
 
     private fun pausedMessage(error: Throwable?): String =
         when (error?.toNetworkError()) {
-            null -> applicationContext.getString(R.string.install_paused)
+            null -> strings.getString(R.string.install_paused)
             NetworkError.NoConnection, NetworkError.Timeout ->
-                applicationContext.getString(R.string.install_paused_network)
-            else -> applicationContext.getString(R.string.install_paused_retry)
+                strings.getString(R.string.install_paused_network)
+            else -> strings.getString(R.string.install_paused_retry)
         }
 
     private fun failureMessage(error: Throwable): String =
-        if (error is UnpackException) applicationContext.getString(R.string.install_error_unpack)
+        if (error is UnpackException) strings.getString(R.string.install_error_unpack)
         else when (val networkError = error.toNetworkError()) {
             NetworkError.NoConnection ->
-                applicationContext.getString(R.string.download_error_no_connection)
+                strings.getString(R.string.download_error_no_connection)
 
             NetworkError.Timeout ->
-                applicationContext.getString(R.string.download_error_timeout)
+                strings.getString(R.string.download_error_timeout)
 
             NetworkError.NotFound ->
-                applicationContext.getString(R.string.download_error_not_found)
+                strings.getString(R.string.download_error_not_found)
 
             is NetworkError.Server ->
-                applicationContext.getString(R.string.download_error_server, networkError.code)
+                strings.getString(R.string.download_error_server, networkError.code)
 
             NetworkError.Unexpected ->
-                applicationContext.getString(R.string.download_error_unexpected)
+                strings.getString(R.string.download_error_unexpected)
         }
 
     private fun readInput(): Triple<String, String, GameEntry>? {
@@ -193,8 +195,8 @@ internal class InstallGameWorker(
 
             notificationProvider.showResult(
                 id,
-                applicationContext.getString(R.string.install_complete_title, entry.title),
-                applicationContext.getString(R.string.install_complete_text)
+                strings.getString(R.string.install_complete_title, entry.title),
+                strings.getString(R.string.install_complete_text)
             )
             Result.success()
         } catch (e: CancellationException) {
@@ -223,7 +225,7 @@ internal class InstallGameWorker(
 
                 notificationProvider.showResult(
                     id,
-                    applicationContext.getString(R.string.install_error_title, entry.title),
+                    strings.getString(R.string.install_error_title, entry.title),
                     failureMessage(e)
                 )
 

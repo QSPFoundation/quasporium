@@ -25,4 +25,21 @@
     <string name="collapse_presets_description">Collapse</string>
     <string name="selected_color_description">Selected</string>
     <string name="remove_background_description">Remove background</string>
+    <string name="details_add_background">Add background</string>
+    <string name="details_custom_image">Custom image</string>
+    <string name="details_accent_color">Accent color</string>
+    <string name="details_background_image">Background image</string>
+    <string name="details_edit_cancel">Cancel</string>
+    <string name="details_edit_save">Save</string>
+    <string name="details_preset_name">Preset name</string>
+    <string name="details_preset_label">Preset</string>
+    <string name="details_preset_continue">Continue (%1$s)</string>
+    <string name="details_preset_restart">Restart (%1$s)</string>
+    <string name="details_preset_start">Start (%1$s)</string>
+    <string name="details_preset_customize">Customize</string>
+    <string name="details_preset_delete">Delete</string>
+    <string name="details_new_playthrough">New Playthrough</string>
+    <string name="details_presets">Presets</string>
+    <string name="details_preset_new">New</string>
+    <string name="details_default_preset_name">Playthrough %1$d</string>
 </resources>

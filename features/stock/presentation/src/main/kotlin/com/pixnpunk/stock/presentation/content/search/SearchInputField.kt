@@ -32,7 +32,7 @@ fun SearchInputField(
     searchBarState = searchBarState,
     textFieldState = textFieldState,
     onSearch = { executeSearch() },
-    placeholder = { Text("Search games") },
+    placeholder = { Text(stringResource(R.string.stock_search_placeholder)) },
     leadingIcon = {
         if (!isSearchExpanded) {
             Icon(

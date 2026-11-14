@@ -16,7 +16,7 @@ sealed interface DetailsStore : Store<DetailsStore.Intent, DetailsStore.State, D
     )
 
     sealed interface Intent {
-        data object CreateProfile : Intent
+        data class CreateProfile(val name: String) : Intent
         data class UpdateProfileVisuals(val presetId: Long, val newName: String, val newColor: Long) : Intent
         data class SetBackgroundImage(val presetId: Long, val uriString: String) : Intent
         data class RemoveBackgroundImage(val presetId: Long) : Intent

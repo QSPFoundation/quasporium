@@ -13,6 +13,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.stringResource
+import com.pixnpunk.stock.presentation.R
 
 fun LazyListScope.filterItemLang(
     selectedLang: String?,
@@ -23,14 +25,14 @@ fun LazyListScope.filterItemLang(
         FilterChip(
             selected = selectedLang != null,
             onClick = { isLangMenuExpanded = true },
-            label = { Text(selectedLang?.uppercase() ?: "Language") },
+            label = { Text(selectedLang?.uppercase() ?: stringResource(R.string.stock_filter_language)) },
             trailingIcon = { Icon(Icons.Default.ArrowDropDown, null) }
         )
         DropdownMenu(
             expanded = isLangMenuExpanded,
             onDismissRequest = { isLangMenuExpanded = false }
         ) {
-            DropdownMenuItem(text = { Text("Any (Clear)") }, onClick = {
+            DropdownMenuItem(text = { Text(stringResource(R.string.stock_filter_language_any)) }, onClick = {
                 selectLang(null)
                 isLangMenuExpanded = false
             })

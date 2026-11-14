@@ -14,7 +14,6 @@
     <string name="catalog_error_unexpected">Could not load the catalog.</string>
     <string name="first_tab_text">Installed</string>
     <string name="second_tab_text">Library</string>
-    <string name="placeholder_searchbar">Search game</string>
     <string name="add_game_button_description">Add game</string>
     <string name="scroll_to_top_button_description">Scroll to top</string>
     <string name="back_button_description">Navigate back</string>
@@ -25,4 +24,27 @@
     <string name="sort_ascending_description">Ascending order</string>
     <string name="sort_descending_description">Descending order</string>
     <string name="remove_filter_description">Remove filter</string>
+    <string name="stock_search_placeholder">Search games</string>
+    <string name="stock_search_recent">Recent</string>
+    <string name="stock_search_in_title">In title: %1$s</string>
+    <string name="stock_search_in_description">In description: %1$s</string>
+    <string name="stock_search_authors">Authors</string>
+    <string name="stock_search_random_authors">Random authors</string>
+    <string name="stock_search_translators">Translators</string>
+    <string name="stock_search_random_translators">Random translators</string>
+    <plurals name="stock_search_more_characters">
+        <item quantity="one">Enter %1$d more character to search</item>
+        <item quantity="other">Enter %1$d more characters to search</item>
+    </plurals>
+    <string name="stock_sort_created">Created</string>
+    <string name="stock_sort_updated">Updated</string>
+    <string name="stock_sort_comments">Comments</string>
+    <string name="stock_sort_likes">Likes</string>
+    <string name="stock_sort_downloads">Downloads</string>
+    <string name="stock_sort_plays">Plays</string>
+    <string name="stock_sort_none">Default</string>
+    <string name="stock_filter_language">Language</string>
+    <string name="stock_filter_language_any">Any language</string>
+    <string name="stock_try_again">Try again</string>
+    <string name="stock_unknown_error">Unknown error</string>
 </resources>

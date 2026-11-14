@@ -1,5 +1,7 @@
 package com.pixnpunk.details.presentation
 
+import android.content.Context
+import androidx.core.content.ContextCompat
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
 import com.arkivanov.essenty.statekeeper.ExperimentalStateKeeperApi
@@ -84,7 +86,12 @@ class RealDetailsComponent(
     }
 
     override fun onCreateProfile() =
-        store.accept(DetailsStore.Intent.CreateProfile)
+        store.accept(
+            DetailsStore.Intent.CreateProfile(
+                ContextCompat.getContextForLanguage(get<Context>())
+                    .getString(R.string.details_default_preset_name, model.value.gameProfiles.size + 1)
+            )
+        )
 
     override fun onUpdateVisuals(presetId: Long, newName: String, newColor: Long) =
         store.accept(DetailsStore.Intent.UpdateProfileVisuals(presetId, newName, newColor))

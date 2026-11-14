@@ -29,6 +29,13 @@ fun SettingsTextContent(
     resetToDefault: (ColorPickerState) -> Unit,
     showFontDialog: () -> Unit
 ) {
+    val typefaceLabels = mapOf(
+        FontTypeface.DEFAULT to stringResource(R.string.settings_typeface_default),
+        FontTypeface.SANS_SERIF to stringResource(R.string.settings_typeface_sans_serif),
+        FontTypeface.SERIF to stringResource(R.string.settings_typeface_serif),
+        FontTypeface.MONOSPACE to stringResource(R.string.settings_typeface_monospace)
+    )
+
     LazyColumn {
         listPreference(
             key = PrefKeys.FONT_STYLE,
@@ -42,12 +49,9 @@ fun SettingsTextContent(
             values = FontTypeface.entries.map { it.toString() },
             valueToText = {
                 AnnotatedString(
-                    when (FontTypeface.valueOf(it)) {
-                        FontTypeface.DEFAULT -> "Default"
-                        FontTypeface.SANS_SERIF -> "Sans-Serif"
-                        FontTypeface.SERIF -> "Serif"
-                        FontTypeface.MONOSPACE -> "Monospace"
-                    }
+                    typefaceLabels.getValue(
+                        FontTypeface.valueOf(it)
+                    )
                 )
             },
             title = { Text(stringResource(R.string.font_style_list_title)) }

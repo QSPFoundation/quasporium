@@ -89,7 +89,7 @@ fun PresetDockStation(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = "Presets",
+                        text = stringResource(R.string.details_presets),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -190,7 +190,7 @@ fun PresetDockStation(
 
                     SuggestionChip(
                         onClick = onAddClick,
-                        label = { Text("New") },
+                        label = { Text(stringResource(R.string.details_preset_new)) },
                         icon = {
                             Icon(
                                 modifier = Modifier.size(16.dp),

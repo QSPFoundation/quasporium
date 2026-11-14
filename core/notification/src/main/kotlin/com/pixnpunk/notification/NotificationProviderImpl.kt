@@ -10,6 +10,7 @@ import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import androidx.work.ForegroundInfo
 import androidx.work.WorkManager
 import java.util.*
@@ -19,6 +20,8 @@ class NotificationProviderImpl(
     private val workManager: WorkManager
 ) : NotificationProvider {
     private val notificationManager = NotificationManagerCompat.from(context)
+    private val strings: Context
+        get() = ContextCompat.getContextForLanguage(context)
 
     private companion object {
         const val CHANNEL_ID = "com.pixnpunk.quasporium.channel.download_channel"
@@ -30,10 +33,10 @@ class NotificationProviderImpl(
         notificationManager.createNotificationChannel(
             NotificationChannel(
                 CHANNEL_ID,
-                "Game downloads",
+                strings.getString(R.string.notification_channel_downloads),
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = "Notifications about downloading and unpacking"
+                description = strings.getString(R.string.notification_channel_downloads_description)
             }
         )
     }
@@ -61,7 +64,7 @@ class NotificationProviderImpl(
         )
         .addAction(
             android.R.drawable.ic_delete,
-            "Cancel",
+            strings.getString(R.string.notification_cancel),
             cancelIntent
         )
         .setPriority(NotificationCompat.PRIORITY_LOW)

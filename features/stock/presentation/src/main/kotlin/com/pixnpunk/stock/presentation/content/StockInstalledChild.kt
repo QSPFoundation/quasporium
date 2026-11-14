@@ -115,7 +115,7 @@ fun StockInstalledChild(
                 StockFullScreenError(
                     message = stringResource(
                         R.string.games_list_error_template,
-                        error.message ?: "Unknown error"
+                        error.message ?: stringResource(R.string.stock_unknown_error)
                     ),
                     onRetry = { lazyPagingItems.retry() }
                 )

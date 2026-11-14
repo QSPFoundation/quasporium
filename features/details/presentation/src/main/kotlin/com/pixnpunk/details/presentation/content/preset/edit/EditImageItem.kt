@@ -39,13 +39,16 @@ fun EditImageItem(
                 modifier = Modifier.size(18.dp)
             )
             Spacer(Modifier.width(8.dp))
-            Text("Add background", style = MaterialTheme.typography.labelMedium)
+            Text(
+                text = stringResource(R.string.details_add_background),
+                style = MaterialTheme.typography.labelMedium
+            )
         }
     } else {
         InputChip(
             selected = true,
             onClick = onPickBackground,
-            label = { Text("Custom image") },
+            label = { Text(stringResource(R.string.details_custom_image)) },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Image,

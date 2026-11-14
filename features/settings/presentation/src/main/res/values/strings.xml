@@ -35,8 +35,20 @@
     <string name="image_height_twotarswitch_summary">Specify game image height</string>
     <string name="image_height_twotarswitch_title">%1$s game image height</string>
     <string name="image_width_twotarswitch_title">%1$s game image width</string>
-    <string name="close_button_description">Close settings</string>
+    <string name="settings_close_button_description">Close settings</string>
     <string name="back_button_description">Navigate back</string>
     <string name="usage_stats_switch_title">Share usage statistics</string>
     <string name="crash_reports_switch_title">Send crash reports</string>
+    <string name="settings_theme_system">System</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_engine_legacy">%1$s (legacy)</string>
+    <string name="settings_size_units_si">B/KB/MB/GB/TB</string>
+    <string name="settings_size_units_iso">B/KiB/MiB/GiB/TiB</string>
+    <string name="settings_typeface_default">Default</string>
+    <string name="settings_typeface_sans_serif">Sans-Serif</string>
+    <string name="settings_typeface_serif">Serif</string>
+    <string name="settings_typeface_monospace">Monospace</string>
+    <string name="settings_size_auto">Auto</string>
+    <string name="settings_size_manual">Manual</string>
 </resources>

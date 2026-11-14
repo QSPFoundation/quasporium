@@ -52,11 +52,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
+import com.pixnpunk.details.presentation.R
 import com.pixnpunk.details.presentation.content.preset.edit.EditRootColumn
 import com.pixnpunk.details.presentation.model.GameFileItem
 import com.pixnpunk.details.presentation.model.PresetUIState
@@ -119,7 +121,7 @@ fun PlayPresetCard(
                                     value = editedName,
                                     onValueChange = { editedName = it },
                                     singleLine = true,
-                                    label = { Text("Preset name") },
+                                    label = { Text(stringResource(R.string.details_preset_name)) },
                                     shape = RoundedCornerShape(12.dp)
                                 )
                             } else {
@@ -127,7 +129,7 @@ fun PlayPresetCard(
                                     colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                                     overlineContent = {
                                         Text(
-                                            text = "Preset".uppercase(),
+                                            text = stringResource(R.string.details_preset_label).uppercase(),
                                             style = MaterialTheme.typography.labelSmall,
                                             fontWeight = FontWeight.Bold,
                                             letterSpacing = 1.sp,
@@ -161,7 +163,10 @@ fun PlayPresetCard(
                                 ) {
                                     if (lastSave != null) {
                                         PresetSplitButton(
-                                            text = "Continue (${lastSave.displayName})",
+                                            text = stringResource(
+                                                R.string.details_preset_continue,
+                                                lastSave.displayName
+                                            ),
                                             icon = Icons.Default.PlayArrow,
                                             isPrimary = true,
                                             items = profile.saves,
@@ -174,7 +179,11 @@ fun PlayPresetCard(
 
                                     if (targetFile != null) {
                                         PresetSplitButton(
-                                            text = if (lastSave != null) "Restart (${targetFile.displayName})" else "Start (${targetFile.displayName})",
+                                            text = stringResource(
+                                                if (lastSave != null) R.string.details_preset_restart
+                                                else R.string.details_preset_start,
+                                                targetFile.displayName
+                                            ),
                                             icon = Icons.Default.RestartAlt,
                                             isPrimary = lastSave == null,
                                             items = allFiles,
@@ -269,7 +278,7 @@ fun PlayPresetCard(
                                         )
                                         Spacer(Modifier.width(8.dp))
                                         Text(
-                                            text = "Customize",
+                                            text = stringResource(R.string.details_preset_customize),
                                             style = MaterialTheme.typography.titleSmall
                                         )
                                     }
@@ -290,7 +299,7 @@ fun PlayPresetCard(
                                         )
                                         Spacer(Modifier.width(8.dp))
                                         Text(
-                                            text = "Delete",
+                                            text = stringResource(R.string.details_preset_delete),
                                             style = MaterialTheme.typography.titleSmall
                                         )
                                     }

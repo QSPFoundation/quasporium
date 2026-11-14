@@ -22,8 +22,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.pixnpunk.details.presentation.R
 
 @Composable
 fun CreatePresetCard(
@@ -67,7 +69,7 @@ fun CreatePresetCard(
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "New Playthrough",
+                    text = stringResource(R.string.details_new_playthrough),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )

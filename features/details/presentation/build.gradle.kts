@@ -22,6 +22,7 @@ dependencies {
     api(project(":features:details:domain"))
 
     implementation(libs.androidx.compose.adaptive)
+    implementation(libs.androidx.core.ktx)
 
     implementation(libs.coil.compose)
 
