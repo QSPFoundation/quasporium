@@ -45,8 +45,8 @@ class InstallStateMapperTest {
     }
 
     @Test
-    fun finishedWorkIsInstalledOrFailed() {
-        assertEquals(InstallState.Installed, info(WorkInfo.State.SUCCEEDED).toInstallState())
+    fun finishedWorkCanBeStartedAgainOrHasFailed() {
+        assertEquals(InstallState.NotStarted, info(WorkInfo.State.SUCCEEDED).toInstallState())
         assertEquals(InstallState.Failed, info(WorkInfo.State.FAILED).toInstallState())
     }
 }

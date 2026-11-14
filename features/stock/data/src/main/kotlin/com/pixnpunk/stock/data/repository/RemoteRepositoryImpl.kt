@@ -45,6 +45,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -151,9 +152,13 @@ class RemoteRepositoryImpl(
     }
 
     override fun observeInstallState(fileUrl: String): Flow<InstallState> =
-        workManager.getWorkInfosForUniqueWorkFlow(installWorkName(fileUrl))
-            .map { it.lastOrNull().toInstallState() }
-            .distinctUntilChanged()
+        combine(
+            workManager.getWorkInfosForUniqueWorkFlow(installWorkName(fileUrl)),
+            appDatabase.gameDao().getByUrl()
+        ) { installs, installedUrls ->
+            if (fileUrl in installedUrls) InstallState.Installed
+            else installs.lastOrNull().toInstallState()
+        }.distinctUntilChanged()
 
     override suspend fun cancelInstall(fileUrl: String) {
         val name = installWorkName(fileUrl)

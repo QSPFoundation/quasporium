@@ -8,7 +8,7 @@ import com.pixnpunk.stock.domain.model.InstallState
 
 internal fun WorkInfo?.toInstallState(): InstallState =
     when (this?.state) {
-        null, WorkInfo.State.CANCELLED -> InstallState.NotStarted
+        null, WorkInfo.State.CANCELLED, WorkInfo.State.SUCCEEDED -> InstallState.NotStarted
 
         WorkInfo.State.ENQUEUED, WorkInfo.State.BLOCKED ->
             if (runAttemptCount > 0) InstallState.Paused else InstallState.Queued
@@ -18,8 +18,6 @@ internal fun WorkInfo?.toInstallState(): InstallState =
             if (progress.getString(PROGRESS_STEP) == InstallStep.UNPACK.name) InstallState.Unpacking(value)
             else InstallState.Downloading(value)
         }
-
-        WorkInfo.State.SUCCEEDED -> InstallState.Installed
 
         WorkInfo.State.FAILED -> InstallState.Failed
     }
