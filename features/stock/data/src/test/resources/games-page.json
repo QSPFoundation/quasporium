@@ -1,0 +1,81 @@
+{
+  "data": [
+    {
+      "slug": "332-se-a-jea",
+      "name": "SE A JEA",
+      "lang": "ru",
+      "ver": "1.0",
+      "authors": "Mkir",
+      "translators": null,
+      "description_html": "<p>Биографическая интерактивная новелла, посвященная Сеа́дже Дхана́вас (второе имя — Анза́я, «Хранительница Истины»; iii-560 — iii-592). Последней Хранительнице горы Сауви-Ре, принцессе Золотоводья (Э",
+      "file_size": 542128,
+      "file_name": "seajea.qsp",
+      "icon_url": "https://qsp.org/storage/games/332/seajpic.jpg",
+      "cover_url": "https://qsp.org/storage/games/332/ковер.jpg",
+      "file_url": "https://qsp.org/games/332-se-a-jea/download",
+      "featured": false,
+      "downloads_count": 82,
+      "plays_count": 23,
+      "likes_count": 0,
+      "comments_count": 0,
+      "created_at": "2026-11-10T17:23:24+00:00",
+      "updated_at": "2026-11-12T05:42:13+00:00"
+    },
+    {
+      "slug": "331-carica-belyx-krovei",
+      "name": "Царица Белых Кровей",
+      "lang": "ru",
+      "ver": "1.16",
+      "authors": "Mioirel",
+      "translators": null,
+      "description_html": "<p>Наслаждение абсентом в компании незнакомки — в совершенно ином мире, полном мистических тайн и опасностей. Изначально игра была сделана за один день, но ее расширение продолжается. Сейчас в игре до",
+      "file_size": 298189,
+      "file_name": "Царица Белых Кровей v1.16.rar",
+      "icon_url": "https://qsp.org/storage/games/331/40.jpg",
+      "cover_url": "https://qsp.org/storage/games/331/main.jpg",
+      "file_url": "https://qsp.org/games/331-carica-belyx-krovei/download",
+      "featured": false,
+      "downloads_count": 129,
+      "plays_count": 59,
+      "likes_count": 1,
+      "comments_count": 1,
+      "created_at": "2026-11-03T20:45:23+00:00",
+      "updated_at": "2026-11-13T16:25:40+00:00"
+    }
+  ],
+  "links": {
+    "first": "https://qsp.org/api/v1/games?page=1&per_page=100",
+    "last": "https://qsp.org/api/v1/games?page=16&per_page=100",
+    "prev": null,
+    "next": "https://qsp.org/api/v1/games?page=2&per_page=100"
+  },
+  "meta": {
+    "current_page": 1,
+    "from": 1,
+    "last_page": 16,
+    "links": [
+      {
+        "url": null,
+        "label": "Prev",
+        "page": null,
+        "active": false
+      },
+      {
+        "url": "https://qsp.org/api/v1/games?page=1&per_page=100",
+        "label": "1",
+        "page": 1,
+        "active": true
+      },
+      {
+        "url": "https://qsp.org/api/v1/games?page=2&per_page=100",
+        "label": "2",
+        "page": 2,
+        "active": false
+      }
+    ],
+    "path": "https://qsp.org/api/v1/games",
+    "per_page": 20,
+    "to": 20,
+    "total": 309
+  }
+}

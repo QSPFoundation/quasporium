@@ -38,6 +38,9 @@ jobs:
       - name: JNI bindings match the pinned engines
         run: .github/ci/check-jni-bindings.sh
 
+      - name: Plugin versions in settings.gradle.kts match the catalog
+        run: .github/ci/check-plugin-versions.sh
+
       - name: Build foss
         run: ./gradlew :app:assembleFossDebug :app:assembleFossRelease
 
