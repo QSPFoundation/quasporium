@@ -12,7 +12,7 @@ dependencies {
     implementation(project(":core:storage"))
     api(project(":core:database"))
     api(project(":core:dto"))
-    implementation(project(":core:notification"))
+    api(project(":core:notification"))
     implementation(project(":core:logger"))
 
     api(project(":features:stock:domain"))
@@ -38,6 +38,6 @@ dependencies {
     androidTestImplementation(libs.androidx.concurrent.futures)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.documentfile)
-    androidTestImplementation(libs.guava.listenablefuture)
+    implementation(libs.guava.listenablefuture)
     implementation(libs.kotlinx.serialization.json)
 }

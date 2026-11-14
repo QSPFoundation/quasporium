@@ -5,6 +5,14 @@
     <string name="modify_button_description">Edit</string>
     <string name="settings_button_description">Settings</string>
     <string name="download_button_description">Download</string>
+    <string name="install_waiting">Waiting to start…</string>
+    <string name="install_paused">Paused · will continue automatically</string>
+    <string name="install_downloading">Downloading · %1$d%%</string>
+    <string name="install_unpacking">Unpacking · %1$d%%</string>
+    <string name="install_installed">Installed. Open it from the Installed tab.</string>
+    <string name="install_failed">Installation failed.</string>
+    <string name="install_retry">Try again</string>
+    <string name="install_cancel">Cancel</string>
     <string name="expand_button_description">Expand</string>
     <string name="collapse_button_description">Collapse</string>
     <string name="icon_description">Game icon %1$s</string>

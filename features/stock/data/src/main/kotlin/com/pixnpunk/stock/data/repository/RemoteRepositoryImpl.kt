@@ -12,14 +12,15 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import androidx.work.await
 import androidx.work.workDataOf
 import com.pixnpunk.common.runCatchingCancellable
 import com.pixnpunk.database.AppDatabase
-import com.pixnpunk.database.dao.AuthorDao
-import com.pixnpunk.database.dao.TranslatorDao
 import com.pixnpunk.dto.GameEntry
+import com.pixnpunk.notification.NotificationProvider
 import com.pixnpunk.stock.data.mapper.toAuthorEntity
 import com.pixnpunk.stock.data.mapper.toDomain
+import com.pixnpunk.stock.data.mapper.toInstallState
 import com.pixnpunk.stock.data.mapper.toTranslatorEntity
 import com.pixnpunk.stock.data.remote.GenericApiResponse
 import com.pixnpunk.stock.data.remote.NameCountItemRemote
@@ -32,6 +33,7 @@ import com.pixnpunk.stock.data.workers.WorkerKeys.GAME_DIR_TAG_PREFIX
 import com.pixnpunk.stock.data.workers.WorkerKeys.INSTALL_TAG
 import com.pixnpunk.stock.data.workers.WorkerKeys.installWorkName
 import com.pixnpunk.stock.domain.model.AuthorEntry
+import com.pixnpunk.stock.domain.model.InstallState
 import com.pixnpunk.stock.domain.model.SearchState
 import com.pixnpunk.stock.domain.model.TranslatorEntry
 import com.pixnpunk.stock.domain.repository.RemoteRepository
@@ -43,6 +45,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
@@ -55,9 +58,11 @@ class RemoteRepositoryImpl(
     private val ktorClient: Lazy<HttpClient>,
     private val workManager: WorkManager,
     private val appDatabase: AppDatabase,
-    private val authorDao: AuthorDao,
-    private val translatorDao: TranslatorDao
+    private val notificationProvider: NotificationProvider
 ) : RemoteRepository {
+
+    private val authorDao = appDatabase.authorDao()
+    private val translatorDao = appDatabase.translatorDao()
 
     internal companion object {
         const val INITIAL_PAGE_INDEX = 1
@@ -143,6 +148,19 @@ class RemoteRepositoryImpl(
             ExistingWorkPolicy.KEEP,
             installRequest
         )
+    }
+
+    override fun observeInstallState(fileUrl: String): Flow<InstallState> =
+        workManager.getWorkInfosForUniqueWorkFlow(installWorkName(fileUrl))
+            .map { it.lastOrNull().toInstallState() }
+            .distinctUntilChanged()
+
+    override suspend fun cancelInstall(fileUrl: String) {
+        val name = installWorkName(fileUrl)
+        val installs = workManager.getWorkInfosForUniqueWorkFlow(name).first()
+        workManager.cancelUniqueWork(name).await()
+        installs.forEach { notificationProvider.cancel(it.id) }
+        removeAbandonedInstalls()
     }
 
     override suspend fun removeAbandonedInstalls() =

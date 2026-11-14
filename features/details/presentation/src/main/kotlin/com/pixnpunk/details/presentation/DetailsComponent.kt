@@ -4,6 +4,7 @@ import com.pixnpunk.details.presentation.mvi.DetailsStore
 import com.pixnpunk.dto.GameEntry
 import com.pixnpunk.dto.LaunchGameEntity
 import com.pixnpunk.dto.SettingsEntity
+import com.pixnpunk.stock.domain.model.InstallState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -13,6 +14,7 @@ sealed interface DetailsComponent {
     val settingsState: StateFlow<SettingsEntity>
 
     val displayEntry: StateFlow<GameEntry>
+    val installState: StateFlow<InstallState>
 
     val launchFreshGame: (LaunchGameEntity) -> Unit
     val launchContinueGame: (LaunchGameEntity) -> Unit
@@ -21,6 +23,7 @@ sealed interface DetailsComponent {
     val showDownloadGameDialog: (GameEntry) -> Unit
     val onDismissed: () -> Unit
 
+    fun onCancelInstall()
     fun onCreateProfile()
     fun onUpdateVisuals(presetId: Long, newName: String, newColor: Long)
     fun onPickBackground(presetId: Long)

@@ -11,6 +11,7 @@ import com.pixnpunk.details.presentation.content.preset.DetailsPresetsCarouselDo
 import com.pixnpunk.details.presentation.model.GameFileItem
 import com.pixnpunk.details.presentation.model.PresetUIState
 import com.pixnpunk.dto.GameListType
+import com.pixnpunk.stock.domain.model.InstallState
 
 @Composable
 fun DetailsButtonsSet(
@@ -23,7 +24,9 @@ fun DetailsButtonsSet(
     onPickBackground: (presetId: Long) -> Unit,
     onRemoveBackground: (presetId: Long) -> Unit,
     onDeleteProfile: (presetId: Long) -> Unit,
+    installState: InstallState,
     onDownload: () -> Unit,
+    onCancelInstall: () -> Unit,
     onContinue: (presetId: Long, savePath: String) -> Unit,
     onStartFresh: (presetId: Long, fileName: String) -> Unit
 ) {
@@ -36,7 +39,9 @@ fun DetailsButtonsSet(
 
             GameListType.Downloadable ->
                 DetailsDownloadButtons(
-                    onDownload = onDownload
+                    installState = installState,
+                    onDownload = onDownload,
+                    onCancel = onCancelInstall
                 )
 
             GameListType.Playable ->

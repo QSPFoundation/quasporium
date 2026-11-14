@@ -25,7 +25,7 @@ val stockDataModule = module {
     single<RemoteRepository> {
         RemoteRepositoryImpl(
             get(), inject<HttpClient>(), get(),
-            get(), get(), get()
+            get(), get()
         )
     }
 }

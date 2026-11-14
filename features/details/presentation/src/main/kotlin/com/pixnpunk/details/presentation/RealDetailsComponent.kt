@@ -12,14 +12,20 @@ import com.pixnpunk.details.presentation.mapper.withRelativeDates
 import com.pixnpunk.details.presentation.mvi.DetailsStore
 import com.pixnpunk.details.presentation.mvi.RealDetailsStore
 import com.pixnpunk.dto.GameEntry
+import com.pixnpunk.dto.GameListType
 import com.pixnpunk.dto.LaunchGameEntity
 import com.pixnpunk.dto.SettingsEntity
+import com.pixnpunk.stock.domain.model.InstallState
+import com.pixnpunk.stock.domain.usecase.CancelInstallUseCase
+import com.pixnpunk.stock.domain.usecase.ObserveInstallStateUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
@@ -43,6 +49,7 @@ class RealDetailsComponent(
     }
 
     private val prettyTime = PrettyTime()
+    private val scope = coroutineScope()
 
     @OptIn(ExperimentalStateKeeperApi::class)
     private var config: Config by saveable(
@@ -61,6 +68,20 @@ class RealDetailsComponent(
                 started = SharingStarted.Eagerly,
                 initialValue = model.value.gameEntry.withRelativeDates(prettyTime)
             )
+
+    override val installState: StateFlow<InstallState> =
+        if (defEntry.listId == GameListType.Downloadable && defEntry.fileUrl.isNotEmpty())
+            get<ObserveInstallStateUseCase>().execute(defEntry.fileUrl)
+                .stateIn(
+                    scope,
+                    SharingStarted.Eagerly,
+                    InstallState.NotStarted
+                )
+        else MutableStateFlow(InstallState.NotStarted)
+
+    override fun onCancelInstall() {
+        scope.launch { get<CancelInstallUseCase>().execute(defEntry.fileUrl) }
+    }
 
     override fun onCreateProfile() =
         store.accept(DetailsStore.Intent.CreateProfile)

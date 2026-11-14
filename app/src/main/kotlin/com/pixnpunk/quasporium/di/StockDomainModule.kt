@@ -1,5 +1,6 @@
 package com.pixnpunk.quasporium.di
 
+import com.pixnpunk.stock.domain.usecase.CancelInstallUseCase
 import com.pixnpunk.stock.domain.usecase.DeleteLocalGameEntriesUseCase
 import com.pixnpunk.stock.domain.usecase.DownloadGameArchUseCase
 import com.pixnpunk.stock.domain.usecase.FillAndInsertEntryUseCase
@@ -9,6 +10,7 @@ import com.pixnpunk.stock.domain.usecase.GetRemoteGameEntriesExcludingLocalUseCa
 import com.pixnpunk.stock.domain.usecase.GetTranslatorSuggestionUseCase
 import com.pixnpunk.stock.domain.usecase.MigrateIfNeededUseCase
 import com.pixnpunk.stock.domain.usecase.ObserveEntryByIdUseCase
+import com.pixnpunk.stock.domain.usecase.ObserveInstallStateUseCase
 import com.pixnpunk.stock.domain.usecase.RemoveAbandonedInstallsUseCase
 import com.pixnpunk.stock.domain.usecase.SyncDictionariesUseCase
 import com.pixnpunk.stock.domain.usecase.UpsertEntryUseCase
@@ -23,6 +25,8 @@ val stockDomainModule = module {
     factoryOf(::UpsertEntryUseCase)
     factoryOf(::SyncDictionariesUseCase)
     factoryOf(::RemoveAbandonedInstallsUseCase)
+    factoryOf(::ObserveInstallStateUseCase)
+    factoryOf(::CancelInstallUseCase)
     factoryOf(::GetLocalGameEntriesUseCase)
     factoryOf(::GetRemoteGameEntriesExcludingLocalUseCase)
     factoryOf(::GetAuthorSuggestionUseCase)

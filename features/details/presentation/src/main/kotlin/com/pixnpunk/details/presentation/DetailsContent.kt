@@ -28,6 +28,7 @@ fun DetailsContent(
     val state by component.model.collectAsState()
     val settings by component.settingsState.collectAsState()
     val displayEntry by component.displayEntry.collectAsState()
+    val installState by component.installState.collectAsState()
 
     val entry = state.gameEntry
 
@@ -96,7 +97,9 @@ fun DetailsContent(
                 onPickBackground = component::onPickBackground,
                 onRemoveBackground = component::onRemoveBackground,
                 onDeleteProfile = component::onDeleteProfile,
+                installState = installState,
                 onDownload = { component.showDownloadGameDialog(entry) },
+                onCancelInstall = component::onCancelInstall,
                 onContinue = component::onContinueSave,
                 onStartFresh = component::onStartFresh,
             )
