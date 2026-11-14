@@ -32,13 +32,13 @@ internal class CancelInstallReceiver : BroadcastReceiver(), KoinComponent {
     }
 
     override fun onReceive(context: Context, intent: Intent) {
+        val fileUrl = intent.getStringExtra(EXTRA_FILE_URL) ?: return
+        val pendingResult = goAsync()
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                get<RemoteRepository>().cancelInstall(
-                    intent.getStringExtra(EXTRA_FILE_URL) ?: return@launch
-                )
+                get<RemoteRepository>().cancelInstall(fileUrl)
             } finally {
-                goAsync().finish()
+                pendingResult.finish()
             }
         }
     }
