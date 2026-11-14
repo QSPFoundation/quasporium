@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
 import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
 import android.os.Build
@@ -41,7 +42,7 @@ class NotificationProviderImpl(
         get() = hashCode()
 
     private fun progressNotification(
-        workId: UUID,
+        cancelIntent: PendingIntent,
         title: String,
         text: String,
         progress: Float,
@@ -61,7 +62,7 @@ class NotificationProviderImpl(
         .addAction(
             android.R.drawable.ic_delete,
             "Cancel",
-            workManager.createCancelPendingIntent(workId)
+            cancelIntent
         )
         .setPriority(NotificationCompat.PRIORITY_LOW)
         .build()
@@ -76,7 +77,9 @@ class NotificationProviderImpl(
         text: String,
         progress: Float
     ): ForegroundInfo {
-        val notification = progressNotification(workId, title, text, progress, ongoing = true)
+        val notification = progressNotification(
+            workManager.createCancelPendingIntent(workId), title, text, progress, ongoing = true
+        )
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
             ForegroundInfo(
                 NOTIFICATION_ID, notification,
@@ -85,10 +88,16 @@ class NotificationProviderImpl(
         else ForegroundInfo(NOTIFICATION_ID, notification)
     }
 
-    override fun showPaused(workId: UUID, title: String, text: String, progress: Float) =
+    override fun showPaused(
+        workId: UUID,
+        title: String,
+        text: String,
+        progress: Float,
+        cancelIntent: PendingIntent
+    ) =
         notify(
             workId,
-            progressNotification(workId, title, text, progress, ongoing = false)
+            progressNotification(cancelIntent, title, text, progress, ongoing = false)
         )
 
     override fun showResult(workId: UUID, title: String, text: String) =

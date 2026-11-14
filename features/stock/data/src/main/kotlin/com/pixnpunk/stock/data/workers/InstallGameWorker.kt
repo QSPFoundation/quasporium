@@ -199,7 +199,10 @@ internal class InstallGameWorker(
             Result.success()
         } catch (e: CancellationException) {
             if (isCancelledByUser()) gameDir.deleteRecursively()
-            else notificationProvider.showPaused(id, entry.title, pausedMessage(null), lastProgress)
+            else notificationProvider.showPaused(
+                id, entry.title, pausedMessage(null), lastProgress,
+                CancelInstallReceiver.pendingIntent(applicationContext, url)
+            )
             throw e
         } catch (e: Exception) {
             if (e.isTransientDownloadError() && runAttemptCount < MAX_ATTEMPTS - 1) {
@@ -207,7 +210,10 @@ internal class InstallGameWorker(
                     "Installation interrupted, retrying | attempt: $runAttemptCount | " +
                             "link: $url | ${e.javaClass.simpleName}"
                 )
-                notificationProvider.showPaused(id, entry.title, pausedMessage(e), lastProgress)
+                notificationProvider.showPaused(
+                    id, entry.title, pausedMessage(e), lastProgress,
+                    CancelInstallReceiver.pendingIntent(applicationContext, url)
+                )
                 Result.retry()
             } else {
                 logger.apply {

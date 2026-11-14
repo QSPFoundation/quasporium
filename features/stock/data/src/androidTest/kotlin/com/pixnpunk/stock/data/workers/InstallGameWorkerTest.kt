@@ -1,6 +1,7 @@
 package com.pixnpunk.stock.data.workers
 
 import android.app.Notification
+import android.app.PendingIntent
 import android.content.Context
 import androidx.concurrent.futures.CallbackToFutureAdapter
 import androidx.core.net.toUri
@@ -339,7 +340,13 @@ class InstallGameWorkerTest {
             return ForegroundInfo(1, notification)
         }
 
-        override fun showPaused(workId: UUID, title: String, text: String, progress: Float) {
+        override fun showPaused(
+            workId: UUID,
+            title: String,
+            text: String,
+            progress: Float,
+            cancelIntent: PendingIntent
+        ) {
             paused += "$title: $text"
         }
 
