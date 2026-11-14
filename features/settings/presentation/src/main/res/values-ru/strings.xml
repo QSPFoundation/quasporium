@@ -51,4 +51,6 @@
     <string name="settings_typeface_monospace">Моноширинный</string>
     <string name="settings_size_auto">автоматически</string>
     <string name="settings_size_manual">вручную</string>
+    <string name="settings_language_title">Язык</string>
+    <string name="settings_language_system">Как в системе</string>
 </resources>

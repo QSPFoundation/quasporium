@@ -17,6 +17,8 @@ dependencies {
     api(project(":features:settings:domain"))
 
     implementation(libs.androidx.compose.adaptive)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.core.ktx)
 
     implementation(libs.essenty.coroutines)
     implementation(libs.decompose.ext.exp)

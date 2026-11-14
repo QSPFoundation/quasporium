@@ -1,5 +1,6 @@
 package com.pixnpunk.settings.presentation.contents
 
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Book
@@ -8,18 +9,26 @@ import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.Height
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.QueryStats
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.core.os.LocaleListCompat
 import com.pixnpunk.dto.AppThemeMode
 import com.pixnpunk.dto.BinaryPrefFormat
 import com.pixnpunk.dto.NativeLib
 import com.pixnpunk.settings.domain.model.PrefKeys
+import com.pixnpunk.settings.presentation.AppLanguage
 import com.pixnpunk.settings.presentation.R
+import me.zhanghai.compose.preference.ListPreference
 import me.zhanghai.compose.preference.listPreference
 import me.zhanghai.compose.preference.switchPreference
 
@@ -34,6 +43,11 @@ fun SettingsGeneralContent(
         AppThemeMode.DARK to stringResource(R.string.settings_theme_dark)
     )
     val legacyEngineLabel = stringResource(R.string.settings_engine_legacy, "5.7.0")
+    val languageLabels = mapOf(
+        AppLanguage.SYSTEM to stringResource(R.string.settings_language_system),
+        AppLanguage.ENGLISH to stringResource(R.string.settings_language_english),
+        AppLanguage.RUSSIAN to stringResource(R.string.settings_language_russian)
+    )
     val sizeUnitLabels = mapOf(
         BinaryPrefFormat.SI to stringResource(R.string.settings_size_units_si),
         BinaryPrefFormat.ISO to stringResource(R.string.settings_size_units_iso)
@@ -58,6 +72,32 @@ fun SettingsGeneralContent(
                 },
                 title = { Text(stringResource(R.string.theme_list_title)) }
             )
+            item {
+                var language by remember {
+                    mutableStateOf(
+                        AppLanguage.fromLanguageTags(
+                            AppCompatDelegate.getApplicationLocales().toLanguageTags()
+                        )
+                    )
+                }
+                ListPreference(
+                    value = language,
+                    onValueChange = {
+                        language = it
+                        AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(it.tag))
+                    },
+                    values = AppLanguage.entries,
+                    title = { Text(stringResource(R.string.settings_language_title)) },
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Default.Language,
+                            contentDescription = null
+                        )
+                    },
+                    summary = { Text(languageLabels.getValue(language)) },
+                    valueToText = { AnnotatedString(languageLabels.getValue(it)) }
+                )
+            }
         }
         listPreference(
             key = PrefKeys.LIB_VERSION,

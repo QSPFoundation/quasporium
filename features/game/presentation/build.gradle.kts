@@ -34,6 +34,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.annotation)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
 
     implementation(libs.storage)
@@ -42,6 +43,6 @@ dependencies {
 
     implementation(libs.essenty.coroutines)
     implementation(libs.decompose.ext.exp)
-    api(libs.androidx.activity)
+    implementation(libs.androidx.activity)
     api(libs.kotlinx.serialization.core)
 }

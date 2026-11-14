@@ -51,4 +51,8 @@
     <string name="settings_typeface_monospace">Monospace</string>
     <string name="settings_size_auto">Auto</string>
     <string name="settings_size_manual">Manual</string>
+    <string name="settings_language_title">Language</string>
+    <string name="settings_language_system">System default</string>
+    <string name="settings_language_english" translatable="false">English</string>
+    <string name="settings_language_russian" translatable="false">Русский</string>
 </resources>
