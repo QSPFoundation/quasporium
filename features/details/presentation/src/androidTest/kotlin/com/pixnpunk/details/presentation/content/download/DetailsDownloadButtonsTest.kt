@@ -5,6 +5,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ApplicationProvider
@@ -59,7 +60,7 @@ class DetailsDownloadButtonsTest {
 
         state.value = InstallState.Paused
         rule.onNodeWithText(text(R.string.details_install_paused)).assertIsDisplayed()
-        rule.onNodeWithText(text(R.string.details_install_cancel)).performClick()
+        rule.onNodeWithContentDescription(text(R.string.details_install_cancel)).performClick()
 
         assertEquals(listOf("cancel"), calls)
     }
