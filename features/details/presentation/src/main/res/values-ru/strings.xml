@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="back_button_description">Назад</string>
+    <string name="play_button_description">Играть</string>
+    <string name="modify_button_description">Изменить</string>
+    <string name="settings_button_description">Настройки</string>
+    <string name="download_button_description">Скачать</string>
+    <string name="details_install_waiting">Ожидание запуска…</string>
+    <string name="details_install_paused">Пауза · продолжится автоматически</string>
+    <string name="details_install_downloading">Загрузка · %1$d%%</string>
+    <string name="details_install_unpacking">Распаковка · %1$d%%</string>
+    <string name="details_install_installed">Установлено. Игра доступна на вкладке «Установленные».</string>
+    <string name="details_install_failed">Не удалось установить игру.</string>
+    <string name="details_install_retry">Повторить</string>
+    <string name="details_install_cancel">Отмена</string>
+    <string name="expand_button_description">Развернуть</string>
+    <string name="collapse_button_description">Свернуть</string>
+    <string name="icon_description">Значок игры %1$s</string>
+    <string name="description_title">Описание</string>
+    <string name="author_title">Автор: %1$s</string>
+    <string name="ported_by_title">Портирование: %1$s</string>
+    <string name="published_title">Опубликовано: %1$s</string>
+    <string name="updated_title">Обновлено: %1$s</string>
+    <string name="expand_presets_description">Развернуть</string>
+    <string name="collapse_presets_description">Свернуть</string>
+    <string name="selected_color_description">Выбран</string>
+    <string name="remove_background_description">Убрать фон</string>
+    <string name="details_add_background">Добавить фон</string>
+    <string name="details_custom_image">Своё изображение</string>
+    <string name="details_accent_color">Цвет акцента</string>
+    <string name="details_background_image">Фоновое изображение</string>
+    <string name="details_edit_cancel">Отмена</string>
+    <string name="details_edit_save">Сохранить</string>
+    <string name="details_preset_name">Название пресета</string>
+    <string name="details_preset_label">Пресет</string>
+    <string name="details_preset_continue">Продолжить (%1$s)</string>
+    <string name="details_preset_restart">Начать заново (%1$s)</string>
+    <string name="details_preset_start">Начать (%1$s)</string>
+    <string name="details_preset_customize">Настроить</string>
+    <string name="details_preset_delete">Удалить</string>
+    <string name="details_new_playthrough">Новое прохождение</string>
+    <string name="details_presets">Пресеты</string>
+    <string name="details_preset_new">Новый</string>
+    <string name="details_default_preset_name">Прохождение %1$d</string>
+</resources>

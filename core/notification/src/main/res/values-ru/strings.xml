@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notification_channel_downloads">Загрузка игр</string>
+    <string name="notification_channel_downloads_description">Уведомления о загрузке и распаковке игр</string>
+    <string name="notification_cancel">Отмена</string>
+</resources>

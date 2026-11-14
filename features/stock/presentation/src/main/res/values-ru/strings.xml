@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="selected_items_count">
+        <item quantity="one">Выбран %1$d элемент</item>
+        <item quantity="few">Выбрано %1$d элемента</item>
+        <item quantity="many">Выбрано %1$d элементов</item>
+        <item quantity="other">Выбрано %1$d элемента</item>
+    </plurals>
+    <string name="games_list_error_template">Произошла ошибка: %1$s</string>
+    <string name="games_list_empty">Игры не найдены</string>
+    <string name="games_list_error_append">Не удалось загрузить ещё игры.</string>
+    <string name="catalog_error_no_connection">Нет подключения к интернету.</string>
+    <string name="catalog_error_timeout">Каталог не отвечает.</string>
+    <string name="catalog_error_not_found">Каталог не найден.</string>
+    <string name="catalog_error_server">Ошибка сервера каталога (%1$d).</string>
+    <string name="catalog_error_unexpected">Не удалось загрузить каталог.</string>
+    <string name="first_tab_text">Установленные</string>
+    <string name="second_tab_text">Каталог</string>
+    <string name="add_game_button_description">Добавить игру</string>
+    <string name="scroll_to_top_button_description">Наверх</string>
+    <string name="back_button_description">Назад</string>
+    <string name="clear_query_button_description">Очистить запрос</string>
+    <string name="settings_button_description">Настройки</string>
+    <string name="select_all_button_description">Выбрать все</string>
+    <string name="delete_button_description">Удалить выбранные игры</string>
+    <string name="sort_ascending_description">По возрастанию</string>
+    <string name="sort_descending_description">По убыванию</string>
+    <string name="remove_filter_description">Убрать фильтр</string>
+    <string name="stock_search_placeholder">Поиск игр</string>
+    <string name="stock_search_recent">Недавние</string>
+    <string name="stock_search_in_title">В названии: %1$s</string>
+    <string name="stock_search_in_description">В описании: %1$s</string>
+    <string name="stock_search_authors">Авторы</string>
+    <string name="stock_search_random_authors">Случайные авторы</string>
+    <string name="stock_search_translators">Переводчики</string>
+    <string name="stock_search_random_translators">Случайные переводчики</string>
+    <plurals name="stock_search_more_characters">
+        <item quantity="one">Введите ещё %1$d символ для поиска</item>
+        <item quantity="few">Введите ещё %1$d символа для поиска</item>
+        <item quantity="many">Введите ещё %1$d символов для поиска</item>
+        <item quantity="other">Введите ещё %1$d символа для поиска</item>
+    </plurals>
+    <string name="stock_sort_created">Создание</string>
+    <string name="stock_sort_updated">Обновление</string>
+    <string name="stock_sort_comments">Комментарии</string>
+    <string name="stock_sort_likes">Лайки</string>
+    <string name="stock_sort_downloads">Скачивания</string>
+    <string name="stock_sort_plays">Запуски</string>
+    <string name="stock_sort_none">По умолчанию</string>
+    <string name="stock_filter_language">Язык</string>
+    <string name="stock_filter_language_any">Любой язык</string>
+    <string name="stock_try_again">Повторить</string>
+    <string name="stock_unknown_error">Неизвестная ошибка</string>
+</resources>

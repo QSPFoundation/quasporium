@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="install_preparing">Подготовка к загрузке</string>
+    <string name="install_downloading">Загрузка</string>
+    <string name="install_downloading_eta">Загрузка · осталось %1$s</string>
+    <string name="install_unpacking">Распаковка</string>
+    <string name="install_unpacking_eta">Распаковка · осталось %1$s</string>
+    <string name="install_paused">Пауза · продолжится автоматически</string>
+    <string name="install_paused_network">Пауза · ожидание сети</string>
+    <string name="install_paused_retry">Пауза · скоро будет новая попытка</string>
+    <string name="install_complete_title">«%1$s» — можно играть</string>
+    <string name="install_complete_text">Установка завершена.</string>
+    <string name="install_error_title">Не удалось установить «%1$s»</string>
+    <string name="install_error_unpack">Не удалось распаковать архив игры.</string>
+    <string name="download_error_no_connection">Нет подключения к интернету.</string>
+    <string name="download_error_timeout">Сервер не отвечает.</string>
+    <string name="download_error_not_found">Файл игры не найден.</string>
+    <string name="download_error_server">Ошибка сервера (%1$d).</string>
+    <string name="download_error_unexpected">Не удалось сохранить файл игры.</string>
+</resources>

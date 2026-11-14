@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title_field">Название</string>
+    <string name="author_field">Автор</string>
+    <string name="version_field">Версия</string>
+    <string name="cancel_button_description">Отмена</string>
+    <string name="folder_selector_title">Выберите папку с игрой</string>
+    <string name="file_selector_title">Выберите файлы игры</string>
+    <string name="edit_button_description">Изменить запись об игре</string>
+    <string name="input_button_description">Ввод</string>
+    <string name="confirm_button_description">Подтвердить</string>
+    <string name="select_button_description">Выбрать</string>
+    <string name="file_run_title">Выберите файл игры для запуска</string>
+    <string name="add_button_description">Добавить игру</string>
+    <string name="dialogs_download_button_description">Скачать игру</string>
+    <string name="input_width_title">Ширина изображения</string>
+    <string name="input_height_title">Высота изображения</string>
+    <string name="input_msg_exec_title">Терминал QSP</string>
+    <string name="input_generic_title">Введите значение</string>
+    <string name="dialogs_input_save_name_title">Введите название сохранения</string>
+    <string name="choose_cover_description">Выбрать обложку</string>
+    <string name="dialogs_close_button_description">Закрыть</string>
+    <string name="remove_cover_description">Убрать обложку</string>
+    <string name="allow_button_description">Разрешить</string>
+    <string name="deny_button_description">Не разрешать</string>
+    <string name="restart_app_button_description">Перезапустить приложение</string>
+    <string name="open_button_description">Открыть</string>
+    <string name="link_dont_ask_checkbox">Больше не спрашивать для этой игры</string>
+</resources>

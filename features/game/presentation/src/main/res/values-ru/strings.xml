@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="extra_tab_title">Дополнительно</string>
+    <string name="main_tab_title">Основное</string>
+    <string name="object_tab_title">Инвентарь</string>
+    <string name="input_tab_title">Ввод</string>
+    <string name="save_button_description">Сохранить игру в файл</string>
+    <string name="load_button_description">Загрузить игру из файла</string>
+    <string name="restart_button_description">Начать игру заново</string>
+    <string name="exit_button_description">Закрыть игру</string>
+    <string name="script_running_description">Выполняется скрипт игры</string>
+    <string name="terminal_button_description">Выполнить</string>
+    <string name="game_link_no_app">Нет приложения, которое может открыть эту ссылку</string>
+    <string name="game_script_running_long">Скрипт игры выполняется слишком долго. При перезапуске приложения несохранённый прогресс будет потерян.</string>
+    <string name="game_restart_app">Перезапустить</string>
+    <string name="game_exit_without_saving">Выйти без сохранения?</string>
+    <string name="game_exit_confirm">Да</string>
+    <string name="game_exit_dismiss">Нет</string>
+    <string name="game_press_back_again">Нажмите «Назад» ещё раз, чтобы закрыть</string>
+    <string name="game_previous_still_finishing">Предыдущая игра ещё завершается. Перезапустить приложение, чтобы начать эту игру?</string>
+    <string name="game_default_save_name">Сохранение %1$d</string>
+    <string name="game_no_saves">Нет сохранённых игр</string>
+    <string name="game_saved">Игра сохранена</string>
+    <string name="game_restart_confirm">Начать игру заново? Несохранённый прогресс может быть потерян</string>
+</resources>
