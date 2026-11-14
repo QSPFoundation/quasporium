@@ -99,7 +99,6 @@ android {
 }
 
 dependencies {
-    baselineProfile(project(":baselineprofile"))
     runtimeOnly(libs.androidx.profileinstaller)
 
     implementation(project(":core:storage"))
@@ -178,10 +177,19 @@ tasks.configureEach {
     if (name.startsWith("process") && name.contains("Foss") && name.endsWith("GoogleServices")) {
         enabled = false
     }
+    if (name.startsWith("mergePlay") && (name.endsWith("ArtProfile") || name.endsWith("StartupProfile"))) {
+        mustRunAfter("copyFossReleaseBaselineProfileIntoSrc")
+    }
 }
 
 baselineProfile {
     mergeIntoMain = false
     saveInSrc = true
     automaticGenerationDuringBuild = false
+
+    variants {
+        create("foss") {
+            from(project(":baselineprofile"))
+        }
+    }
 }
