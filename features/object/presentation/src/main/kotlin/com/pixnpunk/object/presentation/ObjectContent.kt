@@ -48,12 +48,12 @@ fun ObjectContent(
         topBar = {
             Box {
                 TopAppBar(
-                    title = { Text("Objects") },
+                    title = { Text(stringResource(R.string.object_title)) },
                     navigationIcon = {
                         IconButton(onClick = dismiss) {
                             Icon(
                                 imageVector = Icons.Filled.Close,
-                                contentDescription = stringResource(R.string.close_button_description)
+                                contentDescription = stringResource(R.string.object_close_button_description)
                             )
                         }
                     }

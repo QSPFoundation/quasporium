@@ -12,13 +12,14 @@
     <string name="select_button_description">Select</string>
     <string name="file_run_title">Select a game file to run</string>
     <string name="add_button_description">Add game</string>
-    <string name="download_button_description">Download game</string>
+    <string name="dialogs_download_button_description">Download game</string>
     <string name="input_width_title">Image width</string>
     <string name="input_height_title">Image height</string>
     <string name="input_msg_exec_title">QSP Terminal</string>
     <string name="input_generic_title">Enter something</string>
+    <string name="dialogs_input_save_name_title">Enter save name</string>
     <string name="choose_cover_description">Choose cover image</string>
-    <string name="close_button_description">Close</string>
+    <string name="dialogs_close_button_description">Close</string>
     <string name="remove_cover_description">Remove cover</string>
     <string name="allow_button_description">Allow</string>
     <string name="deny_button_description">Don\'t allow</string>

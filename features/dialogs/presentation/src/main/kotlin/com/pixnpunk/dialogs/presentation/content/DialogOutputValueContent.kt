@@ -171,7 +171,7 @@ fun DialogOutputValueContent(
             ) {
                 Icon(
                     imageVector = Icons.Default.Close,
-                    contentDescription = stringResource(R.string.close_button_description),
+                    contentDescription = stringResource(R.string.dialogs_close_button_description),
                     tint = Color.White
                 )
             }

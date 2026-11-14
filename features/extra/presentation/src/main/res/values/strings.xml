@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="close_button_description">Close</string>
+    <string name="extra_title">Extra</string>
+    <string name="extra_close_button_description">Close</string>
 </resources>

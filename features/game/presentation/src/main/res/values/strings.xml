@@ -10,4 +10,16 @@
     <string name="exit_button_description">Close game</string>
     <string name="script_running_description">The game script is running</string>
     <string name="terminal_button_description">Execute input</string>
+    <string name="game_link_no_app">No app can open this link</string>
+    <string name="game_script_running_long">The game script has been running for a long time. Restarting the app loses unsaved progress.</string>
+    <string name="game_restart_app">Restart app</string>
+    <string name="game_exit_without_saving">Exit without saving?</string>
+    <string name="game_exit_confirm">Yes</string>
+    <string name="game_exit_dismiss">No</string>
+    <string name="game_press_back_again">Press back again to close</string>
+    <string name="game_previous_still_finishing">The previous game is still finishing. Restart the app to start this game?</string>
+    <string name="game_default_save_name">Save %1$d</string>
+    <string name="game_no_saves">No saved games!</string>
+    <string name="game_saved">Game saved!</string>
+    <string name="game_restart_confirm">Restart game? All unsaved progress might be lost</string>
 </resources>

@@ -38,6 +38,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.core.net.toUri
@@ -91,6 +92,11 @@ fun GameContent(
     val isActionsListUpdated = badges.hasNewActions
 
     val context = LocalContext.current
+    val resources = LocalResources.current
+    val noAppForLinkMessage = stringResource(R.string.game_link_no_app)
+    val longScriptMessage = stringResource(R.string.game_script_running_long)
+    val restartAppLabel = stringResource(R.string.game_restart_app)
+    val pressBackAgainMessage = stringResource(R.string.game_press_back_again)
     val coroutineScope = rememberCoroutineScope()
     val doubleTapTimeout = LocalViewConfiguration.current.doubleTapTimeoutMillis
     var clickJob by remember { mutableStateOf<Job?>(null) }
@@ -114,7 +120,7 @@ fun GameContent(
             when (event) {
                 is GameEvent.ShowSnackbar ->
                     snackbarHostState.showSnackbar(
-                        message = event.message,
+                        message = resources.getString(event.messageRes),
                         duration = SnackbarDuration.Short
                     )
 
@@ -128,7 +134,7 @@ fun GameContent(
                         )
                     }.getOrElse {
                         snackbarHostState.showSnackbar(
-                            message = "No app can open this link",
+                            message = noAppForLinkMessage,
                             duration = SnackbarDuration.Short
                         )
                     }
@@ -139,9 +145,8 @@ fun GameContent(
     LaunchedEffect(scriptActivity) {
         if (scriptActivity == ScriptState.RUNNING_LONG) {
             val result = longScriptSnackbarState.showSnackbar(
-                message = "The game script has been running for a long time. " +
-                    "Restarting the app loses unsaved progress.",
-                actionLabel = "Restart app",
+                message = longScriptMessage,
+                actionLabel = restartAppLabel,
                 duration = SnackbarDuration.Indefinite
             )
             if (result == SnackbarResult.ActionPerformed) component.doRestartApp()
@@ -210,20 +215,20 @@ fun GameContent(
         if (showDialog) {
             AlertDialog(
                 onDismissRequest = { showDialog = false },
-                title = { Text("Exit without saving?") },
+                title = { Text(stringResource(R.string.game_exit_without_saving)) },
                 confirmButton = {
                     Button(onClick = {
                         showDialog = false
                         component.doFinishGame()
                     }) {
-                        Text("Yes")
+                        Text(stringResource(R.string.game_exit_confirm))
                     }
                 },
                 dismissButton = {
                     OutlinedButton(onClick = {
                         showDialog = false
                     }) {
-                        Text("No")
+                        Text(stringResource(R.string.game_exit_dismiss))
                     }
                 }
             )
@@ -296,7 +301,7 @@ fun GameContent(
                                             clickJob = coroutineScope.launch {
                                                 delay(doubleTapTimeout.milliseconds)
                                                 snackbarHostState.showSnackbar(
-                                                    message = "Press back again to close",
+                                                    message = pressBackAgainMessage,
                                                     duration = SnackbarDuration.Short
                                                 )
                                             }

@@ -28,12 +28,12 @@ fun ExtraContent(
         topBar = {
             Box {
                 TopAppBar(
-                    title = { Text("Extra") },
+                    title = { Text(stringResource(R.string.extra_title)) },
                     navigationIcon = {
                         IconButton(onClick = dismiss) {
                             Icon(
                                 imageVector = Icons.Filled.Close,
-                                contentDescription = stringResource(R.string.close_button_description)
+                                contentDescription = stringResource(R.string.extra_close_button_description)
                             )
                         }
                     }

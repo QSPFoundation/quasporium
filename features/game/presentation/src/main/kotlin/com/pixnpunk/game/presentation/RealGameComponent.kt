@@ -1,7 +1,10 @@
 package com.pixnpunk.game.presentation
 
+import android.content.Context
 import android.net.Uri
+import androidx.annotation.StringRes
 import androidx.compose.ui.text.font.FontFamily
+import androidx.core.content.ContextCompat
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
 import com.arkivanov.decompose.router.slot.ChildSlot
@@ -328,8 +331,7 @@ class RealGameComponent(
                                 DialogsConfig(
                                     dialogsState = DialogsState.DIALOG_OUTPUT_VALUE,
                                     outputState = OutputState.OUTPUT_ENGINE_BUSY,
-                                    outputValue = "The previous game is still finishing. " +
-                                        "Restart the app to start this game?"
+                                    outputValue = string(R.string.game_previous_still_finishing)
                                 )
                             )
                     }
@@ -337,6 +339,9 @@ class RealGameComponent(
             }
             .launchIn(componentScope)
     }
+
+    private fun string(@StringRes id: Int, vararg args: Any): String =
+        ContextCompat.getContextForLanguage(get<Context>()).getString(id, *args)
 
     internal fun setGameVisible(isVisible: Boolean) = engineInteractor.setTimerPaused(!isVisible)
 
@@ -351,7 +356,7 @@ class RealGameComponent(
                 val savesCount =
                     saveGameInteractor.getSavesCount(gameId)
                 doShowDialog(
-                    inputString = "Save ${savesCount + 1}",
+                    inputString = string(R.string.game_default_save_name, savesCount + 1),
                     dialogState = LibTypeDialog.DIALOG_SAVEGAME
                 )
             }
@@ -365,7 +370,7 @@ class RealGameComponent(
             } else {
                 saveGameInteractor.getAllSaves(gameId).let {
                     if (it.isEmpty()) {
-                        _events.send(GameEvent.ShowSnackbar("No saved games!"))
+                        _events.send(GameEvent.ShowSnackbar(R.string.game_no_saves))
                     } else {
                         doShowDialog(it)
                     }
@@ -447,7 +452,7 @@ class RealGameComponent(
                         _uiState.value.gameDirUriBox
                     )
 
-                    _events.send(GameEvent.ShowSnackbar("Game saved!"))
+                    _events.send(GameEvent.ShowSnackbar(R.string.game_saved))
                 }
 
             else -> engineInteractor.submitCommand(EngineCommand.ExecuteString(inputString))
@@ -653,7 +658,7 @@ class RealGameComponent(
             configuration = DialogsConfig(
                 dialogsState = DialogsState.DIALOG_OUTPUT_VALUE,
                 outputState = OutputState.OUTPUT_RESTART_GAME,
-                outputValue = "Restart game? All unsaved progress might be lost"
+                outputValue = string(R.string.game_restart_confirm)
             )
         )
     }

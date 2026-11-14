@@ -124,7 +124,7 @@ fun DialogsMainContent(
                                     cancelLabel = stringResource(
                                         when {
                                             isConsent -> R.string.deny_button_description
-                                            isEngineBusy -> R.string.close_button_description
+                                            isEngineBusy -> R.string.dialogs_close_button_description
                                             else -> R.string.cancel_button_description
                                         }
                                     ),
@@ -208,7 +208,7 @@ fun DialogsMainContent(
                                 },
                                 onDismiss = component.onDismissed,
                                 isAddLocalGame = false,
-                                buttonText = stringResource(R.string.download_button_description)
+                                buttonText = stringResource(R.string.dialogs_download_button_description)
                             )
 
                         DialogsState.DIALOG_SELECT_COLOR -> config.colorPickerState.let {
@@ -248,7 +248,9 @@ fun DialogsMainContent(
                                                     R.string.input_msg_exec_title
                                                 )
 
-                                                InputState.INPUT_SAVE_NAME -> "Enter save name"
+                                                InputState.INPUT_SAVE_NAME -> stringResource(
+                                                    R.string.dialogs_input_save_name_title
+                                                )
                                                 else -> stringResource(R.string.input_generic_title)
                                             }
                                         )
