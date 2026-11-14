@@ -138,12 +138,14 @@ class RealRootComponent(
                 componentContext = ctx,
                 dialogsConfig = config,
                 settingsEntity = settingsState.value,
-                addNewEntry = { store.accept(RootStore.Intent.AddNewGame(it)) },
-                editEntry = { store.accept(RootStore.Intent.EditGame(it)) },
+                addNewEntry = {
+                    store.accept(RootStore.Intent.AddNewGame(it))
+                },
+                editEntry = {
+                    store.accept(RootStore.Intent.EditGame(it))
+                },
                 downloadNewEntry = { entry ->
-                    detailsNavigation.dismiss {
-                        store.accept(RootStore.Intent.DownloadNewGame(entry))
-                    }
+                    store.accept(RootStore.Intent.DownloadNewGame(entry))
                 },
                 selectFolder = launchDirPicker,
                 deselectDir = ::remDirSelect,

@@ -6,12 +6,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material3.Card
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -24,7 +26,10 @@ import com.pixnpunk.stock.domain.model.InstallState
 private const val PERCENT = 100
 
 @Composable
-private fun DownloadButton(text: String, onClick: () -> Unit) {
+private fun DownloadButton(
+    text: String,
+    onClick: () -> Unit
+) {
     FilledTonalButton(
         modifier = Modifier.fillMaxWidth(),
         onClick = onClick
@@ -42,7 +47,11 @@ private fun DownloadButton(text: String, onClick: () -> Unit) {
 }
 
 @Composable
-private fun InstallProgress(label: String, progress: Float?, onCancel: () -> Unit) {
+private fun InstallProgress(
+    label: String,
+    progress: Float?,
+    onCancel: () -> Unit
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -54,10 +63,16 @@ private fun InstallProgress(label: String, progress: Float?, onCancel: () -> Uni
         ) {
             Text(text = label, style = MaterialTheme.typography.bodyMedium)
             if (progress == null) LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-            else LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth())
+            else LinearProgressIndicator(
+                progress = { progress },
+                modifier = Modifier.fillMaxWidth()
+            )
         }
-        OutlinedButton(onClick = onCancel) {
-            Text(text = stringResource(R.string.details_install_cancel))
+        IconButton(onClick = onCancel) {
+            Icon(
+                imageVector = Icons.Default.Cancel,
+                contentDescription = stringResource(R.string.details_install_cancel),
+            )
         }
     }
 }
@@ -68,44 +83,78 @@ fun DetailsDownloadButtons(
     onDownload: () -> Unit,
     onCancel: () -> Unit
 ) {
-    when (installState) {
-        InstallState.NotStarted ->
-            DownloadButton(stringResource(R.string.download_button_description), onDownload)
+    if (installState is InstallState.NotStarted) {
+        DownloadButton(
+            stringResource(R.string.download_button_description),
+            onDownload
+        )
+    } else {
+        Card(
+            modifier = Modifier.padding(4.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                when (installState) {
+                    InstallState.Failed ->
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(
+                                text = stringResource(R.string.details_install_failed),
+                                color = MaterialTheme.colorScheme.error
+                            )
+                            DownloadButton(
+                                stringResource(R.string.details_install_retry),
+                                onDownload
+                            )
+                        }
 
-        InstallState.Failed ->
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    text = stringResource(R.string.details_install_failed),
-                    color = MaterialTheme.colorScheme.error
-                )
-                DownloadButton(stringResource(R.string.details_install_retry), onDownload)
+                    InstallState.Installed ->
+                        Text(
+                            text = stringResource(R.string.details_install_installed),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+
+                    InstallState.Queued ->
+                        InstallProgress(
+                            stringResource(
+                                R.string.details_install_waiting
+                            ),
+                            null,
+                            onCancel
+                        )
+
+                    InstallState.Paused ->
+                        InstallProgress(
+                            stringResource(
+                                R.string.details_install_paused
+                            ),
+                            null,
+                            onCancel
+                        )
+
+                    is InstallState.Downloading ->
+                        InstallProgress(
+                            stringResource(
+                                R.string.details_install_downloading,
+                                (installState.progress * PERCENT).toInt()
+                            ),
+                            installState.progress,
+                            onCancel
+                        )
+
+                    is InstallState.Unpacking ->
+                        InstallProgress(
+                            stringResource(
+                                R.string.details_install_unpacking,
+                                (installState.progress * PERCENT).toInt()
+                            ),
+                            installState.progress,
+                            onCancel
+                        )
+                }
             }
-
-        InstallState.Installed ->
-            Text(
-                text = stringResource(R.string.details_install_installed),
-                style = MaterialTheme.typography.bodyMedium
-            )
-
-        InstallState.Queued ->
-            InstallProgress(stringResource(R.string.details_install_waiting), null, onCancel)
-
-        InstallState.Paused ->
-            InstallProgress(stringResource(R.string.details_install_paused), null, onCancel)
-
-        is InstallState.Downloading ->
-            InstallProgress(
-                stringResource(R.string.details_install_downloading, (installState.progress * PERCENT).toInt()),
-                installState.progress,
-                onCancel
-            )
-
-        is InstallState.Unpacking ->
-            InstallProgress(
-                stringResource(R.string.details_install_unpacking, (installState.progress * PERCENT).toInt()),
-                installState.progress,
-                onCancel
-            )
+        }
     }
     // TODO ADD "DOWNLOAD AND ADD PROFILE"
 }
