@@ -69,8 +69,14 @@ android {
         create("play") {
             dimension = "distribution"
 
+            val uploadCrashlyticsSymbols = providers
+                .gradleProperty("quasporium.uploadCrashlyticsSymbols")
+                .map(String::toBoolean)
+                .getOrElse(false)
+
             configure<CrashlyticsExtension> {
-                nativeSymbolUploadEnabled = true
+                mappingFileUploadEnabled = uploadCrashlyticsSymbols
+                nativeSymbolUploadEnabled = uploadCrashlyticsSymbols
             }
         }
     }
