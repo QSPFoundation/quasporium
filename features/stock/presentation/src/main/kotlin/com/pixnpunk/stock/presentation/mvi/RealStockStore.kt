@@ -5,6 +5,7 @@ import com.arkivanov.mvikotlin.core.store.StoreFactory
 
 class RealStockStore(
     private val storeFactory: StoreFactory,
+    private val initialState: StockStore.State = StockStore.State(),
     private val executorFactory: () -> StockExecutor
 ) {
     internal fun create(): StockStore = StockImpl()
@@ -13,7 +14,7 @@ class RealStockStore(
         StockStore,
         Store<StockStore.Intent, StockStore.State, StockStore.Label> by storeFactory.create(
             name = "StockStore",
-            initialState = StockStore.State(),
+            initialState = initialState,
             executorFactory = executorFactory,
             reducer = { message ->
                 when (message) {

@@ -36,6 +36,10 @@ class RealStockComponent(
     override val settingsState: StateFlow<SettingsEntity>
 ) : ComponentContext by componentContext, StockComponent, KoinComponent {
 
+    private companion object {
+        const val KEY_STORE_STATE = "StockStoreState"
+    }
+
     private val componentScope = coroutineScope()
 
     private val getLocalGameEntriesUseCase: GetLocalGameEntriesUseCase by inject()
@@ -44,7 +48,17 @@ class RealStockComponent(
     private val getTranslatorSuggestionUseCase: GetTranslatorSuggestionUseCase by inject()
 
     private val store = instanceKeeper.getStore {
-        RealStockStore(DefaultStoreFactory()) { get() }.create()
+        RealStockStore(
+            DefaultStoreFactory(),
+            stateKeeper.consume(
+                KEY_STORE_STATE,
+                StockStore.State.serializer()
+            ) ?: StockStore.State()
+        ) { get() }.create()
+    }
+
+    init {
+        stateKeeper.register(KEY_STORE_STATE, StockStore.State.serializer()) { store.state }
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
