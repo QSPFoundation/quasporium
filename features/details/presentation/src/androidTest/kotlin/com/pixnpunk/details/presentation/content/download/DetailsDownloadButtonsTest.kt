@@ -52,14 +52,14 @@ class DetailsDownloadButtonsTest {
         setContent()
 
         state.value = InstallState.Downloading(0.42f)
-        rule.onNodeWithText(text(R.string.install_downloading, 42)).assertIsDisplayed()
+        rule.onNodeWithText(text(R.string.details_install_downloading, 42)).assertIsDisplayed()
 
         state.value = InstallState.Unpacking(0.5f)
-        rule.onNodeWithText(text(R.string.install_unpacking, 50)).assertIsDisplayed()
+        rule.onNodeWithText(text(R.string.details_install_unpacking, 50)).assertIsDisplayed()
 
         state.value = InstallState.Paused
-        rule.onNodeWithText(text(R.string.install_paused)).assertIsDisplayed()
-        rule.onNodeWithText(text(R.string.install_cancel)).performClick()
+        rule.onNodeWithText(text(R.string.details_install_paused)).assertIsDisplayed()
+        rule.onNodeWithText(text(R.string.details_install_cancel)).performClick()
 
         assertEquals(listOf("cancel"), calls)
     }
@@ -69,8 +69,8 @@ class DetailsDownloadButtonsTest {
         state.value = InstallState.Failed
         setContent()
 
-        rule.onNodeWithText(text(R.string.install_failed)).assertIsDisplayed()
-        rule.onNodeWithText(text(R.string.install_retry)).performClick()
+        rule.onNodeWithText(text(R.string.details_install_failed)).assertIsDisplayed()
+        rule.onNodeWithText(text(R.string.details_install_retry)).performClick()
 
         assertEquals(listOf("download"), calls)
     }
@@ -80,7 +80,7 @@ class DetailsDownloadButtonsTest {
         state.value = InstallState.Installed
         setContent()
 
-        rule.onNodeWithText(text(R.string.install_installed)).assertIsDisplayed()
+        rule.onNodeWithText(text(R.string.details_install_installed)).assertIsDisplayed()
         rule.onNodeWithText(text(R.string.download_button_description)).assertDoesNotExist()
     }
 }

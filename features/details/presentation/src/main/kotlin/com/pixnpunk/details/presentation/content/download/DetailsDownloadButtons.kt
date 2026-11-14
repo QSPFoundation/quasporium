@@ -57,7 +57,7 @@ private fun InstallProgress(label: String, progress: Float?, onCancel: () -> Uni
             else LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth())
         }
         OutlinedButton(onClick = onCancel) {
-            Text(text = stringResource(R.string.install_cancel))
+            Text(text = stringResource(R.string.details_install_cancel))
         }
     }
 }
@@ -75,34 +75,34 @@ fun DetailsDownloadButtons(
         InstallState.Failed ->
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
-                    text = stringResource(R.string.install_failed),
+                    text = stringResource(R.string.details_install_failed),
                     color = MaterialTheme.colorScheme.error
                 )
-                DownloadButton(stringResource(R.string.install_retry), onDownload)
+                DownloadButton(stringResource(R.string.details_install_retry), onDownload)
             }
 
         InstallState.Installed ->
             Text(
-                text = stringResource(R.string.install_installed),
+                text = stringResource(R.string.details_install_installed),
                 style = MaterialTheme.typography.bodyMedium
             )
 
         InstallState.Queued ->
-            InstallProgress(stringResource(R.string.install_waiting), null, onCancel)
+            InstallProgress(stringResource(R.string.details_install_waiting), null, onCancel)
 
         InstallState.Paused ->
-            InstallProgress(stringResource(R.string.install_paused), null, onCancel)
+            InstallProgress(stringResource(R.string.details_install_paused), null, onCancel)
 
         is InstallState.Downloading ->
             InstallProgress(
-                stringResource(R.string.install_downloading, (installState.progress * PERCENT).toInt()),
+                stringResource(R.string.details_install_downloading, (installState.progress * PERCENT).toInt()),
                 installState.progress,
                 onCancel
             )
 
         is InstallState.Unpacking ->
             InstallProgress(
-                stringResource(R.string.install_unpacking, (installState.progress * PERCENT).toInt()),
+                stringResource(R.string.details_install_unpacking, (installState.progress * PERCENT).toInt()),
                 installState.progress,
                 onCancel
             )
