@@ -18,6 +18,9 @@ jobs:
     name: Build, test and lint (foss and play)
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    permissions:
+      contents: read
+      security-events: write
 
     steps:
       - uses: actions/checkout@v7
@@ -52,6 +55,31 @@ jobs:
 
       - name: Detekt
         run: ./gradlew detekt
+
+      - name: Merge detekt SARIF
+        if: ${{ !cancelled() }}
+        run: .github/ci/merge-detekt-sarif.sh build/reports/detekt/detekt.sarif
+
+      - name: Upload detekt findings to code scanning
+        if: ${{ !cancelled() && hashFiles('build/reports/detekt/detekt.sarif') != '' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: build/reports/detekt/detekt.sarif
+          category: detekt
+
+      - name: Upload lint findings to code scanning
+        if: ${{ !cancelled() && hashFiles('app/build/reports/lint-results-fossDebug.sarif') != '' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: app/build/reports/lint-results-fossDebug.sarif
+          category: lint-foss
+
+      - name: Upload play lint findings to code scanning
+        if: ${{ !cancelled() && hashFiles('app/build/reports/lint-results-playDebug.sarif') != '' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: app/build/reports/lint-results-playDebug.sarif
+          category: lint-play
 
       - name: No proprietary dependencies in foss
         run: |

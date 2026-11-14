@@ -13,6 +13,7 @@ class DetektConventionPlugin : Plugin<Project> {
             config.setFrom(isolated.rootProject.projectDirectory.file("config/detekt/detekt.yml"))
             buildUponDefaultConfig = true
             baseline = layout.projectDirectory.file("detekt-baseline.xml").asFile
+            basePath = isolated.rootProject.projectDirectory.asFile.absolutePath
         }
 
         dependencies {

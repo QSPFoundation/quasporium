@@ -34,6 +34,15 @@ Firebase configuration. The `play` flavor needs `app/google-services.json`, whic
   ./gradlew :app:assembleFossDebug testFossDebugUnitTest testDebugUnitTest
   ```
 
+- The repository has a `pre-push` hook that runs detekt. Enable it once per clone:
+
+  ```bash
+  git config core.hooksPath .githooks
+  ```
+
+- CI builds both flavors and runs unit tests, lint, detekt and instrumented tests on an emulator; a
+  pull request is merged when these checks pass. Detekt and lint findings of the main branch are
+  listed under *Security → Code scanning*.
 - Do not add dependencies with proprietary code to the `foss` flavor. Google Play specific code goes
   to `app/src/play` and is added with `playImplementation`.
 - Describe in the pull request what you changed and how you checked it (device, Android version,
@@ -41,7 +50,10 @@ Firebase configuration. The `play` flavor needs `app/google-services.json`, whic
 
 ## Strings
 
-User-visible strings belong in `res/values/strings.xml` of the module. Translations are welcome.
+User-visible strings belong in `res/values/strings.xml` of the module, with names that start with
+the module name (for example `stock_search_recent`): resources with the same name in different
+modules merge into one in the app. Add the Russian text to `res/values-ru/strings.xml` too — lint
+fails on a string without a translation. Other translations are welcome.
 
 ## License of contributions
 
