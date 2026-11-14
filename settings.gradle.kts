@@ -30,6 +30,7 @@ dependencyResolutionManagement {
 
 include(
     ":app",
+    ":baselineprofile",
 
     ":core",
     ":core:common",

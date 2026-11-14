@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.gms.services)
     alias(libs.plugins.firebase.crashlytics)
     alias(libs.plugins.firebase.perf)
+    alias(libs.plugins.androidx.baselineprofile)
 }
 
 android {
@@ -74,6 +75,12 @@ android {
         }
     }
 
+    sourceSets {
+        named("play") {
+            baselineProfiles.directories.add("src/fossRelease/generated/baselineProfiles")
+        }
+    }
+
     ndkVersion = "27.3.13750724"
     
     lint {
@@ -86,6 +93,9 @@ android {
 }
 
 dependencies {
+    baselineProfile(project(":baselineprofile"))
+    runtimeOnly(libs.androidx.profileinstaller)
+
     implementation(project(":core:storage"))
     implementation(project(":core:database"))
     implementation(project(":core:dto"))
@@ -162,4 +172,10 @@ tasks.configureEach {
     if (name.startsWith("process") && name.contains("Foss") && name.endsWith("GoogleServices")) {
         enabled = false
     }
+}
+
+baselineProfile {
+    mergeIntoMain = false
+    saveInSrc = true
+    automaticGenerationDuringBuild = false
 }
