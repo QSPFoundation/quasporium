@@ -28,6 +28,13 @@ Android 8.0 (API 26) or newer.
 Both flavors use the same application id, `com.pixnpunk.quasporium`. They are signed with
 different keys, so switching between them requires uninstalling the app first.
 
+A `play` release build uploads its R8 mapping and native symbols to Crashlytics only when asked
+to, so CI and local builds do not send anything:
+
+```bash
+./gradlew -Pquasporium.uploadCrashlyticsSymbols=true :app:bundlePlayRelease :app:uploadCrashlyticsSymbolFilePlayRelease
+```
+
 ## Building
 
 Requirements:

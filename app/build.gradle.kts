@@ -69,8 +69,14 @@ android {
         create("play") {
             dimension = "distribution"
 
+            val uploadCrashlyticsSymbols = providers
+                .gradleProperty("quasporium.uploadCrashlyticsSymbols")
+                .map(String::toBoolean)
+                .getOrElse(false)
+
             configure<CrashlyticsExtension> {
-                nativeSymbolUploadEnabled = true
+                mappingFileUploadEnabled = uploadCrashlyticsSymbols
+                nativeSymbolUploadEnabled = uploadCrashlyticsSymbols
             }
         }
     }
@@ -93,7 +99,6 @@ android {
 }
 
 dependencies {
-    baselineProfile(project(":baselineprofile"))
     runtimeOnly(libs.androidx.profileinstaller)
 
     implementation(project(":core:storage"))
@@ -172,10 +177,19 @@ tasks.configureEach {
     if (name.startsWith("process") && name.contains("Foss") && name.endsWith("GoogleServices")) {
         enabled = false
     }
+    if (name.startsWith("mergePlay") && (name.endsWith("ArtProfile") || name.endsWith("StartupProfile"))) {
+        mustRunAfter("copyFossReleaseBaselineProfileIntoSrc")
+    }
 }
 
 baselineProfile {
     mergeIntoMain = false
     saveInSrc = true
     automaticGenerationDuringBuild = false
+
+    variants {
+        create("foss") {
+            from(project(":baselineprofile"))
+        }
+    }
 }

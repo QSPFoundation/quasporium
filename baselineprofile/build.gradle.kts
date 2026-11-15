@@ -41,6 +41,10 @@ baselineProfile {
     useConnectedDevices = false
 }
 
+androidComponents {
+    beforeVariants(selector().withFlavor("distribution" to "play")) { it.enable = false }
+}
+
 dependencies {
     implementation(libs.junit)
     implementation(libs.androidx.junit)
